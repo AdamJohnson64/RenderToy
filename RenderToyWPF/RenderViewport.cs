@@ -101,6 +101,27 @@ namespace RenderToy
             Matrix3D transform_camera = MathHelp.Invert(View);
             // Compute the projection matrix.
             Matrix3D transform_projection = Projection;
+            // Aspect correct.
+            // We're using "at least" FOV correction so horizontal or vertical can be extended.
+            double a = ActualWidth / ActualHeight;
+            if (a > 1)
+            {
+                Matrix3D scale = new Matrix3D(
+                    1 / a, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1);
+                transform_projection = transform_projection * scale;
+            }
+            if (a < 1)
+            {
+                Matrix3D scale = new Matrix3D(
+                    1, 0, 0, 0,
+                    0, a, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1);
+                transform_projection = transform_projection * scale;
+            }
             // Stupid time; draw a grid representing the XZ plane.
             Matrix3D transform_mvp = transform_camera * transform_projection;
             Pen pen = new Pen(Brush_WorkingGrid, -1);
@@ -113,6 +134,35 @@ namespace RenderToy
                 float x = -10.0f + i;
                 DrawLine3D(drawingContext, pen, new Point4D(x, 0, -10, 1), new Point4D(x, 0, 10, 1), transform_mvp);
             }
+            ////////////////////////////////////////////////////////////////////////////////
+            // TODO: We're just going to draw a parametric here for testing.
+            // Later we'll want to hoist this code out somewhere more meaningful.
+            const int USEGMENTS = 9;
+            const int VSEGMENTS = 9;
+            IParametricUV uv = new Sphere();
+            for (int i2 = 0; i2 <= VSEGMENTS; ++i2)
+            {
+                for (int i1 = 0; i1 < USEGMENTS; ++i1)
+                {
+                    // Draw U Lines.
+                    {
+                        Point3D p3u1 = uv.GetPointUV((i1 + 0.0) / USEGMENTS, (i2 + 0.0) / VSEGMENTS);
+                        Point3D p3u2 = uv.GetPointUV((i1 + 1.0) / USEGMENTS, (i2 + 0.0) / VSEGMENTS);
+                        Point4D p4u1 = new Point4D(p3u1.X, p3u1.Y, p3u1.Z, 1.0);
+                        Point4D p4u2 = new Point4D(p3u2.X, p3u2.Y, p3u2.Z, 1.0);
+                        DrawLine3D(drawingContext, pen, p4u1, p4u2, transform_mvp);
+                    }
+                    // Draw V Lines.
+                    {
+                        Point3D p3u1 = uv.GetPointUV((i2 + 0.0) / USEGMENTS, (i1 + 0.0) / VSEGMENTS);
+                        Point3D p3u2 = uv.GetPointUV((i2 + 0.0) / USEGMENTS, (i1 + 1.0) / VSEGMENTS);
+                        Point4D p4u1 = new Point4D(p3u1.X, p3u1.Y, p3u1.Z, 1.0);
+                        Point4D p4u2 = new Point4D(p3u2.X, p3u2.Y, p3u2.Z, 1.0);
+                        DrawLine3D(drawingContext, pen, p4u1, p4u2, transform_mvp);
+                    }
+                }
+            }
+            ////////////////////////////////////////////////////////////////////////////////
             if (DrawExtra != null)
             {
                 // Compute the inverse of the MVP.

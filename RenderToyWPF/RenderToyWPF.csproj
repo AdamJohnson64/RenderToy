@@ -56,6 +56,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Scene\Camera.cs" />
     <Compile Include="Utility\MathHelp.cs" />
     <Compile Include="RenderViewport.cs" />
