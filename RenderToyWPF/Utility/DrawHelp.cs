@@ -157,7 +157,7 @@ namespace RenderToy
         public static void DrawParametricUV(fnDrawLineWorld line, IParametricUV shape)
         {
             int USEGMENTS = 10;
-            int VSEGMENTS = 100;
+            int VSEGMENTS = 20;
             for (int u = 0; u <= USEGMENTS; ++u)
             {
                 for (int v = 0; v < VSEGMENTS; ++v)
