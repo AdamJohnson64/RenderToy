@@ -6,18 +6,29 @@
         xmlns:local="clr-namespace:RenderToy"
         mc:Ignorable="d"
         Title="RenderToy Experiment" Height="768" Width="1024">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50*"/>
-            <RowDefinition Height="50*"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="50*"/>
-            <ColumnDefinition Width="50*"/>
-        </Grid.ColumnDefinitions>
-        <local:RenderViewport x:Name="ViewMain" Grid.Row="0" Grid.Column="0"/>
-        <local:RenderViewport Grid.Row="0" Grid.Column="1" DrawExtra="{Binding ElementName=ViewMain}"/>
-        <local:RenderViewport Grid.Row="1" Grid.Column="0"/>
-        <local:RenderViewport Grid.Row="1" Grid.Column="1"/>
-    </Grid>
+    <TabControl>
+        <TabItem Header="Single View">
+            <local:RenderViewport/>
+        </TabItem>
+        <TabItem Header="Quad View">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="50*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50*"/>
+                    <ColumnDefinition Width="50*"/>
+                </Grid.ColumnDefinitions>
+                <!-- XY Viewport (Front) -->
+                <local:RenderViewport x:Name="ViewMain" Grid.Row="0" Grid.Column="0"/>
+                <!-- XZ Viewport (Top) -->
+                <local:RenderViewport Grid.Row="0" Grid.Column="1" DrawExtra="{Binding ElementName=ViewMain}"/>
+                <!-- YZ Viewport (Side) -->
+                <local:RenderViewport Grid.Row="1" Grid.Column="0"/>
+                <!-- Rotate Viewport -->
+                <local:RenderViewport Grid.Row="1" Grid.Column="1"/>
+            </Grid>
+        </TabItem>
+    </TabControl>
 </Window>
