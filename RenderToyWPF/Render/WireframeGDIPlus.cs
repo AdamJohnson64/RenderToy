@@ -12,12 +12,13 @@ namespace RenderToy
         public WireframeGDIPlus(DrawingContext drawingContext, int buffer_width, int buffer_height)
         {
             this.drawingContext = drawingContext;
-            buffer_bitmap = new Bitmap(buffer_width, buffer_height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            bitmap = new Bitmap(buffer_width, buffer_height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
         }
         public void WireframeBegin()
         {
-            graphics = Graphics.FromImage(buffer_bitmap);
-            graphics.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.Black), new Rectangle(0, 0, buffer_bitmap.Width, buffer_bitmap.Height));
+            if (graphics != null) throw new Exception("Wireframe rendering already entered.");
+            graphics = Graphics.FromImage(bitmap);
+            graphics.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.Black), new Rectangle(0, 0, bitmap.Width, bitmap.Height));
         }
         public void WireframeColor(double r, double g, double b)
         {
@@ -29,14 +30,20 @@ namespace RenderToy
         }
         public void WireframeEnd()
         {
+            if (graphics == null) throw new Exception("Wireframe rendering not entered.");
             graphics.Dispose();
             graphics = null;
-            BitmapSource bitmap_source = Imaging.CreateBitmapSourceFromHBitmap(buffer_bitmap.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(buffer_bitmap.Width, buffer_bitmap.Height));
-            drawingContext.DrawImage(bitmap_source, new Rect(0, 0, buffer_bitmap.Width, buffer_bitmap.Height));
+            IntPtr handle = bitmap.GetHbitmap();
+            BitmapSource bitmapsource = Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(bitmap.Width, bitmap.Height));            
+            drawingContext.DrawImage(bitmapsource, new Rect(0, 0, bitmap.Width, bitmap.Height));
+            DeleteObject(handle);
         }
         private DrawingContext drawingContext = null;
+        private Bitmap bitmap = null;
+        private Graphics graphics = null;
         private System.Drawing.Pen pen = null;
-        Bitmap buffer_bitmap = null;
-        Graphics graphics = null;
+
+        [System.Runtime.InteropServices.DllImport("gdi32.dll")]
+        public static extern bool DeleteObject(IntPtr hObject);
     }
 }
