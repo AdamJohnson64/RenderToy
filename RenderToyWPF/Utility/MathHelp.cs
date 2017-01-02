@@ -4,6 +4,14 @@ namespace RenderToy
 {
     public static class MathHelp
     {
+        public static Matrix3D CreateScaleMatrix(double x, double y, double z)
+        {
+            return new Matrix3D(
+                x, 0, 0, 0,
+                0, y, 0, 0,
+                0, 0, z, 0,
+                0, 0, 0, 1);
+        }
         public static double Dot(Point4D a, Point4D b)
         {
             return a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;

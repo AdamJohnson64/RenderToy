@@ -58,6 +58,7 @@
     </ApplicationDefinition>
     <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Scene\Camera.cs" />
+    <Compile Include="Utility\DrawHelp.cs" />
     <Compile Include="Utility\MathHelp.cs" />
     <Compile Include="RenderViewport.cs" />
     <Compile Include="Scene\Transformed.cs" />
