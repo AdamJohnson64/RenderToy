@@ -156,22 +156,22 @@ namespace RenderToy
         /// <param name="shape">The parametric surface to render.</param>
         public static void DrawParametricUV(fnDrawLineWorld line, IParametricUV shape)
         {
-            int USEGMENTS = 9;
-            int VSEGMENTS = 9;
-            for (int i2 = 0; i2 <= VSEGMENTS; ++i2)
+            int USEGMENTS = 10;
+            int VSEGMENTS = 100;
+            for (int u = 0; u <= USEGMENTS; ++u)
             {
-                for (int i1 = 0; i1 < USEGMENTS; ++i1)
+                for (int v = 0; v < VSEGMENTS; ++v)
                 {
                     // Draw U Lines.
                     {
-                        Point3D p3u1 = shape.GetPointUV((i1 + 0.0) / USEGMENTS, (i2 + 0.0) / VSEGMENTS);
-                        Point3D p3u2 = shape.GetPointUV((i1 + 1.0) / USEGMENTS, (i2 + 0.0) / VSEGMENTS);
+                        Point3D p3u1 = shape.GetPointUV((v + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
+                        Point3D p3u2 = shape.GetPointUV((v + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
                         line(p3u1, p3u2);
                     }
                     // Draw V Lines.
                     {
-                        Point3D p3u1 = shape.GetPointUV((i2 + 0.0) / USEGMENTS, (i1 + 0.0) / VSEGMENTS);
-                        Point3D p3u2 = shape.GetPointUV((i2 + 0.0) / USEGMENTS, (i1 + 1.0) / VSEGMENTS);
+                        Point3D p3u1 = shape.GetPointUV((u + 0.0) / USEGMENTS, (v + 0.0) / VSEGMENTS);
+                        Point3D p3u2 = shape.GetPointUV((u + 0.0) / USEGMENTS, (v + 1.0) / VSEGMENTS);
                         line(p3u1, p3u2);
                     }
                 }

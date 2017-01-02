@@ -47,11 +47,6 @@ namespace RenderToy
         private TransformPosQuat Camera = new TransformPosQuat { Position = new Vector3D(0, 10, -20) };
         CameraPerspective CameraMat = new CameraPerspective();
         #endregion
-        #region - Section : Coloring -
-        private static Brush Brush_Background = Brushes.Black;
-        private static Brush Brush_Frustum = Brushes.Cyan;
-        private static Brush Brush_WorkingGrid = Brushes.LightGray;
-        #endregion
         #region - Section : Input Handling -
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
@@ -70,7 +65,7 @@ namespace RenderToy
         {
             base.OnMouseMove(e);
             if (!dragging) return;
-            Point dragTo = e.GetPosition(this);
+            System.Windows.Point dragTo = e.GetPosition(this);
             double dx = dragTo.X - dragOrigin.X;
             double dy = dragTo.Y - dragOrigin.Y;
             dragOrigin = dragTo;
@@ -101,44 +96,50 @@ namespace RenderToy
             InvalidateVisual();
         }
         private bool dragging = false;
-        private Point dragOrigin;
+        private System.Windows.Point dragOrigin;
         #endregion
         #region - Section : Rendering -
+        IWireframeRenderer renderer;
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            drawingContext.DrawRectangle(Brush_Background, null, new Rect(0, 0, Math.Ceiling(ActualWidth), Math.Ceiling(ActualHeight)));
-            // Compute the view matrix.
-            Matrix3D transform_mvp = View * ProjectionWindow;
-            // Stupid time; draw a grid representing the XZ plane.
-            DrawHelp.fnDrawLineWorld drawline = CreateLineFunction(drawingContext, new Pen(Brush_WorkingGrid, -1), transform_mvp);
-            DrawHelp.DrawPlane(drawline);
-            DrawHelp.DrawParametricUV(drawline, new Sphere());
+            // Select an appropriate renderer.
+            //renderer = new WireframeWPF(drawingContext);
+            renderer = new WireframeGDIPlus(drawingContext, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
+            // Draw the scene.
+            drawingContext.DrawRectangle(Brushes.Black, null, new Rect(0, 0, Math.Ceiling(ActualWidth), Math.Ceiling(ActualHeight)));
+            DrawHelp.fnDrawLineViewport linev = CreateLineViewportFunction(renderer);
+            DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(linev, View * ProjectionWindow);
+            renderer.WireframeBegin();
+            renderer.WireframeColor(0.5, 0.5, 0.5);
+            DrawHelp.DrawPlane(line);
+            renderer.WireframeColor(1.0, 1.0, 1.0);
+            DrawHelp.DrawParametricUV(line, new Sphere());
             if (DrawExtra != null)
             {
                 // Draw the clip space of the Model-View-Projection.
                 Matrix3D other = MathHelp.Invert(DrawExtra.View * DrawExtra.ProjectionWindow);
-                DrawHelp.DrawClipSpace(CreateLineFunction(drawingContext, new Pen(Brush_Frustum, -1), transform_mvp), other);
+                renderer.WireframeColor(0.0, 1.0, 1.0);
+                DrawHelp.DrawClipSpace(line, other);
             }
+            renderer.WireframeEnd();
         }
-        private DrawHelp.fnDrawLineViewport CreateLineViewportFunction(DrawingContext drawingContext, Pen pen)
+        private DrawHelp.fnDrawLineViewport CreateLineViewportFunction(IWireframeRenderer renderer)
         {
             double width = ActualWidth;
             double height = ActualHeight;
             return (p1, p2) =>
             {
-                // Accept post-w-divided lines and render them to screen.
-                drawingContext.DrawLine(pen,
-                    new Point((p1.X + 1) * width / 2, (1 - p1.Y) * height / 2),
-                    new Point((p2.X + 1) * width / 2, (1 - p2.Y) * height / 2));
+                renderer.WireframeLine(
+                    (p1.X + 1) * width / 2, (1 - p1.Y) * height / 2,
+                    (p2.X + 1) * width / 2, (1 - p2.Y) * height / 2);
             };
         }
-        private DrawHelp.fnDrawLineWorld CreateLineFunction(DrawingContext drawingContext, Pen pen, Matrix3D mvp)
+        private DrawHelp.fnDrawLineWorld CreateLineWorldFunction(DrawHelp.fnDrawLineViewport line, Matrix3D mvp)
         {
-            DrawHelp.fnDrawLineViewport drawviewport = CreateLineViewportFunction(drawingContext, pen);
             return (p1, p2) =>
             {
-                DrawHelp.DrawLineWorld(drawviewport, mvp, new Point4D(p1.X, p1.Y, p1.Z, 1.0), new Point4D(p2.X, p2.Y, p2.Z, 1.0));
+                DrawHelp.DrawLineWorld(line, mvp, new Point4D(p1.X, p1.Y, p1.Z, 1.0), new Point4D(p2.X, p2.Y, p2.Z, 1.0));
             };
         }
         #endregion

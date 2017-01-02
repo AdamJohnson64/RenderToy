@@ -30,7 +30,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>$(SolutionDir)$(Platform)_$(Configuration)\</OutputPath>
+    <OutputPath>$(SolutionDir)Output\$(Platform)_$(Configuration)\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -38,6 +38,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -57,6 +58,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Geometry\Geometry.cs" />
+    <Compile Include="Render\Wireframe.cs" />
+    <Compile Include="Render\WireframeGDIPlus.cs" />
+    <Compile Include="Render\WireframeWPF.cs" />
     <Compile Include="Scene\Camera.cs" />
     <Compile Include="Utility\DrawHelp.cs" />
     <Compile Include="Utility\MathHelp.cs" />
