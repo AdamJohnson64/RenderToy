@@ -113,10 +113,12 @@ namespace RenderToy
             renderer.WireframeBegin();
             renderer.WireframeColor(0.5, 0.5, 0.5);
             DrawHelp.DrawPlane(line);
-            renderer.WireframeColor(1.0, 1.0, 1.0);
-            DrawHelp.DrawParametricUV(line, new Sphere());
+            //renderer.WireframeColor(1.0, 1.0, 1.0);
+            //DrawHelp.DrawParametricUV(line, new Sphere());
+            //renderer.WireframeColor(1.0, 1.0, 0.0);
+            //DrawHelp.DrawParametricUV(line, new BezierPatch());
             renderer.WireframeColor(1.0, 1.0, 0.0);
-            DrawHelp.DrawParametricUV(line, new BezierPatch());
+            DrawHelp.DrawTeapot(line);
             if (DrawExtra != null)
             {
                 // Draw the clip space of the Model-View-Projection.
