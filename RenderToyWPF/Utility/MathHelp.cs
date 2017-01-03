@@ -12,6 +12,14 @@ namespace RenderToy
                 0, 0, z, 0,
                 0, 0, 0, 1);
         }
+        public static Matrix3D CreateTranslateMatrix(double x, double y, double z)
+        {
+            return new Matrix3D(
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                x, y, z, 1);
+        }
         public static Point3D Add(Point3D a, Point3D b)
         {
             return new Point3D(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
