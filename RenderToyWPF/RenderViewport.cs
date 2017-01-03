@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 
 namespace RenderToy
@@ -103,6 +104,22 @@ namespace RenderToy
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
+            ////////////////////////////////////////////////////////////////////////////////
+            // RAYTRACE OVERLAY
+            // Raytrace the first layer so we have a reference image.
+            {
+                const int raytrace_width = 128;
+                const int raytrace_height = 128;
+                var bitmap = new WriteableBitmap(raytrace_width, raytrace_height, 0, 0, PixelFormats.Bgra32, null);
+                Matrix3D inverse_mvp = MathHelp.Invert(View * ProjectionWindow);
+                bitmap.Lock();
+                Raytrace.DoRaytrace(inverse_mvp, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBuffer, bitmap.BackBufferStride);
+                bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+                bitmap.Unlock();
+                drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
+            }
+            ////////////////////////////////////////////////////////////////////////////////
+            // WIREFRAME OVERLAY
             // Select an appropriate renderer.
             //renderer = new WireframeWPF(drawingContext);
             renderer = new WireframeGDIPlus(drawingContext, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
@@ -111,12 +128,14 @@ namespace RenderToy
             DrawHelp.fnDrawLineViewport linev = CreateLineViewportFunction(renderer);
             DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(linev, View * ProjectionWindow);
             renderer.WireframeBegin();
-            renderer.WireframeColor(0.5, 0.5, 0.5);
+            renderer.WireframeColor(0.75, 0.75, 0.75);
             DrawHelp.DrawPlane(line);
-            //renderer.WireframeColor(0.0, 0.0, 0.0);
-            //DrawHelp.DrawParametricUV(line, new Sphere());
+            // Draw something interesting.
+            renderer.WireframeColor(0.0, 0.0, 0.0);
+            DrawHelp.DrawParametricUV(line, new Sphere());
             //DrawHelp.DrawParametricUV(line, new BezierPatch());
-            DrawHelp.DrawTeapot(line);
+            //DrawHelp.DrawTeapot(line);
+            // If we're connected to another view camera then show it here.
             if (DrawExtra != null)
             {
                 // Draw the clip space of the Model-View-Projection.
