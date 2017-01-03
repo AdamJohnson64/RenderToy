@@ -28,6 +28,18 @@ namespace RenderToy
         {
             return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
         }
+        public static double Dot(Point3D a, Vector3D b)
+        {
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+        }
+        public static double Dot(Vector3D a, Point3D b)
+        {
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+        }
+        public static double Dot(Vector3D a, Vector3D b)
+        {
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+        }
         public static double Dot(Point4D a, Point4D b)
         {
             return a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;

@@ -28,12 +28,13 @@ namespace RenderToy
                         Point4D v42 = inverse_mvp.Transform(new Point4D(-1.0 + ((x * 2.0) + 0.5) / buffer_width, 1.0 - ((y * 2.0) + 0.5) / buffer_height, 1, 1));
                         Point3D v31 = new Point3D(v41.X / v41.W, v41.Y / v41.W, v41.Z / v41.W);
                         Point3D v32 = new Point3D(v42.X / v42.W, v42.Y / v42.W, v42.Z / v42.W);
+                        Ray ray = new Ray(v31, v32 - v31);
                         // Intersect test this ray against everything in the scene.
                         double found_lambda = double.PositiveInfinity;
                         uint found_color = 0;
                         foreach (var test in objects)
                         {
-                            double lambda = test.Intersect(v31, v32);
+                            double lambda = test.Intersect(ray);
                             if (lambda >= 0 && lambda < found_lambda)
                             {
                                 found_lambda = lambda;
@@ -50,6 +51,22 @@ namespace RenderToy
                 }
             }
         }
+    }
+    struct Ray
+    {
+        public Ray(Point3D origin, Vector3D direction)
+        {
+            O = origin;
+            D = direction;
+        }
+        public Ray Transform(Matrix3D transform)
+        {
+            return new Ray(
+                transform.Transform(O),
+                transform.Transform(D));
+        }
+        public Point3D O;
+        public Vector3D D;
     }
     /// <summary>
     /// Abstract raytrace object.
@@ -69,11 +86,9 @@ namespace RenderToy
         /// <param name="ray_origin">The world space starting point of the ray.</param>
         /// <param name="ray_direction">The world space ending point of the ray.</param>
         /// <returns>The positive distance along the ray direction to intersection (or +inf for no intersection).</returns>
-        public double Intersect(Point3D ray_origin, Point3D ray_direction)
+        public double Intersect(Ray ray)
         {
-            return IntersectLocal(
-                transform_inverse.Transform(ray_origin),
-                transform_inverse.Transform(ray_direction));
+            return IntersectLocal(ray.Transform(transform_inverse));
         }
         /// <summary>
         /// Object specific ray intersection test.
@@ -81,7 +96,7 @@ namespace RenderToy
         /// <param name="ray_origin">The object space starting point of the ray.</param>
         /// <param name="ray_direction">The object space ending point of the ray.</param>
         /// <returns>The positive distance along the ray direction to intersection (or +inf for no intersection).</returns>
-        protected abstract double IntersectLocal(Point3D ray_origin, Point3D ray_direction);
+        protected abstract double IntersectLocal(Ray ray);
         private Matrix3D transform;
         private Matrix3D transform_inverse;
         public uint color;
@@ -94,21 +109,21 @@ namespace RenderToy
         public RaytracePlane(Matrix3D transform, uint color) : base(transform, color)
         {
         }
-        protected override double IntersectLocal(Point3D ray_origin, Point3D ray_direction)
+        protected override double IntersectLocal(Ray ray)
         {
             double lambda_best = double.PositiveInfinity;
             double lambda = double.PositiveInfinity;
-            if (IntersectPlane(ray_origin, ray_direction, new Point3D(0, 1, 0), 0, ref lambda) && lambda >= 0 && lambda < lambda_best)
+            if (IntersectPlane(ray, new Vector3D(0, 1, 0), 0, ref lambda) && lambda >= 0 && lambda < lambda_best)
             {
                 lambda_best = lambda;
             }
             return lambda_best;
         }
-        private static bool IntersectPlane(Point3D ray_origin, Point3D ray_direction, Point3D plane_normal, double plane_distance, ref double lambda)
+        private static bool IntersectPlane(Ray ray, Vector3D plane_normal, double plane_distance, ref double lambda)
         {
-            double det = MathHelp.Dot(plane_normal, ray_direction);
+            double det = MathHelp.Dot(plane_normal, ray.D);
             if (det == 0) return false;
-            lambda = (plane_distance - MathHelp.Dot(plane_normal, ray_origin)) / det;
+            lambda = (plane_distance - MathHelp.Dot(plane_normal, ray.O)) / det;
             return true;
         }
     }
@@ -120,12 +135,12 @@ namespace RenderToy
         public RaytraceSphere(Matrix3D transform, uint color) : base(transform, color)
         {
         }
-        protected override double IntersectLocal(Point3D ray_origin, Point3D ray_direction)
+        protected override double IntersectLocal(Ray ray)
         {
             double lambda_best = double.PositiveInfinity;
             double lambda1 = double.PositiveInfinity;
             double lambda2 = double.PositiveInfinity;
-            if (IntersectSphere(ray_origin, ray_direction, 1.0, ref lambda1, ref lambda2))
+            if (IntersectSphere(ray, 1.0, ref lambda1, ref lambda2))
             {
                 if (lambda1 >= 0 && lambda1 < lambda_best)
                 {
@@ -138,11 +153,11 @@ namespace RenderToy
             }
             return lambda_best;
         }
-        private static bool IntersectSphere(Point3D ray_origin, Point3D ray_direction, double sphere_radius, ref double lambda1, ref double lambda2)
+        private static bool IntersectSphere(Ray ray, double sphere_radius, ref double lambda1, ref double lambda2)
         {
-            double a = MathHelp.Dot(ray_direction, ray_direction);
-            double b = 2 * MathHelp.Dot(ray_origin, ray_direction);
-            double c = MathHelp.Dot(ray_origin, ray_origin) - sphere_radius * sphere_radius;
+            double a = MathHelp.Dot(ray.D, ray.D);
+            double b = 2 * MathHelp.Dot(ray.O, ray.D);
+            double c = MathHelp.Dot(ray.O, ray.O) - sphere_radius * sphere_radius;
             double det = b * b - 4 * a * c;
             if (det <= 0) return false;
             det = Math.Sqrt(det);
