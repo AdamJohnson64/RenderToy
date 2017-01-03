@@ -12,13 +12,12 @@ namespace RenderToy
         public WireframeGDIPlus(DrawingContext drawingContext, int buffer_width, int buffer_height)
         {
             this.drawingContext = drawingContext;
-            bitmap = new Bitmap(buffer_width, buffer_height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            bitmap = new Bitmap(buffer_width, buffer_height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         }
         public void WireframeBegin()
         {
             if (graphics != null) throw new Exception("Wireframe rendering already entered.");
             graphics = Graphics.FromImage(bitmap);
-            graphics.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.Black), new Rectangle(0, 0, bitmap.Width, bitmap.Height));
         }
         public void WireframeColor(double r, double g, double b)
         {

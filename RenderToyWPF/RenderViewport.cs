@@ -7,7 +7,7 @@ using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
-    public class RenderViewport : UserControl
+    public class RenderViewport : FrameworkElement
     {
         public static DependencyProperty DrawExtraProperty = DependencyProperty.Register("DrawExtra", typeof(RenderViewport), typeof(RenderViewport));
         public RenderViewport DrawExtra { get { return (RenderViewport)GetValue(DrawExtraProperty); } set { SetValue(DrawExtraProperty, value);  } }
@@ -107,17 +107,15 @@ namespace RenderToy
             //renderer = new WireframeWPF(drawingContext);
             renderer = new WireframeGDIPlus(drawingContext, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
             // Draw the scene.
-            drawingContext.DrawRectangle(Brushes.Black, null, new Rect(0, 0, Math.Ceiling(ActualWidth), Math.Ceiling(ActualHeight)));
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, Math.Ceiling(ActualWidth), Math.Ceiling(ActualHeight)));
             DrawHelp.fnDrawLineViewport linev = CreateLineViewportFunction(renderer);
             DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(linev, View * ProjectionWindow);
             renderer.WireframeBegin();
             renderer.WireframeColor(0.5, 0.5, 0.5);
             DrawHelp.DrawPlane(line);
-            //renderer.WireframeColor(1.0, 1.0, 1.0);
+            //renderer.WireframeColor(0.0, 0.0, 0.0);
             //DrawHelp.DrawParametricUV(line, new Sphere());
-            //renderer.WireframeColor(1.0, 1.0, 0.0);
             //DrawHelp.DrawParametricUV(line, new BezierPatch());
-            renderer.WireframeColor(1.0, 1.0, 0.0);
             DrawHelp.DrawTeapot(line);
             if (DrawExtra != null)
             {
