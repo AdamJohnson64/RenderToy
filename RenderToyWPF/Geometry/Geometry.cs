@@ -16,8 +16,8 @@ namespace RenderToy
             hull = new Point3D[16]
             {
                 new Point3D(-1, 0, -1), new Point3D(-h, 0, -1), new Point3D(+h, 0, -1), new Point3D(+1, 0, -1),
-                new Point3D(-1, 0, -h), new Point3D(-h, 0, -h), new Point3D(+h, 0, -h), new Point3D(+1, 0, -h),
-                new Point3D(-1, 0, +h), new Point3D(-h, 0, +h), new Point3D(+h, 0, +h), new Point3D(+1, 0, +h),
+                new Point3D(-1, 0, -h), new Point3D(-h, 1, -h), new Point3D(+h, 1, -h), new Point3D(+1, 0, -h),
+                new Point3D(-1, 0, +h), new Point3D(-h, 1, +h), new Point3D(+h, 1, +h), new Point3D(+1, 0, +h),
                 new Point3D(-1, 0, +1), new Point3D(-h, 0, +1), new Point3D(+h, 0, +1), new Point3D(+1, 0, +1),
             };
         }
@@ -54,7 +54,7 @@ namespace RenderToy
             // The V direction defines linear distance along Y.
             double ucos = Math.Cos(u * Math.PI * 2);
             double usin = Math.Sin(u * Math.PI * 2);
-            return new Point3D(-usin, v, ucos);
+            return new Point3D(-usin, -1 + v * 2, ucos);
         }
     }
     public class Sphere : IParametricUV

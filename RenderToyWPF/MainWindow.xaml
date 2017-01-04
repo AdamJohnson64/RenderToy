@@ -44,12 +44,42 @@
             </TabItem>
         </TabControl>
         <!-- Utility Area -->
-        <Border Grid.Column="1" Background="LightGray" CornerRadius="16" BorderBrush="DarkGray" BorderThickness="2" Margin="4" Padding="4">
-            <TextBlock Text="RenderToy" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="32">
-                <TextBlock.Effect>
-                    <DropShadowEffect Opacity="0.5"/>
-                </TextBlock.Effect>
-            </TextBlock>
+        <Border Grid.Column="1" CornerRadius="16" BorderBrush="DarkGray" BorderThickness="2" Margin="8" Padding="8">
+            <Border.Background>
+                <VisualBrush TileMode="Tile" Viewport="0,0,100, 25" ViewportUnits="Absolute" Viewbox="0,0,1,1">
+                    <VisualBrush.Transform>
+                        <RotateTransform Angle="-45"/>
+                    </VisualBrush.Transform>
+                    <VisualBrush.Visual>
+                        <TextBlock FontSize="48" Opacity="0.05" Text="RenderToy">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Opacity="0.6" ShadowDepth="8"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </VisualBrush.Visual>
+                </VisualBrush>
+            </Border.Background>
+            <StackPanel>
+                <GroupBox Header="Create">
+                    <WrapPanel>
+                        <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
+                            <local:DragSourceBezierPatch/>
+                        </Border>
+                        <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
+                            <local:DragSourceCylinder/>
+                        </Border>
+                        <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
+                            <local:DragSourceSphere/>
+                        </Border>
+                    </WrapPanel>
+                    <!--
+                    <StackPanel>
+                        <Button Content="Plane"/>
+                        <Button Content="Sphere"/>
+                    </StackPanel>
+                    -->
+                </GroupBox>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>

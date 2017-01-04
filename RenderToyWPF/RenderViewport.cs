@@ -8,10 +8,73 @@ using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
+    public class DragSourcePrimitive : FrameworkElement
+    {
+        public DragSourcePrimitive(IParametricUV primitive)
+        {
+            Width = 64;
+            Height = 64;
+            Primitive = primitive;
+        }
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+            DragDrop.DoDragDrop(this, new Sphere(), DragDropEffects.Copy);
+        }
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            base.OnRender(drawingContext);
+            IWireframeRenderer renderer = new WireframeWPF(drawingContext);
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, Math.Ceiling(ActualWidth), Math.Ceiling(ActualHeight)));
+            DrawHelp.fnDrawLineViewport linev = CreateLineViewportFunction(renderer);
+            Matrix3D View = MathHelp.CreateTranslateMatrix(0, 0, 4);
+            Matrix3D ProjectionWindow = CameraPerspective.CreateProjection(0.001, 100, 45.0 * Math.PI / 180.0, 45.0 * Math.PI / 180.0);
+            DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(linev, View * ProjectionWindow);
+            renderer.WireframeBegin();
+            renderer.WireframeColor(0, 0, 0);
+            DrawHelp.DrawParametricUV(line, Primitive);
+            renderer.WireframeEnd();
+        }
+        private DrawHelp.fnDrawLineViewport CreateLineViewportFunction(IWireframeRenderer renderer)
+        {
+            double width = ActualWidth;
+            double height = ActualHeight;
+            return (p1, p2) =>
+            {
+                renderer.WireframeLine(
+                    (p1.X + 1) * width / 2, (1 - p1.Y) * height / 2,
+                    (p2.X + 1) * width / 2, (1 - p2.Y) * height / 2);
+            };
+        }
+        private DrawHelp.fnDrawLineWorld CreateLineWorldFunction(DrawHelp.fnDrawLineViewport line, Matrix3D mvp)
+        {
+            return (p1, p2) =>
+            {
+                DrawHelp.DrawLineWorld(line, mvp, new Point4D(p1.X, p1.Y, p1.Z, 1.0), new Point4D(p2.X, p2.Y, p2.Z, 1.0));
+            };
+        }
+        private IParametricUV Primitive;
+    }
+    public class DragSourceBezierPatch : DragSourcePrimitive
+    {
+        public DragSourceBezierPatch() : base(new BezierPatch()) { }
+    }
+    public class DragSourceCylinder : DragSourcePrimitive
+    {
+        public DragSourceCylinder() : base(new Cylinder()) { }
+    }
+    public class DragSourceSphere : DragSourcePrimitive
+    {
+        public DragSourceSphere() : base(new Sphere()) { }
+    }
     public class RenderViewport : FrameworkElement
     {
         public static DependencyProperty DrawExtraProperty = DependencyProperty.Register("DrawExtra", typeof(RenderViewport), typeof(RenderViewport));
         public RenderViewport DrawExtra { get { return (RenderViewport)GetValue(DrawExtraProperty); } set { SetValue(DrawExtraProperty, value);  } }
+        public RenderViewport()
+        {
+            AllowDrop = true;
+        }
         #region - Section : Camera -
         private Matrix3D View
         {
@@ -49,6 +112,14 @@ namespace RenderToy
         CameraPerspective CameraMat = new CameraPerspective();
         #endregion
         #region - Section : Input Handling -
+        protected override void OnDrop(DragEventArgs e)
+        {
+            base.OnDrop(e);
+            if (e.Data.GetDataPresent(typeof(Sphere)))
+            {
+                int test = 0;
+            }
+        }
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
