@@ -53,12 +53,15 @@ namespace RenderToy
         {
             base.OnMouseLeftButtonDown(e);
             CaptureMouse();
+            Mouse.OverrideCursor = Cursors.None;
             dragging = true;
+            clickOrigin = System.Windows.Forms.Cursor.Position;
             dragOrigin = e.GetPosition(this);
         }
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonUp(e);
+            Mouse.OverrideCursor = null;
             ReleaseMouseCapture();
             dragging = false;
         }
@@ -69,7 +72,7 @@ namespace RenderToy
             System.Windows.Point dragTo = e.GetPosition(this);
             double dx = dragTo.X - dragOrigin.X;
             double dy = dragTo.Y - dragOrigin.Y;
-            dragOrigin = dragTo;
+            System.Windows.Forms.Cursor.Position = clickOrigin;
             // Truck Mode (CTRL + SHIFT).
             if (Keyboard.IsKeyDown(Key.LeftShift) && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
@@ -97,6 +100,7 @@ namespace RenderToy
             InvalidateVisual();
         }
         private bool dragging = false;
+        private System.Drawing.Point clickOrigin;
         private System.Windows.Point dragOrigin;
         #endregion
         #region - Section : Rendering -
