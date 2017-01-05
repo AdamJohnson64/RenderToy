@@ -2,11 +2,26 @@
 
 namespace RenderToy
 {
-    public interface Transformed
+    public interface ITransformed
     {
         Matrix3D Transform { get; }
     }
-    public class TransformPosQuat : Transformed
+    public class TransformMatrix3D : ITransformed
+    {
+        public TransformMatrix3D(Matrix3D value)
+        {
+            this.value = value;
+        }
+        public Matrix3D Transform
+        {
+            get
+            {
+                return value;
+            }
+        }
+        Matrix3D value;
+    }
+    public class TransformPosQuat : ITransformed
     {
         public Matrix3D Transform
         {

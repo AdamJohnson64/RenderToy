@@ -1,22 +1,22 @@
 ﻿using System;
+using System.Linq;
+using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
     static class Raytrace
     {
-        public static void DoRaytrace(Matrix3D inverse_mvp, int buffer_width, int buffer_height, IntPtr buffer_memory, int buffer_stride)
+        public static void DoRaytrace(Scene scene, Matrix3D inverse_mvp, int buffer_width, int buffer_height, IntPtr buffer_memory, int buffer_stride)
         {
             unsafe
             {
                 // Define the scene.
-                RaytraceObject[] objects = new RaytraceObject[]
-                {
-                    new RaytraceObject(Matrix3D.Identity, new Plane(), 0xff808080),
-                    new RaytraceObject(MathHelp.CreateTranslateMatrix(-2, 0, 0), new Sphere(), 0xffff0000),
-                    new RaytraceObject(MathHelp.CreateTranslateMatrix(0, 0, 0), new Sphere(), 0xff00ff00),
-                    new RaytraceObject(MathHelp.CreateTranslateMatrix(2, 0, 0), new Sphere(), 0xff0000ff),
-                };
+                RaytraceObject[] objects =
+                    TransformedObject.Enumerate(scene)
+                    .Where(x => x.Node.Primitive is IRayTest)
+                    .Select(x => new RaytraceObject(x.Transform, (IRayTest)x.Node.Primitive, ColorToARGB(x.Node.WireColor)))
+                    .ToArray();
                 // Render the pixel buffer for the raytrace result.
                 for (int y = 0; y < buffer_height; ++y)
                 {
@@ -50,6 +50,14 @@ namespace RenderToy
                     }
                 }
             }
+        }
+        private static uint ColorToARGB(Color color)
+        {
+            return
+                ((uint)color.A << 24) |
+                ((uint)color.R << 16) |
+                ((uint)color.G << 8) |
+                ((uint)color.B << 0);
         }
     }
     /// <summary>

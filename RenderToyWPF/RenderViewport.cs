@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -71,6 +72,7 @@ namespace RenderToy
     {
         public static DependencyProperty DrawExtraProperty = DependencyProperty.Register("DrawExtra", typeof(RenderViewport), typeof(RenderViewport));
         public RenderViewport DrawExtra { get { return (RenderViewport)GetValue(DrawExtraProperty); } set { SetValue(DrawExtraProperty, value);  } }
+        public Scene Scene = new Scene();
         public RenderViewport()
         {
             AllowDrop = true;
@@ -188,7 +190,7 @@ namespace RenderToy
                 var bitmap = new WriteableBitmap(raytrace_width, raytrace_height, 0, 0, PixelFormats.Bgra32, null);
                 Matrix3D inverse_mvp = MathHelp.Invert(View * ProjectionWindow);
                 bitmap.Lock();
-                Raytrace.DoRaytrace(inverse_mvp, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBuffer, bitmap.BackBufferStride);
+                Raytrace.DoRaytrace(Scene, inverse_mvp, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBuffer, bitmap.BackBufferStride);
                 bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
                 bitmap.Unlock();
                 drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
@@ -200,21 +202,26 @@ namespace RenderToy
             renderer = new WireframeGDIPlus(drawingContext, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
             // Draw the scene.
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, Math.Ceiling(ActualWidth), Math.Ceiling(ActualHeight)));
-            DrawHelp.fnDrawLineViewport linev = CreateLineViewportFunction(renderer);
-            DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(linev, View * ProjectionWindow);
+            DrawHelp.fnDrawLineViewport lineviewport = CreateLineViewportFunction(renderer);
             renderer.WireframeBegin();
-            renderer.WireframeColor(0.75, 0.75, 0.75);
-            DrawHelp.DrawPlane(line);
             // Draw something interesting.
             renderer.WireframeColor(0.0, 0.0, 0.0);
-            DrawHelp.DrawParametricUV(line, new Sphere());
-            //DrawHelp.DrawParametricUV(line, new BezierPatch());
+            foreach (var transformedobject in TransformedObject.Enumerate(Scene))
+            {
+                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                if (uv == null) continue;
+                DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(lineviewport, transformedobject.Transform * View * ProjectionWindow);
+                Color color = transformedobject.Node.WireColor;
+                renderer.WireframeColor(color.R / 255.0 / 2, color.G / 255.0 / 2, color.B / 255.0 / 2);
+                DrawHelp.DrawParametricUV(line, uv);
+            }
             //DrawHelp.DrawTeapot(line);
             // If we're connected to another view camera then show it here.
             if (DrawExtra != null)
             {
                 // Draw the clip space of the Model-View-Projection.
                 Matrix3D other = MathHelp.Invert(DrawExtra.View * DrawExtra.ProjectionWindow);
+                DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(lineviewport, View * ProjectionWindow);
                 renderer.WireframeColor(0.0, 1.0, 1.0);
                 DrawHelp.DrawClipSpace(line, other);
             }

@@ -67,6 +67,7 @@
     <Compile Include="Render\WireframeGDIPlus.cs" />
     <Compile Include="Render\WireframeWPF.cs" />
     <Compile Include="Scene\Camera.cs" />
+    <Compile Include="Scene\Scene.cs" />
     <Compile Include="Utility\DrawHelp.cs" />
     <Compile Include="Utility\MathHelp.cs" />
     <Compile Include="RenderViewport.cs" />
