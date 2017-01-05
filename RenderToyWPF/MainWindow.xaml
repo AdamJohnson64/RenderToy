@@ -63,13 +63,13 @@
                 <GroupBox Header="Create">
                     <WrapPanel>
                         <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
-                            <local:DragSourceBezierPatch/>
+                            <local:GeometrySwatchBezierPatch/>
                         </Border>
                         <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
-                            <local:DragSourceCylinder/>
+                            <local:GeometrySwatchCylinder/>
                         </Border>
                         <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
-                            <local:DragSourceSphere/>
+                            <local:GeometrySwatchSphere/>
                         </Border>
                     </WrapPanel>
                     <!--

@@ -8,7 +8,7 @@ using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
-    static class DrawHelp
+    public static class DrawHelp
     {
         #region - Section : Low-Level Primitives -
         /// <summary>

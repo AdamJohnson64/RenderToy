@@ -61,6 +61,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\ControlUtil.cs" />
+    <Compile Include="Controls\GeometrySwatch.cs" />
     <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Render\Raytrace.cs" />
     <Compile Include="Render\Wireframe.cs" />
@@ -70,7 +72,7 @@
     <Compile Include="Scene\Scene.cs" />
     <Compile Include="Utility\DrawHelp.cs" />
     <Compile Include="Utility\MathHelp.cs" />
-    <Compile Include="RenderViewport.cs" />
+    <Compile Include="Controls\RenderViewport.cs" />
     <Compile Include="Scene\Transformed.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
