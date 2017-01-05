@@ -12,10 +12,10 @@ namespace RenderToy
                 // Define the scene.
                 RaytraceObject[] objects = new RaytraceObject[]
                 {
-                    new RaytracePlane(Matrix3D.Identity, 0xff808080),
-                    new RaytraceSphere(MathHelp.CreateTranslateMatrix(-2, 0, 0), 0xffff0000),
-                    new RaytraceSphere(MathHelp.CreateTranslateMatrix(0, 0, 0), 0xff00ff00),
-                    new RaytraceSphere(MathHelp.CreateTranslateMatrix(2, 0, 0), 0xff0000ff),
+                    new RaytraceObject(Matrix3D.Identity, new Plane(), 0xff808080),
+                    new RaytraceObject(MathHelp.CreateTranslateMatrix(-2, 0, 0), new Sphere(), 0xffff0000),
+                    new RaytraceObject(MathHelp.CreateTranslateMatrix(0, 0, 0), new Sphere(), 0xff00ff00),
+                    new RaytraceObject(MathHelp.CreateTranslateMatrix(2, 0, 0), new Sphere(), 0xff0000ff),
                 };
                 // Render the pixel buffer for the raytrace result.
                 for (int y = 0; y < buffer_height; ++y)
@@ -52,119 +52,31 @@ namespace RenderToy
             }
         }
     }
-    struct Ray
-    {
-        public Ray(Point3D origin, Vector3D direction)
-        {
-            O = origin;
-            D = direction;
-        }
-        public Ray Transform(Matrix3D transform)
-        {
-            return new Ray(
-                transform.Transform(O),
-                transform.Transform(D));
-        }
-        public Point3D O;
-        public Vector3D D;
-    }
     /// <summary>
     /// Abstract raytrace object.
     /// </summary>
-    abstract class RaytraceObject
+    class RaytraceObject
     {
-        protected RaytraceObject(Matrix3D transform, uint color)
+        public RaytraceObject(Matrix3D transform, IRayTest primitive, uint color)
         {
             this.transform = transform;
             this.transform_inverse = MathHelp.Invert(transform);
+            this.primitive = primitive;
             this.color = color;
         }
         /// <summary>
         /// Intersect this object in transformed space.
         /// The supplied ray will be inverse transformed into the space of the object before testing.
         /// </summary>
-        /// <param name="ray_origin">The world space starting point of the ray.</param>
-        /// <param name="ray_direction">The world space ending point of the ray.</param>
-        /// <returns>The positive distance along the ray direction to intersection (or +inf for no intersection).</returns>
+        /// <param name="ray">The world space ray to test.</param>
+        /// <returns>The positive distance along the ray direction to the first intersection (or +inf for no intersection was found).</returns>
         public double Intersect(Ray ray)
         {
-            return IntersectLocal(ray.Transform(transform_inverse));
+            return primitive.RayTest(ray.Transform(transform_inverse));
         }
-        /// <summary>
-        /// Object specific ray intersection test.
-        /// </summary>
-        /// <param name="ray_origin">The object space starting point of the ray.</param>
-        /// <param name="ray_direction">The object space ending point of the ray.</param>
-        /// <returns>The positive distance along the ray direction to intersection (or +inf for no intersection).</returns>
-        protected abstract double IntersectLocal(Ray ray);
         private Matrix3D transform;
         private Matrix3D transform_inverse;
+        public IRayTest primitive;
         public uint color;
-    }
-    /// <summary>
-    /// Raytracer plane (in XZ).
-    /// </summary>
-    class RaytracePlane : RaytraceObject
-    {
-        public RaytracePlane(Matrix3D transform, uint color) : base(transform, color)
-        {
-        }
-        protected override double IntersectLocal(Ray ray)
-        {
-            double lambda_best = double.PositiveInfinity;
-            double lambda = double.PositiveInfinity;
-            if (IntersectPlane(ray, new Vector3D(0, 1, 0), 0, ref lambda) && lambda >= 0 && lambda < lambda_best)
-            {
-                lambda_best = lambda;
-            }
-            return lambda_best;
-        }
-        private static bool IntersectPlane(Ray ray, Vector3D plane_normal, double plane_distance, ref double lambda)
-        {
-            double det = MathHelp.Dot(plane_normal, ray.D);
-            if (det == 0) return false;
-            lambda = (plane_distance - MathHelp.Dot(plane_normal, ray.O)) / det;
-            return true;
-        }
-    }
-    /// <summary>
-    /// Raytracer unit-radius sphere.
-    /// </summary>
-    class RaytraceSphere : RaytraceObject
-    {
-        public RaytraceSphere(Matrix3D transform, uint color) : base(transform, color)
-        {
-        }
-        protected override double IntersectLocal(Ray ray)
-        {
-            double lambda_best = double.PositiveInfinity;
-            double lambda1 = double.PositiveInfinity;
-            double lambda2 = double.PositiveInfinity;
-            if (IntersectSphere(ray, 1.0, ref lambda1, ref lambda2))
-            {
-                if (lambda1 >= 0 && lambda1 < lambda_best)
-                {
-                    lambda_best = lambda1;
-                }
-                if (lambda2 >= 0 && lambda2 < lambda_best)
-                {
-                    lambda_best = lambda2;
-                }
-            }
-            return lambda_best;
-        }
-        private static bool IntersectSphere(Ray ray, double sphere_radius, ref double lambda1, ref double lambda2)
-        {
-            double a = MathHelp.Dot(ray.D, ray.D);
-            double b = 2 * MathHelp.Dot(ray.O, ray.D);
-            double c = MathHelp.Dot(ray.O, ray.O) - sphere_radius * sphere_radius;
-            double det = b * b - 4 * a * c;
-            if (det <= 0) return false;
-            det = Math.Sqrt(det);
-            double den = 2 * a;
-            lambda1 = (-b - det) / den;
-            lambda2 = (-b + det) / den;
-            return true;
-        }
     }
 }
