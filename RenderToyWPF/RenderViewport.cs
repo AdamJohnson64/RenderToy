@@ -25,16 +25,38 @@ namespace RenderToy
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            IWireframeRenderer renderer = new WireframeWPF(drawingContext);
-            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, Math.Ceiling(ActualWidth), Math.Ceiling(ActualHeight)));
-            DrawHelp.fnDrawLineViewport linev = CreateLineViewportFunction(renderer);
             Matrix3D View = MathHelp.CreateTranslateMatrix(0, 0, 4);
             Matrix3D ProjectionWindow = CameraPerspective.CreateProjection(0.001, 100, 45.0 * Math.PI / 180.0, 45.0 * Math.PI / 180.0);
-            DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(linev, View * ProjectionWindow);
-            renderer.WireframeBegin();
-            renderer.WireframeColor(0, 0, 0);
-            DrawHelp.DrawParametricUV(line, Primitive);
-            renderer.WireframeEnd();
+            // Prefer to render the primitive as a raytraced object first.
+            if (Primitive is IRayTest)
+            {
+                IRayTest renderas = (IRayTest)Primitive;
+                const int raytrace_width = 64;
+                const int raytrace_height = 64;
+                var bitmap = new WriteableBitmap(raytrace_width, raytrace_height, 0, 0, PixelFormats.Bgra32, null);
+                Matrix3D inverse_mvp = MathHelp.Invert(View * ProjectionWindow);
+                bitmap.Lock();
+                Scene scene = new Scene();
+                scene.AddChild(new Node(new TransformMatrix3D(Matrix3D.Identity), renderas, Colors.DarkGray));
+                Raytrace.DoRaytrace(scene, inverse_mvp, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBuffer, bitmap.BackBufferStride);
+                bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+                bitmap.Unlock();
+                drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
+            }
+            // Then try a parametric wireframe.
+            if (Primitive is IParametricUV)
+            {
+                IParametricUV renderas = (IParametricUV)Primitive;
+                IWireframeRenderer renderer = new WireframeWPF(drawingContext);
+                drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, Math.Ceiling(ActualWidth), Math.Ceiling(ActualHeight)));
+                DrawHelp.fnDrawLineViewport linev = CreateLineViewportFunction(renderer);
+                DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(linev, View * ProjectionWindow);
+                renderer.WireframeBegin();
+                renderer.WireframeColor(0, 0, 0);
+                DrawHelp.DrawParametricUV(line, renderas);
+                renderer.WireframeEnd();
+                return;
+            }
         }
         private DrawHelp.fnDrawLineViewport CreateLineViewportFunction(IWireframeRenderer renderer)
         {
@@ -72,7 +94,7 @@ namespace RenderToy
     {
         public static DependencyProperty DrawExtraProperty = DependencyProperty.Register("DrawExtra", typeof(RenderViewport), typeof(RenderViewport));
         public RenderViewport DrawExtra { get { return (RenderViewport)GetValue(DrawExtraProperty); } set { SetValue(DrawExtraProperty, value);  } }
-        public Scene Scene = new Scene();
+        public Scene Scene = Scene.Default;
         public RenderViewport()
         {
             AllowDrop = true;

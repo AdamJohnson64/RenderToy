@@ -35,16 +35,25 @@ namespace RenderToy
     }
     public class Scene
     {
-        public Scene()
+        public static Scene Default
         {
-            children.Add(new Node(new TransformMatrix3D(MathHelp.CreateScaleMatrix(10, 10, 10)), new Plane(), Colors.LightGray));
-            children.Add(new Node(new TransformMatrix3D(MathHelp.CreateTranslateMatrix(-2, 0, 0)), new Sphere(), Colors.Red));
-            children.Add(new Node(new TransformMatrix3D(MathHelp.CreateTranslateMatrix(0, 0, 0)), new Sphere(), Colors.Green));
-            children.Add(new Node(new TransformMatrix3D(MathHelp.CreateTranslateMatrix(+2, 0, 0)), new Sphere(), Colors.Blue));
+            get
+            {
+                Scene scene = new Scene();
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateScaleMatrix(10, 10, 10)), new Plane(), Colors.LightGray));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateTranslateMatrix(-2, 0, 0)), new Sphere(), Colors.Red));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateTranslateMatrix(0, 0, 0)), new Sphere(), Colors.Green));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateTranslateMatrix(+2, 0, 0)), new Sphere(), Colors.Blue));
+                return scene;
+            }
         }
         public IReadOnlyList<Node> Children
         {
             get { return children; }
+        }
+        public void AddChild(Node node)
+        {
+            children.Add(node);
         }
         List<Node> children = new List<Node>();
     }
