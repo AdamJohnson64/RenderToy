@@ -13,20 +13,6 @@ namespace RenderToy
 			if (pD3D == nullptr) {
 				throw gcnew System::Exception("Direct3DCreate9() failed.");
 			}
-			D3DPRESENT_PARAMETERS d3dpp = { 0 };
-			d3dpp.BackBufferWidth = 256;
-			d3dpp.BackBufferHeight = 256;
-			d3dpp.BackBufferFormat = D3DFMT_A8R8G8B8;
-			d3dpp.BackBufferCount = 1;
-			d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-			d3dpp.Windowed = TRUE;
-			d3dpp.EnableAutoDepthStencil = TRUE;
-			d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
-			IDirect3DDevice9* pDeviceTmp = nullptr;
-			if (pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hHostWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDeviceTmp) != D3D_OK) {
-				throw gcnew System::Exception("IDirect3D9::CreateDevice() failed.");
-			}
-			pDevice = pDeviceTmp;
 		}
 		!D3D9GlobalServices() {
 			Destroy();
@@ -35,10 +21,6 @@ namespace RenderToy
 			Destroy();
 		}
 		void Destroy() {
-			if (pDevice != nullptr) {
-				pDevice->Release();
-				pDevice = nullptr;
-			}
 			if (pD3D != nullptr) {
 				pD3D->Release();
 				pD3D = nullptr;
@@ -51,22 +33,35 @@ namespace RenderToy
 	public:
 		HWND hHostWindow = nullptr;
 		IDirect3D9* pD3D = nullptr;
-		IDirect3DDevice9* pDevice = nullptr;
 		static D3D9GlobalServices^ Instance = gcnew D3D9GlobalServices();
 	};
 	public ref class D3D9Surface {
 	public:
 		D3D9Surface() {
+			D3DPRESENT_PARAMETERS d3dpp = { 0 };
+			d3dpp.BackBufferWidth = 256;
+			d3dpp.BackBufferHeight = 256;
+			d3dpp.BackBufferFormat = D3DFMT_A8R8G8B8;
+			d3dpp.BackBufferCount = 1;
+			d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+			d3dpp.Windowed = TRUE;
+			d3dpp.EnableAutoDepthStencil = TRUE;
+			d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
+			IDirect3DDevice9* pDeviceTmp = nullptr;
+			if (D3D9GlobalServices::Instance->pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3D9GlobalServices::Instance->hHostWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDeviceTmp) != D3D_OK) {
+				throw gcnew System::Exception("IDirect3D9::CreateDevice() failed.");
+			}
+			pDevice = pDeviceTmp;
 			IDirect3DSurface9 *pSurfaceTmp = nullptr;
-			if (D3D9GlobalServices::Instance->pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pSurfaceTmp) != D3D_OK) {
+			if (pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pSurfaceTmp) != D3D_OK) {
 				throw gcnew System::Exception("IDirect3DDevice9::GetBackBuffer() failed.");
 			}
 			pSurface = pSurfaceTmp;
-			if (D3D9GlobalServices::Instance->pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0xffff80ff, 0.0, 0) != D3D_OK) {
+			if (pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0xffff80ff, 0.0, 0) != D3D_OK) {
 				throw gcnew System::Exception("IDirect3DDevice9::Clear() failed.");
 			}
 			D3DRECT rect = { 0, 0, 16, 16 };
-			if (D3D9GlobalServices::Instance->pDevice->Clear(1, &rect, D3DCLEAR_TARGET, 0xffff0000, 0.0, 0) != D3D_OK) {
+			if (pDevice->Clear(1, &rect, D3DCLEAR_TARGET, 0xffff0000, 0.0, 0) != D3D_OK) {
 				throw gcnew System::Exception("IDirect3DDevice9::Clear() failed.");
 			}
 		}
@@ -81,10 +76,15 @@ namespace RenderToy
 				pSurface->Release();
 				pSurface = nullptr;
 			}
+			if (pDevice != nullptr) {
+				pDevice->Release();
+				pDevice = nullptr;
+			}
 		}
 		property System::IntPtr SurfacePtr {
 			System::IntPtr get() { return System::IntPtr(pSurface); }
 		}
+		IDirect3DDevice9* pDevice = nullptr;
 		IDirect3DSurface9* pSurface = nullptr;
 	};
 }
