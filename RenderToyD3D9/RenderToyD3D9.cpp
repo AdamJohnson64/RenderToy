@@ -1,8 +1,10 @@
 #include <d3d9.h>
 
+#define TRY_D3D(D3D9FUNC) if ((D3D9FUNC) != D3D_OK) throw gcnew System::Exception(#D3D9FUNC)
+
 namespace RenderToy
 {
-	public ref class D3D9GlobalServices {
+	ref class D3D9GlobalServices {
 	private:
 		D3D9GlobalServices() {
 			hHostWindow = CreateWindow("STATIC", "D3D9HostWindow", WS_OVERLAPPEDWINDOW, 0, 0, 16, 16, nullptr, nullptr, nullptr, nullptr);
@@ -48,22 +50,14 @@ namespace RenderToy
 			d3dpp.EnableAutoDepthStencil = TRUE;
 			d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 			IDirect3DDevice9* pDeviceTmp = nullptr;
-			if (D3D9GlobalServices::Instance->pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3D9GlobalServices::Instance->hHostWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDeviceTmp) != D3D_OK) {
-				throw gcnew System::Exception("IDirect3D9::CreateDevice() failed.");
-			}
+			TRY_D3D(D3D9GlobalServices::Instance->pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3D9GlobalServices::Instance->hHostWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDeviceTmp));
 			pDevice = pDeviceTmp;
 			IDirect3DSurface9 *pSurfaceTmp = nullptr;
-			if (pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pSurfaceTmp) != D3D_OK) {
-				throw gcnew System::Exception("IDirect3DDevice9::GetBackBuffer() failed.");
-			}
+			TRY_D3D(pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pSurfaceTmp));
 			pSurface = pSurfaceTmp;
-			if (pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0xffff80ff, 0.0, 0) != D3D_OK) {
-				throw gcnew System::Exception("IDirect3DDevice9::Clear() failed.");
-			}
+			TRY_D3D(pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0xffff80ff, 0.0, 0));
 			D3DRECT rect = { 0, 0, 16, 16 };
-			if (pDevice->Clear(1, &rect, D3DCLEAR_TARGET, 0xffff0000, 0.0, 0) != D3D_OK) {
-				throw gcnew System::Exception("IDirect3DDevice9::Clear() failed.");
-			}
+			TRY_D3D(pDevice->Clear(1, &rect, D3DCLEAR_TARGET, 0xffff0000, 0.0, 0));
 		}
 		!D3D9Surface() {
 			Destroy();
