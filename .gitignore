@@ -1,4 +1,6 @@
+*.filters
 *.sdf
+*.user
 *.VC.opendb
 .vs/*
 Output/*

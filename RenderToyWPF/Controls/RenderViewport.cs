@@ -118,6 +118,7 @@ namespace RenderToy
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
+            ControlUtil.RenderRasterD3D9(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
             ControlUtil.RenderRaytrace(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, 128, 128);
             ControlUtil.RenderWireframeGDI(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
             //ControlUtil.RenderWireframeWPF(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow);

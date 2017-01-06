@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
@@ -7,6 +8,7 @@ namespace RenderToy
 {
     public static class ControlUtil
     {
+        #region - Section : Raytrace Rendering -
         public static void RenderRaytrace(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
             var bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
@@ -16,6 +18,28 @@ namespace RenderToy
             bitmap.Unlock();
             drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
         }
+        #endregion
+        #region - Section : Rasterized Rendering -
+        public static void RenderRasterD3D9(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
+        {
+            D3D9Surface d3dsurface = null;
+            D3DImage d3dimage = null;
+            if (d3dsurface == null)
+            {
+                d3dsurface = new D3D9Surface();
+            }
+            if (d3dimage == null)
+            {
+                d3dimage = new D3DImage();
+                d3dimage.Lock();
+                d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3dsurface.SurfacePtr, true);
+                d3dimage.AddDirtyRect(new Int32Rect(0, 0, 256, 256));
+                d3dimage.Unlock();
+            }
+            drawingContext.DrawImage(d3dimage, new Rect(0, 0, width, height));
+        }
+        #endregion
+        #region - Section : Wireframe Rendering -
         public static void RenderWireframeGDI(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
             RenderWireframe(new WireframeGDIPlus(drawingContext, render_width, render_height), width, height, scene, mvp);
@@ -57,5 +81,6 @@ namespace RenderToy
                 DrawHelp.DrawLineWorld(line, mvp, new Point4D(p1.X, p1.Y, p1.Z, 1.0), new Point4D(p2.X, p2.Y, p2.Z, 1.0));
             };
         }
+        #endregion
     }
 }
