@@ -55,8 +55,22 @@ namespace RenderToy
                             //uint r = (byte)((normal.X + 1) * 255.0 / 2);
                             //uint g = (byte)((normal.Y + 1) * 255.0 / 2);
                             //uint b = (byte)((normal.Z + 1) * 255.0 / 2);
+                            // Shadow test.
+                            Point3D shadow_origin = ray_origin + found_lambda * ray_direction + 0.0001 * normal;
+                            RaytraceObject found_shadow_object = null;
+                            double found_shadow_lambda = double.PositiveInfinity;
+                            foreach (var test in objects)
+                            {
+                                double lambda = test.RayTestDistance(shadow_origin, light_vector);
+                                if (lambda >= 0 && lambda < found_shadow_lambda)
+                                {
+                                    found_shadow_object = test;
+                                    found_shadow_lambda = lambda;
+                                }
+                            }
+                            double shadow_multiplier = found_shadow_lambda == double.PositiveInfinity ? 1 : 0.5;
                             // Color by lighting.
-                            double dot = Math.Max(0, Math.Min(MathHelp.Dot(normal, light_vector), 1));
+                            double dot = Math.Max(0, Math.Min(MathHelp.Dot(normal, light_vector), 1)) * shadow_multiplier;
                             uint r = (byte)(dot * 255.0);
                             uint g = (byte)(dot * 255.0);
                             uint b = (byte)(dot * 255.0);
