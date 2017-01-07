@@ -15,7 +15,7 @@ namespace RenderToy
                 RaytraceObject[] objects =
                     TransformedObject.Enumerate(scene)
                     .Where(x => x.Node.Primitive is IRayTest)
-                    .Select(x => new RaytraceObject(x.Transform, (IRayTest)x.Node.Primitive, ColorToARGB(x.Node.WireColor)))
+                    .Select(x => new RaytraceObject(x.Transform, (IRayTest)x.Node.Primitive, ColorToARGB(x.Node.WireColor), x.Node.material))
                     .ToArray();
                 Vector3D light_vector = new Vector3D(1, 1, -1);
                 light_vector.Normalize();
@@ -69,11 +69,13 @@ namespace RenderToy
                                 }
                             }
                             double shadow_multiplier = found_shadow_lambda == double.PositiveInfinity ? 1 : 0.5;
+                            // Color from material.
+                            Color color_material = found_object.material.MaterialCompute(ray_origin, ray_direction, found_lambda);
                             // Color by lighting.
                             double dot = Math.Max(0, Math.Min(MathHelp.Dot(normal, light_vector), 1)) * shadow_multiplier;
-                            uint r = (byte)(dot * 255.0);
-                            uint g = (byte)(dot * 255.0);
-                            uint b = (byte)(dot * 255.0);
+                            uint r = (byte)(dot * color_material.R);
+                            uint g = (byte)(dot * color_material.G);
+                            uint b = (byte)(dot * color_material.B);
                             // Compute the final pixel.
                             uint color = (0xffU << 24) | (r << 16) | (g << 8) | (b << 0);
                             *(uint*)pPixel = color;
@@ -96,12 +98,13 @@ namespace RenderToy
     /// </summary>
     class RaytraceObject
     {
-        public RaytraceObject(Matrix3D transform, IRayTest primitive, uint color)
+        public RaytraceObject(Matrix3D transform, IRayTest primitive, uint color, IMaterial material)
         {
             this.transform = transform;
             this.transform_inverse = MathHelp.Invert(transform);
             this.primitive = primitive;
             this.color = color;
+            this.material = material;
         }
         /// <summary>
         /// Intersect this object in transformed space.
@@ -127,5 +130,6 @@ namespace RenderToy
         private Matrix3D transform_inverse;
         public IRayTest primitive;
         public uint color;
+        public IMaterial material;
     }
 }

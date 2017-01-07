@@ -65,6 +65,7 @@
     <Compile Include="Controls\ControlUtil.cs" />
     <Compile Include="Controls\GeometrySwatch.cs" />
     <Compile Include="Geometry\Geometry.cs" />
+    <Compile Include="Material\Material.cs" />
     <Compile Include="Render\Raytrace.cs" />
     <Compile Include="Render\Wireframe.cs" />
     <Compile Include="Render\WireframeGDIPlus.cs" />
@@ -133,6 +134,7 @@
       <Name>RenderToyD3D9</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

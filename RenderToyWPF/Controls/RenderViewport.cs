@@ -75,6 +75,7 @@ namespace RenderToy
             Mouse.OverrideCursor = null;
             ReleaseMouseCapture();
             dragging = false;
+            InvalidateVisual();
         }
         protected override void OnMouseMove(MouseEventArgs e)
         {
@@ -118,8 +119,8 @@ namespace RenderToy
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            ControlUtil.RenderRasterD3D9(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
-            ControlUtil.RenderRaytrace(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, 128, 128);
+            //ControlUtil.RenderRasterD3D9(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
+            ControlUtil.RenderRaytrace(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, dragging ? 128 : 512, dragging ? 128 : 512);
             ControlUtil.RenderWireframeGDI(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
             //ControlUtil.RenderWireframeWPF(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow);
             // If we're connected to another view camera then show it here.
