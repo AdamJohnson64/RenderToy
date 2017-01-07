@@ -17,6 +17,8 @@ namespace RenderToy
                     .Where(x => x.Node.Primitive is IRayTest)
                     .Select(x => new RaytraceObject(x.Transform, (IRayTest)x.Node.Primitive, ColorToARGB(x.Node.WireColor)))
                     .ToArray();
+                Vector3D light_vector = new Vector3D(1, 1, -1);
+                light_vector.Normalize();
                 // Render the pixel buffer for the raytrace result.
                 for (int y = 0; y < buffer_height; ++y)
                 {
@@ -47,12 +49,18 @@ namespace RenderToy
                             // Color by wire color.
                             //*(uint*)pPixel = found_object.color;
                             //continue;
-                            // Color by world normal.
                             Vector3D normal = found_object.RayTestNormal(ray_origin, ray_direction);
                             normal.Normalize();
-                            uint r = (byte)((normal.X + 1) * 255.0 / 2);
-                            uint g = (byte)((normal.Y + 1) * 255.0 / 2);
-                            uint b = (byte)((normal.Z + 1) * 255.0 / 2);
+                            // Color by world normal.
+                            //uint r = (byte)((normal.X + 1) * 255.0 / 2);
+                            //uint g = (byte)((normal.Y + 1) * 255.0 / 2);
+                            //uint b = (byte)((normal.Z + 1) * 255.0 / 2);
+                            // Color by lighting.
+                            double dot = Math.Max(0, Math.Min(MathHelp.Dot(normal, light_vector), 1));
+                            uint r = (byte)(dot * 255.0);
+                            uint g = (byte)(dot * 255.0);
+                            uint b = (byte)(dot * 255.0);
+                            // Compute the final pixel.
                             uint color = (0xffU << 24) | (r << 16) | (g << 8) | (b << 0);
                             *(uint*)pPixel = color;
                         }
