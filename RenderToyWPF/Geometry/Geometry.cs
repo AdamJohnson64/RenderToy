@@ -14,30 +14,23 @@ namespace RenderToy
         /// <returns>A 3D point in object local space.</returns>
         Point3D GetPointUV(double u, double v);
     }
-    public struct Ray
-    {
-        public Ray(Point3D origin, Vector3D direction)
-        {
-            O = origin;
-            D = direction;
-        }
-        public Ray Transform(Matrix3D transform)
-        {
-            return new Ray(
-                transform.Transform(O),
-                transform.Transform(D));
-        }
-        public Point3D O;
-        public Vector3D D;
-    }
     interface IRayTest
     {
         /// <summary>
         /// Object specific ray intersection test.
         /// </summary>
-        /// <param name="ray">A ray origin and direction pair.</param>
+        /// <param name="origin">Origin of object space ray.</param>
+        /// <param name="direction">Direction of object space ray.</param>
         /// <returns>The positive distance along the ray direction to the first intersection (or +inf for no intersection was found).</returns>
-        double RayTest(Ray ray);
+        double RayTestDistance(Point3D origin, Vector3D direction);
+        /// <summary>
+        /// Object specific intersection normal.
+        /// We assume this ray intersects and has been tested previously.
+        /// </summary>
+        /// <param name="origin">Origin of object space ray.</param>
+        /// <param name="direction">Direction of object space ray.</param>
+        /// <returns>The normal of the intersection point (NOT guaranteed to be a unit vector).</returns>
+        Vector3D RayTestNormal(Point3D origin, Vector3D direction);
     }
     public class BezierPatch : IParametricUV
     {
@@ -100,23 +93,32 @@ namespace RenderToy
         {
             return new Point3D(-1 + u * 2, 0, -1 + v * 2);
         }
-        public double RayTest(Ray ray)
+        /// <summary>
+        /// For plane intersections we have the following possibilities:
+        /// - Ray not parallel to plane; results in single intersection point.
+        /// - Ray parallel to plane in half-space above (+ve); results in divide by zero and +Inf.
+        /// - Ray parallel to plane in half-space behind (-ve); results in divide by zero and -Inf.
+        /// </summary>
+        /// <param name="origin">Origin of object space ray.</param>
+        /// <param name="direction">Direction of object space ray.</param>
+        /// <returns>The distance to the intersection point as described.</returns>
+        public double RayTestDistance(Point3D origin, Vector3D direction)
         {
-            double lambda_best = double.PositiveInfinity;
-            double lambda = double.PositiveInfinity;
-            if (IntersectPlane(ray, new Vector3D(0, 1, 0), 0, ref lambda) && lambda >= 0 && lambda < lambda_best)
-            {
-                lambda_best = lambda;
-            }
-            return lambda_best;
+            return (PLANE_DISTANCE - MathHelp.Dot(PLANE_NORMAL, origin)) / MathHelp.Dot(PLANE_NORMAL, direction);
         }
-        private static bool IntersectPlane(Ray ray, Vector3D plane_normal, double plane_distance, ref double lambda)
+        /// <summary>
+        /// The normal of the plane is constant for all points in space.
+        /// </summary>
+        /// <param name="origin">Origin of object space ray.</param>
+        /// <param name="direction">Direction of object space ray.</param>
+        /// <returns>The normal of the plane.</returns>
+        public Vector3D RayTestNormal(Point3D origin, Vector3D direction)
         {
-            double det = MathHelp.Dot(plane_normal, ray.D);
-            if (det == 0) return false;
-            lambda = (plane_distance - MathHelp.Dot(plane_normal, ray.O)) / det;
-            return true;
+            // Assume the ray hits, all normals are the plane normal.
+            return PLANE_NORMAL;
         }
+        const double PLANE_DISTANCE = 0;
+        static Vector3D PLANE_NORMAL = new Vector3D(0, 1, 0);
     }
     /// <summary>
     /// Sphere of unit radius.
@@ -136,36 +138,31 @@ namespace RenderToy
             double vsin = Math.Sin(v * Math.PI);
             return new Point3D(-usin * vsin, vcos, ucos * vsin);
         }
-        public double RayTest(Ray ray)
+        public double RayTestDistance(Point3D origin, Vector3D direction)
         {
+            double a = MathHelp.Dot(direction, direction);
+            double b = 2 * MathHelp.Dot(origin, direction);
+            double c = MathHelp.Dot(origin, origin) - SPHERE_RADIUS * SPHERE_RADIUS;
+            // If the determinant is negative then there are no real roots and this will be NaN.
+            double det = Math.Sqrt(b * b - 4 * a * c);
+            // "a" cannot be negative so (worst case) these lambdas are +Inf.
+            double den = 2 * a;
+            double lambda1 = (-b - det) / den;
+            double lambda2 = (-b + det) / den;
             double lambda_best = double.PositiveInfinity;
-            double lambda1 = double.PositiveInfinity;
-            double lambda2 = double.PositiveInfinity;
-            if (IntersectSphere(ray, 1.0, ref lambda1, ref lambda2))
-            {
-                if (lambda1 >= 0 && lambda1 < lambda_best)
-                {
-                    lambda_best = lambda1;
-                }
-                if (lambda2 >= 0 && lambda2 < lambda_best)
-                {
-                    lambda_best = lambda2;
-                }
-            }
+            if (lambda1 >= 0 && lambda1 < lambda_best) lambda_best = lambda1;
+            if (lambda2 >= 0 && lambda2 < lambda_best) lambda_best = lambda2;
             return lambda_best;
         }
-        private static bool IntersectSphere(Ray ray, double sphere_radius, ref double lambda1, ref double lambda2)
+        public Vector3D RayTestNormal(Point3D origin, Vector3D direction)
         {
-            double a = MathHelp.Dot(ray.D, ray.D);
-            double b = 2 * MathHelp.Dot(ray.O, ray.D);
-            double c = MathHelp.Dot(ray.O, ray.O) - sphere_radius * sphere_radius;
-            double det = b * b - 4 * a * c;
-            if (det <= 0) return false;
-            det = Math.Sqrt(det);
-            double den = 2 * a;
-            lambda1 = (-b - det) / den;
-            lambda2 = (-b + det) / den;
-            return true;
+            double lambda = RayTestDistance(origin, direction);
+            // Compute a vector from the center of the sphere to the intersection point.
+            // This will a unit vector IFF the sphere has radius=1.
+            // The caller is responsible for normalizing this as necessary.
+            Point3D p = origin + lambda * direction;
+            return new Vector3D(p.X, p.Y, p.Z);
         }
+        const double SPHERE_RADIUS = 1;
     }
 }

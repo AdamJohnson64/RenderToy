@@ -26,26 +26,35 @@ namespace RenderToy
                         // Compute an eye ray by unprojecting clip space rays via the inverse-mvp.
                         Point4D v41 = inverse_mvp.Transform(new Point4D(-1.0 + ((x * 2.0) + 0.5) / buffer_width, 1.0 - ((y * 2.0) + 0.5) / buffer_height, 0, 1));
                         Point4D v42 = inverse_mvp.Transform(new Point4D(-1.0 + ((x * 2.0) + 0.5) / buffer_width, 1.0 - ((y * 2.0) + 0.5) / buffer_height, 1, 1));
-                        Point3D v31 = new Point3D(v41.X / v41.W, v41.Y / v41.W, v41.Z / v41.W);
-                        Point3D v32 = new Point3D(v42.X / v42.W, v42.Y / v42.W, v42.Z / v42.W);
-                        Ray ray = new Ray(v31, v32 - v31);
+                        Point3D ray_origin = new Point3D(v41.X / v41.W, v41.Y / v41.W, v41.Z / v41.W);
+                        Vector3D ray_direction = new Point3D(v42.X / v42.W, v42.Y / v42.W, v42.Z / v42.W) - ray_origin;
                         // Intersect test this ray against everything in the scene.
+                        RaytraceObject found_object = null;
                         double found_lambda = double.PositiveInfinity;
-                        uint found_color = 0;
                         foreach (var test in objects)
                         {
-                            double lambda = test.Intersect(ray);
+                            double lambda = test.RayTestDistance(ray_origin, ray_direction);
                             if (lambda >= 0 && lambda < found_lambda)
                             {
+                                found_object = test;
                                 found_lambda = lambda;
-                                found_color = test.color;
                             }
                         }
                         // If we hit something then output the pixel.
                         if (found_lambda != double.PositiveInfinity)
                         {
                             byte* pPixel = pRaster + x * 4;
-                            *(uint*)pPixel = found_color;
+                            // Color by wire color.
+                            //*(uint*)pPixel = found_object.color;
+                            //continue;
+                            // Color by world normal.
+                            Vector3D normal = found_object.RayTestNormal(ray_origin, ray_direction);
+                            normal.Normalize();
+                            uint r = (byte)((normal.X + 1) * 255.0 / 2);
+                            uint g = (byte)((normal.Y + 1) * 255.0 / 2);
+                            uint b = (byte)((normal.Z + 1) * 255.0 / 2);
+                            uint color = (0xffU << 24) | (r << 16) | (g << 8) | (b << 0);
+                            *(uint*)pPixel = color;
                         }
                     }
                 }
@@ -78,9 +87,19 @@ namespace RenderToy
         /// </summary>
         /// <param name="ray">The world space ray to test.</param>
         /// <returns>The positive distance along the ray direction to the first intersection (or +inf for no intersection was found).</returns>
-        public double Intersect(Ray ray)
+        public double RayTestDistance(Point3D origin, Vector3D direction)
         {
-            return primitive.RayTest(ray.Transform(transform_inverse));
+            return primitive.RayTestDistance(
+                transform_inverse.Transform(origin),
+                transform_inverse.Transform(direction));
+        }
+        public Vector3D RayTestNormal(Point3D origin, Vector3D direction)
+        {
+            Vector3D normal = transform.Transform(
+                primitive.RayTestNormal(
+                    transform_inverse.Transform(origin),
+                    transform_inverse.Transform(direction)));
+            return normal;
         }
         private Matrix3D transform;
         private Matrix3D transform_inverse;
