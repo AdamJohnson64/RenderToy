@@ -49,14 +49,25 @@ namespace RenderToy
                             // Color by wire color.
                             //*(uint*)pPixel = found_object.color;
                             //continue;
-                            Vector3D normal = found_object.RayTestNormal(ray_origin, ray_direction);
-                            normal.Normalize();
+                            // World Vector - The world space position of intersection.
+                            Point3D vector_world = ray_origin + found_lambda * ray_direction;
+                            // Normal Vector - The world space normal of the intersection point.
+                            Vector3D vector_normal = found_object.RayTestNormal(ray_origin, ray_direction);
+                            vector_normal.Normalize();
+                            // View Vector - The world space direction we are looking.
+                            Vector3D vector_view = -ray_direction;
+                            vector_view.Normalize();
+                            // Light Vector - The world space direction toward the light.
+                            Vector3D vector_light = new Point3D(10, 10, -10) - vector_world;
+                            vector_light.Normalize();
+                            // Reflection Vector - The world space reflected view about the normal.
+                            Vector3D vector_reflect = -vector_view + 2 * MathHelp.Dot(vector_normal, vector_view) * vector_normal;
                             // Color by world normal.
                             //uint r = (byte)((normal.X + 1) * 255.0 / 2);
                             //uint g = (byte)((normal.Y + 1) * 255.0 / 2);
                             //uint b = (byte)((normal.Z + 1) * 255.0 / 2);
                             // Shadow test.
-                            Point3D shadow_origin = ray_origin + found_lambda * ray_direction + 0.0001 * normal;
+                            Point3D shadow_origin = ray_origin + found_lambda * ray_direction + 0.0001 * vector_normal;
                             RaytraceObject found_shadow_object = null;
                             double found_shadow_lambda = double.PositiveInfinity;
                             foreach (var test in objects)
@@ -69,15 +80,25 @@ namespace RenderToy
                                 }
                             }
                             double shadow_multiplier = found_shadow_lambda == double.PositiveInfinity ? 1 : 0.5;
-                            // Color from material.
+                            // Calculate material color.
                             Color color_material = found_object.material.MaterialCompute(ray_origin, ray_direction, found_lambda);
-                            // Color by lighting.
-                            double dot = Math.Max(0, Math.Min(MathHelp.Dot(normal, light_vector), 1)) * shadow_multiplier;
-                            uint r = (byte)(dot * color_material.R);
-                            uint g = (byte)(dot * color_material.G);
-                            uint b = (byte)(dot * color_material.B);
+                            // Lighting scales.
+                            double lambert = Math.Max(0, Math.Min(1, MathHelp.Dot(vector_normal, vector_light) * shadow_multiplier));
+                            double specular = Math.Pow(Math.Max(0, Math.Min(1, MathHelp.Dot(vector_reflect, vector_light))), 10);
+                            // Compute the overall color of the surface.
+                            double r = lambert * color_material.R / 255.0 + specular;
+                            double g = lambert * color_material.G / 255.0 + specular;
+                            double b = lambert * color_material.B / 255.0 + specular;
+                            // Clamp the color components so we don't oversaturate.
+                            r = Math.Max(0, Math.Min(1, r));
+                            g = Math.Max(0, Math.Min(1, g));
+                            b = Math.Max(0, Math.Min(1, b));
                             // Compute the final pixel.
-                            uint color = (0xffU << 24) | (r << 16) | (g << 8) | (b << 0);
+                            uint color =
+                                (0xffU << 24) |             // Alpha (MSB)
+                                ((uint)(r * 0xffU) << 16) | // Red
+                                ((uint)(g * 0xffU) << 8) |  // Green
+                                ((uint)(b * 0xffU) << 0);   // Blue (LSB)
                             *(uint*)pPixel = color;
                         }
                     }
