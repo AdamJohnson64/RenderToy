@@ -8,6 +8,43 @@ namespace RenderToy
 {
     public static class ControlUtil
     {
+        #region - Section : Point Rendering -
+        public static void RenderPointGDI(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
+        {
+            RenderPoint(new WireframeGDIPlus(drawingContext, render_width, render_height), width, height, scene, mvp);
+        }
+        public static void RenderPointWPF(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp)
+        {
+            RenderPoint(new WireframeWPF(drawingContext), width, height, scene, mvp);
+        }
+        public static void RenderPoint(IWireframeRenderer renderer, double width, double height, Scene scene, Matrix3D mvp)
+        {
+            DrawHelp.fnDrawLineViewport lineviewport = CreateLineViewportFunction(renderer, width, height);
+            renderer.WireframeBegin();
+            // Draw something interesting.
+            renderer.WireframeColor(0.0, 0.0, 0.0);
+            foreach (var transformedobject in TransformedObject.Enumerate(scene))
+            {
+                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                if (uv == null) continue;
+                DrawHelp.fnDrawPointWorld line = CreatePointWorldFunction(lineviewport, transformedobject.Transform * mvp);
+                Color color = transformedobject.Node.WireColor;
+                renderer.WireframeColor(color.R / 255.0 / 2, color.G / 255.0 / 2, color.B / 255.0 / 2);
+                DrawHelp.DrawParametricUV(line, uv);
+            }
+            renderer.WireframeEnd();
+        }
+        public static DrawHelp.fnDrawPointWorld CreatePointWorldFunction(DrawHelp.fnDrawLineViewport line, Matrix3D mvp)
+        {
+            const double s = 0.01;
+            return (p) =>
+            {
+                DrawHelp.DrawLineWorld(line, mvp, new Point4D(p.X - s, p.Y, p.Z, 1.0), new Point4D(p.X + s, p.Y, p.Z, 1.0));
+                DrawHelp.DrawLineWorld(line, mvp, new Point4D(p.X, p.Y - s, p.Z, 1.0), new Point4D(p.X, p.Y + s, p.Z, 1.0));
+                DrawHelp.DrawLineWorld(line, mvp, new Point4D(p.X, p.Y, p.Z - s, 1.0), new Point4D(p.X, p.Y, p.Z + s, 1.0));
+            };
+        }
+        #endregion
         #region - Section : Raytrace Rendering -
         public static void RenderRaytrace(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
         {

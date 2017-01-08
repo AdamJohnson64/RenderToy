@@ -90,7 +90,33 @@ namespace RenderToy
             return true;
         }
         #endregion
-        #region - Section : Higher Order Primitives -
+        #region - Section : Higher Order Primitives (Points) -
+        /// <summary>
+        /// Generic point drawing function draws a point in 3D space.
+        /// </summary>
+        /// <param name="p">The world space point.</param>
+        public delegate void fnDrawPointWorld(Point3D p);
+        /// <summary>
+        /// Draw a uv parametric surface as a series of points.
+        /// </summary>
+        /// <param name="point">The point rendering function.</param>
+        /// <param name="shape">The uv parametric surface to draw.</param>
+        public static void DrawParametricUV(fnDrawPointWorld point, IParametricUV shape)
+        {
+            int USEGMENTS = 20;
+            int VSEGMENTS = 20;
+            // Simply move some number of steps across u and v and draw the points in space.
+            for (int u = 0; u < USEGMENTS; ++u)
+            {
+                for (int v = 0; v < VSEGMENTS; ++v)
+                {
+                    // Determine the point and draw it; easy.
+                    point(shape.GetPointUV((double)u / USEGMENTS, (double)v / VSEGMENTS));
+                }
+            }
+        }
+        #endregion
+        #region - Section : Higher Order Primitives (Wireframe) -
         /// <summary>
         /// Generic line drawing function draws a line in 3D space.
         /// </summary>
@@ -193,6 +219,10 @@ namespace RenderToy
                 line(new Point3D(x, 0, -10), new Point3D(x, 0, 10));
             }
         }
+        /// <summary>
+        /// TEAPOTS! :)
+        /// </summary>
+        /// <param name="line">he world space line rendering function</param>
         public static void DrawTeapot(DrawHelp.fnDrawLineWorld line)
         {
             Point3D[] vtx = new Point3D[] {
