@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Linq;
+using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -57,6 +59,114 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Rasterized Rendering -
+        public static uint ColorToUInt32(Color color)
+        {
+            return
+                ((uint)color.A << 24) |
+                ((uint)color.R << 16) |
+                ((uint)color.G << 8) |
+                ((uint)color.B << 0);
+        }
+        public static void RenderRasterWPF(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
+        {
+            WriteableBitmap bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
+            bitmap.Lock();
+            unsafe
+            {
+                // Fill one scanline.
+                Action<int, int, int, uint> fillscan = (y, x1, x2, color) =>
+                {
+                    if (y < 0 || y >= render_height) return;
+                    x1 = Math.Max(0, Math.Min(render_width, x1));
+                    x2 = Math.Max(0, Math.Min(render_width, x2));
+                    byte* pRaster = (byte*)bitmap.BackBuffer + bitmap.BackBufferStride * y;
+                    for (int scanx = x1; scanx < x2; ++scanx)
+                    {
+                        byte* pPixel = pRaster + 4 * scanx;
+                        *(uint*)pPixel = color;
+                    }
+                    if (x1 >= 0 && x1 < render_width)
+                    {
+                        *(uint*)(pRaster + 4 * x1) = 0xffff0000U;
+                    }
+                };
+                // Fill a triangle defined by 3 points.
+                Action<Point3D, Point3D, Point3D, uint> filltri = (p1, p2, p3, color) =>
+                {
+                    // Define a triangle.
+                    Point3D[] tpoints_unordered = { p1, p2, p3 };
+                    // Order the points by ascending Y coordinate.
+                    Point3D[] tpoints = tpoints_unordered.OrderBy(x => x.Y).ToArray();
+                    // Section 1 - t[0] to t[1] vertical scan; top part of triangle.
+                    // Define the left and right slopes (we don't know the order yet.
+                    {
+                        double[] slope = {
+                            (tpoints[1].X - tpoints[0].X) / (tpoints[1].Y - tpoints[0].Y),
+                            (tpoints[2].X - tpoints[0].X) / (tpoints[2].Y - tpoints[0].Y),
+                        };
+                        // Order the slopes to determine the left and right sides.
+                        double[] slope_by_x = slope.OrderBy(x => x).ToArray();
+                        // Scan Y and fill lines over the interpolated slopes.
+                        for (int y = 0; y < tpoints[1].Y - tpoints[0].Y; ++y)
+                        {
+                            fillscan(
+                                (int)(tpoints[0].Y + y),
+                                (int)(tpoints[0].X + slope_by_x[0] * y),
+                                (int)(tpoints[0].X + slope_by_x[1] * y),
+                                color);
+                        }
+                    }
+                    // Section 2 - t[2] to t[1] inverted vertical scan; bottom part of triangle.
+                    {
+                        double[] slope_unordered = {
+                            (tpoints[0].X - tpoints[2].X) / (tpoints[2].Y - tpoints[0].Y),
+                            (tpoints[1].X - tpoints[2].X) / (tpoints[2].Y - tpoints[1].Y),
+                        };
+                        // Order the slopes to determine the left and right sides.
+                        double[] slope = slope_unordered.OrderBy(x => x).ToArray();
+                        // Scan Y and fill lines over the interpolated slopes.
+                        for (int y = 0; y < tpoints[2].Y - tpoints[1].Y; ++y)
+                        {
+                            fillscan(
+                                (int)(tpoints[2].Y - y),
+                                (int)(tpoints[2].X + slope[0] * y),
+                                (int)(tpoints[2].X + slope[1] * y),
+                                color);
+                        }
+                    }
+                };
+                foreach (var transformedobject in TransformedObject.Enumerate(scene))
+                {
+                    Matrix3D model_mvp = transformedobject.Transform * mvp;
+                    IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                    if (uv == null) continue;
+                    for (int v = 0; v < 10; ++v)
+                    {
+                        for (int u = 0; u < 10; ++u)
+                        {
+                            Point3D[] v3 = new Point3D[]
+                            {
+                                uv.GetPointUV((u + 0.0) / 10, (v + 0.0) / 10),
+                                uv.GetPointUV((u + 1.0) / 10, (v + 0.0) / 10),
+                                uv.GetPointUV((u + 0.0) / 10, (v + 1.0) / 10),
+                                uv.GetPointUV((u + 1.0) / 10, (v + 1.0) / 10),
+                            };
+                            Point3D[] v3t = v3
+                                .Select(p => new Point4D(p.X, p.Y, p.Z, 1))
+                                .Select(p => model_mvp.Transform(p))
+                                .Select(p => new Point3D(p.X / p.W, p.Y / p.W, p.Z / p.W))
+                                .Select(p => new Point3D((1 + p.X) * render_width / 2, (1 - p.Y) * render_height / 2, p.Z))
+                                .ToArray();
+                            filltri(v3t[0], v3t[1], v3t[3], ColorToUInt32(transformedobject.Node.WireColor));
+                            filltri(v3t[3], v3t[2], v3t[0], ColorToUInt32(transformedobject.Node.WireColor));
+                        }
+                    }
+                }
+            }
+            bitmap.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
+            bitmap.Unlock();
+            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
+        }
         public static void RenderRasterD3D9(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
             D3D9Surface d3dsurface = null;
