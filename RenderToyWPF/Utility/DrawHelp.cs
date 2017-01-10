@@ -3,6 +3,8 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media.Media3D;
 
@@ -92,6 +94,84 @@ namespace RenderToy
                 if (side_p2 <= 0) p2 = line_org + MathHelp.Scale(line_dir, lambda);
             }
             return true;
+        }
+        private static double IntersectLine3D(Point4D p1, Point4D p2, Point4D plane)
+        {
+            // Compute the intersection with the clip plane.
+            return -MathHelp.Dot(plane, p1) / MathHelp.Dot(plane, p2 - p1);
+        }
+        private static Point4D IntersectLine3DPoint(Point4D p1, Point4D p2, Point4D plane)
+        {
+            return p1 + MathHelp.Scale(p2 - p1, IntersectLine3D(p1, p2, plane));
+        }
+        public struct Triangle
+        {
+            public Point4D p1, p2, p3;
+        }
+        public static IEnumerable<Triangle> ClipTriangle3D(Triangle tri)
+        {
+            return ClipTriangle3D(new Triangle[] { tri });
+        }
+        public static IEnumerable<Triangle> ClipTriangle3D(IEnumerable<Triangle> triangles)
+        {
+            return triangles
+                .SelectMany(x => ClipTriangle3D(x, new Point4D(0, 0, 1, 0)))
+                .SelectMany(x => ClipTriangle3D(x, new Point4D(0, 0, -1, 1)))
+                .SelectMany(x => ClipTriangle3D(x, new Point4D(-1, 0, 0, 1)))
+                .SelectMany(x => ClipTriangle3D(x, new Point4D(1, 0, 0, 1)))
+                .SelectMany(x => ClipTriangle3D(x, new Point4D(0, -1, 0, 1)))
+                .SelectMany(x => ClipTriangle3D(x, new Point4D(0, 1, 0, 1)))
+                .ToArray();
+        }
+        public static IEnumerable<Triangle> ClipTriangle3D(Triangle triangle, Point4D plane)
+        {
+            var p = new[] { triangle.p1, triangle.p2, triangle.p3 };
+            var sides = p.Select(x => MathHelp.Dot(x, plane));
+            // Get the side for all points (inside or outside).
+            var outside = sides
+                .Select((x, i) => new { index = i, side = x })
+                .Where(x => x.side > 0)
+                .ToArray();
+            // Get the side for all points (inside or outside).
+            var inside = sides
+                .Select((x, i) => new { index = i, side = x })
+                .Where(x => x.side <= 0)
+                .ToArray();
+            // All points are clipped; trivially reject the whole triangle.
+            if (outside.Length == 0 && inside.Length == 3)
+            {
+                yield break;
+            }
+            // If one point is clipped then emit the single remaining triangle.
+            if (outside.Length == 1 && inside.Length == 2)
+            {
+                Point4D p1 = p[outside[0].index];
+                Point4D p2 = p[inside[0].index];
+                Point4D p3 = p[inside[1].index];
+                Point4D pi1 = IntersectLine3DPoint(p1, p2, plane);
+                Point4D pi2 = IntersectLine3DPoint(p3, p1, plane);
+                yield return new Triangle { p1 = p1, p2 = pi1, p3 = pi2 };
+                yield break;
+            }
+            // If two points are clipped then emit two triangles.
+            if (outside.Length == 2 && inside.Length == 1)
+            {
+                int first = outside[0].index;
+                Point4D p1 = p[outside[0].index];
+                Point4D p2 = p[outside[1].index];
+                Point4D p3 = p[inside[0].index];
+                Point4D p2i = IntersectLine3DPoint(p2, p3, plane);
+                Point4D p3i = IntersectLine3DPoint(p3, p1, plane);
+                yield return new Triangle { p1 = p1, p2 = p2, p3 = p2i };
+                yield return new Triangle { p1 = p2i, p2 = p3i, p3 = p1 };
+                yield break;
+            }
+            // All points are unclipped; trivially accept this triangle.
+            if (outside.Length == 3 && inside.Length == 0)
+            {
+                yield return triangle;
+                yield break;
+            }
         }
         #endregion
         #region - Section : Higher Order Primitives (Points) -

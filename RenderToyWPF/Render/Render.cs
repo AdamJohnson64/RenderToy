@@ -192,7 +192,7 @@ namespace RenderToy
                         }
                     };
                     // Fill a triangle defined by 3 points.
-                    Action<Point3D, Point3D, Point3D> filltri = (p1, p2, p3) =>
+                    Action<Point3D, Point3D, Point3D> filltri_viewspace = (p1, p2, p3) =>
                     {
                         double ymin = Math.Min(p1.Y, Math.Min(p2.Y, p3.Y));
                         double ymax = Math.Max(p1.Y, Math.Max(p2.Y, p3.Y));
@@ -218,25 +218,37 @@ namespace RenderToy
                             fillscan(y, (int)allx.Min(), (int)allx.Max());
                         }
                     };
+                    Action<Point4D, Point4D, Point4D> filltri_clipspace = (p1, p2, p3) =>
+                    {
+                        foreach (var tri in DrawHelp.ClipTriangle3D(new DrawHelp.Triangle { p1 = p1, p2 = p2, p3 = p3 }))
+                        {
+                            Point4D[] v3 = { tri.p1, tri.p2, tri.p3 };
+                            Point3D[] v3t = v3
+                                .Select(p => new Point3D(p.X / p.W, p.Y / p.W, p.Z / p.W))
+                                .Select(p => new Point3D((1 + p.X) * render_width / 2, (1 - p.Y) * render_height / 2, p.Z))
+                                .ToArray();
+                            filltri_viewspace(v3t[0], v3t[1], v3t[2]);
+                        }
+                    };
                     for (int v = 0; v < 10; ++v)
                     {
                         for (int u = 0; u < 10; ++u)
                         {
-                            Point3D[] v3 = new Point3D[]
+                            Point3D[] v3 =
                             {
                                 uv.GetPointUV((u + 0.0) / 10, (v + 0.0) / 10),
                                 uv.GetPointUV((u + 1.0) / 10, (v + 0.0) / 10),
                                 uv.GetPointUV((u + 0.0) / 10, (v + 1.0) / 10),
                                 uv.GetPointUV((u + 1.0) / 10, (v + 1.0) / 10),
                             };
-                            Point3D[] v3t = v3
+                            // Transform all points into clip space.
+                            Point4D[] v3t = v3
                                 .Select(p => new Point4D(p.X, p.Y, p.Z, 1))
                                 .Select(p => model_mvp.Transform(p))
-                                .Select(p => new Point3D(p.X / p.W, p.Y / p.W, p.Z / p.W))
-                                .Select(p => new Point3D((1 + p.X) * render_width / 2, (1 - p.Y) * render_height / 2, p.Z))
                                 .ToArray();
-                            filltri(v3t[0], v3t[1], v3t[3]);
-                            filltri(v3t[3], v3t[2], v3t[0]);
+                            // Fill the clip space triangle.
+                            filltri_clipspace(v3t[0], v3t[1], v3t[3]);
+                            filltri_clipspace(v3t[3], v3t[2], v3t[0]);
                         }
                     }
                 }
