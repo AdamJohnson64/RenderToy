@@ -272,6 +272,7 @@ namespace RenderToy
             drawpreview(Render.ImageWireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
             drawpreview(Render.ImageRaster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
             drawpreview(Render.ImageRaytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
         }
     }
