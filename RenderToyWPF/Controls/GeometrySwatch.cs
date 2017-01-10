@@ -35,12 +35,12 @@ namespace RenderToy
             // Prefer to render the primitive as a raytraced object first.
             if (Primitive is IRayTest)
             {
-                ControlUtil.DrawRaytrace(scene, mvp, 64, 64, drawingContext, ActualWidth, ActualHeight);
+                Render.DrawRaytrace(scene, mvp, 64, 64, drawingContext, ActualWidth, ActualHeight);
             }
             // Then try a parametric wireframe.
             if (Primitive is IParametricUV)
             {
-                ControlUtil.DrawWireframeWPF(scene, mvp, drawingContext, ActualWidth, ActualHeight);
+                Render.DrawWireframeWPF(scene, mvp, drawingContext, ActualWidth, ActualHeight);
             }
         }
         private object Primitive;

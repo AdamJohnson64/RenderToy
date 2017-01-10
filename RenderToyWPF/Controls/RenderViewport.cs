@@ -137,15 +137,15 @@ namespace RenderToy
                 // Draw the clip space of the Model-View-Projection.
                 Matrix3D other = MathHelp.Invert(DrawExtra.MVP);
                 IWireframeRenderer renderer = new WireframeWPF(drawingContext);
-                DrawHelp.fnDrawLineViewport lineviewport = ControlUtil.CreateLineViewportFunction(renderer, ActualWidth, ActualHeight);
-                DrawHelp.fnDrawLineWorld line = ControlUtil.CreateLineWorldFunction(lineviewport, MVP);
+                DrawHelp.fnDrawLineViewport lineviewport = Render.CreateLineViewportFunction(renderer, ActualWidth, ActualHeight);
+                DrawHelp.fnDrawLineWorld line = Render.CreateLineWorldFunction(lineviewport, MVP);
                 renderer.WireframeBegin();
                 renderer.WireframeColor(0.0, 1.0, 1.0);
                 DrawHelp.DrawClipSpace(line, other);
                 renderer.WireframeEnd();
             }
             DateTime timeEnd = DateTime.Now;
-            // Try to maintain 30FPS by reducing quality.
+            // Try to maintain a reasonable framerate by reducing quality.
             ReduceQuality_Decide(timeStart, timeEnd);
         }
         protected abstract void OnRenderToy(DrawingContext drawingContext);
@@ -194,7 +194,9 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawWireframe(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            //ControlUtil.DrawPoint(Scene, MVP, 256, 256, drawingContext, ActualWidth, ActualHeight);
+            Render.DrawRaster(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            //Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
             Action<Func<Scene, Matrix3D, int, int, ImageSource>, int, int, int> drawpreview = (drawhelper, stacky, render_width, render_height) =>
             {
                 double frame_l = ActualWidth - 128 - 8;
@@ -208,59 +210,52 @@ namespace RenderToy
                 drawingContext.DrawRoundedRectangle(Brushes.White, new Pen(Brushes.DarkGray, 2), new Rect(frame_l, frame_t, frame_w, frame_h), 8, 8);
                 drawingContext.DrawImage(drawhelper(Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height), new Rect(image_l, image_t, image_w, image_h));
             };
-            drawpreview(ControlUtil.ImagePoint, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
-            drawpreview(ControlUtil.ImageWireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-            drawpreview(ControlUtil.ImageRaster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-            drawpreview(ControlUtil.ImageRaytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            drawpreview(Render.ImagePoint, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
+            drawpreview(Render.ImageWireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            drawpreview(Render.ImageRaster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            drawpreview(Render.ImageRaytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
         }
     }
     class RenderViewportPoint : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawPoint(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
-        }
-    }
-    class RenderViewportPointGDI : RenderViewportBase
-    {
-        protected override void OnRenderToy(DrawingContext drawingContext)
-        {
-            ControlUtil.DrawPointGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            Render.DrawPoint(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportWireframeGDI : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawWireframeGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            Render.DrawWireframeGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportWireframeWPF : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawWireframeWPF(Scene, MVP, drawingContext, ActualWidth, ActualHeight);
+            Render.DrawWireframeWPF(Scene, MVP, drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRaster : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawRaster(Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+            Render.DrawRaster(Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRasterD3D : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawRasterD3D9(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            Render.DrawRasterD3D9(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRaytrace : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+            Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
         }
     }
 }

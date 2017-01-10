@@ -62,7 +62,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Controls\ControlUtil.cs" />
+    <Compile Include="Render\Render.cs" />
     <Compile Include="Controls\GeometrySwatch.cs" />
     <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Material\Material.cs" />
