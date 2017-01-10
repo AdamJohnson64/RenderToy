@@ -165,6 +165,8 @@ namespace RenderToy
         public static ImageSource ImageRaster(Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
             WriteableBitmap bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
+            float[] depthbuffer = new float[render_width * render_height];
+            for (int i = 0; i < depthbuffer.Length; ++i) depthbuffer[i] = 1;
             bitmap.Lock();
             unsafe
             {
@@ -175,20 +177,22 @@ namespace RenderToy
                     if (uv == null) continue;
                     uint color = ColorToUInt32(transformedobject.Node.WireColor);
                     // Fill one scanline.
-                    Action<int, int, int> fillscan = (y, x1, x2) =>
+                    Action<int, Point3D, Point3D> fillscan = (y, x1, x2) =>
                     {
                         if (y < 0 || y >= render_height) return;
-                        x1 = Math.Max(0, Math.Min(render_width, x1));
-                        x2 = Math.Max(0, Math.Min(render_width, x2));
+                        int sx1 = (int)Math.Max(0, Math.Min(render_width, x1.X));
+                        int sx2 = (int)Math.Max(0, Math.Min(render_width, x2.X));
                         byte* pRaster = (byte*)bitmap.BackBuffer + bitmap.BackBufferStride * y;
-                        for (int scanx = x1; scanx < x2; ++scanx)
+                        for (int scanx = sx1; scanx < sx2; ++scanx)
                         {
+                            // Compute pixel depth.
+                            float depth = (float)(x1.Z + (x2.Z - x1.Z) * (scanx - sx1) / (sx2 - sx1));
+                            // Reject this pixel if it's further away than what we already have.
+                            if (depth > depthbuffer[y * render_width + scanx]) continue;
+                            // Otherwise set the depth and render the pixel.
+                            depthbuffer[y * render_width + scanx] = depth;
                             byte* pPixel = pRaster + 4 * scanx;
                             *(uint*)pPixel = color;
-                        }
-                        if (x1 >= 0 && x1 < render_width)
-                        {
-                            *(uint*)(pRaster + 4 * x1) = 0xffff0000U;
                         }
                     };
                     // Fill a triangle defined by 3 points.
@@ -212,10 +216,11 @@ namespace RenderToy
                             var allx = edges
                                 .Select(e => new { E = e, l = (sy - e.O.Y) / e.D.Y })
                                 .Where(e => e.l >= 0 && e.l <= 1)
-                                .Select(e => e.E.O.X + e.l * e.E.D.X)
+                                .Select(e => e.E.O + e.l * e.E.D)
+                                .OrderBy(x => x.X)
                                 .ToArray();
                             if (allx.Length == 0) continue;
-                            fillscan(y, (int)allx.Min(), (int)allx.Max());
+                            fillscan(y, allx.First(), allx.Last());
                         }
                     };
                     Action<Point4D, Point4D, Point4D> filltri_clipspace = (p1, p2, p3) =>
