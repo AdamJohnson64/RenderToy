@@ -27,13 +27,17 @@ namespace RenderToy
         /// <param name="p2">The world space ending position.</param>
         public static void DrawLineWorld(DrawHelp.fnDrawLineViewport line, Matrix3D mvp, Point4D p1, Point4D p2)
         {
+            if (!TransformAndClipLine(ref p1, ref p2, mvp)) return;
+            // Perform homogeneous divide and draw the viewport space line.
+            line(new Point(p1.X / p1.W, p1.Y / p1.W), new Point(p2.X / p2.W, p2.Y / p2.W));
+        }
+        public static bool TransformAndClipLine(ref Point4D p1, ref Point4D p2, Matrix3D mvp)
+        {
             // Transform the supplied points into projection space.
             p1 = mvp.Transform(p1);
             p2 = mvp.Transform(p2);
             // Perform homogeneous space clipping.
-            if (!ClipLine3D(ref p1, ref p2)) return;
-            // Perform homogeneous divide and draw the viewport space line.
-            line(new Point(p1.X / p1.W, p1.Y / p1.W), new Point(p2.X / p2.W, p2.Y / p2.W));
+            return ClipLine3D(ref p1, ref p2);
         }
         /// <summary>
         /// Homogeneous clip a clip-space line segment.

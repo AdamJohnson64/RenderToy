@@ -51,26 +51,25 @@ namespace RenderToy
                     Matrix3D model_mvp = transformedobject.Transform * mvp;
                     IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                     if (uv == null) continue;
-                    for (int v = 0; v <= 20; ++v)
+                    uint color = ColorToUInt32(transformedobject.Node.WireColor);
+                    // Draw a single pixel to the framebuffer (safety function).
+                    Action<int, int> drawpixel2d = (x, y) =>
                     {
-                        for (int u = 0; u <= 20; ++u)
-                        {
-                            var v3 = new Point3D[]
-                            {
-                                uv.GetPointUV((u + 0.0) / 20, (v + 0.0) / 20),
-                            };
-                            var v3t = v3
-                                .Select(p => new Point4D(p.X, p.Y, p.Z, 1))
-                                .Select(p => model_mvp.Transform(p))
-                                .Where(p => p.W > 0)
-                                .Select(p => new Point3D(p.X / p.W, p.Y / p.W, p.Z / p.W))
-                                .Select(p => new Point3D((1 + p.X) * render_width / 2, (1 - p.Y) * render_height / 2, p.Z));
-                            foreach (var vtx in v3t)
-                            {
-                                plot(vtx, ColorToUInt32(transformedobject.Node.WireColor));
-                            }
-                        }
-                    }
+                        if (!(x >= 0 && x < render_width && y >= 0 && y < render_height)) return;
+                        byte* pRaster = (byte*)bitmap.BackBuffer + bitmap.BackBufferStride * y;
+                        byte* pPixel = pRaster + 4 * x;
+                        *(uint*)pPixel = color;
+                    };
+                    // Transform, clip and render a 3D point at P.
+                    DrawHelp.fnDrawPointWorld drawpoint = (p) =>
+                    {
+                        Point4D v4 = new Point4D(p.X, p.Y, p.Z, 1);
+                        v4 = model_mvp.Transform(v4);
+                        if (v4.W <= 0) return;
+                        v4 = MathHelp.Scale(v4, 1 / v4.W);
+                        drawpixel2d((int)((1 + v4.X) * render_width / 2), (int)((1 - v4.Y) * render_height / 2));
+                    };
+                    DrawHelp.DrawParametricUV(drawpoint, uv);
                 }
             }
             bitmap.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
@@ -117,6 +116,85 @@ namespace RenderToy
                 DrawHelp.DrawLineWorld(line, mvp, new Point4D(p.X, p.Y - s, p.Z, 1.0), new Point4D(p.X, p.Y + s, p.Z, 1.0));
                 DrawHelp.DrawLineWorld(line, mvp, new Point4D(p.X, p.Y, p.Z - s, 1.0), new Point4D(p.X, p.Y, p.Z + s, 1.0));
             };
+        }
+        #endregion
+        #region - Section : Phase 2 - Wireframe Rendering (Reference) -
+        public static void DrawWireframe(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
+        {
+            var bitmap = ImageWireframe(scene, mvp, render_width, render_height);
+            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
+        }
+        public static ImageSource ImageWireframe(Scene scene, Matrix3D mvp, int render_width, int render_height)
+        {
+            WriteableBitmap bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
+            bitmap.Lock();
+            unsafe
+            {
+                foreach (var transformedobject in TransformedObject.Enumerate(scene))
+                {
+                    Matrix3D model_mvp = transformedobject.Transform * mvp;
+                    IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                    if (uv == null) continue;
+                    uint color = ColorToUInt32(transformedobject.Node.WireColor);
+                    // Draw a single pixel to the framebuffer (safety function).
+                    Action<int, int> drawpixel2d = (x, y) =>
+                    {
+                        if (!(x >= 0 && x < render_width && y >= 0 && y < render_height)) return;
+                        byte* pRaster = (byte*)bitmap.BackBuffer + bitmap.BackBufferStride * y;
+                        byte* pPixel = pRaster + 4 * x;
+                        *(uint*)pPixel = color;
+                    };
+                    // Draw a line to the framebuffer.
+                    DrawHelp.fnDrawLineWorld drawline2d = (p1, p2) =>
+                    {
+                        if (Math.Abs(p2.X - p1.X) > Math.Abs(p2.Y - p1.Y))
+                        {
+                            // X spanning line; this line is longer in the X axis.
+                            // Scan in the X direction plotting Y points.
+                            if (p1.X > p2.X)
+                            {
+                                Point3D t = p1;
+                                p1 = p2;
+                                p2 = t;
+                            }
+                            for (int x = 0; x < p2.X - p1.X; ++x)
+                            {
+                                drawpixel2d((int)(p1.X + x), (int)(p1.Y + (p2.Y - p1.Y) * x / (p2.X - p1.X)));
+                            }
+                        }
+                        else
+                        {
+                            // Y spanning line; this line is longer in the Y axis.
+                            // Scan in the Y direction plotting X points.
+                            if (p1.Y > p2.Y)
+                            {
+                                Point3D t = p1;
+                                p1 = p2;
+                                p2 = t;
+                            }
+                            for (int y = 0; y < p2.Y - p1.Y; ++y)
+                            {
+                                drawpixel2d((int)(p1.X + (p2.X - p1.X) * y / (p2.Y - p1.Y)), (int)(p1.Y + y));
+                            }
+                        }
+                    };
+                    // Transform, clip and render a 3D line between P1 and P2.
+                    DrawHelp.fnDrawLineWorld drawline3d = (p1, p2) => {
+                        Point4D v41 = new Point4D(p1.X, p1.Y, p1.Z, 1);
+                        Point4D v42 = new Point4D(p2.X, p2.Y, p2.Z, 1);
+                        if (!DrawHelp.TransformAndClipLine(ref v41, ref v42, model_mvp)) return;
+                        v41 = MathHelp.Scale(v41, 1 / v41.W);
+                        v42 = MathHelp.Scale(v42, 1 / v42.W);
+                        drawline2d(
+                            new Point3D((1 + v41.X) * render_width / 2, (1 - v41.Y) * render_height / 2, v41.Z),
+                            new Point3D((1 + v42.X) * render_width / 2, (1 - v42.Y) * render_height / 2, v42.Z));
+                    };
+                    DrawHelp.DrawParametricUV(drawline3d, uv);
+                }
+            }
+            bitmap.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
+            bitmap.Unlock();
+            return bitmap;
         }
         #endregion
         #region - Section : Phase 2 - Wireframe Rendering (GDI+) -

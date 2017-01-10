@@ -194,13 +194,13 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawWireframeGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawWireframe(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
             Action<Func<Scene, Matrix3D, int, int, ImageSource>, int, int, int> drawpreview = (drawhelper, stacky, render_width, render_height) =>
             {
-                double frame_l = ActualWidth - 192 - 8;
-                double frame_t = 8 + (128 + 8) * stacky;
-                double frame_w = 192;
-                double frame_h = 128;
+                double frame_l = ActualWidth - 128 - 8;
+                double frame_t = 8 + (96 + 8) * stacky;
+                double frame_w = 128;
+                double frame_h = 96;
                 double image_l = frame_l + 8;
                 double image_t = frame_t + 8;
                 double image_w = frame_w - 8 * 2;
@@ -209,8 +209,9 @@ namespace RenderToy
                 drawingContext.DrawImage(drawhelper(Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height), new Rect(image_l, image_t, image_w, image_h));
             };
             drawpreview(ControlUtil.ImagePoint, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
-            drawpreview(ControlUtil.ImageRaster, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-            drawpreview(ControlUtil.ImageRaytrace, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            drawpreview(ControlUtil.ImageWireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            drawpreview(ControlUtil.ImageRaster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            drawpreview(ControlUtil.ImageRaytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
         }
     }
     class RenderViewportPoint : RenderViewportBase
