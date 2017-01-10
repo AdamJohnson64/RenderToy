@@ -6,31 +6,32 @@ using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
-    public class RenderViewport : FrameworkElement
+    public abstract class RenderViewportBase : FrameworkElement
     {
         public static DependencyProperty DrawExtraProperty = DependencyProperty.Register("DrawExtra", typeof(RenderViewport), typeof(RenderViewport));
-        public RenderViewport DrawExtra { get { return (RenderViewport)GetValue(DrawExtraProperty); } set { SetValue(DrawExtraProperty, value);  } }
+        public RenderViewportBase DrawExtra { get { return (RenderViewportBase)GetValue(DrawExtraProperty); } set { SetValue(DrawExtraProperty, value);  } }
         public Scene Scene = Scene.Default;
-        public RenderViewport()
+        public RenderViewportBase()
         {
+            ReduceQuality_Init();
             AllowDrop = true;
         }
         #region - Section : Camera -
-        private Matrix3D View
+        protected Matrix3D View
         {
             get
             {
                 return MathHelp.Invert(Camera.Transform);
             }
         }
-        private Matrix3D Projection
+        protected Matrix3D Projection
         {
             get
             {
                 return CameraMat.Projection;
             }
         }
-        private Matrix3D ProjectionWindow
+        protected Matrix3D ProjectionWindow
         {
             get
             {
@@ -48,7 +49,7 @@ namespace RenderToy
                 }
             }
         }
-        private TransformPosQuat Camera = new TransformPosQuat { Position = new Vector3D(0, 10, -20) };
+        TransformPosQuat Camera = new TransformPosQuat { Position = new Vector3D(0, 10, -20) };
         CameraPerspective CameraMat = new CameraPerspective();
         #endregion
         #region - Section : Input Handling -
@@ -65,7 +66,7 @@ namespace RenderToy
             base.OnMouseLeftButtonDown(e);
             CaptureMouse();
             Mouse.OverrideCursor = Cursors.None;
-            dragging = true;
+            isDragging = true;
             clickOrigin = System.Windows.Forms.Cursor.Position;
             dragOrigin = e.GetPosition(this);
         }
@@ -74,13 +75,13 @@ namespace RenderToy
             base.OnMouseLeftButtonUp(e);
             Mouse.OverrideCursor = null;
             ReleaseMouseCapture();
-            dragging = false;
+            isDragging = false;
             InvalidateVisual();
         }
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            if (!dragging) return;
+            if (!isDragging) return;
             System.Windows.Point dragTo = e.GetPosition(this);
             double dx = dragTo.X - dragOrigin.X;
             double dy = dragTo.Y - dragOrigin.Y;
@@ -111,18 +112,17 @@ namespace RenderToy
             Camera.TranslatePost(new Vector3D(0, 0, e.Delta * 0.01));
             InvalidateVisual();
         }
-        private bool dragging = false;
-        private System.Drawing.Point clickOrigin;
-        private System.Windows.Point dragOrigin;
+        bool isDragging = false;
+        System.Drawing.Point clickOrigin;
+        System.Windows.Point dragOrigin;
         #endregion
         #region - Section : Rendering -
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            //ControlUtil.RenderRasterD3D9(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
-            ControlUtil.RenderRaytrace(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, dragging ? 128 : 512, dragging ? 128 : 512);
-            ControlUtil.RenderWireframeGDI(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight));
-            //ControlUtil.RenderWireframeWPF(drawingContext, ActualWidth, ActualHeight, Scene, View * ProjectionWindow);
+            DateTime timeStart = DateTime.Now;
+            // Draw our intended visual.
+            OnRenderToy(drawingContext);
             // If we're connected to another view camera then show it here.
             if (DrawExtra != null)
             {
@@ -136,7 +136,101 @@ namespace RenderToy
                 DrawHelp.DrawClipSpace(line, other);
                 renderer.WireframeEnd();
             }
+            DateTime timeEnd = DateTime.Now;
+            // Try to maintain 30FPS by reducing quality.
+            ReduceQuality_Decide(timeStart, timeEnd);
         }
+        protected abstract void OnRenderToy(DrawingContext drawingContext);
         #endregion
+        #region - Section : Quality Control -
+        protected bool ReduceQuality
+        {
+            get { return reduceQuality; }
+        }
+        void ReduceQuality_Init()
+        {
+            reduceQualityTimer = new System.Windows.Forms.Timer();
+            reduceQualityTimer.Interval = 500;
+            reduceQualityTimer.Tick += (s, e) =>
+            {
+                reduceQualityTimer.Enabled = false;
+                reduceQualityFrames = 0;
+                reduceQuality = false;
+                InvalidateVisual();
+            };
+        }
+        void ReduceQuality_Decide(DateTime timeStart, DateTime timeEnd)
+        {
+            if (timeEnd.Subtract(timeStart).Milliseconds > 1000 / 30)
+            {
+                ++reduceQualityFrames;
+                if (reduceQualityFrames >= 2 && !reduceQuality)
+                {
+                    reduceQualityFrames = 0;
+                    reduceQuality = true;
+                }
+            }
+            // Restart the quality reduction timer.
+            if (reduceQuality)
+            {
+                reduceQualityTimer.Enabled = false;
+                reduceQualityTimer.Enabled = true;
+            }
+        }
+        bool reduceQuality = false;
+        int reduceQualityFrames = 0;
+        System.Windows.Forms.Timer reduceQualityTimer;
+        #endregion
+    }
+    class RenderViewport : RenderViewportBase
+    {
+        protected override void OnRenderToy(DrawingContext drawingContext)
+        {
+            //ControlUtil.DrawRaster(Scene, View * ProjectionWindow, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawWireframeGDI(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            drawingContext.DrawImage(ControlUtil.ImageRaytrace(Scene, View * Projection, ReduceQuality ? 64 : 256, ReduceQuality ? 64 : 256), new Rect(ActualWidth - 256 - 8, 8, 256, 256));
+        }
+    }
+    class RenderViewportPoint : RenderViewportBase
+    {
+        protected override void OnRenderToy(DrawingContext drawingContext)
+        {
+            ControlUtil.DrawPointGDI(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+        }
+    }
+    class RenderViewportWireframeGDI : RenderViewportBase
+    {
+        protected override void OnRenderToy(DrawingContext drawingContext)
+        {
+            ControlUtil.DrawWireframeGDI(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+        }
+    }
+    class RenderViewportWireframeWPF : RenderViewportBase
+    {
+        protected override void OnRenderToy(DrawingContext drawingContext)
+        {
+            ControlUtil.DrawWireframeWPF(Scene, View * ProjectionWindow, drawingContext, ActualWidth, ActualHeight);
+        }
+    }
+    class RenderViewportRaster : RenderViewportBase
+    {
+        protected override void OnRenderToy(DrawingContext drawingContext)
+        {
+            ControlUtil.DrawRaster(Scene, View * ProjectionWindow, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+        }
+    }
+    class RenderViewportRasterD3D : RenderViewportBase
+    {
+        protected override void OnRenderToy(DrawingContext drawingContext)
+        {
+            ControlUtil.DrawRasterD3D9(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+        }
+    }
+    class RenderViewportRaytrace : RenderViewportBase
+    {
+        protected override void OnRenderToy(DrawingContext drawingContext)
+        {
+            ControlUtil.DrawRaytrace(Scene, View * ProjectionWindow, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+        }
     }
 }

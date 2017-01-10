@@ -6,17 +6,17 @@
         xmlns:local="clr-namespace:RenderToy"
         mc:Ignorable="d"
         Title="RenderToy Experiment" Height="600" Width="1024">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="224"/>
-        </Grid.ColumnDefinitions>
-        <!-- Main Viewport Area -->
-        <TabControl Grid.Column="0">
-            <TabItem Header="Single View">
-                <local:RenderViewport/>
-            </TabItem>
-            <TabItem Header="Quad View">
+    <!-- Main Viewport Area -->
+    <TabControl Grid.Column="0">
+        <TabItem Header="Preview">
+            <local:RenderViewport/>
+        </TabItem>
+        <TabItem Header="Edit">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="224"/>
+                </Grid.ColumnDefinitions>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="50*"/>
@@ -29,57 +29,52 @@
                         <ColumnDefinition Width="50*"/>
                     </Grid.ColumnDefinitions>
                     <!-- XY Viewport (Front) -->
-                    <local:RenderViewport x:Name="ViewMain" Grid.Row="0" Grid.Column="0"/>
+                    <local:RenderViewportWireframeGDI x:Name="ViewMain" Grid.Row="0" Grid.Column="0"/>
                     <!-- XZ Viewport (Top) -->
-                    <local:RenderViewport Grid.Row="0" Grid.Column="2" DrawExtra="{Binding ElementName=ViewMain}"/>
+                    <local:RenderViewportWireframeGDI Grid.Row="0" Grid.Column="2" />
                     <!-- YZ Viewport (Side) -->
-                    <local:RenderViewport Grid.Row="2" Grid.Column="0"/>
+                    <local:RenderViewportWireframeGDI Grid.Row="2" Grid.Column="0"/>
                     <!-- Rotate Viewport -->
-                    <local:RenderViewport Grid.Row="2" Grid.Column="2"/>
+                    <local:RenderViewportRaster Grid.Row="2" Grid.Column="2"/>
+                    <!-- DrawExtra="{Binding ElementName=ViewMain}"/ -->
                     <GridSplitter Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                     <GridSplitter Grid.Column="1" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                     <GridSplitter Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                     <GridSplitter Grid.Column="2" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </Grid>
-            </TabItem>
-        </TabControl>
-        <!-- Utility Area -->
-        <Border Grid.Column="1" CornerRadius="16" BorderBrush="DarkGray" BorderThickness="2" Margin="8" Padding="8">
-            <Border.Background>
-                <VisualBrush TileMode="Tile" Viewport="0,0,100, 25" ViewportUnits="Absolute" Viewbox="0,0,1,1">
-                    <VisualBrush.Transform>
-                        <RotateTransform Angle="-45"/>
-                    </VisualBrush.Transform>
-                    <VisualBrush.Visual>
-                        <TextBlock FontSize="48" Opacity="0.05" Text="RenderToy">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Opacity="0.6" ShadowDepth="8"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
-                    </VisualBrush.Visual>
-                </VisualBrush>
-            </Border.Background>
-            <StackPanel>
-                <GroupBox Header="Create">
-                    <WrapPanel>
-                        <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
-                            <local:GeometrySwatchBezierPatch/>
-                        </Border>
-                        <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
-                            <local:GeometrySwatchCylinder/>
-                        </Border>
-                        <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
-                            <local:GeometrySwatchSphere/>
-                        </Border>
-                    </WrapPanel>
-                    <!--
+                <!-- Utility Area -->
+                <Border Grid.Column="1" CornerRadius="16" BorderBrush="DarkGray" BorderThickness="2" Margin="8" Padding="8">
+                    <Border.Background>
+                        <VisualBrush TileMode="Tile" Viewport="0,0,100, 25" ViewportUnits="Absolute" Viewbox="0,0,1,1">
+                            <VisualBrush.Transform>
+                                <RotateTransform Angle="-45"/>
+                            </VisualBrush.Transform>
+                            <VisualBrush.Visual>
+                                <TextBlock FontSize="48" Opacity="0.05" Text="RenderToy">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect Opacity="0.6" ShadowDepth="8"/>
+                                    </TextBlock.Effect>
+                                </TextBlock>
+                            </VisualBrush.Visual>
+                        </VisualBrush>
+                    </Border.Background>
                     <StackPanel>
-                        <Button Content="Plane"/>
-                        <Button Content="Sphere"/>
+                        <GroupBox Header="Create">
+                            <WrapPanel>
+                                <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
+                                    <local:GeometrySwatchBezierPatch/>
+                                </Border>
+                                <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
+                                    <local:GeometrySwatchCylinder/>
+                                </Border>
+                                <Border BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2">
+                                    <local:GeometrySwatchSphere/>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
                     </StackPanel>
-                    -->
-                </GroupBox>
-            </StackPanel>
-        </Border>
-    </Grid>
+                </Border>
+            </Grid>
+        </TabItem>
+    </TabControl>
 </Window>

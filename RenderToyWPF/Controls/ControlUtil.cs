@@ -10,16 +10,30 @@ namespace RenderToy
 {
     public static class ControlUtil
     {
-        #region - Section : Point Rendering -
-        public static void RenderPointGDI(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
+        #region - Section : General -
+        public static uint ColorToUInt32(Color color)
         {
-            RenderPoint(new WireframeGDIPlus(drawingContext, render_width, render_height), width, height, scene, mvp);
+            return
+                ((uint)color.A << 24) |
+                ((uint)color.R << 16) |
+                ((uint)color.G << 8) |
+                ((uint)color.B << 0);
         }
-        public static void RenderPointWPF(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp)
+        #endregion
+        #region - Section : Phase 1 - Point Rendering (GDI+) -
+        public static void DrawPointGDI(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
         {
-            RenderPoint(new WireframeWPF(drawingContext), width, height, scene, mvp);
+            DrawPointALR(scene, mvp, new WireframeGDIPlus(drawingContext, render_width, render_height), width, height);
         }
-        public static void RenderPoint(IWireframeRenderer renderer, double width, double height, Scene scene, Matrix3D mvp)
+        #endregion
+        #region - Section : Phase 1 - Point Rendering (WPF) -
+        public static void DrawPointWPF(Scene scene, Matrix3D mvp, DrawingContext drawingContext, double width, double height)
+        {
+            DrawPointALR(scene, mvp, new WireframeWPF(drawingContext), width, height);
+        }
+        #endregion
+        #region - Section : Phase 1 - Point Rendering (Abstract Line Renderer) -
+        public static void DrawPointALR(Scene scene, Matrix3D mvp, IWireframeRenderer renderer, double width, double height)
         {
             DrawHelp.fnDrawLineViewport lineviewport = CreateLineViewportFunction(renderer, width, height);
             renderer.WireframeBegin();
@@ -47,27 +61,60 @@ namespace RenderToy
             };
         }
         #endregion
-        #region - Section : Raytrace Rendering -
-        public static void RenderRaytrace(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
+        #region - Section : Phase 2 - Wireframe Rendering (GDI+) -
+        public static void DrawWireframeGDI(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
         {
-            var bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
-            bitmap.Lock();
-            Raytrace.DoRaytrace(scene, MathHelp.Invert(mvp), bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBuffer, bitmap.BackBufferStride);
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
-            bitmap.Unlock();
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
+            DrawWireframeCommon(scene, mvp, new WireframeGDIPlus(drawingContext, render_width, render_height), width, height);
         }
         #endregion
-        #region - Section : Rasterized Rendering -
-        public static uint ColorToUInt32(Color color)
+        #region - Section : Phase 2 - Wireframe Rendering (WPF) -
+        public static void DrawWireframeWPF(Scene scene, Matrix3D mvp, DrawingContext drawingContext, double width, double height)
         {
-            return
-                ((uint)color.A << 24) |
-                ((uint)color.R << 16) |
-                ((uint)color.G << 8) |
-                ((uint)color.B << 0);
+            DrawWireframeCommon(scene, mvp, new WireframeWPF(drawingContext), width, height);
         }
-        public static void RenderRasterWPF(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
+        #endregion
+        #region - Section : Phase 2 - Wireframe Rendering (Abstract Line Renderer) -
+        private static void DrawWireframeCommon(Scene scene, Matrix3D mvp, IWireframeRenderer renderer, double width, double height)
+        {
+            DrawHelp.fnDrawLineViewport lineviewport = CreateLineViewportFunction(renderer, width, height);
+            renderer.WireframeBegin();
+            // Draw something interesting.
+            renderer.WireframeColor(0.0, 0.0, 0.0);
+            foreach (var transformedobject in TransformedObject.Enumerate(scene))
+            {
+                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                if (uv == null) continue;
+                DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(lineviewport, transformedobject.Transform * mvp);
+                Color color = transformedobject.Node.WireColor;
+                renderer.WireframeColor(color.R / 255.0 / 2, color.G / 255.0 / 2, color.B / 255.0 / 2);
+                DrawHelp.DrawParametricUV(line, uv);
+            }
+            renderer.WireframeEnd();
+        }
+        public static DrawHelp.fnDrawLineViewport CreateLineViewportFunction(IWireframeRenderer renderer, double width, double height)
+        {
+            return (p1, p2) =>
+            {
+                renderer.WireframeLine(
+                    (p1.X + 1) * width / 2, (1 - p1.Y) * height / 2,
+                    (p2.X + 1) * width / 2, (1 - p2.Y) * height / 2);
+            };
+        }
+        public static DrawHelp.fnDrawLineWorld CreateLineWorldFunction(DrawHelp.fnDrawLineViewport line, Matrix3D mvp)
+        {
+            return (p1, p2) =>
+            {
+                DrawHelp.DrawLineWorld(line, mvp, new Point4D(p1.X, p1.Y, p1.Z, 1.0), new Point4D(p2.X, p2.Y, p2.Z, 1.0));
+            };
+        }
+        #endregion
+        #region - Section : Phase 3 - Rasterized Rendering (Reference) -
+        public static void DrawRaster(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
+        {
+            var bitmap = ImageRaster(scene, mvp, render_width, render_height);
+            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
+        }
+        public static ImageSource ImageRaster(Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
             WriteableBitmap bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
             bitmap.Lock();
@@ -165,68 +212,40 @@ namespace RenderToy
             }
             bitmap.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
             bitmap.Unlock();
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
-        }
-        public static void RenderRasterD3D9(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
-        {
-            D3D9Surface d3dsurface = null;
-            D3DImage d3dimage = null;
-            if (d3dsurface == null)
-            {
-                d3dsurface = new D3D9Surface();
-            }
-            if (d3dimage == null)
-            {
-                d3dimage = new D3DImage();
-                d3dimage.Lock();
-                d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3dsurface.SurfacePtr, true);
-                d3dimage.AddDirtyRect(new Int32Rect(0, 0, 256, 256));
-                d3dimage.Unlock();
-            }
-            drawingContext.DrawImage(d3dimage, new Rect(0, 0, width, height));
+            return bitmap;
         }
         #endregion
-        #region - Section : Wireframe Rendering -
-        public static void RenderWireframeGDI(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp, int render_width, int render_height)
+        #region - Section : Phase 3 - Rasterized Rendering (Direct3D 9) -
+        public static void DrawRasterD3D9(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
         {
-            RenderWireframe(new WireframeGDIPlus(drawingContext, render_width, render_height), width, height, scene, mvp);
+            var bitmap = ImageRasterD3D9(scene, mvp, render_width, render_height);
+            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
         }
-        public static void RenderWireframeWPF(DrawingContext drawingContext, double width, double height, Scene scene, Matrix3D mvp)
+        public static ImageSource ImageRasterD3D9(Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
-            RenderWireframe(new WireframeWPF(drawingContext), width, height, scene, mvp);
+            D3D9Surface d3dsurface = d3dsurface = new D3D9Surface();
+            D3DImage d3dimage = new D3DImage();
+            d3dimage.Lock();
+            d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3dsurface.SurfacePtr, true);
+            d3dimage.AddDirtyRect(new Int32Rect(0, 0, 256, 256));
+            d3dimage.Unlock();
+            return d3dimage;
         }
-        private static void RenderWireframe(IWireframeRenderer renderer, double width, double height, Scene scene, Matrix3D mvp)
+        #endregion
+        #region - Section : Phase 4 - Raytrace Rendering (Reference) -
+        public static void DrawRaytrace(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
         {
-            DrawHelp.fnDrawLineViewport lineviewport = CreateLineViewportFunction(renderer, width, height);
-            renderer.WireframeBegin();
-            // Draw something interesting.
-            renderer.WireframeColor(0.0, 0.0, 0.0);
-            foreach (var transformedobject in TransformedObject.Enumerate(scene))
-            {
-                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
-                if (uv == null) continue;
-                DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(lineviewport, transformedobject.Transform * mvp);
-                Color color = transformedobject.Node.WireColor;
-                renderer.WireframeColor(color.R / 255.0 / 2, color.G / 255.0 / 2, color.B / 255.0 / 2);
-                DrawHelp.DrawParametricUV(line, uv);
-            }
-            renderer.WireframeEnd();
+            var bitmap = ImageRaytrace(scene, mvp, render_width, render_height);
+            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
         }
-        public static DrawHelp.fnDrawLineViewport CreateLineViewportFunction(IWireframeRenderer renderer, double width, double height)
+        public static ImageSource ImageRaytrace(Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
-            return (p1, p2) =>
-            {
-                renderer.WireframeLine(
-                    (p1.X + 1) * width / 2, (1 - p1.Y) * height / 2,
-                    (p2.X + 1) * width / 2, (1 - p2.Y) * height / 2);
-            };
-        }
-        public static DrawHelp.fnDrawLineWorld CreateLineWorldFunction(DrawHelp.fnDrawLineViewport line, Matrix3D mvp)
-        {
-            return (p1, p2) =>
-            {
-                DrawHelp.DrawLineWorld(line, mvp, new Point4D(p1.X, p1.Y, p1.Z, 1.0), new Point4D(p2.X, p2.Y, p2.Z, 1.0));
-            };
+            var bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
+            bitmap.Lock();
+            Raytrace.DoRaytrace(scene, MathHelp.Invert(mvp), bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBuffer, bitmap.BackBufferStride);
+            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+            bitmap.Unlock();
+            return bitmap;
         }
         #endregion
     }
