@@ -31,26 +31,29 @@ namespace RenderToy
                 return CameraMat.Projection;
             }
         }
-        protected Matrix3D ProjectionWindow
+        protected Matrix3D MVP
         {
             get
             {
-                // Aspect correct; We're using "at least" FOV correction so horizontal or vertical can be extended.
-                {
-                    double aspect = ActualWidth / ActualHeight;
-                    if (aspect > 1)
-                    {
-                        return Projection * MathHelp.CreateScaleMatrix(1 / aspect, 1, 1);
-                    }
-                    else
-                    {
-                        return Projection * MathHelp.CreateScaleMatrix(1, aspect, 1);
-                    }
-                }
+                return View * Projection * AspectCorrectFit(ActualWidth, ActualHeight);
             }
         }
         TransformPosQuat Camera = new TransformPosQuat { Position = new Vector3D(0, 10, -20) };
         CameraPerspective CameraMat = new CameraPerspective();
+        #endregion
+        #region - Section : Aspect Correction -
+        public static Matrix3D AspectCorrectFit(double width, double height)
+        {
+            double aspect = width / height;
+            if (aspect > 1)
+            {
+                return MathHelp.CreateScaleMatrix(1 / aspect, 1, 1);
+            }
+            else
+            {
+                return MathHelp.CreateScaleMatrix(1, aspect, 1);
+            }
+        }
         #endregion
         #region - Section : Input Handling -
         protected override void OnDrop(DragEventArgs e)
@@ -127,10 +130,10 @@ namespace RenderToy
             if (DrawExtra != null)
             {
                 // Draw the clip space of the Model-View-Projection.
-                Matrix3D other = MathHelp.Invert(DrawExtra.View * DrawExtra.ProjectionWindow);
+                Matrix3D other = MathHelp.Invert(DrawExtra.MVP);
                 IWireframeRenderer renderer = new WireframeWPF(drawingContext);
                 DrawHelp.fnDrawLineViewport lineviewport = ControlUtil.CreateLineViewportFunction(renderer, ActualWidth, ActualHeight);
-                DrawHelp.fnDrawLineWorld line = ControlUtil.CreateLineWorldFunction(lineviewport, View * ProjectionWindow);
+                DrawHelp.fnDrawLineWorld line = ControlUtil.CreateLineWorldFunction(lineviewport, MVP);
                 renderer.WireframeBegin();
                 renderer.WireframeColor(0.0, 1.0, 1.0);
                 DrawHelp.DrawClipSpace(line, other);
@@ -186,59 +189,72 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawWireframeGDI(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
-            ControlUtil.DrawPoint(Scene, View * ProjectionWindow, 256, 256, drawingContext, ActualWidth, ActualHeight);
-            //ControlUtil.DrawRaster(Scene, View * ProjectionWindow, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
-            drawingContext.DrawImage(ControlUtil.ImageRaytrace(Scene, View * Projection, ReduceQuality ? 64 : 256, ReduceQuality ? 64 : 256), new Rect(ActualWidth - 256 - 8, 8, 256, 256));
+            ControlUtil.DrawWireframeGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            Action<Func<Scene, Matrix3D, int, int, ImageSource>, int, int, int> drawpreview = (drawhelper, stacky, render_width, render_height) =>
+            {
+                double frame_l = ActualWidth - 192 - 8;
+                double frame_t = 8 + (128 + 8) * stacky;
+                double frame_w = 192;
+                double frame_h = 128;
+                double image_l = frame_l + 8;
+                double image_t = frame_t + 8;
+                double image_w = frame_w - 8 * 2;
+                double image_h = frame_h - 8 * 2;
+                drawingContext.DrawRoundedRectangle(Brushes.White, new Pen(Brushes.DarkGray, 2), new Rect(frame_l, frame_t, frame_w, frame_h), 8, 8);
+                drawingContext.DrawImage(drawhelper(Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height), new Rect(image_l, image_t, image_w, image_h));
+            };
+            drawpreview(ControlUtil.ImagePoint, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
+            drawpreview(ControlUtil.ImageRaster, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            drawpreview(ControlUtil.ImageRaytrace, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
         }
     }
     class RenderViewportPoint : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawPoint(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawPoint(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportPointGDI : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawPointGDI(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawPointGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportWireframeGDI : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawWireframeGDI(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawWireframeGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportWireframeWPF : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawWireframeWPF(Scene, View * ProjectionWindow, drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawWireframeWPF(Scene, MVP, drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRaster : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawRaster(Scene, View * ProjectionWindow, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawRaster(Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRasterD3D : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawRasterD3D9(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawRasterD3D9(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRaytrace : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ControlUtil.DrawRaytrace(Scene, View * ProjectionWindow, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
         }
     }
 }
