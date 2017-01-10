@@ -20,6 +20,59 @@ namespace RenderToy
                 ((uint)color.B << 0);
         }
         #endregion
+        #region - Section : Phase 1 - Point Rendering (Reference) -
+        public static void DrawPoint(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
+        {
+            var bitmap = ImagePoint(scene, mvp, render_width, render_height);
+            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
+        }
+        public static ImageSource ImagePoint(Scene scene, Matrix3D mvp, int render_width, int render_height)
+        {
+            WriteableBitmap bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
+            bitmap.Lock();
+            unsafe
+            {
+                Action<Point3D, uint> plot = (p, color) => {
+                    int x = (int)p.X;
+                    int y = (int)p.Y;
+                    // Discard pixels outside the framebuffer.
+                    if (!(x >= 0 && x < render_width && y >= 0 && y < render_height)) return;
+                    byte* pRaster = (byte*)bitmap.BackBuffer + bitmap.BackBufferStride * y;
+                    byte* pPixel = pRaster + 4 * x;
+                    *(uint*)pPixel = color;
+                };
+                foreach (var transformedobject in TransformedObject.Enumerate(scene))
+                {
+                    Matrix3D model_mvp = transformedobject.Transform * mvp;
+                    IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                    if (uv == null) continue;
+                    for (int v = 0; v <= 20; ++v)
+                    {
+                        for (int u = 0; u <= 20; ++u)
+                        {
+                            var v3 = new Point3D[]
+                            {
+                                uv.GetPointUV((u + 0.0) / 20, (v + 0.0) / 20),
+                            };
+                            var v3t = v3
+                                .Select(p => new Point4D(p.X, p.Y, p.Z, 1))
+                                .Select(p => model_mvp.Transform(p))
+                                .Where(p => p.W > 0)
+                                .Select(p => new Point3D(p.X / p.W, p.Y / p.W, p.Z / p.W))
+                                .Select(p => new Point3D((1 + p.X) * render_width / 2, (1 - p.Y) * render_height / 2, p.Z));
+                            foreach (var vtx in v3t)
+                            {
+                                plot(vtx, ColorToUInt32(transformedobject.Node.WireColor));
+                            }
+                        }
+                    }
+                }
+            }
+            bitmap.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
+            bitmap.Unlock();
+            return bitmap;
+        }
+        #endregion
         #region - Section : Phase 1 - Point Rendering (GDI+) -
         public static void DrawPointGDI(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
         {

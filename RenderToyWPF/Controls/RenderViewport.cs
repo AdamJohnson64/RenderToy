@@ -186,12 +186,20 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            //ControlUtil.DrawRaster(Scene, View * ProjectionWindow, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
             ControlUtil.DrawWireframeGDI(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            ControlUtil.DrawPoint(Scene, View * ProjectionWindow, 256, 256, drawingContext, ActualWidth, ActualHeight);
+            //ControlUtil.DrawRaster(Scene, View * ProjectionWindow, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
             drawingContext.DrawImage(ControlUtil.ImageRaytrace(Scene, View * Projection, ReduceQuality ? 64 : 256, ReduceQuality ? 64 : 256), new Rect(ActualWidth - 256 - 8, 8, 256, 256));
         }
     }
     class RenderViewportPoint : RenderViewportBase
+    {
+        protected override void OnRenderToy(DrawingContext drawingContext)
+        {
+            ControlUtil.DrawPoint(Scene, View * ProjectionWindow, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+        }
+    }
+    class RenderViewportPointGDI : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
