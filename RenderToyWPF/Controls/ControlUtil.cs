@@ -256,73 +256,56 @@ namespace RenderToy
             bitmap.Lock();
             unsafe
             {
-                // Fill one scanline.
-                Action<int, int, int, uint> fillscan = (y, x1, x2, color) =>
-                {
-                    if (y < 0 || y >= render_height) return;
-                    x1 = Math.Max(0, Math.Min(render_width, x1));
-                    x2 = Math.Max(0, Math.Min(render_width, x2));
-                    byte* pRaster = (byte*)bitmap.BackBuffer + bitmap.BackBufferStride * y;
-                    for (int scanx = x1; scanx < x2; ++scanx)
-                    {
-                        byte* pPixel = pRaster + 4 * scanx;
-                        *(uint*)pPixel = color;
-                    }
-                    if (x1 >= 0 && x1 < render_width)
-                    {
-                        *(uint*)(pRaster + 4 * x1) = 0xffff0000U;
-                    }
-                };
-                // Fill a triangle defined by 3 points.
-                Action<Point3D, Point3D, Point3D, uint> filltri = (p1, p2, p3, color) =>
-                {
-                    // Define a triangle.
-                    Point3D[] tpoints_unordered = { p1, p2, p3 };
-                    // Order the points by ascending Y coordinate.
-                    Point3D[] tpoints = tpoints_unordered.OrderBy(x => x.Y).ToArray();
-                    // Section 1 - t[0] to t[1] vertical scan; top part of triangle.
-                    // Define the left and right slopes (we don't know the order yet.
-                    {
-                        double[] slope = {
-                            (tpoints[1].X - tpoints[0].X) / (tpoints[1].Y - tpoints[0].Y),
-                            (tpoints[2].X - tpoints[0].X) / (tpoints[2].Y - tpoints[0].Y),
-                        };
-                        // Order the slopes to determine the left and right sides.
-                        double[] slope_by_x = slope.OrderBy(x => x).ToArray();
-                        // Scan Y and fill lines over the interpolated slopes.
-                        for (int y = 0; y < tpoints[1].Y - tpoints[0].Y; ++y)
-                        {
-                            fillscan(
-                                (int)(tpoints[0].Y + y),
-                                (int)(tpoints[0].X + slope_by_x[0] * y),
-                                (int)(tpoints[0].X + slope_by_x[1] * y),
-                                color);
-                        }
-                    }
-                    // Section 2 - t[2] to t[1] inverted vertical scan; bottom part of triangle.
-                    {
-                        double[] slope_unordered = {
-                            (tpoints[0].X - tpoints[2].X) / (tpoints[2].Y - tpoints[0].Y),
-                            (tpoints[1].X - tpoints[2].X) / (tpoints[2].Y - tpoints[1].Y),
-                        };
-                        // Order the slopes to determine the left and right sides.
-                        double[] slope = slope_unordered.OrderBy(x => x).ToArray();
-                        // Scan Y and fill lines over the interpolated slopes.
-                        for (int y = 0; y < tpoints[2].Y - tpoints[1].Y; ++y)
-                        {
-                            fillscan(
-                                (int)(tpoints[2].Y - y),
-                                (int)(tpoints[2].X + slope[0] * y),
-                                (int)(tpoints[2].X + slope[1] * y),
-                                color);
-                        }
-                    }
-                };
                 foreach (var transformedobject in TransformedObject.Enumerate(scene))
                 {
                     Matrix3D model_mvp = transformedobject.Transform * mvp;
                     IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                     if (uv == null) continue;
+                    uint color = ColorToUInt32(transformedobject.Node.WireColor);
+                    // Fill one scanline.
+                    Action<int, int, int> fillscan = (y, x1, x2) =>
+                    {
+                        if (y < 0 || y >= render_height) return;
+                        x1 = Math.Max(0, Math.Min(render_width, x1));
+                        x2 = Math.Max(0, Math.Min(render_width, x2));
+                        byte* pRaster = (byte*)bitmap.BackBuffer + bitmap.BackBufferStride * y;
+                        for (int scanx = x1; scanx < x2; ++scanx)
+                        {
+                            byte* pPixel = pRaster + 4 * scanx;
+                            *(uint*)pPixel = color;
+                        }
+                        if (x1 >= 0 && x1 < render_width)
+                        {
+                            *(uint*)(pRaster + 4 * x1) = 0xffff0000U;
+                        }
+                    };
+                    // Fill a triangle defined by 3 points.
+                    Action<Point3D, Point3D, Point3D> filltri = (p1, p2, p3) =>
+                    {
+                        double ymin = Math.Min(p1.Y, Math.Min(p2.Y, p3.Y));
+                        double ymax = Math.Max(p1.Y, Math.Max(p2.Y, p3.Y));
+                        int yscanmin = Math.Max(0, (int)ymin);
+                        int yscanmax = Math.Min(render_height, (int)ymax);
+                        // Calculate edge lines.
+                        var e1 = new { O = p1, D = p2 - p1 };
+                        var e2 = new { O = p2, D = p3 - p2 };
+                        var e3 = new { O = p3, D = p1 - p3 };
+                        var edges = new[] { e1, e2, e3 };
+                        Point3D o1 = p1, o2 = p2, o3 = p3;
+                        Vector3D d1 = p2 - p1, d2 = p3 - p2, d3 = p1 - p3;
+                        // Scan in the range of the triangle.
+                        for (int y = yscanmin; y <= yscanmax; ++y)
+                        {
+                            double sy = y;
+                            var allx = edges
+                                .Select(e => new { E = e, l = (sy - e.O.Y) / e.D.Y })
+                                .Where(e => e.l >= 0 && e.l <= 1)
+                                .Select(e => e.E.O.X + e.l * e.E.D.X)
+                                .ToArray();
+                            if (allx.Length == 0) continue;
+                            fillscan(y, (int)allx.Min(), (int)allx.Max());
+                        }
+                    };
                     for (int v = 0; v < 10; ++v)
                     {
                         for (int u = 0; u < 10; ++u)
@@ -340,8 +323,8 @@ namespace RenderToy
                                 .Select(p => new Point3D(p.X / p.W, p.Y / p.W, p.Z / p.W))
                                 .Select(p => new Point3D((1 + p.X) * render_width / 2, (1 - p.Y) * render_height / 2, p.Z))
                                 .ToArray();
-                            filltri(v3t[0], v3t[1], v3t[3], ColorToUInt32(transformedobject.Node.WireColor));
-                            filltri(v3t[3], v3t[2], v3t[0], ColorToUInt32(transformedobject.Node.WireColor));
+                            filltri(v3t[0], v3t[1], v3t[3]);
+                            filltri(v3t[3], v3t[2], v3t[0]);
                         }
                     }
                 }
