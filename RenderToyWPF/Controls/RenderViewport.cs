@@ -198,6 +198,7 @@ namespace RenderToy
         static RoutedUICommand CommandRenderRaster = new RoutedUICommand("Raster Render", "CommandRenderRaster", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytrace = new RoutedUICommand("Raytrace Render", "CommandRenderRaytrace", typeof(RenderViewport));
         static RoutedUICommand CommandRenderHybrid = new RoutedUICommand("Hybrid Render", "CommandRenderHybrid", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderD3D9 = new RoutedUICommand("D3D9 Render", "CommandRenderD3D9", typeof(RenderViewport));
         static RenderViewport()
         {
             CommandRenderPoint.InputGestures.Add(new KeyGesture(Key.D1, ModifierKeys.Alt));
@@ -205,6 +206,7 @@ namespace RenderToy
             CommandRenderRaster.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Alt));
             CommandRenderRaytrace.InputGestures.Add(new KeyGesture(Key.D4, ModifierKeys.Alt));
             CommandRenderHybrid.InputGestures.Add(new KeyGesture(Key.D0, ModifierKeys.Alt));
+            CommandRenderD3D9.InputGestures.Add(new KeyGesture(Key.D9, ModifierKeys.Alt));
         }
         public RenderViewport()
         {
@@ -213,15 +215,17 @@ namespace RenderToy
             CommandBindings.Add(new CommandBinding(CommandRenderRaster, (s, e) => { renderMode = RenderMode.Raster; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytrace, (s, e) => { renderMode = RenderMode.Raytrace; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderHybrid, (s, e) => { renderMode = RenderMode.Hybrid; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderD3D9, (s, e) => { renderMode = RenderMode.Direct3D9; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             InputBindings.Add(new KeyBinding(CommandRenderPoint, Key.D1, ModifierKeys.Alt));
             InputBindings.Add(new KeyBinding(CommandRenderWireframe, Key.D2, ModifierKeys.Alt));
             InputBindings.Add(new KeyBinding(CommandRenderRaster, Key.D3, ModifierKeys.Alt));
             InputBindings.Add(new KeyBinding(CommandRenderRaytrace, Key.D4, ModifierKeys.Alt));
             InputBindings.Add(new KeyBinding(CommandRenderHybrid, Key.D0, ModifierKeys.Alt));
+            InputBindings.Add(new KeyBinding(CommandRenderD3D9, Key.D9, ModifierKeys.Alt));
             Focusable = true;
         }
-        enum RenderMode { Point, Wireframe, Raster, Raytrace, Hybrid }
-        RenderMode renderMode = RenderMode.Raster;
+        enum RenderMode { Point, Wireframe, Raster, Raytrace, Hybrid, Direct3D9 }
+        RenderMode renderMode = RenderMode.Hybrid;
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
@@ -246,6 +250,9 @@ namespace RenderToy
                 case RenderMode.Hybrid:
                     Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth) / 2, ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight) / 2, drawingContext, ActualWidth, ActualHeight);
                     Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    break;
+                case RenderMode.Direct3D9:
+                    Render.DrawRasterD3D9(Scene, MVP, 512, 512, drawingContext, ActualWidth, ActualHeight);
                     break;
             }
             Action<Func<Scene, Matrix3D, int, int, ImageSource>, int, int, int> drawpreview = (drawhelper, stacky, render_width, render_height) =>
