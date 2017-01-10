@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -192,11 +193,61 @@ namespace RenderToy
     }
     class RenderViewport : RenderViewportBase
     {
+        static RoutedUICommand CommandRenderPoint = new RoutedUICommand("Point Render", "CommandRenderPoint", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderWireframe = new RoutedUICommand("Wireframe Render", "CommandRenderWireframe", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaster = new RoutedUICommand("Raster Render", "CommandRenderRaster", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaytrace = new RoutedUICommand("Raytrace Render", "CommandRenderRaytrace", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderHybrid = new RoutedUICommand("Hybrid Render", "CommandRenderHybrid", typeof(RenderViewport));
+        static RenderViewport()
+        {
+            CommandRenderPoint.InputGestures.Add(new KeyGesture(Key.D1, ModifierKeys.Alt));
+            CommandRenderWireframe.InputGestures.Add(new KeyGesture(Key.D2, ModifierKeys.Alt));
+            CommandRenderRaster.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Alt));
+            CommandRenderRaytrace.InputGestures.Add(new KeyGesture(Key.D4, ModifierKeys.Alt));
+            CommandRenderHybrid.InputGestures.Add(new KeyGesture(Key.D0, ModifierKeys.Alt));
+        }
+        public RenderViewport()
+        {
+            CommandBindings.Add(new CommandBinding(CommandRenderPoint, (s, e) => { renderMode = RenderMode.Point; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderWireframe, (s, e) => { renderMode = RenderMode.Wireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaster, (s, e) => { renderMode = RenderMode.Raster; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaytrace, (s, e) => { renderMode = RenderMode.Raytrace; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderHybrid, (s, e) => { renderMode = RenderMode.Hybrid; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            InputBindings.Add(new KeyBinding(CommandRenderPoint, Key.D1, ModifierKeys.Alt));
+            InputBindings.Add(new KeyBinding(CommandRenderWireframe, Key.D2, ModifierKeys.Alt));
+            InputBindings.Add(new KeyBinding(CommandRenderRaster, Key.D3, ModifierKeys.Alt));
+            InputBindings.Add(new KeyBinding(CommandRenderRaytrace, Key.D4, ModifierKeys.Alt));
+            InputBindings.Add(new KeyBinding(CommandRenderHybrid, Key.D0, ModifierKeys.Alt));
+            Focusable = true;
+        }
+        enum RenderMode { Point, Wireframe, Raster, Raytrace, Hybrid }
+        RenderMode renderMode = RenderMode.Raster;
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseDown(e);
+            Focus();
+        }
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            //ControlUtil.DrawPoint(Scene, MVP, 256, 256, drawingContext, ActualWidth, ActualHeight);
-            Render.DrawRaster(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
-            //Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            switch (renderMode)
+            {
+                case RenderMode.Point:
+                    Render.DrawPoint(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    break;
+                case RenderMode.Wireframe:
+                    Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    break;
+                case RenderMode.Raster:
+                    Render.DrawRaster(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    break;
+                case RenderMode.Raytrace:
+                    Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    break;
+                case RenderMode.Hybrid:
+                    Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth) / 2, ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight) / 2, drawingContext, ActualWidth, ActualHeight);
+                    Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    break;
+            }
             Action<Func<Scene, Matrix3D, int, int, ImageSource>, int, int, int> drawpreview = (drawhelper, stacky, render_width, render_height) =>
             {
                 double frame_l = ActualWidth - 128 - 8;
@@ -214,6 +265,7 @@ namespace RenderToy
             drawpreview(Render.ImageWireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
             drawpreview(Render.ImageRaster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
             drawpreview(Render.ImageRaytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
         }
     }
     class RenderViewportPoint : RenderViewportBase
