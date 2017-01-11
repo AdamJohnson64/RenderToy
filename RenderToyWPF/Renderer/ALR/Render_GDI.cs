@@ -9,9 +9,19 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
+    public static partial class Render
+    {
+        #region - Section : Phase 2 - Wireframe Rendering (GDI+) -
+        public static void DrawWireframeGDI(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
+        {
+            DrawWireframeCommon(scene, mvp, new WireframeGDIPlus(drawingContext, render_width, render_height), width, height);
+        }
+        #endregion
+    }
     class WireframeGDIPlus : IWireframeRenderer
     {
         public WireframeGDIPlus(DrawingContext drawingContext, int buffer_width, int buffer_height)
@@ -38,7 +48,7 @@ namespace RenderToy
             graphics.Dispose();
             graphics = null;
             IntPtr handle = bitmap.GetHbitmap();
-            BitmapSource bitmapsource = Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(bitmap.Width, bitmap.Height));            
+            BitmapSource bitmapsource = Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, System.Windows.Int32Rect.Empty, BitmapSizeOptions.FromWidthAndHeight(bitmap.Width, bitmap.Height));
             drawingContext.DrawImage(bitmapsource, new Rect(0, 0, bitmap.Width, bitmap.Height));
             DeleteObject(handle);
         }

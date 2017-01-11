@@ -62,14 +62,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Render\Render.cs" />
+    <Compile Include="Renderer\ALR\Render_ALR.cs" />
+    <Compile Include="Renderer\ALR\Render_WPF.cs" />
+    <Compile Include="Renderer\D3D9\Render_D3D9.cs" />
+    <Compile Include="Renderer\ALR\Render_GDI.cs" />
+    <Compile Include="Renderer\REF\Render_REF.cs" />
     <Compile Include="Controls\GeometrySwatch.cs" />
     <Compile Include="Geometry\Geometry.cs" />
     <Compile Include="Material\Material.cs" />
-    <Compile Include="Render\Raytrace.cs" />
-    <Compile Include="Render\Wireframe.cs" />
-    <Compile Include="Render\WireframeGDIPlus.cs" />
-    <Compile Include="Render\WireframeWPF.cs" />
+    <Compile Include="Renderer\RAY\Render_RAY.cs" />
     <Compile Include="Scene\Camera.cs" />
     <Compile Include="Scene\Scene.cs" />
     <Compile Include="Utility\DrawHelp.cs" />

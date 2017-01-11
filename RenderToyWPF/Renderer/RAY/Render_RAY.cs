@@ -5,15 +5,34 @@
 
 using System;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
-    static class Raytrace
+    public static partial class Render
     {
-        public static void DoRaytrace(Scene scene, Matrix3D inverse_mvp, int buffer_width, int buffer_height, IntPtr buffer_memory, int buffer_stride)
+        #region - Section : Phase 4 - Raytrace Rendering (Reference) -
+        public static void DrawRaytrace(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
         {
+            var bitmap = ImageRaytrace(scene, mvp, render_width, render_height);
+            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
+        }
+        public static ImageSource ImageRaytrace(Scene scene, Matrix3D mvp, int render_width, int render_height)
+        {
+            var bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
+            bitmap.Lock();
+            FillRaytrace(scene, mvp, bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
+            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+            bitmap.Unlock();
+            return bitmap;
+        }
+        public static void FillRaytrace(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        {
+            Matrix3D inverse_mvp = mvp;
+            inverse_mvp.Invert();
             // Define the scene.
             RaytraceObject[] objects =
                 TransformedObject.Enumerate(scene)
@@ -22,20 +41,20 @@ namespace RenderToy
                 .ToArray();
             // Render the pixel buffer for the raytrace result.
             Point3D found_color = new Point3D(0, 0, 0);
-            for (int y = 0; y < buffer_height; ++y)
+            for (int y = 0; y < bitmap_height; ++y)
             {
-                for (int x = 0; x < buffer_width; ++x)
+                for (int x = 0; x < bitmap_width; ++x)
                 {
                     // Compute an eye ray by unprojecting clip space rays via the inverse-mvp.
-                    Point4D v41 = inverse_mvp.Transform(new Point4D(-1.0 + ((x * 2.0) + 0.5) / buffer_width, 1.0 - ((y * 2.0) + 0.5) / buffer_height, 0, 1));
-                    Point4D v42 = inverse_mvp.Transform(new Point4D(-1.0 + ((x * 2.0) + 0.5) / buffer_width, 1.0 - ((y * 2.0) + 0.5) / buffer_height, 1, 1));
+                    Point4D v41 = inverse_mvp.Transform(new Point4D(-1.0 + ((x * 2.0) + 0.5) / bitmap_width, 1.0 - ((y * 2.0) + 0.5) / bitmap_height, 0, 1));
+                    Point4D v42 = inverse_mvp.Transform(new Point4D(-1.0 + ((x * 2.0) + 0.5) / bitmap_width, 1.0 - ((y * 2.0) + 0.5) / bitmap_height, 1, 1));
                     Point3D ray_origin = new Point3D(v41.X / v41.W, v41.Y / v41.W, v41.Z / v41.W);
                     Vector3D ray_direction = new Point3D(v42.X / v42.W, v42.Y / v42.W, v42.Z / v42.W) - ray_origin;
                     if (!RayColor(objects, ray_origin, ray_direction, ref found_color)) continue;
                     uint color = Point3ToARGB(found_color);
                     unsafe
                     {
-                        byte* pRaster = (byte*)buffer_memory + y * buffer_stride;
+                        byte* pRaster = (byte*)bitmap_ptr + y * bitmap_stride;
                         byte* pPixel = pRaster + x * 4;
                         *(uint*)pPixel = color;
                     }
@@ -122,6 +141,7 @@ namespace RenderToy
                 ((uint)(g * 0xffU) << 8) |  // Green
                 ((uint)(b * 0xffU) << 0);   // Blue (LSB)
         }
+        #endregion
     }
     /// <summary>
     /// Abstract raytrace object.
