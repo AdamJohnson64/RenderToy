@@ -197,16 +197,18 @@ namespace RenderToy
         static RoutedUICommand CommandRenderWireframe = new RoutedUICommand("Wireframe Render", "CommandRenderWireframe", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaster = new RoutedUICommand("Raster Render", "CommandRenderRaster", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytrace = new RoutedUICommand("Raytrace Render", "CommandRenderRaytrace", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderHybrid = new RoutedUICommand("Hybrid Render", "CommandRenderHybrid", typeof(RenderViewport));
         static RoutedUICommand CommandRenderD3D9 = new RoutedUICommand("D3D9 Render", "CommandRenderD3D9", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(RenderViewport));
         static RenderViewport()
         {
-            CommandRenderPoint.InputGestures.Add(new KeyGesture(Key.D1, ModifierKeys.Alt));
-            CommandRenderWireframe.InputGestures.Add(new KeyGesture(Key.D2, ModifierKeys.Alt));
-            CommandRenderRaster.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Alt));
-            CommandRenderRaytrace.InputGestures.Add(new KeyGesture(Key.D4, ModifierKeys.Alt));
-            CommandRenderHybrid.InputGestures.Add(new KeyGesture(Key.D0, ModifierKeys.Alt));
-            CommandRenderD3D9.InputGestures.Add(new KeyGesture(Key.D9, ModifierKeys.Alt));
+            CommandRenderPoint.InputGestures.Add(new KeyGesture(Key.D1, ModifierKeys.Control));
+            CommandRenderWireframe.InputGestures.Add(new KeyGesture(Key.D2, ModifierKeys.Control));
+            CommandRenderRaster.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Control));
+            CommandRenderRaytrace.InputGestures.Add(new KeyGesture(Key.D4, ModifierKeys.Control));
+            CommandRenderD3D9.InputGestures.Add(new KeyGesture(Key.D0, ModifierKeys.Control));
+            CommandRenderPreviewsToggle.InputGestures.Add(new KeyGesture(Key.P, ModifierKeys.Control));
+            CommandRenderWireframeToggle.InputGestures.Add(new KeyGesture(Key.W, ModifierKeys.Control));
         }
         public RenderViewport()
         {
@@ -214,18 +216,22 @@ namespace RenderToy
             CommandBindings.Add(new CommandBinding(CommandRenderWireframe, (s, e) => { renderMode = RenderMode.Wireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaster, (s, e) => { renderMode = RenderMode.Raster; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytrace, (s, e) => { renderMode = RenderMode.Raytrace; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderHybrid, (s, e) => { renderMode = RenderMode.Hybrid; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderD3D9, (s, e) => { renderMode = RenderMode.Direct3D9; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            InputBindings.Add(new KeyBinding(CommandRenderPoint, Key.D1, ModifierKeys.Alt));
-            InputBindings.Add(new KeyBinding(CommandRenderWireframe, Key.D2, ModifierKeys.Alt));
-            InputBindings.Add(new KeyBinding(CommandRenderRaster, Key.D3, ModifierKeys.Alt));
-            InputBindings.Add(new KeyBinding(CommandRenderRaytrace, Key.D4, ModifierKeys.Alt));
-            InputBindings.Add(new KeyBinding(CommandRenderHybrid, Key.D0, ModifierKeys.Alt));
-            InputBindings.Add(new KeyBinding(CommandRenderD3D9, Key.D9, ModifierKeys.Alt));
+            CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { renderPreviews = !renderPreviews; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderWireframeToggle, (s, e) => { renderWireframe = !renderWireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            InputBindings.Add(new KeyBinding(CommandRenderPoint, Key.D1, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderWireframe, Key.D2, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaster, Key.D3, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaytrace, Key.D4, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderD3D9, Key.D0, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
             Focusable = true;
         }
-        enum RenderMode { Point, Wireframe, Raster, Raytrace, Hybrid, Direct3D9 }
-        RenderMode renderMode = RenderMode.Hybrid;
+        enum RenderMode { Point, Wireframe, Raster, Raytrace, Direct3D9 }
+        RenderMode renderMode = RenderMode.Wireframe;
+        bool renderPreviews = true;
+        bool renderWireframe = false;
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
@@ -247,32 +253,34 @@ namespace RenderToy
                 case RenderMode.Raytrace:
                     Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
                     break;
-                case RenderMode.Hybrid:
-                    Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth) / 2, ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight) / 2, drawingContext, ActualWidth, ActualHeight);
-                    Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
-                    break;
                 case RenderMode.Direct3D9:
                     Render.DrawRasterD3D9(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
-                    Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
                     break;
             }
-            Action<Func<Scene, Matrix3D, int, int, ImageSource>, int, int, int> drawpreview = (drawhelper, stacky, render_width, render_height) =>
+            if (renderWireframe)
             {
-                double frame_l = ActualWidth - 128 - 8;
-                double frame_t = 8 + (96 + 8) * stacky;
-                double frame_w = 128;
-                double frame_h = 96;
-                double image_l = frame_l + 8;
-                double image_t = frame_t + 8;
-                double image_w = frame_w - 8 * 2;
-                double image_h = frame_h - 8 * 2;
-                drawingContext.DrawRoundedRectangle(Brushes.White, new Pen(Brushes.DarkGray, 2), new Rect(frame_l, frame_t, frame_w, frame_h), 8, 8);
-                drawingContext.DrawImage(drawhelper(Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height), new Rect(image_l, image_t, image_w, image_h));
-            };
-            drawpreview(Render.ImagePoint, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
-            drawpreview(Render.ImageWireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-            drawpreview(Render.ImageRaster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-            drawpreview(Render.ImageRaytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            }
+            if (renderPreviews)
+            {
+                Action<Func<Scene, Matrix3D, int, int, ImageSource>, int, int, int> drawpreview = (drawhelper, stacky, render_width, render_height) =>
+                {
+                    double frame_l = ActualWidth - 128 - 8;
+                    double frame_t = 8 + (96 + 8) * stacky;
+                    double frame_w = 128;
+                    double frame_h = 96;
+                    double image_l = frame_l + 8;
+                    double image_t = frame_t + 8;
+                    double image_w = frame_w - 8 * 2;
+                    double image_h = frame_h - 8 * 2;
+                    drawingContext.DrawRoundedRectangle(Brushes.White, new Pen(Brushes.DarkGray, 2), new Rect(frame_l, frame_t, frame_w, frame_h), 8, 8);
+                    drawingContext.DrawImage(drawhelper(Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height), new Rect(image_l, image_t, image_w, image_h));
+                };
+                drawpreview(Render.ImagePoint, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
+                drawpreview(Render.ImageWireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(Render.ImageRaster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(Render.ImageRaytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+            }
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
         }
