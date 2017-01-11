@@ -15,21 +15,7 @@ namespace RenderToy
     public static partial class Render
     {
         #region - Section : Phase 4 - Raytrace Rendering (Reference) -
-        public static void DrawRaytrace(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
-        {
-            var bitmap = ImageRaytrace(scene, mvp, render_width, render_height);
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
-        }
-        public static ImageSource ImageRaytrace(Scene scene, Matrix3D mvp, int render_width, int render_height)
-        {
-            var bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
-            bitmap.Lock();
-            FillRaytrace(scene, mvp, bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
-            bitmap.Unlock();
-            return bitmap;
-        }
-        public static void FillRaytrace(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void Raytrace(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             Matrix3D inverse_mvp = mvp;
             inverse_mvp.Invert();

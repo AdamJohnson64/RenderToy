@@ -242,28 +242,28 @@ namespace RenderToy
             switch (renderMode)
             {
                 case RenderMode.Point:
-                    Render.DrawPoint(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    ImageHelp.DrawImage(Render.Point, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
                     break;
                 case RenderMode.Wireframe:
-                    Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    ImageHelp.DrawImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
                     break;
                 case RenderMode.Raster:
-                    Render.DrawRaster(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    ImageHelp.DrawImage(Render.Raster, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
                     break;
                 case RenderMode.Raytrace:
-                    Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    ImageHelp.DrawImage(Render.Raytrace, Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
                     break;
                 case RenderMode.Direct3D9:
-                    Render.DrawRasterD3D9(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    ImageHelp.DrawImage(Render.RasterD3D9, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
                     break;
             }
             if (renderWireframe)
             {
-                Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                ImageHelp.DrawImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
             }
             if (renderPreviews)
             {
-                Action<Func<Scene, Matrix3D, int, int, ImageSource>, int, int, int> drawpreview = (drawhelper, stacky, render_width, render_height) =>
+                Action<ImageHelp.FillFunction, int, int, int> drawpreview = (fillwith, stacky, render_width, render_height) =>
                 {
                     double frame_l = ActualWidth - 128 - 8;
                     double frame_t = 8 + (96 + 8) * stacky;
@@ -274,12 +274,13 @@ namespace RenderToy
                     double image_w = frame_w - 8 * 2;
                     double image_h = frame_h - 8 * 2;
                     drawingContext.DrawRoundedRectangle(Brushes.White, new Pen(Brushes.DarkGray, 2), new Rect(frame_l, frame_t, frame_w, frame_h), 8, 8);
-                    drawingContext.DrawImage(drawhelper(Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height), new Rect(image_l, image_t, image_w, image_h));
+                    var imagesource = ImageHelp.CreateImage(fillwith, Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height);
+                    drawingContext.DrawImage(imagesource, new Rect(image_l, image_t, image_w, image_h));
                 };
-                drawpreview(Render.ImagePoint, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
-                drawpreview(Render.ImageWireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-                drawpreview(Render.ImageRaster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-                drawpreview(Render.ImageRaytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(Render.Point, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
+                drawpreview(Render.Wireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(Render.Raster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(Render.Raytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
             }
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
@@ -289,42 +290,42 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            Render.DrawPoint(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            ImageHelp.DrawImage(Render.Point, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportWireframeGDI : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            Render.DrawWireframeGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            Render.WireframeGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportWireframeWPF : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            Render.DrawWireframeWPF(Scene, MVP, drawingContext, ActualWidth, ActualHeight);
+            Render.WireframeWPF(Scene, MVP, drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRaster : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            Render.DrawRaster(Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+            ImageHelp.DrawImage(Render.Raster, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRasterD3D : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            Render.DrawRasterD3D9(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            ImageHelp.DrawImage(Render.RasterD3D9, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRaytrace : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            Render.DrawRaytrace(Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+            ImageHelp.DrawImage(Render.Raytrace, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
         }
     }
 }

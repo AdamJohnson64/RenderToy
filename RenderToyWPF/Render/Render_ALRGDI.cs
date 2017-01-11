@@ -16,15 +16,15 @@ namespace RenderToy
     public static partial class Render
     {
         #region - Section : Phase 2 - Wireframe Rendering (GDI+) -
-        public static void DrawWireframeGDI(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
+        public static void WireframeGDI(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
         {
-            DrawWireframeCommon(scene, mvp, new WireframeGDIPlus(drawingContext, render_width, render_height), width, height);
+            DrawWireframeCommon(scene, mvp, new WireframeGDI(drawingContext, render_width, render_height), width, height);
         }
         #endregion
     }
-    class WireframeGDIPlus : IWireframeRenderer
+    class WireframeGDI : IWireframeRenderer
     {
-        public WireframeGDIPlus(DrawingContext drawingContext, int buffer_width, int buffer_height)
+        public WireframeGDI(DrawingContext drawingContext, int buffer_width, int buffer_height)
         {
             this.drawingContext = drawingContext;
             bitmap = new Bitmap(buffer_width, buffer_height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);

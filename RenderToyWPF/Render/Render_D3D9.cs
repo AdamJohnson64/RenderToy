@@ -15,12 +15,7 @@ namespace RenderToy
     public static partial class Render
     {
         #region - Section : Phase 3 - Rasterized Rendering (Direct3D 9) -
-        public static void DrawRasterD3D9(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
-        {
-            var bitmap = ImageRasterD3D9(scene, mvp, render_width, render_height);
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
-        }
-        public static ImageSource ImageRasterD3D9(Scene scene, Matrix3D mvp, int render_width, int render_height)
+        public static ImageSource RasterD3D9(Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
             D3D9Surface d3dsurface = new D3D9Surface(render_width, render_height);
             d3dsurface.BeginScene();

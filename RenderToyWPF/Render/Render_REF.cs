@@ -5,9 +5,7 @@
 
 using System;
 using System.Linq;
-using System.Windows;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 
 namespace RenderToy
@@ -25,21 +23,7 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Phase 1 - Point Rendering (Reference) -
-        public static void DrawPoint(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
-        {
-            var bitmap = ImagePoint(scene, mvp, render_width, render_height);
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
-        }
-        public static ImageSource ImagePoint(Scene scene, Matrix3D mvp, int render_width, int render_height)
-        {
-            WriteableBitmap bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
-            bitmap.Lock();
-            FillPoint(scene, mvp, bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
-            bitmap.Unlock();
-            return bitmap;
-        }
-        public static void FillPoint(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void Point(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
@@ -72,21 +56,7 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Phase 2 - Wireframe Rendering (Reference) -
-        public static void DrawWireframe(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
-        {
-            var bitmap = ImageWireframe(scene, mvp, render_width, render_height);
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
-        }
-        public static ImageSource ImageWireframe(Scene scene, Matrix3D mvp, int render_width, int render_height)
-        {
-            WriteableBitmap bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
-            bitmap.Lock();
-            FillWireframe(scene, mvp, bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
-            bitmap.Unlock();
-            return bitmap;
-        }
-        public static void FillWireframe(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void Wireframe(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
@@ -155,21 +125,7 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Phase 3 - Rasterized Rendering (Reference) -
-        public static void DrawRaster(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
-        {
-            var bitmap = ImageRaster(scene, mvp, render_width, render_height);
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, width, height));
-        }
-        public static ImageSource ImageRaster(Scene scene, Matrix3D mvp, int render_width, int render_height)
-        {
-            WriteableBitmap bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
-            bitmap.Lock();
-            FillRaster(scene, mvp, bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
-            bitmap.Unlock();
-            return bitmap;
-        }
-        public static void FillRaster(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void Raster(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             float[] depthbuffer = new float[bitmap_width * bitmap_height];
             for (int i = 0; i < depthbuffer.Length; ++i) depthbuffer[i] = 1;
