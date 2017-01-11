@@ -252,7 +252,8 @@ namespace RenderToy
                     Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
                     break;
                 case RenderMode.Direct3D9:
-                    Render.DrawRasterD3D9(Scene, MVP, 512, 512, drawingContext, ActualWidth, ActualHeight);
+                    Render.DrawRasterD3D9(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    Render.DrawWireframe(Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
                     break;
             }
             Action<Func<Scene, Matrix3D, int, int, ImageSource>, int, int, int> drawpreview = (drawhelper, stacky, render_width, render_height) =>
