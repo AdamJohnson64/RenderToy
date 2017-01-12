@@ -13,15 +13,6 @@ using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
-    public static partial class Render
-    {
-        #region - Section : Phase 2 - Wireframe Rendering (GDI+) -
-        public static void WireframeGDI(Scene scene, Matrix3D mvp, int render_width, int render_height, DrawingContext drawingContext, double width, double height)
-        {
-            DrawWireframeCommon(scene, mvp, new WireframeGDI(drawingContext, render_width, render_height), width, height);
-        }
-        #endregion
-    }
     class WireframeGDI : IWireframeRenderer
     {
         public WireframeGDI(DrawingContext drawingContext, int buffer_width, int buffer_height)

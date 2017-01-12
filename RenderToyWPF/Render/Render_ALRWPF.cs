@@ -9,15 +9,6 @@ using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
-    public static partial class Render
-    {
-        #region - Section : Phase 2 - Wireframe Rendering (WPF) -
-        public static void WireframeWPF(Scene scene, Matrix3D mvp, DrawingContext drawingContext, double width, double height)
-        {
-            DrawWireframeCommon(scene, mvp, new WireframeWPF(drawingContext), width, height);
-        }
-        #endregion
-    }
     class WireframeWPF : IWireframeRenderer
     {
         public WireframeWPF(DrawingContext drawingContext)

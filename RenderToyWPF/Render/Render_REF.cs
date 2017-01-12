@@ -48,8 +48,7 @@ namespace RenderToy
                     Point4D v4 = new Point4D(p.X, p.Y, p.Z, 1);
                     v4 = model_mvp.Transform(v4);
                     if (v4.W <= 0) return;
-                    v4 = MathHelp.Scale(v4, 1 / v4.W);
-                    drawpixel2d((int)((1 + v4.X) * bitmap_width / 2), (int)((1 - v4.Y) * bitmap_height / 2));
+                    drawpixel2d((int)((1 + v4.X / v4.W) * bitmap_width / 2), (int)((1 - v4.Y / v4.W) * bitmap_height / 2));
                 };
                 DrawHelp.DrawParametricUV(drawpoint, uv);
             }
@@ -113,12 +112,10 @@ namespace RenderToy
                 DrawHelp.fnDrawLineWorld drawline3d = (p1, p2) => {
                     Point4D v41 = new Point4D(p1.X, p1.Y, p1.Z, 1);
                     Point4D v42 = new Point4D(p2.X, p2.Y, p2.Z, 1);
-                    if (!DrawHelp.TransformAndClipLine(ref v41, ref v42, model_mvp)) return;
-                    v41 = MathHelp.Scale(v41, 1 / v41.W);
-                    v42 = MathHelp.Scale(v42, 1 / v42.W);
+                    if (!ClipHelp.TransformAndClipLine(ref v41, ref v42, model_mvp)) return;
                     drawline2d(
-                        new Point3D((1 + v41.X) * bitmap_width / 2, (1 - v41.Y) * bitmap_height / 2, v41.Z),
-                        new Point3D((1 + v42.X) * bitmap_width / 2, (1 - v42.Y) * bitmap_height / 2, v42.Z));
+                        new Point3D((1 + v41.X / v41.W) * bitmap_width / 2, (1 - v41.Y / v41.W) * bitmap_height / 2, v41.Z / v41.W),
+                        new Point3D((1 + v42.X / v42.W) * bitmap_width / 2, (1 - v42.Y / v42.W) * bitmap_height / 2, v42.Z / v42.W));
                 };
                 DrawHelp.DrawParametricUV(drawline3d, uv);
             }
@@ -187,7 +184,7 @@ namespace RenderToy
                 };
                 Action<Point4D, Point4D, Point4D> filltri_clipspace = (p1, p2, p3) =>
                 {
-                    foreach (var tri in DrawHelp.ClipTriangle3D(new DrawHelp.Triangle { p1 = p1, p2 = p2, p3 = p3 }))
+                    foreach (var tri in ClipHelp.ClipTriangle3D(new ClipHelp.Triangle { p1 = p1, p2 = p2, p3 = p3 }))
                     {
                         Point4D[] v3 = { tri.p1, tri.p2, tri.p3 };
                         Point3D[] v3t = v3

@@ -73,6 +73,7 @@
     <Compile Include="Render\Render_RAY.cs" />
     <Compile Include="Scene\Camera.cs" />
     <Compile Include="Scene\Scene.cs" />
+    <Compile Include="Utility\ClipHelp.cs" />
     <Compile Include="Utility\DrawHelp.cs" />
     <Compile Include="Utility\ImageHelp.cs" />
     <Compile Include="Utility\MathHelp.cs" />

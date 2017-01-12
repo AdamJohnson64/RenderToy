@@ -14,7 +14,7 @@ namespace RenderToy
 {
     public abstract class RenderViewportBase : FrameworkElement
     {
-        public static DependencyProperty DrawExtraProperty = DependencyProperty.Register("DrawExtra", typeof(RenderViewport), typeof(RenderViewport));
+        public static DependencyProperty DrawExtraProperty = DependencyProperty.Register("DrawExtra", typeof(RenderViewportBase), typeof(RenderViewportBase));
         public RenderViewportBase DrawExtra { get { return (RenderViewportBase)GetValue(DrawExtraProperty); } set { SetValue(DrawExtraProperty, value);  } }
         public Scene Scene = Scene.Default;
         public RenderViewportBase()
@@ -138,8 +138,7 @@ namespace RenderToy
                 // Draw the clip space of the Model-View-Projection.
                 Matrix3D other = MathHelp.Invert(DrawExtra.MVP);
                 IWireframeRenderer renderer = new WireframeWPF(drawingContext);
-                DrawHelp.fnDrawLineViewport lineviewport = Render.CreateLineViewportFunction(renderer, ActualWidth, ActualHeight);
-                DrawHelp.fnDrawLineWorld line = Render.CreateLineWorldFunction(lineviewport, MVP);
+                DrawHelp.fnDrawLineWorld line = AbstractLineRenderer.CreateLineWorldFunction(renderer, ActualWidth, ActualHeight, MVP);
                 renderer.WireframeBegin();
                 renderer.WireframeColor(0.0, 1.0, 1.0);
                 DrawHelp.DrawClipSpace(line, other);
@@ -297,14 +296,14 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            Render.WireframeGDI(Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            AbstractLineRenderer.DrawWireframe(Scene, MVP, new WireframeGDI(drawingContext, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), ActualWidth, ActualHeight);
         }
     }
     class RenderViewportWireframeWPF : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            Render.WireframeWPF(Scene, MVP, drawingContext, ActualWidth, ActualHeight);
+            AbstractLineRenderer.DrawWireframe(Scene, MVP, new WireframeWPF(drawingContext), ActualWidth, ActualHeight);
         }
     }
     class RenderViewportRaster : RenderViewportBase

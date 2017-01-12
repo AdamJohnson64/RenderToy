@@ -27,7 +27,7 @@ namespace RenderToy
                 d3dsurface.SetColor(ColorToUInt32(transformedobject.Node.WireColor));
                 Action<Point4D, Point4D, Point4D> filltri_clipspace = (p1, p2, p3) =>
                 {
-                    foreach (var tri in DrawHelp.ClipTriangle3D(new DrawHelp.Triangle { p1 = p1, p2 = p2, p3 = p3 }))
+                    foreach (var tri in ClipHelp.ClipTriangle3D(new ClipHelp.Triangle { p1 = p1, p2 = p2, p3 = p3 }))
                     {
                         Point4D[] points = { tri.p1, tri.p2, tri.p3 };
                         var t = points

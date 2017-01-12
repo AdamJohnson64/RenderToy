@@ -35,8 +35,7 @@
                     <!-- YZ Viewport (Side) -->
                     <local:RenderViewportWireframeGDI Grid.Row="2" Grid.Column="0"/>
                     <!-- Rotate Viewport -->
-                    <local:RenderViewportRaster Grid.Row="2" Grid.Column="2"/>
-                    <!-- DrawExtra="{Binding ElementName=ViewMain}"/ -->
+                    <local:RenderViewportRaster Grid.Row="2" Grid.Column="2" DrawExtra="{Binding ElementName=ViewMain}"/>
                     <GridSplitter Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                     <GridSplitter Grid.Column="1" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                     <GridSplitter Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
