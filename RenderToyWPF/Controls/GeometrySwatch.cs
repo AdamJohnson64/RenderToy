@@ -15,8 +15,8 @@ namespace RenderToy
     {
         public GeometrySwatch(object primitive)
         {
-            Width = 32;
-            Height = 32;
+            Width = 64;
+            Height = 64;
             Primitive = primitive;
         }
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -29,9 +29,10 @@ namespace RenderToy
             base.OnRender(drawingContext);
             Scene scene = new Scene();
             scene.AddChild(new Node(new TransformMatrix3D(Matrix3D.Identity), Primitive, Colors.DarkGray, new ConstantColorMaterial(Colors.DarkGray)));
-            Matrix3D View = MathHelp.CreateTranslateMatrix(0, 0, 3);
-            Matrix3D ProjectionWindow = CameraPerspective.CreateProjection(0.001, 100, 45.0 * Math.PI / 180.0, 45.0 * Math.PI / 180.0);
-            Matrix3D mvp = View * ProjectionWindow;
+            Matrix3D Camera = MathHelp.CreateLookAt(new Point3D(2, 2, -2), new Point3D(0, 0, 0), new Vector3D(0, 1, 0));
+            Matrix3D View = MathHelp.Invert(Camera);
+            Matrix3D Projection = CameraPerspective.CreateProjection(0.001, 100, 45.0 * Math.PI / 180.0, 45.0 * Math.PI / 180.0);
+            Matrix3D mvp = View * Projection;
             // Prefer to render the primitive as a raytraced object first.
             if (Primitive is IRayTest)
             {
@@ -42,7 +43,6 @@ namespace RenderToy
             // Then try a parametric raster.
             if (Primitive is IParametricUV)
             {
-                drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raster, scene, mvp, 64, 64), new Rect(0, 0, ActualWidth, ActualHeight));
                 drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, scene, mvp, 64, 64), new Rect(0, 0, ActualWidth, ActualHeight));
                 return;
             }

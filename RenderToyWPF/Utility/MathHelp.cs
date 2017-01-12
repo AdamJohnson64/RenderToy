@@ -9,6 +9,17 @@ namespace RenderToy
 {
     public static class MathHelp
     {
+        public static Matrix3D CreateLookAt(Point3D eye, Point3D at, Vector3D up)
+        {
+            Vector3D lfz = MathHelp.Normalized(at - eye);
+            Vector3D lfx = MathHelp.Normalized(MathHelp.Cross(up, lfz));
+            Vector3D lfy = MathHelp.Normalized(MathHelp.Cross(lfz, lfx));
+            return new Matrix3D(
+                lfx.X, lfx.Y, lfx.Z, 0,
+                lfy.X, lfy.Y, lfy.Z, 0,
+                lfz.X, lfz.Y, lfz.Z, 0,
+                eye.X, eye.Y, eye.Z, 1);
+        }
         public static Matrix3D CreateScaleMatrix(double x, double y, double z)
         {
             return new Matrix3D(
@@ -28,6 +39,13 @@ namespace RenderToy
         public static Point3D Add(Point3D a, Point3D b)
         {
             return new Point3D(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+        }
+        public static Vector3D Cross(Vector3D a, Vector3D b)
+        {
+            return new Vector3D(
+                a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
+                a.X * b.Y - a.Y * b.X);
         }
         public static double Dot(Point3D a, Point3D b)
         {
@@ -53,6 +71,11 @@ namespace RenderToy
         {
             m.Invert();
             return m;
+        }
+        public static Vector3D Normalized(Vector3D v)
+        {
+            v.Normalize();
+            return v;
         }
         public static Point3D Scale(Point3D v, double a)
         {

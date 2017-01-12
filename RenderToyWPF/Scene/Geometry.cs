@@ -46,8 +46,8 @@ namespace RenderToy
             hull = new Point3D[16]
             {
                 new Point3D(-1, 0, -1), new Point3D(-h, 0, -1), new Point3D(+h, 0, -1), new Point3D(+1, 0, -1),
-                new Point3D(-1, 0, -h), new Point3D(-h, 1, -h), new Point3D(+h, 1, -h), new Point3D(+1, 0, -h),
-                new Point3D(-1, 0, +h), new Point3D(-h, 1, +h), new Point3D(+h, 1, +h), new Point3D(+1, 0, +h),
+                new Point3D(-1, 0, -h), new Point3D(-h, 4, -h), new Point3D(+h, -4, -h), new Point3D(+1, 0, -h),
+                new Point3D(-1, 0, +h), new Point3D(-h, -4, +h), new Point3D(+h, 4, +h), new Point3D(+1, 0, +h),
                 new Point3D(-1, 0, +1), new Point3D(-h, 0, +1), new Point3D(+h, 0, +1), new Point3D(+1, 0, +1),
             };
         }
