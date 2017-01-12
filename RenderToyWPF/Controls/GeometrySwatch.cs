@@ -35,15 +35,15 @@ namespace RenderToy
             // Prefer to render the primitive as a raytraced object first.
             if (Primitive is IRayTest)
             {
-                ImageHelp.DrawImage(Render.Raytrace, scene, mvp, 64, 64, drawingContext, ActualWidth, ActualHeight);
-                ImageHelp.DrawImage(Render.Wireframe, scene, mvp, 64, 64, drawingContext, ActualWidth, ActualHeight);
+                drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raytrace, scene, mvp, 64, 64), new Rect(0, 0, ActualWidth, ActualHeight));
+                drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, scene, mvp, 64, 64), new Rect(0, 0, ActualWidth, ActualHeight));
                 return;
             }
             // Then try a parametric raster.
             if (Primitive is IParametricUV)
             {
-                ImageHelp.DrawImage(Render.Raster, scene, mvp, 64, 64, drawingContext, ActualWidth, ActualHeight);
-                ImageHelp.DrawImage(Render.Wireframe, scene, mvp, 64, 64, drawingContext, ActualWidth, ActualHeight);
+                drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raster, scene, mvp, 64, 64), new Rect(0, 0, ActualWidth, ActualHeight));
+                drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, scene, mvp, 64, 64), new Rect(0, 0, ActualWidth, ActualHeight));
                 return;
             }
         }

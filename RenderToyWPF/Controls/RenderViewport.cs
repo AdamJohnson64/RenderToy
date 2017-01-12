@@ -241,24 +241,24 @@ namespace RenderToy
             switch (renderMode)
             {
                 case RenderMode.Point:
-                    ImageHelp.DrawImage(Render.Point, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Point, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.Wireframe:
-                    ImageHelp.DrawImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.Raster:
-                    ImageHelp.DrawImage(Render.Raster, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raster, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.Raytrace:
-                    ImageHelp.DrawImage(Render.Raytrace, Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raytrace, Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.Direct3D9:
-                    ImageHelp.DrawImage(Render.RasterD3D9, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RasterD3D9, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
             }
             if (renderWireframe)
             {
-                ImageHelp.DrawImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+                drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
             }
             if (renderPreviews)
             {
@@ -289,7 +289,7 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ImageHelp.DrawImage(Render.Point, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            drawingContext.DrawImage(ImageHelp.CreateImage(Render.Point, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
         }
     }
     class RenderViewportWireframeGDI : RenderViewportBase
@@ -310,21 +310,21 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ImageHelp.DrawImage(Render.Raster, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+            drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raster, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512), new Rect(0, 0, ActualWidth, ActualHeight));
         }
     }
     class RenderViewportRasterD3D : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ImageHelp.DrawImage(Render.RasterD3D9, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), drawingContext, ActualWidth, ActualHeight);
+            drawingContext.DrawImage(ImageHelp.CreateImage(Render.RasterD3D9, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
         }
     }
     class RenderViewportRaytrace : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            ImageHelp.DrawImage(Render.Raytrace, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512, drawingContext, ActualWidth, ActualHeight);
+            drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raytrace, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512), new Rect(0, 0, ActualWidth, ActualHeight));
         }
     }
 }
