@@ -15,8 +15,7 @@ namespace RenderToy
         #region - Section : Phase 4 - Raytrace Rendering (Reference) -
         public static void Raytrace(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            Matrix3D inverse_mvp = mvp;
-            inverse_mvp.Invert();
+            Matrix3D inverse_mvp = MathHelp.Invert(mvp);
             // Define the scene.
             RaytraceObject[] objects =
                 TransformedObject.Enumerate(scene)
@@ -56,14 +55,11 @@ namespace RenderToy
             // World Vector - The world space position of intersection.
             Point3D vector_world = ray_origin + found_lambda * ray_direction;
             // Normal Vector - The world space normal of the intersection point.
-            Vector3D vector_normal = found_object.RayTestNormal(ray_origin, ray_direction);
-            vector_normal.Normalize();
+            Vector3D vector_normal = MathHelp.Normalized(found_object.RayTestNormal(ray_origin, ray_direction));
             // View Vector - The world space direction we are looking.
-            Vector3D vector_view = -ray_direction;
-            vector_view.Normalize();
+            Vector3D vector_view = MathHelp.Normalized(-ray_direction);
             // Light Vector - The world space direction toward the light.
-            Vector3D vector_light = new Point3D(10, 10, -10) - vector_world;
-            vector_light.Normalize();
+            Vector3D vector_light = MathHelp.Normalized(new Point3D(10, 10, -10) - vector_world);
             // Reflection Vector - The world space reflected view about the normal.
             Vector3D vector_reflect = -vector_view + 2 * MathHelp.Dot(vector_normal, vector_view) * vector_normal;
             // Shadow test.

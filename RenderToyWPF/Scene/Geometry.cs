@@ -68,7 +68,7 @@ namespace RenderToy
             {
                 for (int i = 0; i < 4; ++i)
                 {
-                    acc = MathHelp.Add(acc, MathHelp.Scale(hull[i + j * 4], bu[i] * bv[j]));
+                    acc = MathHelp.Add(acc, MathHelp.Multiply(hull[i + j * 4], bu[i] * bv[j]));
                 }
             }
             return acc;

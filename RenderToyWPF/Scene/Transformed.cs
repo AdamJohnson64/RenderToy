@@ -32,7 +32,10 @@ namespace RenderToy
         {
             get
             {
-                return MathHelp.ToMatrix(Rotation) * MathHelp.ToMatrix(Position);
+                Matrix3D rotate = MathHelp.ToMatrix(Rotation);
+                Matrix3D translate = MathHelp.CreateTranslateMatrix(Position.X, Position.Y, Position.Z);
+                Matrix3D result = rotate * translate;
+                return result;
             }
         }
         public void TranslatePost(Vector3D offset)
@@ -48,7 +51,7 @@ namespace RenderToy
         {
             Rotation = rotate * Rotation;
         }
-        public Vector3D Position = new Vector3D(0, 0, 0);
+        public Point3D Position = new Point3D(0, 0, 0);
         public Quaternion Rotation = new Quaternion(0, 0, 0, 1);
     }
 }

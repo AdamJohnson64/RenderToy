@@ -44,7 +44,7 @@ namespace RenderToy
                 return View * Projection * AspectCorrectFit(ActualWidth, ActualHeight);
             }
         }
-        TransformPosQuat Camera = new TransformPosQuat { Position = new Vector3D(0, 10, -20) };
+        TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 10, -20) };
         CameraPerspective CameraMat = new CameraPerspective();
         #endregion
         #region - Section : Aspect Correction -

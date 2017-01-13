@@ -18,7 +18,7 @@ namespace RenderToy
         }
         static Point4D CalculateIntersectionPointLine(Point4D p1, Point4D p2, Point4D plane)
         {
-            return p1 + MathHelp.Scale(p2 - p1, CalculateIntersectionDistanceLine(p1, p2, plane));
+            return p1 + MathHelp.Multiply(p2 - p1, CalculateIntersectionDistanceLine(p1, p2, plane));
         }
         static double CalculateIntersectionDistanceRay(Point4D origin, Point4D direction, Point4D plane)
         {
@@ -83,9 +83,9 @@ namespace RenderToy
             if (lambda > 0 && lambda < 1)
             {
                 // If P1 was behind the plane them move it to the intersection point.
-                if (side_p1 <= 0) p1 = line_org + MathHelp.Scale(line_dir, lambda);
+                if (side_p1 <= 0) p1 = line_org + MathHelp.Multiply(line_dir, lambda);
                 // If P2 was behind the plane then move it to the intersection point.
-                if (side_p2 <= 0) p2 = line_org + MathHelp.Scale(line_dir, lambda);
+                if (side_p2 <= 0) p2 = line_org + MathHelp.Multiply(line_dir, lambda);
             }
             return true;
         }
