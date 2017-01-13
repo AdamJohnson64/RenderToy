@@ -2,5 +2,6 @@
 *.sdf
 *.user
 *.VC.opendb
+*.vspx
 .vs/*
 Output/*
