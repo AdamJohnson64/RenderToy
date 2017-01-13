@@ -32,15 +32,15 @@ namespace RenderToy
         {
             get
             {
-                Matrix3D rotate = MathHelp.ToMatrix(Rotation);
-                Matrix3D translate = MathHelp.CreateTranslateMatrix(Position.X, Position.Y, Position.Z);
+                Matrix3D rotate = MathHelp.CreateMatrixRotation(Rotation);
+                Matrix3D translate = MathHelp.CreateMatrixTranslate(Position.X, Position.Y, Position.Z);
                 Matrix3D result = rotate * translate;
                 return result;
             }
         }
         public void TranslatePost(Vector3D offset)
         {
-            Matrix3D frame = MathHelp.ToMatrix(Rotation);
+            Matrix3D frame = MathHelp.CreateMatrixRotation(Rotation);
             Position += frame.Transform(offset);
         }
         public void RotatePost(Quaternion rotate)

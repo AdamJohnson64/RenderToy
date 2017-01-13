@@ -53,11 +53,11 @@ namespace RenderToy
             double aspect = width / height;
             if (aspect > 1)
             {
-                return MathHelp.CreateScaleMatrix(1 / aspect, 1, 1);
+                return MathHelp.CreateMatrixScale(1 / aspect, 1, 1);
             }
             else
             {
-                return MathHelp.CreateScaleMatrix(1, aspect, 1);
+                return MathHelp.CreateMatrixScale(1, aspect, 1);
             }
         }
         #endregion

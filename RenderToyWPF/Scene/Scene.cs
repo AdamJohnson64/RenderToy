@@ -47,10 +47,10 @@ namespace RenderToy
             get
             {
                 Scene scene = new Scene();
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateScaleMatrix(10, 10, 10)), new Plane(), Colors.LightGray, new CheckerboardMaterial(Colors.Black, Colors.White)));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateTranslateMatrix(-2, 1, 0)), new Sphere(), Colors.Red, new ConstantColorMaterial(Colors.Red)));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateTranslateMatrix(0, 1, 0)), new Sphere(), Colors.Green, new ConstantColorMaterial(Colors.Green)));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateTranslateMatrix(+2, 1, 0)), new Sphere(), Colors.Blue, new ConstantColorMaterial(Colors.Blue)));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Colors.LightGray, new CheckerboardMaterial(Colors.Black, Colors.White)));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-2, 1, 0)), new Sphere(), Colors.Red, new ConstantColorMaterial(Colors.Red)));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Colors.Green, new ConstantColorMaterial(Colors.Green)));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+2, 1, 0)), new Sphere(), Colors.Blue, new ConstantColorMaterial(Colors.Blue)));
                 return scene;
             }
         }
