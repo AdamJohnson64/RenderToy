@@ -26,5 +26,3 @@ Software goals are:
 - Reusability.
   - Parts of this can be a tooling platform for trying other things.
   - Split out controls (etc) for the express purpose of simple reuse.
-
-I'm not touching on OpenCL, DirectCompute or CUDA, but I won't rule it out.
