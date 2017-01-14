@@ -64,6 +64,7 @@
     </ApplicationDefinition>
     <Compile Include="Render\Render_ALR.cs" />
     <Compile Include="Render\Render_ALRWPF.cs" />
+    <Compile Include="Render\Render_CUDA.cs" />
     <Compile Include="Render\Render_D3D9.cs" />
     <Compile Include="Render\Render_ALRGDI.cs" />
     <Compile Include="Render\Render_REF.cs" />
