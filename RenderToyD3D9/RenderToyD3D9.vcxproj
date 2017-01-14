@@ -85,7 +85,10 @@
     <ClCompile Include="RenderToyD3D9.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="RenderToyCUDA.cu" />
+    <CudaCompile Include="RenderToyCUDA.cu">
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_52,sm_52</CodeGeneration>
+      <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_52,sm_52</CodeGeneration>
+    </CudaCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
