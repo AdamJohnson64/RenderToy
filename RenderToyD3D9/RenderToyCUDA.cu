@@ -200,17 +200,17 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 		double3 n = make_double3(0, 1, 0);
 		double3 i = Normalize(direction);
 		double3 r = Reflect(i, n);
-		double lambert = Dot(l, n);
-		lambert = lambert > 0 ? lambert : 0;
-		double specular = Dot(l, r);
-		specular = specular > 0 ? specular : 0;
-		specular = pow(specular, 10);
-		if (RayShadow(p + 0.0001 * n, l)) lambert *= 0.5;
+		double scale_diffuse = Dot(l, n);
+		scale_diffuse = scale_diffuse > 0 ? scale_diffuse : 0;
+		double scale_specular = Dot(l, r);
+		scale_specular = scale_specular > 0 ? scale_specular : 0;
+		scale_specular = pow(scale_specular, 10);
+		if (RayShadow(p + 0.0001 * n, l)) scale_diffuse *= 0.5;
 		int mx = (p.x - floor(p.x)) < 0.5 ? 0 : 1;
 		int my = 0; // (space.Y - floor(space.Y)) < 0.5 ? 0 : 1;
 		int mz = (p.z - floor(p.z)) < 0.5 ? 0 : 1;
 		int mod = (mx + my + mz) % 2;
-		color.x = color.y = color.z = lambert * mod + specular;
+		color.x = color.y = color.z = scale_diffuse * mod + scale_specular;
 		if (recurse > 0) {
 			color = color + RayColor(p + r * 0.0001, r, recurse - 1) * 0.5;
 		}
