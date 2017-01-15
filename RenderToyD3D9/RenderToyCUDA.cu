@@ -50,6 +50,39 @@ __device__ double4 Transform(const Matrix4D& m, const double4& p) {
 		m.M[3] * p.x + m.M[7] * p.y + m.M[11] * p.z + m.M[15] * p.w);
 }
 
+__device__ double Clamp(double min, double max, double val) {
+	return val < min ? min : (val > max ? max : val);
+}
+
+__device__ double3 Reflect(const double3& incident, const double3& normal) {
+	return incident - 2 * Dot(incident, normal) * normal;
+}
+
+__device__ double3 Refract(const double3& incident, const double3& normal, double ior) {
+	double cosi = Clamp(-1, 1, Dot(incident, normal));
+	double etai = 1, etat = ior;
+	double3 n = normal;
+	if (cosi < 0) { cosi = -cosi; }
+	else { double tmp = etai; etai = etat; etat = tmp; n = -normal; }
+	double eta = etai / etat;
+	double k = 1 - eta * eta * (1 - cosi * cosi);
+	return k < 0 ? make_double3(0, 0, 0) : (eta * incident + (eta * cosi - sqrt(k)) * n);
+}
+
+/*
+From GL Specification (https://www.opengl.org/registry/doc/GLSLangSpec.Full.1.20.8.pdf)
+k = 1.0 - eta * eta * (1.0 - dot(N, I) * dot(N, I))
+if (k < 0.0) return genType(0.0)
+else return eta * I - (eta * dot(N, I) + sqrt(k)) * N
+*/
+__device__ double3 RefractGL(const double3& incident, const double3 &normal, float ior)
+{
+	float N_dot_I = Dot(normal, incident);
+	float k = 1 - ior * ior * (1 - N_dot_I * N_dot_I);
+	if (k < 0) return make_double3(0, 0, 0);
+	else return ior * incident - (ior * N_dot_I + sqrtf(k)) * normal;
+}
+
 // Geometric Math.
 __device__ double IntersectPlane(const double3 &origin, const double3 &direction) {
 	const double PLANE_DISTANCE = 0;
@@ -165,8 +198,8 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 		double3 p = origin + best_distance * direction;
 		double3 l = Normalize(make_double3(10, 10, -10) - p);
 		double3 n = make_double3(0, 1, 0);
-		double3 v = Normalize(-direction);
-		double3 r = -v + 2 * Dot(n, v) * n;
+		double3 i = Normalize(direction);
+		double3 r = Reflect(i, n);
 		double lambert = Dot(l, n);
 		lambert = lambert > 0 ? lambert : 0;
 		double specular = Dot(l, r);
@@ -179,7 +212,7 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 		int mod = (mx + my + mz) % 2;
 		color.x = color.y = color.z = lambert * mod + specular;
 		if (recurse > 0) {
-			color = color + RayColor(p + n * 0.0001, r, recurse - 1) * 0.5;
+			color = color + RayColor(p + r * 0.0001, r, recurse - 1) * 0.5;
 		}
 		color.w = 1;
 	}
@@ -188,8 +221,9 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 		double3 p = origin + best_distance * direction;
 		double3 l = Normalize(make_double3(10, 10, -10) - p);
 		double3 n = Normalize(p - make_double3(-2, 1, 0));
-		double3 v = Normalize(-direction);
-		double3 r = -v + 2 * Dot(n, v) * n;
+		double3 i = Normalize(direction);
+		double3 r = Reflect(i, n);
+		double3 t = Refract(i, n, 1.5);
 		double scale_diffuse = Dot(l, n);
 		scale_diffuse = scale_diffuse > 0 ? scale_diffuse : 0;
 		double scale_specular = Dot(l, r);
@@ -197,9 +231,11 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 		scale_specular = pow(scale_specular, 10);
 		double4 color_diffuse = make_double4(1, 0, 0, 0);
 		double4 color_specular = make_double4(1, 1, 1, 0);
-		color = color_diffuse * scale_diffuse + color_specular * scale_specular;
+		//color = color_diffuse * scale_diffuse + color_specular * scale_specular;
+		color = color + color_specular * scale_specular;
 		if (recurse > 0) {
-			color = color + RayColor(p + n * 0.0001, r, recurse - 1) * 0.5;
+			//color = color + RayColor(p + n * 0.0001, r, recurse - 1) * 0.5;
+			color = color + RayColor(p + t * 0.0001, t, recurse - 1);
 		}
 		color.w = 1;
 	}
@@ -208,8 +244,8 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 		double3 p = origin + best_distance * direction;
 		double3 l = Normalize(make_double3(10, 10, -10) - p);
 		double3 n = Normalize(p - make_double3(0, 1, 0));
-		double3 v = Normalize(-direction);
-		double3 r = -v + 2 * Dot(n, v) * n;
+		double3 i = Normalize(direction);
+		double3 r = Reflect(i, n);
 		double scale_diffuse = Dot(l, n);
 		scale_diffuse = scale_diffuse > 0 ? scale_diffuse : 0;
 		double scale_specular = Dot(l, r);
@@ -219,7 +255,7 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 		double4 color_specular = make_double4(1, 1, 1, 0);
 		color = color_diffuse * scale_diffuse + color_specular * scale_specular;
 		if (recurse > 0) {
-			color = color + RayColor(p + n * 0.0001, r, recurse - 1) * 0.5;
+			color = color + RayColor(p + r * 0.0001, r, recurse - 1) * 0.5;
 		}
 		color.w = 1;
 	}
@@ -228,8 +264,8 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 		double3 p = origin + best_distance * direction;
 		double3 l = Normalize(make_double3(10, 10, -10) - p);
 		double3 n = Normalize(p - make_double3(2, 1, 0));
-		double3 v = Normalize(-direction);
-		double3 r = -v + 2 * Dot(n, v) * n;
+		double3 i = Normalize(direction);
+		double3 r = Reflect(i, n);
 		double scale_diffuse = Dot(l, n);
 		scale_diffuse = scale_diffuse > 0 ? scale_diffuse : 0;
 		double scale_specular = Dot(l, r);
@@ -239,7 +275,7 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 		double4 color_specular = make_double4(1, 1, 1, 0);
 		color = color_diffuse * scale_diffuse + color_specular * scale_specular;
 		if (recurse > 0) {
-			color = color + RayColor(p + n * 0.0001, r, recurse - 1) * 0.5;
+			color = color + RayColor(p + r * 0.0001, r, recurse - 1) * 0.5;
 		}
 		color.w = 1;
 	}
@@ -247,7 +283,7 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction, int
 }
 
 __device__ double4 RayColor(const double3 &origin, const double3 &direction) {
-	return RayColor(origin, direction, 1);
+	return RayColor(origin, direction, 4);
 }
 
 __device__ void ComputeRay(const Matrix4D &inverse_mvp, double clipx, double clipy, double3 &origin, double3 &direction) {
