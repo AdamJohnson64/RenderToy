@@ -62,10 +62,10 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(CUDAInstalled)'=='True'">
     <ClCompile>
-      <PreprocessorDefinitions>CUDA_INSTALLED;%(AdditionalDependencies)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CUDA_INSTALLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies</AdditionalDependencies>
+      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
