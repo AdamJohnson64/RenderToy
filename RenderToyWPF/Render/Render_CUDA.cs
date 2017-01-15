@@ -11,6 +11,10 @@ namespace RenderToy
     public static partial class Render
     {
         #region - Section : Phase 4 - Raytrace Rendering (CUDA) -
+        public static bool CUDAAvailable()
+        {
+            return RenderToy.RaytraceCUDA.Available();
+        }
         public static void RaytraceCUDA(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             mvp.Invert();
