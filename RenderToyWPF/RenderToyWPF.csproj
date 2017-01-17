@@ -133,9 +133,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RenderToyD3D9\RenderToyD3D9.vcxproj">
+    <ProjectReference Include="..\RenderToyCPP\RenderToyCPP.vcxproj">
       <Project>{70808f18-e22d-4c23-96d9-e3123d87c5dc}</Project>
-      <Name>RenderToyD3D9</Name>
+      <Name>RenderToyCPP</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
