@@ -51,6 +51,7 @@ namespace RenderToy
                 scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-2, 1, 0)), new Sphere(), Colors.Red, new ConstantColorMaterial(Colors.Red)));
                 scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Colors.Green, new ConstantColorMaterial(Colors.Green)));
                 scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+2, 1, 0)), new Sphere(), Colors.Blue, new ConstantColorMaterial(Colors.Blue)));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 3, 0)), new Sphere(), Colors.Black, new GlassMaterial()));
                 return scene;
             }
         }

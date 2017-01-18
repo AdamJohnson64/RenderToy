@@ -29,16 +29,6 @@ __device__ double3 Normalize(const double3 &val) { return val * rnorm3d(val.x, v
 // Matrix Math.
 struct Matrix4D { double M[16]; };
 
-__device__ Matrix4D CreateMatrixIdentity() {
-	double m[] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-	return *(Matrix4D*)m;
-}
-
-__device__ Matrix4D CreateMatrixTranslate(double x, double y, double z) {
-	double m[] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1 };
-	return *(Matrix4D*)m;
-}
-
 __device__ double3 TransformPoint(const Matrix4D& m, const double3& p) {
 	return make_double3(
 		m.M[0] * p.x + m.M[4] * p.y + m.M[8] * p.z + m.M[12],
@@ -121,6 +111,19 @@ enum MaterialType {
 	MATERIAL_GLASS
 };
 
+struct SceneObject {
+	Matrix4D Transform;
+	Matrix4D TransformInverse;
+	GeometryType Geometry;
+	MaterialType Material;
+};
+
+struct Scene {
+	int ObjectCount;
+	int Reserved;
+	SceneObject Objects[];
+};
+
 __device__ double Intersect(const double3 &origin, const double3 &direction, GeometryType geometry) {
 	switch (geometry) {
 	case GEOMETRY_PLANE:
@@ -131,25 +134,10 @@ __device__ double Intersect(const double3 &origin, const double3 &direction, Geo
 	}
 }
 
-struct SceneObject {
-	Matrix4D Transform;
-	Matrix4D TransformInverse;
-	GeometryType Geometry;
-	MaterialType Material;
-};
-
-const int SCENE_COUNT = 4;
-
 // Raytracer Ray Tests.
-__device__ bool RayShadow(const double3 &origin, const double3 &direction) {
-	const SceneObject TheScene[] = {
-		SceneObject{ CreateMatrixIdentity(), CreateMatrixIdentity(), GEOMETRY_PLANE, MATERIAL_CHECKERBOARD_XZ },
-		SceneObject{ CreateMatrixTranslate(-2, 1, 0), CreateMatrixTranslate(2, -1, 0), GEOMETRY_SPHERE, MATERIAL_RED },
-		SceneObject{ CreateMatrixTranslate(0, 1, 0), CreateMatrixTranslate(0, -1, 0), GEOMETRY_SPHERE, MATERIAL_GREEN },
-		SceneObject{ CreateMatrixTranslate(2, 1, 0), CreateMatrixTranslate(-2, -1, 0), GEOMETRY_SPHERE, MATERIAL_BLUE },
-	};
-	for (int i = 0; i < SCENE_COUNT; ++i) {
-		const SceneObject &scene_object = TheScene[i];
+__device__ bool RayShadow(const Scene *pScene, const double3 &origin, const double3 &direction) {
+	for (int i = 0; i < pScene->ObjectCount; ++i) {
+		const SceneObject &scene_object = pScene->Objects[i];
 		double3 transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
 		double3 transformed_direction = TransformVector(scene_object.TransformInverse, direction);
 		double lambda = Intersect(transformed_origin, transformed_direction, scene_object.Geometry);
@@ -159,18 +147,12 @@ __device__ bool RayShadow(const double3 &origin, const double3 &direction) {
 }
 
 template <int RECURSE>
-__device__ double4 RayColor(const double3 &origin, const double3 &direction) {
+__device__ double4 RayColor(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	// Start intersecting objects.
-	const SceneObject TheScene[] = {
-		SceneObject{ CreateMatrixIdentity(), CreateMatrixIdentity(), GEOMETRY_PLANE, MATERIAL_CHECKERBOARD_XZ },
-		SceneObject{ CreateMatrixTranslate(-2, 1, 0), CreateMatrixTranslate(2, -1, 0), GEOMETRY_SPHERE, MATERIAL_RED },
-		SceneObject{ CreateMatrixTranslate(0, 1, 0), CreateMatrixTranslate(0, -1, 0), GEOMETRY_SPHERE, MATERIAL_GREEN },
-		SceneObject{ CreateMatrixTranslate(2, 1, 0), CreateMatrixTranslate(-2, -1, 0), GEOMETRY_SPHERE, MATERIAL_BLUE },
-	};
 	double best_lambda = 1000000;
 	int best_pobject = 0;
-	for (int i = 0; i < SCENE_COUNT; ++i) {
-		const SceneObject &scene_object = TheScene[i];
+	for (int i = 0; i < pScene->ObjectCount; ++i) {
+		const SceneObject &scene_object = pScene->Objects[i];
 		double3 transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
 		double3 transformed_direction = TransformVector(scene_object.TransformInverse, direction);
 		double lambda = Intersect(transformed_origin, transformed_direction, scene_object.Geometry);
@@ -186,12 +168,12 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction) {
 		double3 p = origin + best_lambda * direction;
 		double3 l = Normalize(make_double3(10, 10, -10) - p);
 		double3 n;
-		switch (TheScene[best_pobject].Geometry) {
+		switch (pScene->Objects[best_pobject].Geometry) {
 		case GEOMETRY_PLANE:
 			n = make_double3(0, 1, 0);
 			break;
 		case GEOMETRY_SPHERE:
-			n = TransformPoint(TheScene[best_pobject].TransformInverse, p);
+			n = TransformPoint(pScene->Objects[best_pobject].TransformInverse, p);
 			break;
 		default:
 			n = make_double3(0, 1, 0);
@@ -204,12 +186,12 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction) {
 		double scale_specular = Dot(l, r);
 		scale_specular = scale_specular > 0 ? scale_specular : 0;
 		scale_specular = pow(scale_specular, 100);
-		if (RayShadow(p + 0.0001 * n, l)) scale_diffuse *= 0.5;
+		if (RayShadow(pScene, p + 0.0001 * n, l)) scale_diffuse *= 0.5;
 		double4 color_diffuse;
 		double4 color_specular;
 		double scale_reflect;
 		double scale_refract;
-		switch (TheScene[best_pobject].Material) {
+		switch (pScene->Objects[best_pobject].Material) {
 		case MATERIAL_CHECKERBOARD_XZ:
 		{
 			int mx = (p.x - floor(p.x)) < 0.5 ? 0 : 1;
@@ -224,11 +206,10 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction) {
 		break;
 		case MATERIAL_RED:
 		{
-			//color_diffuse = make_double4(1, 0, 0, 0);
-			color_diffuse = make_double4(0, 0, 0, 0);
+			color_diffuse = make_double4(1, 0, 0, 0);
 			color_specular = make_double4(1, 1, 1, 0);
-			scale_reflect = 0;
-			scale_refract = 1;
+			scale_reflect = 0.5;
+			scale_refract = 0;
 		}
 		break;
 		case MATERIAL_GREEN:
@@ -252,7 +233,7 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction) {
 			color_diffuse = make_double4(0, 0, 0, 0);
 			color_specular = make_double4(1, 1, 1, 0);
 			scale_reflect = 0;
-			scale_refract = 1;
+			scale_refract = 1; 
 		}
 		break;
 		}
@@ -262,10 +243,10 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction) {
 			double R = SchlickApprox(i, n, 1, 1.5);
 			scale_reflect = R;
 			//Add refraction contribution.
-			color = color + RayColor<RECURSE - 1>(p + t * 0.0001, t) * scale_refract;
+			color = color + RayColor<RECURSE - 1>(pScene, p + t * 0.0001, t) * scale_refract;
 		}
 		if (scale_reflect > 0) {
-			color = color + RayColor<RECURSE - 1>(p + r * 0.0001, r) * scale_reflect;
+			color = color + RayColor<RECURSE - 1>(pScene, p + r * 0.0001, r) * scale_reflect;
 		}
 		color.w = 1;
 		return color;
@@ -273,12 +254,12 @@ __device__ double4 RayColor(const double3 &origin, const double3 &direction) {
 }
 
 template <>
-__device__ double4 RayColor<-1>(const double3 &origin, const double3 &direction) {
+__device__ double4 RayColor<-1>(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	return make_double4(0, 0, 0, 0);
 }
 
-__device__ double4 RayColor(const double3 &origin, const double3 &direction) {
-	return RayColor<2>(origin, direction);
+__device__ double4 RayColor(const Scene *pScene, const double3 &origin, const double3 &direction) {
+	return RayColor<2>(pScene, origin, direction);
 }
 
 __device__ void ComputeRay(const Matrix4D &inverse_mvp, double clipx, double clipy, double3 &origin, double3 &direction) {
@@ -298,7 +279,7 @@ __device__ unsigned int MakePixel(const double4 &color) {
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
-__global__ void cudaRaytraceKernel(Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+__global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
 	const int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -315,7 +296,7 @@ __global__ void cudaRaytraceKernel(Matrix4D inverse_mvp, void *bitmap_ptr, int b
 			double vy = Lerp(+1, -1, (y + y_supersample / (Y_SUPERSAMPLES + 1.0)) / bitmap_height);
 			ComputeRay(inverse_mvp, vx, vy, origin, direction);
 			// Compute intersection with plane.
-			color = color + RayColor(origin, direction);
+			color = color + RayColor(pScene, origin, direction);
 		}
 	}
 	color = color / (X_SUPERSAMPLES * Y_SUPERSAMPLES);
@@ -336,23 +317,34 @@ void CUDA_CALL(cudaError_t error) {
 
 #define TRY_CUDA(fn) CUDA_CALL(fn);
 
-extern "C" bool cudaRaytrace(double* pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" bool cudaRaytrace(void* pScene, double* pInverseMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 {
-	void *device_buffer = nullptr;
-	int buffer_stride = 4 * bitmap_width;
-	TRY_CUDA(cudaMalloc((void **)&device_buffer, buffer_stride * bitmap_height));
-	Matrix4D MVP = *(Matrix4D*)pMVP;
+	// Allocate the scene buffer for CUDA.
+	Scene *host_scene = (Scene*)pScene;
+	int scene_size = sizeof(Scene) + sizeof(SceneObject) * host_scene->ObjectCount;
+	Scene *device_scene = nullptr;
+	TRY_CUDA(cudaMalloc((void**)&device_scene, scene_size));
+	TRY_CUDA(cudaMemcpy(device_scene, host_scene, scene_size, cudaMemcpyHostToDevice));
+	// Allocate the bitmap buffer for CUDA.
+	void *device_bitmap_ptr = nullptr;
+	int device_bitmap_stride = 4 * bitmap_width;
+	TRY_CUDA(cudaMalloc((void **)&device_bitmap_ptr, device_bitmap_stride * bitmap_height));
+	// Launch the kernel.
 	dim3 grid(bitmap_width / 16, bitmap_height / 16, 1);
 	dim3 threads(16, 16, 1);
-	cudaRaytraceKernel<<<grid, threads>>>(MVP, device_buffer, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRaytraceKernel<<<grid, threads>>>(device_scene, *(Matrix4D*)pInverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	// Copy back the render result to the CPU buffer.
 	for (int y = 0; y < bitmap_height; ++y)
 	{
-		void* pDevice = (unsigned char*)device_buffer + buffer_stride * y;
+		void* pDevice = (unsigned char*)device_bitmap_ptr + device_bitmap_stride * y;
 		void* pHost = (unsigned char*)bitmap_ptr + bitmap_stride * y;
 		TRY_CUDA(cudaMemcpy(pHost, pDevice, 4 * bitmap_width, cudaMemcpyDeviceToHost));
 		int test = 0;
 	}
-	TRY_CUDA(cudaFree(device_buffer));
-	device_buffer = nullptr;
+	// Clean up.
+	TRY_CUDA(cudaFree(device_bitmap_ptr));
+	device_bitmap_ptr = nullptr;
+	TRY_CUDA(cudaFree(device_scene));
+	device_scene = nullptr;
 	return true;
 }

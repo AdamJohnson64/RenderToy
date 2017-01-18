@@ -43,4 +43,11 @@ namespace RenderToy
         }
         private Color Color;
     }
+    public class GlassMaterial : IMaterial
+    {
+        public Color MaterialCompute(Point3D origin, Vector3D direction, double lambda)
+        {
+            return Colors.LightGray;
+        }
+    }
 }
