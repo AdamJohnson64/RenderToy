@@ -259,7 +259,7 @@ namespace RenderToy
                 case RenderMode.RaytraceCUDA:
                     if (Render.CUDAAvailable())
                     {
-                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaytraceCUDA, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaytraceCUDA, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     }
                     else
                     {

@@ -4,8 +4,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
 namespace RenderToy
@@ -19,31 +21,7 @@ namespace RenderToy
         }
         public static void RaytraceCUDA(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            // Prepare the scene definition for the renderer.
-            MemoryStream mem = new MemoryStream();
-            using (BinaryWriter wr = new BinaryWriter(mem))
-            {
-                var writeobjects = TransformedObject.Enumerate(scene).ToList();
-                // Write the object count.
-                wr.Write((int)writeobjects.Count);
-                wr.Write((int)0);
-                foreach (var o in writeobjects)
-                {
-                    // Write the transform.
-                    Serialize(wr, o.Transform);
-                    // Write the inverse transform.
-                    Serialize(wr, MathHelp.Invert(o.Transform));
-                    // Write the object type.
-                    if (o.Node.primitive is Plane) { wr.Write((int)1); }
-                    else if (o.Node.primitive is Sphere) { wr.Write((int)2); }
-                    else { wr.Write((int)0); }
-                    // Write the material type.
-                    if (o.Node.material is CheckerboardMaterial) { wr.Write((int)1); }
-                    else if (o.Node.material is ConstantColorMaterial) { wr.Write((int)2); }
-                    else if (o.Node.material is GlassMaterial) { wr.Write((int)5); }
-                    else { wr.Write((int)0); }
-                }
-            }
+            var scenedata = SceneFormatter.CreateFlatMemory(scene);
             // Prepare the camera inverse MVP for the renderer.
             mvp.Invert();
             double[] inverse_mvp = new double[16] {
@@ -53,14 +31,123 @@ namespace RenderToy
                 mvp.OffsetX, mvp.OffsetY, mvp.OffsetZ, mvp.M44,
             };
             // Render the scene using the CUDA raytracer.
-            RenderToy.RaytraceCUDA.Fill(mem.ToArray(), inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+            RenderToy.RaytraceCUDA.Fill(scenedata, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
-        static void Serialize(BinaryWriter w, Matrix3D m)
+        class SceneFormatter
         {
-            w.Write((double)m.M11); w.Write((double)m.M12); w.Write((double)m.M13); w.Write((double)m.M14);
-            w.Write((double)m.M21); w.Write((double)m.M22); w.Write((double)m.M23); w.Write((double)m.M24);
-            w.Write((double)m.M31); w.Write((double)m.M32); w.Write((double)m.M33); w.Write((double)m.M34);
-            w.Write((double)m.OffsetX); w.Write((double)m.OffsetY); w.Write((double)m.OffsetZ); w.Write((double)m.M44);
+            public static byte[] CreateFlatMemory(Scene scene)
+            {
+                return new SceneFormatter(scene).m.ToArray();
+            }
+            SceneFormatter(Scene scene)
+            {
+                // Prepare the scene definition for the renderer.
+                using (binarywriter = new BinaryWriter(m))
+                {
+                    var transformedobjects = TransformedObject.Enumerate(scene).ToList();
+                    // Write the file size and object count.
+                    binarywriter.Write((int)0);
+                    binarywriter.Write((int)transformedobjects.Count);
+                    // Write all the objects.
+                    foreach (var obj in transformedobjects)
+                    {
+                        Serialize(obj);
+                    }
+                    // Write all the outstanding queued object references and patch their reference sources.
+                    foreach (var writeremaining in WriteObjects)
+                    {
+                        if (writeremaining.Value.Target is MaterialCommon)
+                        {
+                            // Pad to 16 bytes for safety (there may be double4s in here).
+                            while (m.Position % 16 != 0)
+                            {
+                                binarywriter.Write((byte)0xCC);
+                            }
+                            // Record our location and write this object.
+                            int offset_object = (int)m.Position;
+                            writeremaining.Value.Offset = offset_object;
+                            Serialize((MaterialCommon)writeremaining.Value.Target);
+                            // Record the EOF offset then go and patch the references.
+                            int offset_eof = (int)m.Position;
+                            foreach (var reference in writeremaining.Value.References)
+                            {
+                                binarywriter.Seek(reference, SeekOrigin.Begin);
+                                binarywriter.Write((int)offset_object);
+                            }
+                            // Go back to the end of the file.
+                            binarywriter.Seek(offset_eof, SeekOrigin.Begin);
+                        }
+                    }
+                    // Go back and update the total file size.
+                    int length = (int)m.Position;
+                    binarywriter.Seek(0, SeekOrigin.Begin);
+                    binarywriter.Write((int)length);
+                }
+            }
+            void Serialize(TransformedObject obj)
+            {
+                // Write the transform.
+                Serialize(obj.Transform);
+                // Write the inverse transform.
+                Serialize(MathHelp.Invert(obj.Transform));
+                // Write the object type.
+                if (obj.Node.primitive is Plane) { binarywriter.Write((int)1); }
+                else if (obj.Node.primitive is Sphere) { binarywriter.Write((int)2); }
+                else { binarywriter.Write((int)0); }
+                // Write the offset to the object (or zero).
+                binarywriter.Write((int)0);
+                // Write the material type.
+                if (obj.Node.material is MaterialCommon) { binarywriter.Write((int)1); }
+                else if (obj.Node.material is CheckerboardMaterial) { binarywriter.Write((int)2); }
+                else { binarywriter.Write((int)0); }
+                // Write the offset to the material (or zero).
+                if (obj.Node.material is MaterialCommon) { EmitAndQueue(obj.Node.material); }
+                else { binarywriter.Write((int)0); }
+            }
+            void Serialize(Color obj)
+            {
+                binarywriter.Write((double)obj.R / 255.0);
+                binarywriter.Write((double)obj.G / 255.0);
+                binarywriter.Write((double)obj.B / 255.0);
+                binarywriter.Write((double)obj.A / 255.0);
+            }
+            void Serialize(MaterialCommon obj)
+            {
+                Serialize(obj.Ambient);
+                Serialize(obj.Diffuse);
+                Serialize(obj.Specular);
+                Serialize(obj.Reflect);
+                Serialize(obj.Refract);
+                binarywriter.Write((double)obj.Ior);
+            }
+            void Serialize(Matrix3D obj)
+            {
+                binarywriter.Write((double)obj.M11); binarywriter.Write((double)obj.M12); binarywriter.Write((double)obj.M13); binarywriter.Write((double)obj.M14);
+                binarywriter.Write((double)obj.M21); binarywriter.Write((double)obj.M22); binarywriter.Write((double)obj.M23); binarywriter.Write((double)obj.M24);
+                binarywriter.Write((double)obj.M31); binarywriter.Write((double)obj.M32); binarywriter.Write((double)obj.M33); binarywriter.Write((double)obj.M34);
+                binarywriter.Write((double)obj.OffsetX); binarywriter.Write((double)obj.OffsetY); binarywriter.Write((double)obj.OffsetZ); binarywriter.Write((double)obj.M44);
+            }
+            void EmitAndQueue(object obj)
+            {
+                // Try to find a record of this object.
+                if (!WriteObjects.ContainsKey(obj))
+                {
+                    WriteObjects[obj] = new PointerRecord { Target = obj };
+                }
+                // Flush the writer and make a note of this reference offset.
+                WriteObjects[obj].References.Add((int)m.Position);
+                // Write a placeholder pointer.
+                binarywriter.Write((int)0);
+            }
+            private MemoryStream m = new MemoryStream();
+            private BinaryWriter binarywriter;
+            class PointerRecord
+            {
+                public object Target = null;
+                public int Offset = 0;
+                public List<int> References = new List<int>();
+            }
+            Dictionary<object, PointerRecord> WriteObjects = new Dictionary<object, PointerRecord>();
         }
         #endregion
     }

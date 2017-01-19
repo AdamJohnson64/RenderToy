@@ -28,7 +28,7 @@ namespace RenderToy
         {
             base.OnRender(drawingContext);
             Scene scene = new Scene();
-            scene.AddChild(new Node(new TransformMatrix3D(Matrix3D.Identity), Primitive, Colors.DarkGray, new ConstantColorMaterial(Colors.DarkGray)));
+            scene.AddChild(new Node(new TransformMatrix3D(Matrix3D.Identity), Primitive, Colors.DarkGray, Materials.PlasticRed));
             Matrix3D Camera = MathHelp.CreateMatrixLookAt(new Point3D(2, 2, -2), new Point3D(0, 0, 0), new Vector3D(0, 1, 0));
             Matrix3D View = MathHelp.Invert(Camera);
             Matrix3D Projection = CameraPerspective.CreateProjection(0.001, 100, 45.0 * Math.PI / 180.0, 45.0 * Math.PI / 180.0);

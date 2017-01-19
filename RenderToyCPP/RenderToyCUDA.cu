@@ -104,23 +104,31 @@ enum GeometryType {
 
 enum MaterialType {
 	MATERIAL_NONE = 0,
-	MATERIAL_CHECKERBOARD_XZ = 1,
-	MATERIAL_RED,
-	MATERIAL_GREEN,
-	MATERIAL_BLUE,
-	MATERIAL_GLASS
+	MATERIAL_COMMON,
+	MATERIAL_CHECKERBOARD_XZ,
+};
+
+struct MaterialCommon {
+	double4 Ambient;
+	double4 Diffuse;
+	double4 Specular;
+	double4 Reflect;
+	double4 Refract;
+	double Ior;
 };
 
 struct SceneObject {
 	Matrix4D Transform;
 	Matrix4D TransformInverse;
 	GeometryType Geometry;
+	int GeometryOffset;
 	MaterialType Material;
+	int MaterialOffset;
 };
 
 struct Scene {
+	int FileSize;
 	int ObjectCount;
-	int Reserved;
 	SceneObject Objects[];
 };
 
@@ -187,11 +195,22 @@ __device__ double4 RayColor(const Scene *pScene, const double3 &origin, const do
 		scale_specular = scale_specular > 0 ? scale_specular : 0;
 		scale_specular = pow(scale_specular, 100);
 		if (RayShadow(pScene, p + 0.0001 * n, l)) scale_diffuse *= 0.5;
-		double4 color_diffuse;
-		double4 color_specular;
-		double scale_reflect;
-		double scale_refract;
+		double4 color_diffuse = make_double4(1, 1, 1, 0);
+		double4 color_specular = make_double4(1, 1, 1, 0);
+		double scale_reflect = 0;
+		double scale_refract = 0;
 		switch (pScene->Objects[best_pobject].Material) {
+		case MATERIAL_COMMON:
+		{
+			if (pScene->Objects[best_pobject].MaterialOffset != 0) {
+				MaterialCommon *pMaterial = (MaterialCommon*)((unsigned char*)pScene + pScene->Objects[best_pobject].MaterialOffset);
+				color_diffuse = pMaterial->Diffuse;
+				color_specular = pMaterial->Specular;
+				scale_reflect = pMaterial->Reflect.w;
+				scale_refract = pMaterial->Refract.w;
+			}
+		}
+		break;
 		case MATERIAL_CHECKERBOARD_XZ:
 		{
 			int mx = (p.x - floor(p.x)) < 0.5 ? 0 : 1;
@@ -202,38 +221,6 @@ __device__ double4 RayColor(const Scene *pScene, const double3 &origin, const do
 			color_specular = make_double4(1, 1, 1, 0);
 			scale_reflect = 1;
 			scale_refract = 0;
-		}
-		break;
-		case MATERIAL_RED:
-		{
-			color_diffuse = make_double4(1, 0, 0, 0);
-			color_specular = make_double4(1, 1, 1, 0);
-			scale_reflect = 0.5;
-			scale_refract = 0;
-		}
-		break;
-		case MATERIAL_GREEN:
-		{
-			color_diffuse = make_double4(0, 0.5, 0, 0);
-			color_specular = make_double4(1, 1, 1, 0);
-			scale_reflect = 0.5;
-			scale_refract = 0;
-		}
-		break;
-		case MATERIAL_BLUE:
-		{
-			color_diffuse = make_double4(0, 0, 1, 0);
-			color_specular = make_double4(1, 1, 1, 0);
-			scale_reflect = 0.5;
-			scale_refract = 0;
-		}
-		break;
-		case MATERIAL_GLASS:
-		{
-			color_diffuse = make_double4(0, 0, 0, 0);
-			color_specular = make_double4(1, 1, 1, 0);
-			scale_reflect = 0;
-			scale_refract = 1; 
 		}
 		break;
 		}
@@ -287,8 +274,8 @@ __global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, vo
 	double3 origin;
 	double3 direction;
 	double4 color = make_double4(0, 0, 0, 0);
-	const int X_SUPERSAMPLES = 1;
-	const int Y_SUPERSAMPLES = 1;
+	const int X_SUPERSAMPLES = 2;
+	const int Y_SUPERSAMPLES = 2;
 	for (int y_supersample = 1; y_supersample <= Y_SUPERSAMPLES; ++y_supersample) {
 		for (int x_supersample = 1; x_supersample <= X_SUPERSAMPLES; ++x_supersample) {
 			// Build a ray for this supersample.
@@ -321,10 +308,9 @@ extern "C" bool cudaRaytrace(void* pScene, double* pInverseMVP, void *bitmap_ptr
 {
 	// Allocate the scene buffer for CUDA.
 	Scene *host_scene = (Scene*)pScene;
-	int scene_size = sizeof(Scene) + sizeof(SceneObject) * host_scene->ObjectCount;
 	Scene *device_scene = nullptr;
-	TRY_CUDA(cudaMalloc((void**)&device_scene, scene_size));
-	TRY_CUDA(cudaMemcpy(device_scene, host_scene, scene_size, cudaMemcpyHostToDevice));
+	TRY_CUDA(cudaMalloc((void**)&device_scene, host_scene->FileSize));
+	TRY_CUDA(cudaMemcpy(device_scene, host_scene, host_scene->FileSize, cudaMemcpyHostToDevice));
 	// Allocate the bitmap buffer for CUDA.
 	void *device_bitmap_ptr = nullptr;
 	int device_bitmap_stride = 4 * bitmap_width;
