@@ -28,8 +28,6 @@ namespace RenderToy
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 Matrix3D model_mvp = transformedobject.Transform * mvp;
-                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
-                if (uv == null) continue;
                 uint color = ColorToUInt32(transformedobject.Node.WireColor);
                 // Draw a single pixel to the framebuffer (safety function).
                 Action<int, int> drawpixel2d = (x, y) =>
@@ -50,7 +48,16 @@ namespace RenderToy
                     if (v4.W <= 0) return;
                     drawpixel2d((int)((1 + v4.X / v4.W) * bitmap_width / 2), (int)((1 - v4.Y / v4.W) * bitmap_height / 2));
                 };
-                DrawHelp.DrawParametricUV(drawpoint, uv);
+                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                if (uv != null)
+                {
+                    DrawHelp.DrawParametricUV(drawpoint, uv);
+                }
+                IParametricUVW uvw = transformedobject.Node.Primitive as IParametricUVW;
+                if (uvw != null)
+                {
+                    DrawHelp.DrawParametricUVW(drawpoint, uvw);
+                }
             }
         }
         #endregion
@@ -60,8 +67,6 @@ namespace RenderToy
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 Matrix3D model_mvp = transformedobject.Transform * mvp;
-                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
-                if (uv == null) continue;
                 uint color = ColorToUInt32(transformedobject.Node.WireColor);
                 // Draw a single pixel to the framebuffer (safety function).
                 Action<int, int> drawpixel2d = (x, y) =>
@@ -117,7 +122,16 @@ namespace RenderToy
                         new Point3D((1 + v41.X / v41.W) * bitmap_width / 2, (1 - v41.Y / v41.W) * bitmap_height / 2, v41.Z / v41.W),
                         new Point3D((1 + v42.X / v42.W) * bitmap_width / 2, (1 - v42.Y / v42.W) * bitmap_height / 2, v42.Z / v42.W));
                 };
-                DrawHelp.DrawParametricUV(drawline3d, uv);
+                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                if (uv != null)
+                {
+                    DrawHelp.DrawParametricUV(drawline3d, uv);
+                }
+                IParametricUVW uvw = transformedobject.Node.Primitive as IParametricUVW;
+                if (uvw != null)
+                {
+                    DrawHelp.DrawParametricUVW(drawline3d, uvw);
+                }
             }
         }
         #endregion

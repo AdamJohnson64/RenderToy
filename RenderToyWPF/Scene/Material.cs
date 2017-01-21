@@ -21,6 +21,9 @@ namespace RenderToy
         public static MaterialCommon PlasticRed = new MaterialCommon(Empty, Colors.Red, Colors.White, Percent50, Percent0, 1);
         public static MaterialCommon PlasticGreen = new MaterialCommon(Empty, Colors.Green, Colors.White, Percent50, Percent0, 1);
         public static MaterialCommon PlasticBlue = new MaterialCommon(Empty, Colors.Blue, Colors.White, Percent50, Percent0, 1);
+        public static MaterialCommon PlasticYellow = new MaterialCommon(Empty, Colors.Yellow, Colors.White, Percent50, Percent0, 1);
+        public static MaterialCommon PlasticMagenta = new MaterialCommon(Empty, Colors.Magenta, Colors.White, Percent50, Percent0, 1);
+        public static MaterialCommon PlasticCyan = new MaterialCommon(Empty, Colors.Cyan, Colors.White, Percent50, Percent0, 1);
         public static MaterialCommon Glass = new MaterialCommon(Empty, Empty, Colors.White, Percent0, Percent100, 1.5);
     }
     public class CheckerboardMaterial : IMaterial

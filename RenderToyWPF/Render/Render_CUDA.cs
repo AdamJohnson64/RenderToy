@@ -93,6 +93,7 @@ namespace RenderToy
                 // Write the object type.
                 if (obj.Node.primitive is Plane) { binarywriter.Write((int)1); }
                 else if (obj.Node.primitive is Sphere) { binarywriter.Write((int)2); }
+                else if (obj.Node.primitive is Cube) { binarywriter.Write((int)3); }
                 else { binarywriter.Write((int)0); }
                 // Write the offset to the object (or zero).
                 binarywriter.Write((int)0);

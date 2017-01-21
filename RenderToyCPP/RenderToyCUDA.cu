@@ -1,5 +1,6 @@
 #include <cuda_runtime.h>
 #include <math.h>
+#include <cfloat>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Device Code.
@@ -73,13 +74,70 @@ __device__ double SchlickApprox(const double3& incident, const double3 &normal, 
 }
 
 // Geometric Math.
-__device__ double IntersectPlane(const double3 &origin, const double3 &direction) {
-	const double PLANE_DISTANCE = 0;
-	const double3 PLANE_NORMAL = make_double3(0, 1, 0);
-	return (PLANE_DISTANCE - Dot(PLANE_NORMAL, origin)) / Dot(PLANE_NORMAL, direction);
+__device__ double IntersectPlane(const double3 &origin, const double3 &direction, const double3 &plane_normal, double plane_distance) {
+	return (plane_distance - Dot(plane_normal, origin)) / Dot(plane_normal, direction);
 }
 
-__device__ double IntersectSphere(const double3 &origin, const double3 &direction) {
+struct IntersectSimple {
+	double Lambda;
+};
+
+struct IntersectNormal {
+	double Lambda;
+	double3 Normal;
+};
+
+template <typename T> __device__ void SetLambda(T& result, double value) { result.Lambda = value; }
+__device__ void SetNormal(IntersectNormal& result, double3 value) { result.Normal = value; }
+__device__ void SetNormal(IntersectSimple& result, double3 value) {}
+__device__ double3 GetNormal(const IntersectSimple& result) { return make_double3(0, 0, 0); }
+__device__ double3 GetNormal(const IntersectNormal& result) { return result.Normal; }
+
+template <typename T>
+__device__ T IntersectCube(const double3 &origin, const double3 &direction) {
+	T result;
+	double3 face_normal[] = {
+		make_double3(-1,0,0), make_double3(+1,0,0),
+		make_double3(0,-1,0), make_double3(0,+1,0),
+		make_double3(0,0,-1), make_double3(0,0,+1),
+	};
+	double best_lambda = DBL_MAX;
+	for (int face_index = 0; face_index < 6; ++face_index) {
+		double lambda = IntersectPlane(origin, direction, face_normal[face_index], 1);
+		if (lambda < 0 || lambda > best_lambda) continue;
+		double3 point = origin + lambda * direction;
+		// Check that the point is inside every other plane.
+		bool use_face = true;
+		for (int check_face = 0; check_face < 6; ++check_face) {
+			if (face_index == check_face) continue;
+			double inside = Dot(point, face_normal[check_face]) - 1;
+			if (inside > 0) {
+				use_face = false;
+				break;
+			}
+		}
+		if (use_face) {
+			best_lambda = lambda;
+			SetNormal(result, face_normal[face_index]);
+		}
+	}
+	SetLambda(result, best_lambda);
+	return result;
+}
+
+template <typename T>
+__device__ T IntersectPlane(const double3 &origin, const double3 &direction) {
+	T result;
+	const double PLANE_DISTANCE = 0;
+	const double3 PLANE_NORMAL = make_double3(0, 1, 0);
+	SetLambda(result, (PLANE_DISTANCE - Dot(PLANE_NORMAL, origin)) / Dot(PLANE_NORMAL, direction));
+	SetNormal(result, PLANE_NORMAL);
+	return result;
+}
+
+template <typename T>
+__device__ T IntersectSphere(const double3 &origin, const double3 &direction) {
+	T result;
 	const double SPHERE_RADIUS = 1;
 	double a = Dot(direction, direction);
 	double b = 2 * Dot(origin, direction);
@@ -90,16 +148,19 @@ __device__ double IntersectSphere(const double3 &origin, const double3 &directio
 	double den = 2 * a;
 	double lambda1 = (-b - det) / den;
 	double lambda2 = (-b + det) / den;
-	double lambda_best = 1000000;
+	double lambda_best = DBL_MAX;
 	if (lambda1 >= 0 && lambda1 < lambda_best) lambda_best = lambda1;
 	if (lambda2 >= 0 && lambda2 < lambda_best) lambda_best = lambda2;
-	return lambda_best;
+	SetLambda(result, lambda_best);
+	SetNormal(result, origin + lambda_best * direction);
+	return result;
 }
 
 enum GeometryType {
 	GEOMETRY_NONE = 0,
 	GEOMETRY_PLANE = 1,
-	GEOMETRY_SPHERE = 2
+	GEOMETRY_SPHERE = 2,
+	GEOMETRY_CUBE = 3,
 };
 
 enum MaterialType {
@@ -132,14 +193,29 @@ struct Scene {
 	SceneObject Objects[];
 };
 
-__device__ double Intersect(const double3 &origin, const double3 &direction, GeometryType geometry) {
+template <typename T>
+__device__ T Intersect(const double3 &origin, const double3 &direction, GeometryType geometry) {
 	switch (geometry) {
 	case GEOMETRY_PLANE:
-		return IntersectPlane(origin, direction);
+		return IntersectPlane<T>(origin, direction);
 	case GEOMETRY_SPHERE:
-		return IntersectSphere(origin, direction);
-	default: return 1000000;
+		return IntersectSphere<T>(origin, direction);
+	case GEOMETRY_CUBE:
+		return IntersectCube<T>(origin, direction);
+	default:
+		T result;
+		SetLambda(result, DBL_MAX);
+		return result;
 	}
+}
+
+template <typename T>
+__device__ T Intersect(const double3 &origin, const double3 &direction, const SceneObject &scene_object) {
+	double3 transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
+	double3 transformed_direction = TransformVector(scene_object.TransformInverse, direction);
+	T result = Intersect<T>(transformed_origin, transformed_direction, scene_object.Geometry);
+	SetNormal(result, TransformVector(scene_object.Transform, GetNormal(result)));
+	return result;
 }
 
 // Raytracer Ray Tests.
@@ -148,8 +224,8 @@ __device__ bool RayShadow(const Scene *pScene, const double3 &origin, const doub
 		const SceneObject &scene_object = pScene->Objects[i];
 		double3 transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
 		double3 transformed_direction = TransformVector(scene_object.TransformInverse, direction);
-		double lambda = Intersect(transformed_origin, transformed_direction, scene_object.Geometry);
-		if (lambda >= 0 && lambda < 1000000) return true;
+		double lambda = Intersect<IntersectSimple>(transformed_origin, transformed_direction, scene_object.Geometry).Lambda;
+		if (lambda >= 0 && lambda < DBL_MAX) return true;
 	}
 	return false;
 }
@@ -157,87 +233,75 @@ __device__ bool RayShadow(const Scene *pScene, const double3 &origin, const doub
 template <int RECURSE>
 __device__ double4 RayColor(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	// Start intersecting objects.
-	double best_lambda = 1000000;
-	int best_pobject = 0;
+	double best_lambda = DBL_MAX;
+	const SceneObject *best_object = nullptr;
 	for (int i = 0; i < pScene->ObjectCount; ++i) {
 		const SceneObject &scene_object = pScene->Objects[i];
-		double3 transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
-		double3 transformed_direction = TransformVector(scene_object.TransformInverse, direction);
-		double lambda = Intersect(transformed_origin, transformed_direction, scene_object.Geometry);
+		double lambda = Intersect<IntersectSimple>(origin, direction, scene_object).Lambda;
 		if (lambda >= 0 && lambda < best_lambda) {
 			best_lambda = lambda;
-			best_pobject = i;
+			best_object = &scene_object;
 		}
 	}
-	if (best_lambda == 1000000) {
+	if (best_lambda == DBL_MAX) {
 		return make_double4(0, 0, 0, 0);
 	}
+	double3 vector_point = origin + best_lambda * direction;
+	double3 vector_light = Normalize(make_double3(10, 10, -10) - vector_point);
+	double3 vector_normal = Normalize(Intersect<IntersectNormal>(origin, direction, *best_object).Normal);
+	double4 color_diffuse = make_double4(1, 1, 1, 0);
+	double4 color_specular = make_double4(1, 1, 1, 0);
+	double scale_reflect = 0;
+	double scale_refract = 0;
+	double scale_ior = 1;
+	switch (best_object->Material) {
+	case MATERIAL_COMMON:
 	{
-		double3 p = origin + best_lambda * direction;
-		double3 l = Normalize(make_double3(10, 10, -10) - p);
-		double3 n;
-		switch (pScene->Objects[best_pobject].Geometry) {
-		case GEOMETRY_PLANE:
-			n = make_double3(0, 1, 0);
-			break;
-		case GEOMETRY_SPHERE:
-			n = TransformPoint(pScene->Objects[best_pobject].TransformInverse, p);
-			break;
-		default:
-			n = make_double3(0, 1, 0);
+		if (best_object->MaterialOffset != 0) {
+			MaterialCommon *pMaterial = (MaterialCommon*)((unsigned char*)pScene + best_object->MaterialOffset);
+			color_diffuse = pMaterial->Diffuse;
+			color_specular = pMaterial->Specular;
+			scale_reflect = pMaterial->Reflect.w;
+			scale_refract = pMaterial->Refract.w;
+			scale_ior = pMaterial->Ior;
 		}
-		double3 i = Normalize(direction);
-		double3 r = Reflect(i, n);
-		double3 t = Refract(i, n, 1.5);
-		double scale_diffuse = Dot(l, n);
-		scale_diffuse = scale_diffuse > 0 ? scale_diffuse : 0;
-		double scale_specular = Dot(l, r);
-		scale_specular = scale_specular > 0 ? scale_specular : 0;
-		scale_specular = pow(scale_specular, 100);
-		if (RayShadow(pScene, p + 0.0001 * n, l)) scale_diffuse *= 0.5;
-		double4 color_diffuse = make_double4(1, 1, 1, 0);
-		double4 color_specular = make_double4(1, 1, 1, 0);
-		double scale_reflect = 0;
-		double scale_refract = 0;
-		switch (pScene->Objects[best_pobject].Material) {
-		case MATERIAL_COMMON:
-		{
-			if (pScene->Objects[best_pobject].MaterialOffset != 0) {
-				MaterialCommon *pMaterial = (MaterialCommon*)((unsigned char*)pScene + pScene->Objects[best_pobject].MaterialOffset);
-				color_diffuse = pMaterial->Diffuse;
-				color_specular = pMaterial->Specular;
-				scale_reflect = pMaterial->Reflect.w;
-				scale_refract = pMaterial->Refract.w;
-			}
-		}
-		break;
-		case MATERIAL_CHECKERBOARD_XZ:
-		{
-			int mx = (p.x - floor(p.x)) < 0.5 ? 0 : 1;
-			int my = 0; // (space.Y - floor(space.Y)) < 0.5 ? 0 : 1;
-			int mz = (p.z - floor(p.z)) < 0.5 ? 0 : 1;
-			double c = (mx + my + mz) % 2;
-			color_diffuse = make_double4(c, c, c, 0);
-			color_specular = make_double4(1, 1, 1, 0);
-			scale_reflect = 1;
-			scale_refract = 0;
-		}
-		break;
-		}
-		double4 color = color_diffuse * scale_diffuse + color_specular * scale_specular;
-		if (scale_refract > 0) {
-			//Schlick's Approximation for reflectance.
-			double R = SchlickApprox(i, n, 1, 1.5);
-			scale_reflect = R;
-			//Add refraction contribution.
-			color = color + RayColor<RECURSE - 1>(pScene, p + t * 0.0001, t) * scale_refract;
-		}
-		if (scale_reflect > 0) {
-			color = color + RayColor<RECURSE - 1>(pScene, p + r * 0.0001, r) * scale_reflect;
-		}
-		color.w = 1;
-		return color;
 	}
+	break;
+	case MATERIAL_CHECKERBOARD_XZ:
+	{
+		int mx = (vector_point.x - floor(vector_point.x)) < 0.5 ? 0 : 1;
+		int my = 0; // (space.Y - floor(space.Y)) < 0.5 ? 0 : 1;
+		int mz = (vector_point.z - floor(vector_point.z)) < 0.5 ? 0 : 1;
+		double c = (mx + my + mz) % 2;
+		color_diffuse = make_double4(c, c, c, 0);
+		color_specular = make_double4(1, 1, 1, 0);
+		scale_reflect = 1;
+		scale_refract = 0;
+	}
+	break;
+	}
+	double3 vector_incident = Normalize(direction);
+	double3 vector_reflect = Reflect(vector_incident, vector_normal);
+	double3 vector_refract = Refract(vector_incident, vector_normal, scale_ior);
+	double scale_diffuse = Dot(vector_light, vector_normal);
+	scale_diffuse = scale_diffuse > 0 ? scale_diffuse : 0;
+	double scale_specular = Dot(vector_light, vector_reflect);
+	scale_specular = scale_specular > 0 ? scale_specular : 0;
+	scale_specular = pow(scale_specular, 100);
+	if (RayShadow(pScene, vector_point + 0.0001 * vector_normal, vector_light)) scale_diffuse *= 0.5;
+	double4 color = color_diffuse * scale_diffuse + color_specular * scale_specular;
+	if (scale_refract > 0) {
+		//Schlick's Approximation for reflectance.
+		double R = SchlickApprox(vector_incident, vector_normal, 1, scale_ior);
+		scale_reflect = R;
+		//Add refraction contribution.
+		color = color + RayColor<RECURSE - 1>(pScene, vector_point + vector_refract * 0.001, vector_refract) * scale_refract;
+	}
+	if (scale_reflect > 0) {
+		color = color + RayColor<RECURSE - 1>(pScene, vector_point + vector_reflect * 0.001, vector_reflect) * scale_reflect;
+	}
+	color.w = 1;
+	return color;
 }
 
 template <>

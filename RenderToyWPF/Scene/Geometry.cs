@@ -19,6 +19,18 @@ namespace RenderToy
         /// <returns>A 3D point in object local space.</returns>
         Point3D GetPointUV(double u, double v);
     }
+    public interface IParametricUVW
+    {
+        /// <summary>
+        /// Get a 3D point within a parametric volume.
+        /// Parametric volumes are only meaningfully defined in the range [0,1] in U, V and W.
+        /// </summary>
+        /// <param name="u">The U location in the volume.</param>
+        /// <param name="v">The V location in the volume.</param>
+        /// <param name="w">The W location in the volume.</param>
+        /// <returns>A 3D point in object local space.</returns>
+        Point3D GetPointUVW(double u, double v, double w);
+    }
     interface IRayTest
     {
         /// <summary>
@@ -74,6 +86,80 @@ namespace RenderToy
             return acc;
         }
         Point3D[] hull = null;
+    }
+    public class Cube : IParametricUVW, IRayTest
+    {
+        public Point3D GetPointUVW(double u, double v, double w)
+        {
+            return new Point3D(-1 + u * 2, -1 + v * 2, -1 + w * 2);
+        }
+        public double RayTestDistance(Point3D origin, Vector3D direction)
+        {
+            double best_lambda = Double.PositiveInfinity;
+            Vector3D best_normal;
+            for (int face_index = 0; face_index < 6; ++face_index)
+            {
+                double lambda = IntersectPlane(origin, direction, face_normal[face_index], 1);
+                if (lambda < 0 || lambda > best_lambda) continue;
+                Point3D point = origin + lambda * direction;
+                // Check that the point is inside every other plane.
+                bool use_face = true;
+                for (int check_face = 0; check_face < 6; ++check_face)
+                {
+                    if (face_index == check_face) continue;
+                    double inside = MathHelp.Dot(point, face_normal[check_face]) - 1;
+                    if (inside > 0)
+                    {
+                        use_face = false;
+                        break;
+                    }
+                }
+                if (use_face)
+                {
+                    best_lambda = lambda;
+                    best_normal = face_normal[face_index];
+                }
+            }
+            return best_lambda;
+        }
+        public Vector3D RayTestNormal(Point3D origin, Vector3D direction)
+        {
+            double best_lambda = Double.PositiveInfinity;
+            Vector3D best_normal = new Vector3D(0, 0, 0);
+            for (int face_index = 0; face_index < 6; ++face_index)
+            {
+                double lambda = IntersectPlane(origin, direction, face_normal[face_index], 1);
+                if (lambda < 0 || lambda > best_lambda) continue;
+                Point3D point = origin + lambda * direction;
+                // Check that the point is inside every other plane.
+                bool use_face = true;
+                for (int check_face = 0; check_face < 6; ++check_face)
+                {
+                    if (face_index == check_face) continue;
+                    double inside = MathHelp.Dot(point, face_normal[check_face]) - 1;
+                    if (inside > 0)
+                    {
+                        use_face = false;
+                        break;
+                    }
+                }
+                if (use_face)
+                {
+                    best_lambda = lambda;
+                    best_normal = face_normal[face_index];
+                }
+            }
+            return best_normal;
+        }
+        double IntersectPlane(Point3D origin, Vector3D direction, Vector3D plane_normal, double plane_distance)
+        {
+            return (plane_distance - MathHelp.Dot(plane_normal, origin)) / MathHelp.Dot(plane_normal, direction);
+        }
+        static Vector3D[] face_normal = {
+            new Vector3D(-1,0,0), new Vector3D(+1,0,0),
+            new Vector3D(0,-1,0), new Vector3D(0,+1,0),
+            new Vector3D(0,0,-1), new Vector3D(0,0,+1),
+        };
     }
     public class Cylinder : IParametricUV
     {

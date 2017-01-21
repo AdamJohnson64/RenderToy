@@ -48,9 +48,12 @@ namespace RenderToy
             {
                 Scene scene = new Scene();
                 scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Colors.LightGray, new CheckerboardMaterial(Colors.Black, Colors.White)));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-2, 1, 0)), new Sphere(), Colors.Red, Materials.PlasticRed));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Colors.Green, Materials.PlasticGreen));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+2, 1, 0)), new Sphere(), Colors.Blue, Materials.PlasticBlue));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-5, 1, 0)), new Sphere(), Colors.Red, Materials.PlasticRed));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-3, 1, 0)), new Sphere(), Colors.Green, Materials.PlasticGreen));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-1, 1, 0)), new Sphere(), Colors.Blue, Materials.PlasticBlue));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+1, 1, 0)), new Sphere(), Colors.Yellow, Materials.PlasticYellow));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+3, 1, 0)), new Cube(), Colors.Magenta, Materials.PlasticMagenta));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+5, 1, 0)), new Sphere(), Colors.Cyan, Materials.PlasticCyan));
                 scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 3, 0)), new Sphere(), Colors.Black, Materials.Glass));
                 return scene;
             }

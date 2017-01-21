@@ -34,6 +34,29 @@ namespace RenderToy
                 }
             }
         }
+        /// <summary>
+        /// Draw a uvw parametric volume as a series of points.
+        /// </summary>
+        /// <param name="point">The point rendering function.</param>
+        /// <param name="shape">The uvw parametric volume to draw.</param>
+        public static void DrawParametricUVW(fnDrawPointWorld point, IParametricUVW shape)
+        {
+            int USEGMENTS = 20;
+            int VSEGMENTS = 20;
+            int WSEGMENTS = 20;
+            // Simply move some number of steps across u and v and draw the points in space.
+            for (int u = 0; u < USEGMENTS; ++u)
+            {
+                for (int v = 0; v < VSEGMENTS; ++v)
+                {
+                    for (int w = 0; w < VSEGMENTS; ++w)
+                    {
+                        // Determine the point and draw it; easy.
+                        point(shape.GetPointUVW((double)u / USEGMENTS, (double)v / VSEGMENTS, (double)w / WSEGMENTS));
+                    }
+                }
+            }
+        }
         #endregion
         #region - Section : Higher Order Primitives (Wireframe) -
         /// <summary>
@@ -102,22 +125,74 @@ namespace RenderToy
         public static void DrawParametricUV(fnDrawLineWorld line, IParametricUV shape)
         {
             int USEGMENTS = 10;
-            int VSEGMENTS = 20;
+            int LSEGMENTS = 20;
             for (int u = 0; u <= USEGMENTS; ++u)
             {
-                for (int v = 0; v < VSEGMENTS; ++v)
+                for (int l = 0; l < LSEGMENTS; ++l)
                 {
                     // Draw U Lines.
                     {
-                        Point3D p3u1 = shape.GetPointUV((v + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
-                        Point3D p3u2 = shape.GetPointUV((v + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
+                        Point3D p3u1 = shape.GetPointUV((u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
+                        Point3D p3u2 = shape.GetPointUV((u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
                         line(p3u1, p3u2);
                     }
                     // Draw V Lines.
                     {
-                        Point3D p3u1 = shape.GetPointUV((u + 0.0) / USEGMENTS, (v + 0.0) / VSEGMENTS);
-                        Point3D p3u2 = shape.GetPointUV((u + 0.0) / USEGMENTS, (v + 1.0) / VSEGMENTS);
+                        Point3D p3u1 = shape.GetPointUV((l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
+                        Point3D p3u2 = shape.GetPointUV((l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
                         line(p3u1, p3u2);
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// Render a wireframe for a parametric UV surface.
+        /// </summary>
+        /// <param name="line">The world space line rendering function.</param>
+        /// <param name="shape">The parametric surface to render.</param>
+        public static void DrawParametricUVW(fnDrawLineWorld line, IParametricUVW shape)
+        {
+            int USEGMENTS = 10;
+            int LSEGMENTS = 20;
+            for (int u = 0; u <= USEGMENTS; ++u)
+            {
+                for (int v = 0; v <= USEGMENTS; ++v)
+                {
+                    for (int l = 0; l < LSEGMENTS; ++l)
+                    {
+                        // Draw UV Lines.
+                        {
+                            Point3D p3u1 = shape.GetPointUVW((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
+                            Point3D p3u2 = shape.GetPointUVW((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
+                            line(p3u1, p3u2);
+                        }
+                        {
+                            Point3D p3u1 = shape.GetPointUVW((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
+                            Point3D p3u2 = shape.GetPointUVW((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
+                            line(p3u1, p3u2);
+                        }
+                        // Draw UW Lines.
+                        {
+                            Point3D p3u1 = shape.GetPointUVW((u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS, (v + 0.0) / USEGMENTS);
+                            Point3D p3u2 = shape.GetPointUVW((u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS, (v + 0.0) / USEGMENTS);
+                            line(p3u1, p3u2);
+                        }
+                        {
+                            Point3D p3u1 = shape.GetPointUVW((v + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
+                            Point3D p3u2 = shape.GetPointUVW((v + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
+                            line(p3u1, p3u2);
+                        }
+                        // Draw VW Lines.
+                        {
+                            Point3D p3u1 = shape.GetPointUVW((l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
+                            Point3D p3u2 = shape.GetPointUVW((l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
+                            line(p3u1, p3u2);
+                        }
+                        {
+                            Point3D p3u1 = shape.GetPointUVW((l + 0.0) / LSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
+                            Point3D p3u2 = shape.GetPointUVW((l + 1.0) / LSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
+                            line(p3u1, p3u2);
+                        }
                     }
                 }
             }
