@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
@@ -36,11 +37,10 @@ namespace RenderToy
         public Color MaterialCompute(Point3D origin, Vector3D direction, double lambda)
         {
             Point3D space = origin + lambda * direction;
-            int mx = (((space.X % 1) + 1) % 1) < 0.5 ? 0 : 1;
-            int my = 0; // (((space.Y % 1) + 1) % 1) < 0.5 ? 0 : 1;
-            int mz = (((space.Z % 1) + 1) % 1) < 0.5 ? 0 : 1;
-            int mod = (mx + my + mz) % 2;
-            return mod == 0 ? Color1 : Color2;
+            double mx = Math.Round(space.X - Math.Floor(space.X));
+            double mz = Math.Round(space.Z - Math.Floor(space.Z));
+            double mod = (mx + mz) % 2;
+            return mod < 0.5 ? Color1 : Color2;
         }
         private Color Color1;
         private Color Color2;
