@@ -9,8 +9,10 @@ namespace RenderToy
 {
     public static class DrawHelp
     {
+        #region - Section : Delegates for shape access -
         public delegate Point3D GetPointUV(double u, double v);
         public delegate Point3D GetPointUVW(double u, double v, double w);
+        #endregion
         #region - Section : Higher Order Primitives (Points) -
         /// <summary>
         /// Generic point drawing function draws a point in 3D space.
@@ -37,7 +39,7 @@ namespace RenderToy
             }
         }
         /// <summary>
-        /// Draw a uvw parametric volume as a series of points.
+        /// Draw a uvw parametric volume skin as a series of points.
         /// </summary>
         /// <param name="point">The point rendering function.</param>
         /// <param name="shape">The uvw parametric volume to draw.</param>
@@ -50,17 +52,22 @@ namespace RenderToy
             DrawParametricUV(point, (u, v) => shape(0, u, v));
             DrawParametricUV(point, (u, v) => shape(1, u, v));
         }
+        /// <summary>
+        /// Draw a uvw parametric volume as a series of points.
+        /// </summary>
+        /// <param name="point">The point rendering function.</param>
+        /// <param name="shape">The uvw parametric volume to draw.</param>
         public static void DrawParametricVolumeUVW(fnDrawPointWorld point, GetPointUVW shape)
         {
             int USEGMENTS = 20;
             int VSEGMENTS = 20;
             int WSEGMENTS = 20;
             // Simply move some number of steps across u and v and draw the points in space.
-            for (int u = 0; u < USEGMENTS; ++u)
+            for (int u = 0; u <= USEGMENTS; ++u)
             {
-                for (int v = 0; v < VSEGMENTS; ++v)
+                for (int v = 0; v <= VSEGMENTS; ++v)
                 {
-                    for (int w = 0; w < VSEGMENTS; ++w)
+                    for (int w = 0; w <= VSEGMENTS; ++w)
                     {
                         // Determine the point and draw it; easy.
                         point(shape((double)u / USEGMENTS, (double)v / VSEGMENTS, (double)w / WSEGMENTS));
@@ -157,7 +164,7 @@ namespace RenderToy
             }
         }
         /// <summary>
-        /// Render a wireframe for a parametric UV surface.
+        /// Render a wireframe for a parametric UVW volume skin.
         /// </summary>
         /// <param name="line">The world space line rendering function.</param>
         /// <param name="shape">The parametric surface to render.</param>
@@ -170,6 +177,11 @@ namespace RenderToy
             DrawParametricUV(line, (u, v) => shape(0, u, v));
             DrawParametricUV(line, (u, v) => shape(1, u, v));
         }
+        /// <summary>
+        /// Render a wireframe for a parametric UVW volume.
+        /// </summary>
+        /// <param name="line">The world space line rendering function.</param>
+        /// <param name="shape">The parametric surface to render.</param>
         public static void DrawParametricVolumeUVW(fnDrawLineWorld line, GetPointUVW shape)
         {
             int USEGMENTS = 10;
