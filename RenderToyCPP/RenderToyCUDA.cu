@@ -265,6 +265,24 @@ __device__ double4 RayCast(const Scene* pScene, const double3& origin, const dou
 	return make_double4(0, 0, 0, 0);
 }
 
+__device__ double4 RayCastNormals(const Scene* pScene, const double3& origin, const double3& direction) {
+	double best_lambda = DBL_MAX;
+	const SceneObject *best_object = nullptr;
+	for (int i = 0; i < pScene->ObjectCount; ++i) {
+		const SceneObject &scene_object = pScene->Objects[i];
+		double lambda = Intersect<IntersectSimple>(origin, direction, scene_object).Lambda;
+		if (lambda >= 0 && lambda < best_lambda) {
+			best_lambda = lambda;
+			best_object = &scene_object;
+		}
+	}
+	if (best_lambda == DBL_MAX) {
+		return make_double4(0, 0, 0, 0);
+	}
+	double3 n = Intersect<IntersectNormal>(origin, direction, *best_object).Normal;
+	return make_double4((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
+}
+
 template <int RECURSE>
 __device__ double4 RayColor(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	// Start intersecting objects.
@@ -350,6 +368,13 @@ public:
 	}
 };
 
+struct DoRayCastNormals {
+public:
+	__device__ static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+		return RayCastNormals(pScene, origin, direction);
+	}
+};
+
 struct DoRayColor {
 public:
 	__device__ static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
@@ -404,6 +429,10 @@ __global__ void cudaRaycastKernel(const Scene *pScene, Matrix4D inverse_mvp, voi
 	cudaFill<DoRayCast, 1, 1>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
+__global__ void cudaRaycastNormalsKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	cudaFill<DoRayCastNormals, 1, 1>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
 __global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	cudaFill<DoRayColor, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
@@ -425,6 +454,14 @@ bool executeCudaRaycast(const Scene* device_scene, const Matrix4D& InverseMVP, v
 	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
 	cudaRaycastKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	return true;
+}
+
+bool executeCudaRaycastNormals(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height)
+{
+	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
+	dim3 threads(16, 16, 1);
+	cudaRaycastNormalsKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
 	return true;
 }
 
@@ -466,6 +503,11 @@ bool cudaRender(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_
 extern "C" bool cudaRaycast(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 {
 	return cudaRender(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, executeCudaRaycast);
+}
+
+extern "C" bool cudaRaycastNormals(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+{
+	return cudaRender(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, executeCudaRaycastNormals);
 }
 
 extern "C" bool cudaRaytrace(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
