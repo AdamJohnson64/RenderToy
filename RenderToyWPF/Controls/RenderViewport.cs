@@ -193,32 +193,23 @@ namespace RenderToy
         static RoutedUICommand CommandRenderPoint = new RoutedUICommand("Point Render", "CommandRenderPoint", typeof(RenderViewport));
         static RoutedUICommand CommandRenderWireframe = new RoutedUICommand("Wireframe Render", "CommandRenderWireframe", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaster = new RoutedUICommand("Raster Render", "CommandRenderRaster", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaytrace = new RoutedUICommand("Raytrace Render", "CommandRenderRaytrace", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastCUDA = new RoutedUICommand("Raycast (CUDA) Render", "CommandRenderRaycastCUDA", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastNormalsCUDA = new RoutedUICommand("Raycast Normals (CUDA) Render", "CommandRenderRaycastNormalsCUDA", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaytraceCUDA = new RoutedUICommand("Raytrace (CUDA) Render", "CommandRenderRaytraceCUDA", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastCPU = new RoutedUICommand("Raycast Render (CPU)", "CommandRenderRaycastCPU", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastNormalsCPU = new RoutedUICommand("Raycast Normals Render (CPU)", "CommandRenderRaycastNormalsCPU", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaytraceCPU = new RoutedUICommand("Raytrace Render (CPU)", "CommandRenderRaytraceCPU", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastCUDA = new RoutedUICommand("Raycast Render (CUDA)", "CommandRenderRaycastCUDA", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastNormalsCUDA = new RoutedUICommand("Raycast Normals Render (CUDA)", "CommandRenderRaycastNormalsCUDA", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaytraceCUDA = new RoutedUICommand("Raytrace Render (CUDA)", "CommandRenderRaytraceCUDA", typeof(RenderViewport));
         static RoutedUICommand CommandRenderD3D9 = new RoutedUICommand("D3D9 Render", "CommandRenderD3D9", typeof(RenderViewport));
         static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(RenderViewport));
         static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(RenderViewport));
-        static RenderViewport()
-        {
-            CommandRenderPoint.InputGestures.Add(new KeyGesture(Key.D1, ModifierKeys.Control));
-            CommandRenderWireframe.InputGestures.Add(new KeyGesture(Key.D2, ModifierKeys.Control));
-            CommandRenderRaster.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Control));
-            CommandRenderRaytrace.InputGestures.Add(new KeyGesture(Key.D4, ModifierKeys.Control));
-            CommandRenderRaycastCUDA.InputGestures.Add(new KeyGesture(Key.D5, ModifierKeys.Control));
-            CommandRenderRaycastNormalsCUDA.InputGestures.Add(new KeyGesture(Key.D6, ModifierKeys.Control));
-            CommandRenderRaytraceCUDA.InputGestures.Add(new KeyGesture(Key.D7, ModifierKeys.Control));
-            CommandRenderD3D9.InputGestures.Add(new KeyGesture(Key.D0, ModifierKeys.Control));
-            CommandRenderPreviewsToggle.InputGestures.Add(new KeyGesture(Key.P, ModifierKeys.Control));
-            CommandRenderWireframeToggle.InputGestures.Add(new KeyGesture(Key.W, ModifierKeys.Control));
-        }
         public RenderViewport()
         {
             CommandBindings.Add(new CommandBinding(CommandRenderPoint, (s, e) => { renderMode = RenderMode.Point; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderWireframe, (s, e) => { renderMode = RenderMode.Wireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaster, (s, e) => { renderMode = RenderMode.Raster; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRaytrace, (s, e) => { renderMode = RenderMode.Raytrace; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastCPU, (s, e) => { renderMode = RenderMode.RaycastCPU; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCPU, (s, e) => { renderMode = RenderMode.RaycastNormalsCPU; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCPU, (s, e) => { renderMode = RenderMode.RaytraceCPU; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastCUDA, (s, e) => { renderMode = RenderMode.RaycastCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCUDA, (s, e) => { renderMode = RenderMode.RaycastNormalsCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCUDA, (s, e) => { renderMode = RenderMode.RaytraceCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -228,16 +219,18 @@ namespace RenderToy
             InputBindings.Add(new KeyBinding(CommandRenderPoint, Key.D1, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframe, Key.D2, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderRaster, Key.D3, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(CommandRenderRaytrace, Key.D4, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(CommandRenderRaycastCUDA, Key.D5, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(CommandRenderRaycastNormalsCUDA, Key.D6, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(CommandRenderRaytraceCUDA, Key.D7, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaycastCPU, Key.D4, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaycastNormalsCPU, Key.D5, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaytraceCPU, Key.D6, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaycastCUDA, Key.D7, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaycastNormalsCUDA, Key.D8, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaytraceCUDA, Key.D9, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderD3D9, Key.D0, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
             Focusable = true;
         }
-        enum RenderMode { Point, Wireframe, Raster, Raytrace, RaycastCUDA, RaycastNormalsCUDA, RaytraceCUDA, Direct3D9 }
+        enum RenderMode { Point, Wireframe, Raster, RaycastCPU, RaycastNormalsCPU, RaytraceCPU, RaycastCUDA, RaycastNormalsCUDA, RaytraceCUDA, Direct3D9 }
         RenderMode renderMode = RenderMode.Wireframe;
         bool renderPreviews = true;
         bool renderWireframe = false;
@@ -259,8 +252,14 @@ namespace RenderToy
                 case RenderMode.Raster:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raster, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
-                case RenderMode.Raytrace:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raytrace, Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                case RenderMode.RaycastCPU:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCPU, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
+                case RenderMode.RaycastNormalsCPU:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastNormalsCPU, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
+                case RenderMode.RaytraceCPU:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaytraceCPU, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.RaycastCUDA:
                     if (Render.CUDAAvailable())
@@ -321,7 +320,6 @@ namespace RenderToy
                 drawpreview(Render.Point, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
                 drawpreview(Render.Wireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
                 drawpreview(Render.Raster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-                drawpreview(Render.Raytrace, 3, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
             }
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
@@ -360,13 +358,6 @@ namespace RenderToy
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
             drawingContext.DrawImage(ImageHelp.CreateImage(Render.RasterD3D9, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
-        }
-    }
-    class RenderViewportRaytrace : RenderViewportBase
-    {
-        protected override void OnRenderToy(DrawingContext drawingContext)
-        {
-            drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raytrace, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512), new Rect(0, 0, ActualWidth, ActualHeight));
         }
     }
 }

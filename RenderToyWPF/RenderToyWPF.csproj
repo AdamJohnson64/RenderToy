@@ -71,7 +71,6 @@
     <Compile Include="Controls\GeometrySwatch.cs" />
     <Compile Include="Scene\Geometry.cs" />
     <Compile Include="Scene\Material.cs" />
-    <Compile Include="Render\Render_RAY.cs" />
     <Compile Include="Scene\Camera.cs" />
     <Compile Include="Scene\Scene.cs" />
     <Compile Include="Utility\ClipHelp.cs" />

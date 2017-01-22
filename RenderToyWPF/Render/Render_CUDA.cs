@@ -17,19 +17,31 @@ namespace RenderToy
         #region - Section : Phase 4 - Raytrace Rendering (CUDA) -
         public static bool CUDAAvailable()
         {
-            return RenderToy.CUDASupport.Available();
+            return RenderToy.RenderToyCPP.HaveCUDA();
+        }
+        public static void RaycastCPU(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        {
+            RenderToy.RenderToyCPP.RaycastCPU(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+        }
+        public static void RaycastNormalsCPU(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        {
+            RenderToy.RenderToyCPP.RaycastNormalsCPU(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+        }
+        public static void RaytraceCPU(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        {
+            RenderToy.RenderToyCPP.RaytraceCPU(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
         public static void RaycastCUDA(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            RenderToy.RaycastCUDA.Fill(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+            RenderToy.RenderToyCPP.RaycastCUDA(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
         public static void RaycastNormalsCUDA(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            RenderToy.RaycastNormalsCUDA.Fill(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+            RenderToy.RenderToyCPP.RaycastNormalsCUDA(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
         public static void RaytraceCUDA(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            RenderToy.RaytraceCUDA.Fill(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+            RenderToy.RenderToyCPP.RaytraceCUDA(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
         static double[] MatrixToDoubles(Matrix3D mvp)
         {

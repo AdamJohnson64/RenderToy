@@ -94,14 +94,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RenderToyCUDA.cpp" />
+    <None Include="Raytrace.inc">
+      <FileType>CppCode</FileType>
+    </None>
+    <ClCompile Include="RaytraceCPU.cpp" />
+    <ClCompile Include="RenderToy.cpp" />
     <ClCompile Include="RenderToyD3D9.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="RenderToyCUDA.cu">
+    <CudaCompile Include="RaytraceCUDA.cu">
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_52,sm_52</CodeGeneration>
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_52,sm_52</CodeGeneration>
     </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Raytrace.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

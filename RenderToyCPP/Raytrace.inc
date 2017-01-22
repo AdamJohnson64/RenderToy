@@ -1,50 +1,44 @@
-#include <cuda_runtime.h>
-#include <math.h>
-#include <cfloat>
-
 ////////////////////////////////////////////////////////////////////////////////
 // Device Code.
 ////////////////////////////////////////////////////////////////////////////////
 
 // Basic Math Primitives.
-__device__ double3 operator-(const double3& val) { return make_double3(-val.x, -val.y, -val.z); }
-__device__ double4 operator-(const double4& val) { return make_double4(-val.z, -val.y, -val.z, -val.w); }
-__device__ double3 operator+(const double3& lhs, const double3& rhs) { return make_double3(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z); }
-__device__ double4 operator+(const double4& lhs, const double4& rhs) { return make_double4(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w); }
-__device__ double3 operator-(const double3& lhs, const double3& rhs) { return make_double3(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z); }
-__device__ double4 operator-(const double4& lhs, const double4& rhs) { return make_double4(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w); }
-__device__ double3 operator*(const double3& lhs, double rhs) { return make_double3(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs); }
-__device__ double3 operator*(double lhs, const double3& rhs) { return rhs * lhs; }
-__device__ double4 operator*(const double4& lhs, double rhs) { return make_double4(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs); }
-__device__ double4 operator*(double lhs, const double4& rhs) { return rhs * lhs; }
-__device__ double3 operator/(const double3 &lhs, double rhs) { return lhs * (1 / rhs); }
-__device__ double4 operator/(const double4 &lhs, double rhs) { return lhs * (1 / rhs); }
+DEVICE_PROTO double3 operator-(const double3& val) { return make_double3(-val.x, -val.y, -val.z); }
+DEVICE_PROTO double4 operator-(const double4& val) { return make_double4(-val.z, -val.y, -val.z, -val.w); }
+DEVICE_PROTO double3 operator+(const double3& lhs, const double3& rhs) { return make_double3(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z); }
+DEVICE_PROTO double4 operator+(const double4& lhs, const double4& rhs) { return make_double4(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w); }
+DEVICE_PROTO double3 operator-(const double3& lhs, const double3& rhs) { return make_double3(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z); }
+DEVICE_PROTO double4 operator-(const double4& lhs, const double4& rhs) { return make_double4(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w); }
+DEVICE_PROTO double3 operator*(const double3& lhs, double rhs) { return make_double3(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs); }
+DEVICE_PROTO double3 operator*(double lhs, const double3& rhs) { return rhs * lhs; }
+DEVICE_PROTO double4 operator*(const double4& lhs, double rhs) { return make_double4(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs); }
+DEVICE_PROTO double4 operator*(double lhs, const double4& rhs) { return rhs * lhs; }
+DEVICE_PROTO double3 operator/(const double3 &lhs, double rhs) { return lhs * (1 / rhs); }
+DEVICE_PROTO double4 operator/(const double4 &lhs, double rhs) { return lhs * (1 / rhs); }
 
 // Common Math Primitives.
-__device__ double Clamp(double min, double max, double val) { return val < min ? min : (val > max ? max : val); }
-__device__ double Dot(const double3& lhs, const double3& rhs) { return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z; }
-__device__ double Length(const double3& val) { return norm3d(val.x, val.y, val.z); }
-__device__ double Lerp(double y1, double y2, double x) { return y1 + (y2 - y1) * x; }
-__device__ double3 Normalize(const double3 &val) { return val * rnorm3d(val.x, val.y, val.z); }
+DEVICE_PROTO double Clamp(double min, double max, double val) { return val < min ? min : (val > max ? max : val); }
+DEVICE_PROTO double Dot(const double3& lhs, const double3& rhs) { return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z; }
+DEVICE_PROTO double Length(const double3& val) { return norm3d(val.x, val.y, val.z); }
+DEVICE_PROTO double Lerp(double y1, double y2, double x) { return y1 + (y2 - y1) * x; }
+DEVICE_PROTO double3 Normalize(const double3 &val) { return val * rnorm3d(val.x, val.y, val.z); }
 
 // Matrix Math.
-struct Matrix4D { double M[16]; };
-
-__device__ double3 TransformPoint(const Matrix4D& m, const double3& p) {
+DEVICE_PROTO double3 TransformPoint(const Matrix4D& m, const double3& p) {
 	return make_double3(
 		m.M[0] * p.x + m.M[4] * p.y + m.M[8] * p.z + m.M[12],
 		m.M[1] * p.x + m.M[5] * p.y + m.M[9] * p.z + m.M[13],
 		m.M[2] * p.x + m.M[6] * p.y + m.M[10] * p.z + m.M[14]);
 }
 
-__device__ double3 TransformVector(const Matrix4D& m, const double3& p) {
+DEVICE_PROTO double3 TransformVector(const Matrix4D& m, const double3& p) {
 	return make_double3(
 		m.M[0] * p.x + m.M[4] * p.y + m.M[8] * p.z,
 		m.M[1] * p.x + m.M[5] * p.y + m.M[9] * p.z,
 		m.M[2] * p.x + m.M[6] * p.y + m.M[10] * p.z);
 }
 
-__device__ double4 Transform(const Matrix4D& m, const double4& p) {
+DEVICE_PROTO double4 Transform(const Matrix4D& m, const double4& p) {
 	return make_double4(
 		m.M[0] * p.x + m.M[4] * p.y + m.M[8] * p.z + m.M[12] * p.w,
 		m.M[1] * p.x + m.M[5] * p.y + m.M[9] * p.z + m.M[13] * p.w,
@@ -52,11 +46,11 @@ __device__ double4 Transform(const Matrix4D& m, const double4& p) {
 		m.M[3] * p.x + m.M[7] * p.y + m.M[11] * p.z + m.M[15] * p.w);
 }
 
-__device__ double3 Reflect(const double3& incident, const double3& normal) {
+DEVICE_PROTO double3 Reflect(const double3& incident, const double3& normal) {
 	return incident - 2 * Dot(incident, normal) * normal;
 }
 
-__device__ double3 Refract(const double3& incident, const double3& normal, double ior) {
+DEVICE_PROTO double3 Refract(const double3& incident, const double3& normal, double ior) {
 	double cosi = Clamp(-1, 1, Dot(incident, normal));
 	double etai = 1, etat = ior;
 	double3 n = normal;
@@ -67,34 +61,25 @@ __device__ double3 Refract(const double3& incident, const double3& normal, doubl
 	return k < 0 ? make_double3(0, 0, 0) : (eta * incident + (eta * cosi - sqrt(k)) * n);
 }
 
-__device__ double SchlickApprox(const double3& incident, const double3 &normal, double ior1, double ior2) {
+DEVICE_PROTO double SchlickApprox(const double3& incident, const double3 &normal, double ior1, double ior2) {
 	double coeff = (ior1 - ior2) / (ior1 + ior2);
 	coeff = coeff * coeff;
 	return coeff + (1 - coeff) * pow((1 - Dot(-incident, normal)), 5);
 }
 
 // Geometric Math.
-__device__ double IntersectPlane(const double3 &origin, const double3 &direction, const double3 &plane_normal, double plane_distance) {
+DEVICE_PROTO double IntersectPlane(const double3 &origin, const double3 &direction, const double3 &plane_normal, double plane_distance) {
 	return (plane_distance - Dot(plane_normal, origin)) / Dot(plane_normal, direction);
 }
 
-struct IntersectSimple {
-	double Lambda;
-};
-
-struct IntersectNormal {
-	double Lambda;
-	double3 Normal;
-};
-
-template <typename T> __device__ void SetLambda(T& result, double value) { result.Lambda = value; }
-__device__ void SetNormal(IntersectNormal& result, double3 value) { result.Normal = value; }
-__device__ void SetNormal(IntersectSimple& result, double3 value) {}
-__device__ double3 GetNormal(const IntersectSimple& result) { return make_double3(0, 0, 0); }
-__device__ double3 GetNormal(const IntersectNormal& result) { return result.Normal; }
+template <typename T> DEVICE_PROTO void SetLambda(T& result, double value) { result.Lambda = value; }
+DEVICE_PROTO void SetNormal(IntersectNormal& result, double3 value) { result.Normal = value; }
+DEVICE_PROTO void SetNormal(IntersectSimple& result, double3 value) {}
+DEVICE_PROTO double3 GetNormal(const IntersectSimple& result) { return make_double3(0, 0, 0); }
+DEVICE_PROTO double3 GetNormal(const IntersectNormal& result) { return result.Normal; }
 
 template <typename T>
-__device__ T IntersectCube(const double3 &origin, const double3 &direction) {
+DEVICE_PROTO T IntersectCube(const double3 &origin, const double3 &direction) {
 	T result;
 	double3 face_normal[] = {
 		make_double3(-1,0,0), make_double3(+1,0,0),
@@ -126,7 +111,7 @@ __device__ T IntersectCube(const double3 &origin, const double3 &direction) {
 }
 
 template <typename T>
-__device__ T IntersectPlane(const double3 &origin, const double3 &direction) {
+DEVICE_PROTO T IntersectPlane(const double3 &origin, const double3 &direction) {
 	T result;
 	const double PLANE_DISTANCE = 0;
 	const double3 PLANE_NORMAL = make_double3(0, 1, 0);
@@ -136,7 +121,7 @@ __device__ T IntersectPlane(const double3 &origin, const double3 &direction) {
 }
 
 template <typename T>
-__device__ T IntersectSphere(const double3 &origin, const double3 &direction) {
+DEVICE_PROTO T IntersectSphere(const double3 &origin, const double3 &direction) {
 	T result;
 	const double SPHERE_RADIUS = 1;
 	double a = Dot(direction, direction);
@@ -156,45 +141,8 @@ __device__ T IntersectSphere(const double3 &origin, const double3 &direction) {
 	return result;
 }
 
-enum GeometryType {
-	GEOMETRY_NONE = 0,
-	GEOMETRY_PLANE = 1,
-	GEOMETRY_SPHERE = 2,
-	GEOMETRY_CUBE = 3,
-};
-
-enum MaterialType {
-	MATERIAL_NONE = 0,
-	MATERIAL_COMMON,
-	MATERIAL_CHECKERBOARD_XZ,
-};
-
-struct MaterialCommon {
-	double4 Ambient;
-	double4 Diffuse;
-	double4 Specular;
-	double4 Reflect;
-	double4 Refract;
-	double Ior;
-};
-
-struct SceneObject {
-	Matrix4D Transform;
-	Matrix4D TransformInverse;
-	GeometryType Geometry;
-	int GeometryOffset;
-	MaterialType Material;
-	int MaterialOffset;
-};
-
-struct Scene {
-	int FileSize;
-	int ObjectCount;
-	SceneObject Objects[];
-};
-
 template <typename T>
-__device__ T Intersect(const double3 &origin, const double3 &direction, GeometryType geometry) {
+DEVICE_PROTO T Intersect(const double3 &origin, const double3 &direction, GeometryType geometry) {
 	switch (geometry) {
 	case GEOMETRY_PLANE:
 		return IntersectPlane<T>(origin, direction);
@@ -210,7 +158,7 @@ __device__ T Intersect(const double3 &origin, const double3 &direction, Geometry
 }
 
 template <typename T>
-__device__ T Intersect(const double3 &origin, const double3 &direction, const SceneObject &scene_object) {
+DEVICE_PROTO T Intersect(const double3 &origin, const double3 &direction, const SceneObject &scene_object) {
 	double3 transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
 	double3 transformed_direction = TransformVector(scene_object.TransformInverse, direction);
 	T result = Intersect<T>(transformed_origin, transformed_direction, scene_object.Geometry);
@@ -219,7 +167,7 @@ __device__ T Intersect(const double3 &origin, const double3 &direction, const Sc
 }
 
 // Raytracer Ray Tests.
-__device__ bool RayShadow(const Scene *pScene, const double3 &origin, const double3 &direction) {
+DEVICE_PROTO bool RayShadow(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	for (int i = 0; i < pScene->ObjectCount; ++i) {
 		const SceneObject &scene_object = pScene->Objects[i];
 		double3 transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
@@ -230,7 +178,7 @@ __device__ bool RayShadow(const Scene *pScene, const double3 &origin, const doub
 	return false;
 }
 
-__device__ double4 RayCast(const Scene* pScene, const double3& origin, const double3& direction) {
+DEVICE_PROTO double4 RayCast(const Scene* pScene, const double3& origin, const double3& direction) {
 	double best_lambda = DBL_MAX;
 	const SceneObject *best_object = nullptr;
 	for (int i = 0; i < pScene->ObjectCount; ++i) {
@@ -265,7 +213,7 @@ __device__ double4 RayCast(const Scene* pScene, const double3& origin, const dou
 	return make_double4(0, 0, 0, 0);
 }
 
-__device__ double4 RayCastNormals(const Scene* pScene, const double3& origin, const double3& direction) {
+DEVICE_PROTO double4 RayCastNormals(const Scene* pScene, const double3& origin, const double3& direction) {
 	double best_lambda = DBL_MAX;
 	const SceneObject *best_object = nullptr;
 	for (int i = 0; i < pScene->ObjectCount; ++i) {
@@ -284,7 +232,7 @@ __device__ double4 RayCastNormals(const Scene* pScene, const double3& origin, co
 }
 
 template <int RECURSE>
-__device__ double4 RayColor(const Scene *pScene, const double3 &origin, const double3 &direction) {
+DEVICE_PROTO double4 RayColor(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	// Start intersecting objects.
 	double best_lambda = DBL_MAX;
 	const SceneObject *best_object = nullptr;
@@ -357,32 +305,32 @@ __device__ double4 RayColor(const Scene *pScene, const double3 &origin, const do
 }
 
 template <>
-__device__ double4 RayColor<-1>(const Scene *pScene, const double3 &origin, const double3 &direction) {
+DEVICE_PROTO double4 RayColor<-1>(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	return make_double4(0, 0, 0, 0);
 }
 
 struct DoRayCast {
 public:
-	__device__ static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
 		return RayCast(pScene, origin, direction);
 	}
 };
 
 struct DoRayCastNormals {
 public:
-	__device__ static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
 		return RayCastNormals(pScene, origin, direction);
 	}
 };
 
 struct DoRayColor {
 public:
-	__device__ static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
 		return RayColor<2>(pScene, origin, direction);
 	}
 };
 
-__device__ void ComputeRay(const Matrix4D &inverse_mvp, double clipx, double clipy, double3 &origin, double3 &direction) {
+DEVICE_PROTO void ComputeRay(const Matrix4D &inverse_mvp, double clipx, double clipy, double3 &origin, double3 &direction) {
 	double4 v41 = Transform(inverse_mvp, make_double4(clipx, clipy, 0, 1));
 	double4 v42 = Transform(inverse_mvp, make_double4(clipx, clipy, 1, 1));
 	double3 ray_p1 = make_double3(v41.x / v41.w, v41.y / v41.w, v41.z / v41.w);
@@ -391,7 +339,7 @@ __device__ void ComputeRay(const Matrix4D &inverse_mvp, double clipx, double cli
 	direction = ray_p2 - ray_p1;
 }
 
-__device__ unsigned int MakePixel(const double4 &color) {
+DEVICE_PROTO unsigned int MakePixel(const double4 &color) {
 	unsigned char r = color.x < 0 ? 0 : (color.x > 1 ? 1 : color.x) * 255;
 	unsigned char g = color.y < 0 ? 0 : (color.y > 1 ? 1 : color.y) * 255;
 	unsigned char b = color.z < 0 ? 0 : (color.z > 1 ? 1 : color.z) * 255;
@@ -400,9 +348,7 @@ __device__ unsigned int MakePixel(const double4 &color) {
 }
 
 template <typename T, int X_SUPERSAMPLES, int Y_SUPERSAMPLES>
-__device__ void cudaFill(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	const int x = blockDim.x * blockIdx.x + threadIdx.x;
-	const int y = blockDim.y * blockIdx.y + threadIdx.y;
+DEVICE_PROTO void cudaFill2(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int x, int y) {
 	if (x >= bitmap_width || y >= bitmap_height) return;
 	// Generate untransformed ray.
 	double3 origin;
@@ -423,94 +369,4 @@ __device__ void cudaFill(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap
 	void *pRaster = (unsigned char*)bitmap_ptr + bitmap_stride * y;
 	void *pPixel = (unsigned char*)pRaster + 4 * x;
 	*(unsigned int*)pPixel = MakePixel(color);
-}
-
-__global__ void cudaRaycastKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<DoRayCast, 1, 1>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-}
-
-__global__ void cudaRaycastNormalsKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<DoRayCastNormals, 1, 1>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-}
-
-__global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<DoRayColor, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Host Code
-////////////////////////////////////////////////////////////////////////////////
-
-void CUDA_CALL(cudaError_t error) {
-	if (error == 0) return;
-}
-
-#define TRY_CUDA(fn) CUDA_CALL(fn);
-
-typedef bool(CUDAFN)(const Scene*, const Matrix4D&, void*, int, int);
-
-bool executeCudaRaycast(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height)
-{
-	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
-	dim3 threads(16, 16, 1);
-	cudaRaycastKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
-	return true;
-}
-
-bool executeCudaRaycastNormals(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height)
-{
-	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
-	dim3 threads(16, 16, 1);
-	cudaRaycastNormalsKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
-	return true;
-}
-
-bool executeCudaRaytrace(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height)
-{
-	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
-	dim3 threads(16, 16, 1);
-	cudaRaytraceKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
-	return true;
-}
-
-bool cudaRender(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, CUDAFN& fn) {
-	// Allocate the scene buffer for CUDA.
-	Scene *host_scene = (Scene*)pScene;
-	Scene *device_scene = nullptr;
-	TRY_CUDA(cudaMalloc((void**)&device_scene, host_scene->FileSize));
-	TRY_CUDA(cudaMemcpy(device_scene, host_scene, host_scene->FileSize, cudaMemcpyHostToDevice));
-	// Allocate the bitmap buffer for CUDA.
-	void *device_bitmap_ptr = nullptr;
-	int device_bitmap_stride = 4 * bitmap_width;
-	TRY_CUDA(cudaMalloc((void **)&device_bitmap_ptr, device_bitmap_stride * bitmap_height));
-	// Launch the kernel.
-	fn(device_scene, *(Matrix4D*)pInverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height);
-	// Copy back the render result to the CPU buffer.
-	for (int y = 0; y < bitmap_height; ++y)
-	{
-		void* pDevice = (unsigned char*)device_bitmap_ptr + device_bitmap_stride * y;
-		void* pHost = (unsigned char*)bitmap_ptr + bitmap_stride * y;
-		TRY_CUDA(cudaMemcpy(pHost, pDevice, 4 * bitmap_width, cudaMemcpyDeviceToHost));
-	}
-	// Clean up.
-	TRY_CUDA(cudaFree(device_bitmap_ptr));
-	device_bitmap_ptr = nullptr;
-	TRY_CUDA(cudaFree(device_scene));
-	device_scene = nullptr;
-	return true;
-}
-
-extern "C" bool cudaRaycast(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
-	return cudaRender(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, executeCudaRaycast);
-}
-
-extern "C" bool cudaRaycastNormals(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
-	return cudaRender(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, executeCudaRaycastNormals);
-}
-
-extern "C" bool cudaRaytrace(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
-	return cudaRender(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, executeCudaRaytrace);
 }
