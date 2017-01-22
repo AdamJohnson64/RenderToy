@@ -51,12 +51,12 @@ namespace RenderToy
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv != null)
                 {
-                    DrawHelp.DrawParametricUV(drawpoint, uv);
+                    DrawHelp.DrawParametricUV(drawpoint, uv.GetPointUV);
                 }
                 IParametricUVW uvw = transformedobject.Node.Primitive as IParametricUVW;
                 if (uvw != null)
                 {
-                    DrawHelp.DrawParametricUVW(drawpoint, uvw);
+                    DrawHelp.DrawParametricUVW(drawpoint, uvw.GetPointUVW);
                 }
             }
         }
@@ -125,12 +125,12 @@ namespace RenderToy
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv != null)
                 {
-                    DrawHelp.DrawParametricUV(drawline3d, uv);
+                    DrawHelp.DrawParametricUV(drawline3d, uv.GetPointUV);
                 }
                 IParametricUVW uvw = transformedobject.Node.Primitive as IParametricUVW;
                 if (uvw != null)
                 {
-                    DrawHelp.DrawParametricUVW(drawline3d, uvw);
+                    DrawHelp.DrawParametricUVW(drawline3d, uvw.GetPointUVW);
                 }
             }
         }

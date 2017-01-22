@@ -23,7 +23,7 @@ namespace RenderToy
                 DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(renderer, width, height, transformedobject.Transform * mvp);
                 Color color = transformedobject.Node.WireColor;
                 renderer.WireframeColor(color.R / 255.0 / 2, color.G / 255.0 / 2, color.B / 255.0 / 2);
-                DrawHelp.DrawParametricUV(line, uv);
+                DrawHelp.DrawParametricUV(line, uv.GetPointUV);
             }
             renderer.WireframeEnd();
         }
