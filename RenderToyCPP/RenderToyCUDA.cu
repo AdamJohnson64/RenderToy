@@ -378,6 +378,7 @@ template <typename T, int X_SUPERSAMPLES, int Y_SUPERSAMPLES>
 __device__ void cudaFill(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
 	const int y = blockDim.y * blockIdx.y + threadIdx.y;
+	if (x >= bitmap_width || y >= bitmap_height) return;
 	// Generate untransformed ray.
 	double3 origin;
 	double3 direction;
@@ -421,7 +422,7 @@ typedef bool(CUDAFN)(const Scene*, const Matrix4D&, void*, int, int);
 
 bool executeCudaRaycast(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height)
 {
-	dim3 grid(bitmap_width / 16, bitmap_height / 16, 1);
+	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
 	cudaRaycastKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
 	return true;
@@ -429,7 +430,7 @@ bool executeCudaRaycast(const Scene* device_scene, const Matrix4D& InverseMVP, v
 
 bool executeCudaRaytrace(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height)
 {
-	dim3 grid(bitmap_width / 16, bitmap_height / 16, 1);
+	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
 	cudaRaytraceKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
 	return true;
