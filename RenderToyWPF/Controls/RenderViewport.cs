@@ -194,6 +194,7 @@ namespace RenderToy
         static RoutedUICommand CommandRenderWireframe = new RoutedUICommand("Wireframe Render", "CommandRenderWireframe", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaster = new RoutedUICommand("Raster Render", "CommandRenderRaster", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytrace = new RoutedUICommand("Raytrace Render", "CommandRenderRaytrace", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastCUDA = new RoutedUICommand("Raycast (CUDA) Render", "CommandRenderRaycastCUDA", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytraceCUDA = new RoutedUICommand("Raytrace (CUDA) Render", "CommandRenderRaytraceCUDA", typeof(RenderViewport));
         static RoutedUICommand CommandRenderD3D9 = new RoutedUICommand("D3D9 Render", "CommandRenderD3D9", typeof(RenderViewport));
         static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(RenderViewport));
@@ -204,7 +205,8 @@ namespace RenderToy
             CommandRenderWireframe.InputGestures.Add(new KeyGesture(Key.D2, ModifierKeys.Control));
             CommandRenderRaster.InputGestures.Add(new KeyGesture(Key.D3, ModifierKeys.Control));
             CommandRenderRaytrace.InputGestures.Add(new KeyGesture(Key.D4, ModifierKeys.Control));
-            CommandRenderRaytraceCUDA.InputGestures.Add(new KeyGesture(Key.D5, ModifierKeys.Control));
+            CommandRenderRaycastCUDA.InputGestures.Add(new KeyGesture(Key.D5, ModifierKeys.Control));
+            CommandRenderRaytraceCUDA.InputGestures.Add(new KeyGesture(Key.D6, ModifierKeys.Control));
             CommandRenderD3D9.InputGestures.Add(new KeyGesture(Key.D0, ModifierKeys.Control));
             CommandRenderPreviewsToggle.InputGestures.Add(new KeyGesture(Key.P, ModifierKeys.Control));
             CommandRenderWireframeToggle.InputGestures.Add(new KeyGesture(Key.W, ModifierKeys.Control));
@@ -215,6 +217,7 @@ namespace RenderToy
             CommandBindings.Add(new CommandBinding(CommandRenderWireframe, (s, e) => { renderMode = RenderMode.Wireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaster, (s, e) => { renderMode = RenderMode.Raster; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytrace, (s, e) => { renderMode = RenderMode.Raytrace; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastCUDA, (s, e) => { renderMode = RenderMode.RaycastCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCUDA, (s, e) => { renderMode = RenderMode.RaytraceCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderD3D9, (s, e) => { renderMode = RenderMode.Direct3D9; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { renderPreviews = !renderPreviews; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -223,13 +226,14 @@ namespace RenderToy
             InputBindings.Add(new KeyBinding(CommandRenderWireframe, Key.D2, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderRaster, Key.D3, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderRaytrace, Key.D4, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(CommandRenderRaytraceCUDA, Key.D5, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaycastCUDA, Key.D5, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandRenderRaytraceCUDA, Key.D6, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderD3D9, Key.D0, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
             Focusable = true;
         }
-        enum RenderMode { Point, Wireframe, Raster, Raytrace, RaytraceCUDA, Direct3D9 }
+        enum RenderMode { Point, Wireframe, Raster, Raytrace, RaycastCUDA, RaytraceCUDA, Direct3D9 }
         RenderMode renderMode = RenderMode.Wireframe;
         bool renderPreviews = true;
         bool renderWireframe = false;
@@ -253,6 +257,16 @@ namespace RenderToy
                     break;
                 case RenderMode.Raytrace:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raytrace, Scene, MVP, ReduceQuality ? 128 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 128 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
+                case RenderMode.RaycastCUDA:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCUDA, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
                     break;
                 case RenderMode.RaytraceCUDA:
                     if (Render.CUDAAvailable())

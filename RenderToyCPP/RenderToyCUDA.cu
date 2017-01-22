@@ -230,6 +230,41 @@ __device__ bool RayShadow(const Scene *pScene, const double3 &origin, const doub
 	return false;
 }
 
+__device__ double4 RayCast(const Scene* pScene, const double3& origin, const double3& direction) {
+	double best_lambda = DBL_MAX;
+	const SceneObject *best_object = nullptr;
+	for (int i = 0; i < pScene->ObjectCount; ++i) {
+		const SceneObject &scene_object = pScene->Objects[i];
+		double lambda = Intersect<IntersectSimple>(origin, direction, scene_object).Lambda;
+		if (lambda >= 0 && lambda < best_lambda) {
+			best_lambda = lambda;
+			best_object = &scene_object;
+		}
+	}
+	if (best_lambda == DBL_MAX) {
+		return make_double4(0, 0, 0, 0);
+	}
+	double3 vector_point = origin + best_lambda * direction;
+	switch (best_object->Material) {
+	case MATERIAL_COMMON:
+	{
+		if (best_object->MaterialOffset != 0) {
+			MaterialCommon *pMaterial = (MaterialCommon*)((unsigned char*)pScene + best_object->MaterialOffset);
+			return pMaterial->Diffuse;
+		}
+	}
+	break;
+	case MATERIAL_CHECKERBOARD_XZ:
+	{
+		int mx = (vector_point.x - floor(vector_point.x)) < 0.5 ? 0 : 1;
+		int mz = (vector_point.z - floor(vector_point.z)) < 0.5 ? 0 : 1;
+		double c = (mx + mz) % 2;
+		return make_double4(c, c, c, 1);
+	}
+	}
+	return make_double4(0, 0, 0, 0);
+}
+
 template <int RECURSE>
 __device__ double4 RayColor(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	// Start intersecting objects.
@@ -308,9 +343,19 @@ __device__ double4 RayColor<-1>(const Scene *pScene, const double3 &origin, cons
 	return make_double4(0, 0, 0, 0);
 }
 
-__device__ double4 RayColor(const Scene *pScene, const double3 &origin, const double3 &direction) {
-	return RayColor<2>(pScene, origin, direction);
-}
+struct DoRayCast {
+public:
+	__device__ static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+		return RayCast(pScene, origin, direction);
+	}
+};
+
+struct DoRayColor {
+public:
+	__device__ static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+		return RayColor<2>(pScene, origin, direction);
+	}
+};
 
 __device__ void ComputeRay(const Matrix4D &inverse_mvp, double clipx, double clipy, double3 &origin, double3 &direction) {
 	double4 v41 = Transform(inverse_mvp, make_double4(clipx, clipy, 0, 1));
@@ -329,8 +374,8 @@ __device__ unsigned int MakePixel(const double4 &color) {
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
-__global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
+template <typename T>
+__device__ void cudaFill(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
 	const int y = blockDim.y * blockIdx.y + threadIdx.y;
 	// Generate untransformed ray.
@@ -346,7 +391,7 @@ __global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, vo
 			double vy = Lerp(+1, -1, (y + y_supersample / (Y_SUPERSAMPLES + 1.0)) / bitmap_height);
 			ComputeRay(inverse_mvp, vx, vy, origin, direction);
 			// Compute intersection with plane.
-			color = color + RayColor(pScene, origin, direction);
+			color = color + T::Do(pScene, origin, direction);
 		}
 	}
 	color = color / (X_SUPERSAMPLES * Y_SUPERSAMPLES);
@@ -356,19 +401,43 @@ __global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, vo
 	*(unsigned int*)pPixel = MakePixel(color);
 }
 
+__global__ void cudaRaycastKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	cudaFill<DoRayCast>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+__global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	cudaFill<DoRayColor>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Host Code
 ////////////////////////////////////////////////////////////////////////////////
 
 void CUDA_CALL(cudaError_t error) {
 	if (error == 0) return;
-	int test = 0;
 }
 
 #define TRY_CUDA(fn) CUDA_CALL(fn);
 
-extern "C" bool cudaRaytrace(void* pScene, double* pInverseMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+typedef bool(CUDAFN)(const Scene*, const Matrix4D&, void*, int, int);
+
+bool executeCudaRaycast(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height)
 {
+	dim3 grid(bitmap_width / 16, bitmap_height / 16, 1);
+	dim3 threads(16, 16, 1);
+	cudaRaycastKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	return true;
+}
+
+bool executeCudaRaytrace(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height)
+{
+	dim3 grid(bitmap_width / 16, bitmap_height / 16, 1);
+	dim3 threads(16, 16, 1);
+	cudaRaytraceKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	return true;
+}
+
+bool cudaRender(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, CUDAFN& fn) {
 	// Allocate the scene buffer for CUDA.
 	Scene *host_scene = (Scene*)pScene;
 	Scene *device_scene = nullptr;
@@ -379,16 +448,13 @@ extern "C" bool cudaRaytrace(void* pScene, double* pInverseMVP, void *bitmap_ptr
 	int device_bitmap_stride = 4 * bitmap_width;
 	TRY_CUDA(cudaMalloc((void **)&device_bitmap_ptr, device_bitmap_stride * bitmap_height));
 	// Launch the kernel.
-	dim3 grid(bitmap_width / 16, bitmap_height / 16, 1);
-	dim3 threads(16, 16, 1);
-	cudaRaytraceKernel<<<grid, threads>>>(device_scene, *(Matrix4D*)pInverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	fn(device_scene, *(Matrix4D*)pInverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height);
 	// Copy back the render result to the CPU buffer.
 	for (int y = 0; y < bitmap_height; ++y)
 	{
 		void* pDevice = (unsigned char*)device_bitmap_ptr + device_bitmap_stride * y;
 		void* pHost = (unsigned char*)bitmap_ptr + bitmap_stride * y;
 		TRY_CUDA(cudaMemcpy(pHost, pDevice, 4 * bitmap_width, cudaMemcpyDeviceToHost));
-		int test = 0;
 	}
 	// Clean up.
 	TRY_CUDA(cudaFree(device_bitmap_ptr));
@@ -396,4 +462,14 @@ extern "C" bool cudaRaytrace(void* pScene, double* pInverseMVP, void *bitmap_ptr
 	TRY_CUDA(cudaFree(device_scene));
 	device_scene = nullptr;
 	return true;
+}
+
+extern "C" bool cudaRaycast(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+{
+	return cudaRender(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, executeCudaRaycast);
+}
+
+extern "C" bool cudaRaytrace(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+{
+	return cudaRender(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, executeCudaRaytrace);
 }

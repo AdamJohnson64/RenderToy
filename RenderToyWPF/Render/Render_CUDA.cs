@@ -17,7 +17,21 @@ namespace RenderToy
         #region - Section : Phase 4 - Raytrace Rendering (CUDA) -
         public static bool CUDAAvailable()
         {
-            return RenderToy.RaytraceCUDA.Available();
+            return RenderToy.CUDASupport.Available();
+        }
+        public static void RaycastCUDA(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        {
+            var scenedata = SceneFormatter.CreateFlatMemory(scene);
+            // Prepare the camera inverse MVP for the renderer.
+            mvp.Invert();
+            double[] inverse_mvp = new double[16] {
+                mvp.M11, mvp.M12, mvp.M13, mvp.M14,
+                mvp.M21, mvp.M22, mvp.M23, mvp.M24,
+                mvp.M31, mvp.M32, mvp.M33, mvp.M34,
+                mvp.OffsetX, mvp.OffsetY, mvp.OffsetZ, mvp.M44,
+            };
+            // Render the scene using the CUDA raytracer.
+            RenderToy.RaycastCUDA.Fill(scenedata, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
         public static void RaytraceCUDA(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
