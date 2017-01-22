@@ -374,7 +374,7 @@ __device__ unsigned int MakePixel(const double4 &color) {
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
-template <typename T>
+template <typename T, int X_SUPERSAMPLES, int Y_SUPERSAMPLES>
 __device__ void cudaFill(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
 	const int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -382,8 +382,6 @@ __device__ void cudaFill(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap
 	double3 origin;
 	double3 direction;
 	double4 color = make_double4(0, 0, 0, 0);
-	const int X_SUPERSAMPLES = 2;
-	const int Y_SUPERSAMPLES = 2;
 	for (int y_supersample = 1; y_supersample <= Y_SUPERSAMPLES; ++y_supersample) {
 		for (int x_supersample = 1; x_supersample <= X_SUPERSAMPLES; ++x_supersample) {
 			// Build a ray for this supersample.
@@ -402,11 +400,11 @@ __device__ void cudaFill(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap
 }
 
 __global__ void cudaRaycastKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<DoRayCast>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<DoRayCast, 1, 1>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 __global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<DoRayColor>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<DoRayColor, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
