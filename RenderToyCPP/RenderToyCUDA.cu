@@ -270,9 +270,8 @@ __device__ double4 RayColor(const Scene *pScene, const double3 &origin, const do
 	case MATERIAL_CHECKERBOARD_XZ:
 	{
 		int mx = (vector_point.x - floor(vector_point.x)) < 0.5 ? 0 : 1;
-		int my = 0; // (space.Y - floor(space.Y)) < 0.5 ? 0 : 1;
 		int mz = (vector_point.z - floor(vector_point.z)) < 0.5 ? 0 : 1;
-		double c = (mx + my + mz) % 2;
+		double c = (mx + mz) % 2;
 		color_diffuse = make_double4(c, c, c, 0);
 		color_specular = make_double4(1, 1, 1, 0);
 		scale_reflect = 1;
