@@ -298,7 +298,9 @@ namespace RenderToy
             }
             if (renderWireframe)
             {
+                drawingContext.PushOpacity(0.5);
                 drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                drawingContext.Pop();
             }
             if (renderPreviews)
             {
