@@ -67,6 +67,8 @@ template <typename FLOAT>
 struct Scene {
 	int FileSize;
 	int ObjectCount;
+	int Reserved0;
+	int Reserved1;
 	SceneObject<FLOAT> Objects[];
 };
 

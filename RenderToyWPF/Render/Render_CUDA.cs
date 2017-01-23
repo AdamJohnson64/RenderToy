@@ -105,6 +105,8 @@ namespace RenderToy
                     // Write the file size and object count.
                     binarywriter.Write((int)0);
                     binarywriter.Write((int)transformedobjects.Count);
+                    binarywriter.Write((int)0);
+                    binarywriter.Write((int)0);
                     // Write all the objects.
                     foreach (var obj in transformedobjects)
                     {
@@ -164,6 +166,10 @@ namespace RenderToy
             }
             void Serialize(Color obj)
             {
+                if (m.Position % 16 != 0)
+                {
+                    throw new Exception("Data will not be 16-byte aligned.");
+                }
                 Serialize((double)(obj.R / 255.0));
                 Serialize((double)(obj.G / 255.0));
                 Serialize((double)(obj.B / 255.0));
