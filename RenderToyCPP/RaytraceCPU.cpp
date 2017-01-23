@@ -38,6 +38,22 @@ extern "C" void CPURaycastNormals(void* pScene, double* pInverseMVP, void* bitma
 	}
 }
 
+extern "C" void CPURaycastTangents(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	for (int y = 0; y < bitmap_height; ++y) {
+		for (int x = 0; x < bitmap_width; ++x) {
+			RaytraceCPP::cudaFill2<RaytraceCPP::DoRaycastTangents, 1, 1>((Scene*)pScene, *(Matrix4D*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+		}
+	}
+}
+
+extern "C" void CPURaycastBitangents(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	for (int y = 0; y < bitmap_height; ++y) {
+		for (int x = 0; x < bitmap_width; ++x) {
+			RaytraceCPP::cudaFill2<RaytraceCPP::DoRaycastBitangents, 1, 1>((Scene*)pScene, *(Matrix4D*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+		}
+	}
+}
+
 extern "C" void CPURaytrace(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {

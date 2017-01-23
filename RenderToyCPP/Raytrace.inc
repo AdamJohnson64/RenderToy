@@ -78,10 +78,24 @@ DEVICE_PROTO double IntersectPlane(const double3 &origin, const double3 &directi
 }
 
 template <typename T> DEVICE_PROTO void SetLambda(T& result, double value) { result.Lambda = value; }
-DEVICE_PROTO void SetNormal(IntersectNormal& result, double3 value) { result.Normal = value; }
 DEVICE_PROTO void SetNormal(IntersectSimple& result, double3 value) {}
+DEVICE_PROTO void SetNormal(IntersectNormal& result, double3 value) { result.Normal = value; }
+DEVICE_PROTO void SetNormal(IntersectTBN& result, double3 value) { result.Normal = value; }
+DEVICE_PROTO void SetTangent(IntersectSimple& result, double3 value) {}
+DEVICE_PROTO void SetTangent(IntersectNormal& result, double3 value) {}
+DEVICE_PROTO void SetTangent(IntersectTBN& result, double3 value) { result.Tangent = value; }
+DEVICE_PROTO void SetBitangent(IntersectSimple& result, double3 value) {}
+DEVICE_PROTO void SetBitangent(IntersectNormal& result, double3 value) {}
+DEVICE_PROTO void SetBitangent(IntersectTBN& result, double3 value) { result.Bitangent = value; }
 DEVICE_PROTO double3 GetNormal(const IntersectSimple& result) { return make_double3(0, 0, 0); }
 DEVICE_PROTO double3 GetNormal(const IntersectNormal& result) { return result.Normal; }
+DEVICE_PROTO double3 GetNormal(const IntersectTBN& result) { return result.Normal; }
+DEVICE_PROTO double3 GetTangent(const IntersectSimple& result) { return make_double3(0, 0, 0); }
+DEVICE_PROTO double3 GetTangent(const IntersectNormal& result) { return make_double3(0, 0, 0); }
+DEVICE_PROTO double3 GetTangent(const IntersectTBN& result) { return result.Tangent; }
+DEVICE_PROTO double3 GetBitangent(const IntersectSimple& result) { return make_double3(0, 0, 0); }
+DEVICE_PROTO double3 GetBitangent(const IntersectNormal& result) { return make_double3(0, 0, 0); }
+DEVICE_PROTO double3 GetBitangent(const IntersectTBN& result) { return result.Bitangent; }
 
 template <typename T>
 DEVICE_PROTO T IntersectCube(const double3 &origin, const double3 &direction) {
@@ -122,6 +136,8 @@ DEVICE_PROTO T IntersectPlane(const double3 &origin, const double3 &direction) {
 	const double3 PLANE_NORMAL = make_double3(0, 1, 0);
 	SetLambda(result, (PLANE_DISTANCE - Dot(PLANE_NORMAL, origin)) / Dot(PLANE_NORMAL, direction));
 	SetNormal(result, PLANE_NORMAL);
+	SetTangent(result, make_double3(1, 0, 0));
+	SetBitangent(result, make_double3(0, 0, 1));
 	return result;
 }
 
@@ -143,6 +159,7 @@ DEVICE_PROTO T IntersectSphere(const double3 &origin, const double3 &direction) 
 	if (lambda2 >= 0 && lambda2 < lambda_best) lambda_best = lambda2;
 	SetLambda(result, lambda_best);
 	SetNormal(result, origin + lambda_best * direction);
+	// TODO: Implement tangent and bitangent.
 	return result;
 }
 
@@ -168,6 +185,8 @@ DEVICE_PROTO T Intersect(const double3 &origin, const double3 &direction, const 
 	double3 transformed_direction = TransformVector(scene_object.TransformInverse, direction);
 	T result = Intersect<T>(transformed_origin, transformed_direction, scene_object.Geometry);
 	SetNormal(result, TransformVector(scene_object.Transform, GetNormal(result)));
+	SetTangent(result, TransformVector(scene_object.Transform, GetTangent(result)));
+	SetBitangent(result, TransformVector(scene_object.Transform, GetBitangent(result)));
 	return result;
 }
 
@@ -183,7 +202,7 @@ DEVICE_PROTO bool RayShadow(const Scene *pScene, const double3 &origin, const do
 	return false;
 }
 
-DEVICE_PROTO double4 RayCast(const Scene* pScene, const double3& origin, const double3& direction) {
+DEVICE_PROTO double4 Raycast(const Scene* pScene, const double3& origin, const double3& direction) {
 	double best_lambda = DBL_MAX;
 	const SceneObject *best_object = nullptr;
 	for (int i = 0; i < pScene->ObjectCount; ++i) {
@@ -218,7 +237,25 @@ DEVICE_PROTO double4 RayCast(const Scene* pScene, const double3& origin, const d
 	return make_double4(0, 0, 0, 0);
 }
 
-DEVICE_PROTO double4 RayCastNormals(const Scene* pScene, const double3& origin, const double3& direction) {
+DEVICE_PROTO double4 RaycastBitangents(const Scene* pScene, const double3& origin, const double3& direction) {
+	double best_lambda = DBL_MAX;
+	const SceneObject *best_object = nullptr;
+	for (int i = 0; i < pScene->ObjectCount; ++i) {
+		const SceneObject &scene_object = pScene->Objects[i];
+		double lambda = Intersect<IntersectSimple>(origin, direction, scene_object).Lambda;
+		if (lambda >= 0 && lambda < best_lambda) {
+			best_lambda = lambda;
+			best_object = &scene_object;
+		}
+	}
+	if (best_lambda == DBL_MAX) {
+		return make_double4(0, 0, 0, 0);
+	}
+	double3 n = Intersect<IntersectTBN>(origin, direction, *best_object).Bitangent;
+	return make_double4((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
+}
+
+DEVICE_PROTO double4 RaycastNormals(const Scene* pScene, const double3& origin, const double3& direction) {
 	double best_lambda = DBL_MAX;
 	const SceneObject *best_object = nullptr;
 	for (int i = 0; i < pScene->ObjectCount; ++i) {
@@ -233,6 +270,24 @@ DEVICE_PROTO double4 RayCastNormals(const Scene* pScene, const double3& origin, 
 		return make_double4(0, 0, 0, 0);
 	}
 	double3 n = Intersect<IntersectNormal>(origin, direction, *best_object).Normal;
+	return make_double4((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
+}
+
+DEVICE_PROTO double4 RaycastTangents(const Scene* pScene, const double3& origin, const double3& direction) {
+	double best_lambda = DBL_MAX;
+	const SceneObject *best_object = nullptr;
+	for (int i = 0; i < pScene->ObjectCount; ++i) {
+		const SceneObject &scene_object = pScene->Objects[i];
+		double lambda = Intersect<IntersectSimple>(origin, direction, scene_object).Lambda;
+		if (lambda >= 0 && lambda < best_lambda) {
+			best_lambda = lambda;
+			best_object = &scene_object;
+		}
+	}
+	if (best_lambda == DBL_MAX) {
+		return make_double4(0, 0, 0, 0);
+	}
+	double3 n = Intersect<IntersectTBN>(origin, direction, *best_object).Tangent;
 	return make_double4((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
 }
 
@@ -358,14 +413,28 @@ DEVICE_PROTO void cudaFill2(const Scene *pScene, Matrix4D inverse_mvp, void *bit
 struct DoRaycast {
 public:
 	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
-		return RayCast(pScene, origin, direction);
+		return Raycast(pScene, origin, direction);
+	}
+};
+
+struct DoRaycastBitangents {
+public:
+	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+		return RaycastBitangents(pScene, origin, direction);
 	}
 };
 
 struct DoRaycastNormals {
 public:
 	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
-		return RayCastNormals(pScene, origin, direction);
+		return RaycastNormals(pScene, origin, direction);
+	}
+};
+
+struct DoRaycastTangents {
+public:
+	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+		return RaycastTangents(pScene, origin, direction);
 	}
 };
 

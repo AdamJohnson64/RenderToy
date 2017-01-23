@@ -9,9 +9,13 @@ typedef void(RENDERFN)(void*, double*, void*, int, int, int);
 
 extern "C" void CPURaycast(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 extern "C" void CPURaycastNormals(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void CPURaycastTangents(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void CPURaycastBitangents(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 extern "C" void CPURaytrace(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 extern "C" void CUDARaycast(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 extern "C" void CUDARaycastNormals(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void CUDARaycastTangents(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void CUDARaycastBitangents(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 extern "C" void CUDARaytrace(void *pScene, double *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 
 namespace RenderToy
@@ -35,6 +39,14 @@ namespace RenderToy
 		{
 			MarshalAndCall(CPURaycastNormals, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 		}
+		static void RaycastTangentsCPU(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+		{
+			MarshalAndCall(CPURaycastTangents, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+		}
+		static void RaycastBitangentsCPU(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+		{
+			MarshalAndCall(CPURaycastBitangents, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+		}
 		static void RaytraceCPU(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 		{
 			MarshalAndCall(CPURaytrace, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
@@ -49,6 +61,18 @@ namespace RenderToy
 		{
 			#ifdef CUDA_INSTALLED
 			MarshalAndCall(CUDARaycastNormals, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+			#endif
+		}
+		static void RaycastTangentsCUDA(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+		{
+			#ifdef CUDA_INSTALLED
+			MarshalAndCall(CUDARaycastTangents, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+			#endif
+		}
+		static void RaycastBitangentsCUDA(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+		{
+			#ifdef CUDA_INSTALLED
+			MarshalAndCall(CUDARaycastBitangents, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 			#endif
 		}
 		static void RaytraceCUDA(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)

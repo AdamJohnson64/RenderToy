@@ -20,6 +20,13 @@ struct IntersectNormal {
 	double3 Normal;
 };
 
+struct IntersectTBN {
+	double Lambda;
+	double3 Normal;
+	double3 Tangent;
+	double3 Bitangent;
+};
+
 enum GeometryType {
 	GEOMETRY_NONE = 0,
 	GEOMETRY_PLANE = 1,
