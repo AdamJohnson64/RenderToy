@@ -7,24 +7,27 @@
 #ifndef RAYTRACE_H
 #define RAYTRACE_H
 
-struct Matrix4D {
-	double M[16];
-};
+template <typename FLOAT> struct Vector3 { FLOAT x, y, z; };
+template <typename FLOAT> struct Vector4 { FLOAT x, y, z, w; };
+template <typename FLOAT> struct Matrix44 { FLOAT M[16]; };
 
+template <typename FLOAT>
 struct IntersectSimple {
-	double Lambda;
+	FLOAT Lambda;
 };
 
+template <typename FLOAT>
 struct IntersectNormal {
-	double Lambda;
-	double3 Normal;
+	FLOAT Lambda;
+	Vector3<FLOAT> Normal;
 };
 
+template <typename FLOAT>
 struct IntersectTBN {
-	double Lambda;
-	double3 Normal;
-	double3 Tangent;
-	double3 Bitangent;
+	FLOAT Lambda;
+	Vector3<FLOAT> Normal;
+	Vector3<FLOAT> Tangent;
+	Vector3<FLOAT> Bitangent;
 };
 
 enum GeometryType {
@@ -40,28 +43,31 @@ enum MaterialType {
 	MATERIAL_CHECKERBOARD_XZ,
 };
 
+template <typename FLOAT>
 struct MaterialCommon {
-	double4 Ambient;
-	double4 Diffuse;
-	double4 Specular;
-	double4 Reflect;
-	double4 Refract;
-	double Ior;
+	Vector4<FLOAT> Ambient;
+	Vector4<FLOAT> Diffuse;
+	Vector4<FLOAT> Specular;
+	Vector4<FLOAT> Reflect;
+	Vector4<FLOAT> Refract;
+	FLOAT Ior;
 };
 
+template <typename FLOAT>
 struct SceneObject {
-	Matrix4D Transform;
-	Matrix4D TransformInverse;
+	Matrix44<FLOAT> Transform;
+	Matrix44<FLOAT> TransformInverse;
 	GeometryType Geometry;
 	int GeometryOffset;
 	MaterialType Material;
 	int MaterialOffset;
 };
 
+template <typename FLOAT>
 struct Scene {
 	int FileSize;
 	int ObjectCount;
-	SceneObject Objects[];
+	SceneObject<FLOAT> Objects[];
 };
 
 #endif

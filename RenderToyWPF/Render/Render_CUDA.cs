@@ -35,9 +35,13 @@ namespace RenderToy
         {
             RenderToy.RenderToyCPP.RaycastTangentsCPU(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
-        public static void RaytraceCPU(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void RaytraceCPUF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            RenderToy.RenderToyCPP.RaytraceCPU(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+            RenderToy.RenderToyCPP.RaytraceCPUF32(SceneFormatter.CreateFlatMemoryF32(scene), MatrixToFloats(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+        }
+        public static void RaytraceCPUF64(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        {
+            RenderToy.RenderToyCPP.RaytraceCPUF64(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
         public static void RaycastCUDA(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
@@ -55,9 +59,22 @@ namespace RenderToy
         {
             RenderToy.RenderToyCPP.RaycastBitangentsCUDA(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
-        public static void RaytraceCUDA(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void RaytraceCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            RenderToy.RenderToyCPP.RaytraceCUDA(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+            RenderToy.RenderToyCPP.RaytraceCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), MatrixToFloats(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+        }
+        public static void RaytraceCUDAF64(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        {
+            RenderToy.RenderToyCPP.RaytraceCUDAF64(SceneFormatter.CreateFlatMemory(scene), MatrixToDoubles(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+        }
+        static float[] MatrixToFloats(Matrix3D mvp)
+        {
+            return new float[16] {
+                (float)mvp.M11, (float)mvp.M12, (float)mvp.M13, (float)mvp.M14,
+                (float)mvp.M21, (float)mvp.M22, (float)mvp.M23, (float)mvp.M24,
+                (float)mvp.M31, (float)mvp.M32, (float)mvp.M33, (float)mvp.M34,
+                (float)mvp.OffsetX, (float)mvp.OffsetY, (float)mvp.OffsetZ, (float)mvp.M44,
+            };
         }
         static double[] MatrixToDoubles(Matrix3D mvp)
         {
@@ -70,12 +87,17 @@ namespace RenderToy
         }
         class SceneFormatter
         {
+            public static byte[] CreateFlatMemoryF32(Scene scene)
+            {
+                return new SceneFormatter(scene, false).m.ToArray();
+            }
             public static byte[] CreateFlatMemory(Scene scene)
             {
-                return new SceneFormatter(scene).m.ToArray();
+                return new SceneFormatter(scene, true).m.ToArray();
             }
-            SceneFormatter(Scene scene)
+            SceneFormatter(Scene scene, bool use_f64)
             {
+                UseF64 = use_f64;
                 // Prepare the scene definition for the renderer.
                 using (binarywriter = new BinaryWriter(m))
                 {
@@ -142,10 +164,10 @@ namespace RenderToy
             }
             void Serialize(Color obj)
             {
-                binarywriter.Write((double)obj.R / 255.0);
-                binarywriter.Write((double)obj.G / 255.0);
-                binarywriter.Write((double)obj.B / 255.0);
-                binarywriter.Write((double)obj.A / 255.0);
+                Serialize((double)(obj.R / 255.0));
+                Serialize((double)(obj.G / 255.0));
+                Serialize((double)(obj.B / 255.0));
+                Serialize((double)(obj.A / 255.0));
             }
             void Serialize(MaterialCommon obj)
             {
@@ -154,14 +176,25 @@ namespace RenderToy
                 Serialize(obj.Specular);
                 Serialize(obj.Reflect);
                 Serialize(obj.Refract);
-                binarywriter.Write((double)obj.Ior);
+                Serialize((double)obj.Ior);
             }
             void Serialize(Matrix3D obj)
             {
-                binarywriter.Write((double)obj.M11); binarywriter.Write((double)obj.M12); binarywriter.Write((double)obj.M13); binarywriter.Write((double)obj.M14);
-                binarywriter.Write((double)obj.M21); binarywriter.Write((double)obj.M22); binarywriter.Write((double)obj.M23); binarywriter.Write((double)obj.M24);
-                binarywriter.Write((double)obj.M31); binarywriter.Write((double)obj.M32); binarywriter.Write((double)obj.M33); binarywriter.Write((double)obj.M34);
-                binarywriter.Write((double)obj.OffsetX); binarywriter.Write((double)obj.OffsetY); binarywriter.Write((double)obj.OffsetZ); binarywriter.Write((double)obj.M44);
+                Serialize((double)obj.M11); Serialize((double)obj.M12); Serialize((double)obj.M13); Serialize((double)obj.M14);
+                Serialize((double)obj.M21); Serialize((double)obj.M22); Serialize((double)obj.M23); Serialize((double)obj.M24);
+                Serialize((double)obj.M31); Serialize((double)obj.M32); Serialize((double)obj.M33); Serialize((double)obj.M34);
+                Serialize((double)obj.OffsetX); Serialize((double)obj.OffsetY); Serialize((double)obj.OffsetZ); Serialize((double)obj.M44);
+            }
+            void Serialize(double obj)
+            {
+                if (UseF64)
+                {
+                    binarywriter.Write((double)obj);
+                }
+                else
+                {
+                    binarywriter.Write((float)obj);
+                }
             }
             void EmitAndQueue(object obj)
             {
@@ -175,6 +208,7 @@ namespace RenderToy
                 // Write a placeholder pointer.
                 binarywriter.Write((int)0);
             }
+            private bool UseF64 = false;
             private MemoryStream m = new MemoryStream();
             private BinaryWriter binarywriter;
             class PointerRecord
