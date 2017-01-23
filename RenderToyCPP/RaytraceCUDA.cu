@@ -21,18 +21,6 @@ __device__ void cudaFill(const Scene* pScene, Matrix4D inverse_mvp, void *bitmap
 	RaytraceCUDA::cudaFill2<T, X_SUPERSAMPLES, Y_SUPERSAMPLES>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
 }
 
-__global__ void cudaRaycastKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<RaytraceCUDA::DoRayCast, 1, 1>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-}
-
-__global__ void cudaRaycastNormalsKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<RaytraceCUDA::DoRayCastNormals, 1, 1>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-}
-
-__global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<RaytraceCUDA::DoRayColor, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Host Code
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,21 +32,6 @@ void CUDA_CALL(cudaError_t error) {
 #define TRY_CUDA(fn) CUDA_CALL(fn);
 
 typedef void(CUDAFN)(const Scene*, const Matrix4D&, void*, int, int, const dim3&, const dim3&);
-
-void executeCudaRaycast(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads)
-{
-	cudaRaycastKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
-}
-
-void executeCudaRaycastNormals(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads)
-{
-	cudaRaycastNormalsKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
-}
-
-void executeCudaRaytrace(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads)
-{
-	cudaRaytraceKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
-}
 
 void cudaRender(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, CUDAFN& fn) {
 	// Allocate the scene buffer for CUDA.
@@ -88,14 +61,45 @@ void cudaRender(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_
 	device_scene = nullptr;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// External calls (Render Types).
+////////////////////////////////////////////////////////////////////////////////
+
+__global__ void cudaRaycastKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	cudaFill<RaytraceCUDA::DoRaycast, 1, 1>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+void executeCudaRaycast(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads)
+{
+	cudaRaycastKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+}
+
 extern "C" void CUDARaycast(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 {
 	cudaRender(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, executeCudaRaycast);
 }
 
+__global__ void cudaRaycastNormalsKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	cudaFill<RaytraceCUDA::DoRaycastNormals, 1, 1>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+void executeCudaRaycastNormals(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads)
+{
+	cudaRaycastNormalsKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+}
+
 extern "C" void CUDARaycastNormals(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 {
 	cudaRender(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, executeCudaRaycastNormals);
+}
+
+__global__ void cudaRaytraceKernel(const Scene *pScene, Matrix4D inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	cudaFill<RaytraceCUDA::DoRaytrace, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+void executeCudaRaytrace(const Scene* device_scene, const Matrix4D& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads)
+{
+	cudaRaytraceKernel<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
 }
 
 extern "C" void CUDARaytrace(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)

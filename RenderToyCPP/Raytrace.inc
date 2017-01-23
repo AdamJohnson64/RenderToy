@@ -237,7 +237,7 @@ DEVICE_PROTO double4 RayCastNormals(const Scene* pScene, const double3& origin, 
 }
 
 template <int RECURSE>
-DEVICE_PROTO double4 RayColor(const Scene *pScene, const double3 &origin, const double3 &direction) {
+DEVICE_PROTO double4 Raytrace(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	// Start intersecting objects.
 	double best_lambda = DBL_MAX;
 	const SceneObject *best_object = nullptr;
@@ -300,40 +300,19 @@ DEVICE_PROTO double4 RayColor(const Scene *pScene, const double3 &origin, const 
 		double R = SchlickApprox(vector_incident, vector_normal, 1, scale_ior);
 		scale_reflect = R;
 		//Add refraction contribution.
-		color = color + RayColor<RECURSE - 1>(pScene, vector_point + vector_refract * 0.001, vector_refract) * scale_refract;
+		color = color + Raytrace<RECURSE - 1>(pScene, vector_point + vector_refract * 0.001, vector_refract) * scale_refract;
 	}
 	if (scale_reflect > 0) {
-		color = color + RayColor<RECURSE - 1>(pScene, vector_point + vector_reflect * 0.001, vector_reflect) * scale_reflect;
+		color = color + Raytrace<RECURSE - 1>(pScene, vector_point + vector_reflect * 0.001, vector_reflect) * scale_reflect;
 	}
 	color.w = 1;
 	return color;
 }
 
 template <>
-DEVICE_PROTO double4 RayColor<-1>(const Scene *pScene, const double3 &origin, const double3 &direction) {
+DEVICE_PROTO double4 Raytrace<-1>(const Scene *pScene, const double3 &origin, const double3 &direction) {
 	return make_double4(0, 0, 0, 0);
 }
-
-struct DoRayCast {
-public:
-	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
-		return RayCast(pScene, origin, direction);
-	}
-};
-
-struct DoRayCastNormals {
-public:
-	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
-		return RayCastNormals(pScene, origin, direction);
-	}
-};
-
-struct DoRayColor {
-public:
-	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
-		return RayColor<2>(pScene, origin, direction);
-	}
-};
 
 DEVICE_PROTO void ComputeRay(const Matrix4D &inverse_mvp, double clipx, double clipy, double3 &origin, double3 &direction) {
 	double4 v41 = Transform(inverse_mvp, make_double4(clipx, clipy, 0, 1));
@@ -375,3 +354,24 @@ DEVICE_PROTO void cudaFill2(const Scene *pScene, Matrix4D inverse_mvp, void *bit
 	void *pPixel = (unsigned char*)pRaster + 4 * x;
 	*(unsigned int*)pPixel = MakePixel(color);
 }
+
+struct DoRaycast {
+public:
+	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+		return RayCast(pScene, origin, direction);
+	}
+};
+
+struct DoRaycastNormals {
+public:
+	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+		return RayCastNormals(pScene, origin, direction);
+	}
+};
+
+struct DoRaytrace {
+public:
+	DEVICE_PROTO static double4 Do(const Scene* pScene, const double3& origin, const double3& direction) {
+		return Raytrace<2>(pScene, origin, direction);
+	}
+};

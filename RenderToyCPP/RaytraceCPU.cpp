@@ -25,7 +25,7 @@ namespace RaytraceCPP {
 extern "C" void CPURaycast(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCPP::cudaFill2<RaytraceCPP::DoRayCast, 1, 1>((Scene*)pScene, *(Matrix4D*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCPP::cudaFill2<RaytraceCPP::DoRaycast, 1, 1>((Scene*)pScene, *(Matrix4D*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
 		}
 	}
 }
@@ -33,7 +33,7 @@ extern "C" void CPURaycast(void* pScene, double* pInverseMVP, void* bitmap_ptr, 
 extern "C" void CPURaycastNormals(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCPP::cudaFill2<RaytraceCPP::DoRayCastNormals, 1, 1>((Scene*)pScene, *(Matrix4D*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCPP::cudaFill2<RaytraceCPP::DoRaycastNormals, 1, 1>((Scene*)pScene, *(Matrix4D*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
 		}
 	}
 }
@@ -41,7 +41,7 @@ extern "C" void CPURaycastNormals(void* pScene, double* pInverseMVP, void* bitma
 extern "C" void CPURaytrace(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCPP::cudaFill2<RaytraceCPP::DoRayColor, 1, 1>((Scene*)pScene, *(Matrix4D*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCPP::cudaFill2<RaytraceCPP::DoRaytrace, 1, 1>((Scene*)pScene, *(Matrix4D*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
 		}
 	}
 }
