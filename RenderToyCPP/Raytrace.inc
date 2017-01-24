@@ -104,7 +104,7 @@ DEVICE_PROTO FLOAT IntersectPlane(const Vector3<FLOAT> &origin, const Vector3<FL
 	return (plane_distance - Dot(plane_normal, origin)) / Dot(plane_normal, direction);
 }
 
-template <typename FLOAT, typename T> DEVICE_PROTO void SetLambda(T& result, FLOAT value) { result.Lambda = value; }
+template <typename FLOAT, typename RAYQUERY> DEVICE_PROTO void SetLambda(RAYQUERY& result, FLOAT value) { result.Lambda = value; }
 template <typename FLOAT> DEVICE_PROTO void SetNormal(IntersectSimple<FLOAT>& result, Vector3<FLOAT> value) {}
 template <typename FLOAT> DEVICE_PROTO void SetNormal(IntersectNormal<FLOAT>& result, Vector3<FLOAT> value) { result.Normal = value; }
 template <typename FLOAT> DEVICE_PROTO void SetNormal(IntersectTBN<FLOAT>& result, Vector3<FLOAT> value) { result.Normal = value; }
@@ -124,9 +124,9 @@ template <typename FLOAT> DEVICE_PROTO Vector3<FLOAT> GetBitangent(const Interse
 template <typename FLOAT> DEVICE_PROTO Vector3<FLOAT> GetBitangent(const IntersectNormal<FLOAT>& result) { return make_vector3<FLOAT>(0, 0, 0); }
 template <typename FLOAT> DEVICE_PROTO Vector3<FLOAT> GetBitangent(const IntersectTBN<FLOAT>& result) { return result.Bitangent; }
 
-template <typename FLOAT, typename T>
-DEVICE_PROTO T IntersectCube(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction) {
-	T result;
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PROTO RAYQUERY IntersectCube(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction) {
+	RAYQUERY result;
 	Vector3<FLOAT> face_normal[] = {
 		make_vector3<FLOAT>(-1,0,0), make_vector3<FLOAT>(+1,0,0),
 		make_vector3<FLOAT>(0,-1,0), make_vector3<FLOAT>(0,+1,0),
@@ -156,9 +156,9 @@ DEVICE_PROTO T IntersectCube(const Vector3<FLOAT> &origin, const Vector3<FLOAT> 
 	return result;
 }
 
-template <typename FLOAT, typename T>
-DEVICE_PROTO T IntersectPlane(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction) {
-	T result;
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PROTO RAYQUERY IntersectPlane(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction) {
+	RAYQUERY result;
 	const FLOAT PLANE_DISTANCE = 0;
 	const Vector3<FLOAT> PLANE_NORMAL = make_vector3<FLOAT>(0, 1, 0);
 	SetLambda(result, (PLANE_DISTANCE - Dot(PLANE_NORMAL, origin)) / Dot(PLANE_NORMAL, direction));
@@ -168,9 +168,9 @@ DEVICE_PROTO T IntersectPlane(const Vector3<FLOAT> &origin, const Vector3<FLOAT>
 	return result;
 }
 
-template <typename FLOAT, typename T>
-DEVICE_PROTO T IntersectSphere(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction) {
-	T result;
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PROTO RAYQUERY IntersectSphere(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction) {
+	RAYQUERY result;
 	const FLOAT SPHERE_RADIUS = 1;
 	FLOAT a = Dot(direction, direction);
 	FLOAT b = 2 * Dot(origin, direction);
@@ -190,27 +190,27 @@ DEVICE_PROTO T IntersectSphere(const Vector3<FLOAT> &origin, const Vector3<FLOAT
 	return result;
 }
 
-template <typename FLOAT, typename T>
-DEVICE_PROTO T Intersect(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction, GeometryType geometry) {
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PROTO RAYQUERY Intersect(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction, GeometryType geometry) {
 	switch (geometry) {
 	case GEOMETRY_PLANE:
-		return IntersectPlane<FLOAT, T>(origin, direction);
+		return IntersectPlane<FLOAT, RAYQUERY>(origin, direction);
 	case GEOMETRY_SPHERE:
-		return IntersectSphere<FLOAT, T>(origin, direction);
+		return IntersectSphere<FLOAT, RAYQUERY>(origin, direction);
 	case GEOMETRY_CUBE:
-		return IntersectCube<FLOAT, T>(origin, direction);
+		return IntersectCube<FLOAT, RAYQUERY>(origin, direction);
 	default:
-		T result;
+		RAYQUERY result;
 		SetLambda(result, FloatTraits<FLOAT>::Max);
 		return result;
 	}
 }
 
-template <typename FLOAT, typename T>
-DEVICE_PROTO T Intersect(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction, const SceneObject<FLOAT> &scene_object) {
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PROTO RAYQUERY Intersect(const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction, const SceneObject<FLOAT> &scene_object) {
 	Vector3<FLOAT> transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
 	Vector3<FLOAT> transformed_direction = TransformVector(scene_object.TransformInverse, direction);
-	T result = Intersect<FLOAT, T>(transformed_origin, transformed_direction, scene_object.Geometry);
+	RAYQUERY result = Intersect<FLOAT, RAYQUERY>(transformed_origin, transformed_direction, scene_object.Geometry);
 	SetNormal(result, TransformVector(scene_object.Transform, GetNormal(result)));
 	SetTangent(result, TransformVector(scene_object.Transform, GetTangent(result)));
 	SetBitangent(result, TransformVector(scene_object.Transform, GetBitangent(result)));
@@ -426,7 +426,7 @@ DEVICE_PROTO unsigned int MakePixel(const Vector4<FLOAT>& color) {
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
-template <typename FLOAT, typename T, int X_SUPERSAMPLES, int Y_SUPERSAMPLES>
+template <typename FLOAT, typename COLORFUNC, int X_SUPERSAMPLES, int Y_SUPERSAMPLES>
 DEVICE_PROTO void cudaFill2(const Scene<FLOAT>* pScene, Matrix44<FLOAT> inverse_mvp, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int x, int y) {
 	if (x >= bitmap_width || y >= bitmap_height) return;
 	// Generate untransformed ray.
@@ -440,7 +440,7 @@ DEVICE_PROTO void cudaFill2(const Scene<FLOAT>* pScene, Matrix44<FLOAT> inverse_
 			FLOAT vy = Lerp<FLOAT>(+1, -1, (y + FLOAT(y_supersample) / (Y_SUPERSAMPLES + 1)) / bitmap_height);
 			ComputeRay(inverse_mvp, vx, vy, origin, direction);
 			// Compute intersection with plane.
-			color = color + T::Do(pScene, origin, direction);
+			color = color + COLORFUNC::Do(pScene, origin, direction);
 		}
 	}
 	color = color / FLOAT(X_SUPERSAMPLES * Y_SUPERSAMPLES);
