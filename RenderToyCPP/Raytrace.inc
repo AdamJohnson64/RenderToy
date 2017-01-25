@@ -217,6 +217,24 @@ DEVICE_PROTO RAYQUERY Intersect(const Vector3<FLOAT> &origin, const Vector3<FLOA
 	return result;
 }
 
+template <typename FLOAT>
+DEVICE_PROTO IntersectObject<FLOAT> Intersect(const Scene<FLOAT>* pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) {
+	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
+	const SceneObject<FLOAT>* best_object = nullptr;
+	for (int i = 0; i < pScene->ObjectCount; ++i) {
+		const SceneObject<FLOAT>& scene_object = pScene->Objects[i];
+		FLOAT lambda = Intersect<FLOAT, IntersectSimple<FLOAT>>(origin, direction, scene_object).Lambda;
+		if (lambda >= 0 && lambda < best_lambda) {
+			best_lambda = lambda;
+			best_object = &scene_object;
+		}
+	}
+	IntersectObject<FLOAT> result;
+	result.Lambda = best_lambda;
+	result.Object = best_object;
+	return result;
+}
+
 // Raytracer Ray Tests.
 template <typename FLOAT>
 DEVICE_PROTO bool RayShadow(const Scene<FLOAT> *pScene, const Vector3<FLOAT> &origin, const Vector3<FLOAT> &direction) {
@@ -232,25 +250,16 @@ DEVICE_PROTO bool RayShadow(const Scene<FLOAT> *pScene, const Vector3<FLOAT> &or
 
 template <typename FLOAT>
 DEVICE_PROTO Vector4<FLOAT> Raycast(const Scene<FLOAT>* pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) {
-	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
-	const SceneObject<FLOAT>* best_object = nullptr;
-	for (int i = 0; i < pScene->ObjectCount; ++i) {
-		const SceneObject<FLOAT>& scene_object = pScene->Objects[i];
-		FLOAT lambda = Intersect<FLOAT, IntersectSimple<FLOAT>>(origin, direction, scene_object).Lambda;
-		if (lambda >= 0 && lambda < best_lambda) {
-			best_lambda = lambda;
-			best_object = &scene_object;
-		}
-	}
-	if (best_lambda == FloatTraits<FLOAT>::Max) {
+	auto intersect = Intersect(pScene, origin, direction);
+	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 		return make_vector4<FLOAT>(0, 0, 0, 0);
 	}
-	Vector3<FLOAT> vector_point = origin + best_lambda * direction;
-	switch (best_object->Material) {
+	Vector3<FLOAT> vector_point = origin + intersect.Lambda * direction;
+	switch (intersect.Object->Material) {
 	case MATERIAL_COMMON:
 	{
-		if (best_object->MaterialOffset != 0) {
-			MaterialCommon<FLOAT> *pMaterial = (MaterialCommon<FLOAT>*)((unsigned char*)pScene + best_object->MaterialOffset);
+		if (intersect.Object->MaterialOffset != 0) {
+			MaterialCommon<FLOAT> *pMaterial = (MaterialCommon<FLOAT>*)((unsigned char*)pScene + intersect.Object->MaterialOffset);
 			return pMaterial->Diffuse;
 		}
 	}
@@ -268,58 +277,31 @@ DEVICE_PROTO Vector4<FLOAT> Raycast(const Scene<FLOAT>* pScene, const Vector3<FL
 
 template <typename FLOAT>
 DEVICE_PROTO Vector4<FLOAT> RaycastBitangents(const Scene<FLOAT>* pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) {
-	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
-	const SceneObject<FLOAT>* best_object = nullptr;
-	for (int i = 0; i < pScene->ObjectCount; ++i) {
-		const SceneObject<FLOAT>& scene_object = pScene->Objects[i];
-		FLOAT lambda = Intersect<FLOAT, IntersectSimple<FLOAT>>(origin, direction, scene_object).Lambda;
-		if (lambda >= 0 && lambda < best_lambda) {
-			best_lambda = lambda;
-			best_object = &scene_object;
-		}
-	}
-	if (best_lambda == FloatTraits<FLOAT>::Max) {
+	auto intersect = Intersect(pScene, origin, direction);
+	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 		return make_vector4<FLOAT>(0, 0, 0, 0);
 	}
-	Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, *best_object).Bitangent;
+	Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, *intersect.Object).Bitangent;
 	return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
 }
 
 template <typename FLOAT>
 DEVICE_PROTO Vector4<FLOAT> RaycastNormals(const Scene<FLOAT>* pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) {
-	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
-	const SceneObject<FLOAT>* best_object = nullptr;
-	for (int i = 0; i < pScene->ObjectCount; ++i) {
-		const SceneObject<FLOAT>& scene_object = pScene->Objects[i];
-		FLOAT lambda = Intersect<FLOAT, IntersectSimple<FLOAT>>(origin, direction, scene_object).Lambda;
-		if (lambda >= 0 && lambda < best_lambda) {
-			best_lambda = lambda;
-			best_object = &scene_object;
-		}
-	}
-	if (best_lambda == FloatTraits<FLOAT>::Max) {
+	auto intersect = Intersect(pScene, origin, direction);
+	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 		return make_vector4<FLOAT>(0, 0, 0, 0);
 	}
-	Vector3<FLOAT> n = Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, *best_object).Normal;
+	Vector3<FLOAT> n = Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, *intersect.Object).Normal;
 	return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
 }
 
 template <typename FLOAT>
 DEVICE_PROTO Vector4<FLOAT> RaycastTangents(const Scene<FLOAT>* pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) {
-	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
-	const SceneObject<FLOAT>* best_object = nullptr;
-	for (int i = 0; i < pScene->ObjectCount; ++i) {
-		const SceneObject<FLOAT>& scene_object = pScene->Objects[i];
-		FLOAT lambda = Intersect<FLOAT, IntersectSimple<FLOAT>>(origin, direction, scene_object).Lambda;
-		if (lambda >= 0 && lambda < best_lambda) {
-			best_lambda = lambda;
-			best_object = &scene_object;
-		}
-	}
-	if (best_lambda == FloatTraits<FLOAT>::Max) {
+	auto intersect = Intersect(pScene, origin, direction);
+	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 		return make_vector4<FLOAT>(0, 0, 0, 0);
 	}
-	Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, *best_object).Tangent;
+	Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, *intersect.Object).Tangent;
 	return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
 }
 
@@ -328,32 +310,23 @@ struct Raytrace
 {
 	DEVICE_PROTO static Vector4<FLOAT> Do(const Scene<FLOAT>* pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) {
 		// Start intersecting objects.
-		FLOAT best_lambda = FloatTraits<FLOAT>::Max;
-		const SceneObject<FLOAT>* best_object = nullptr;
-		for (int i = 0; i < pScene->ObjectCount; ++i) {
-			const SceneObject<FLOAT>& scene_object = pScene->Objects[i];
-			FLOAT lambda = Intersect<FLOAT, IntersectSimple<FLOAT>>(origin, direction, scene_object).Lambda;
-			if (lambda >= 0 && lambda < best_lambda) {
-				best_lambda = lambda;
-				best_object = &scene_object;
-			}
-		}
-		if (best_lambda == FloatTraits<FLOAT>::Max) {
+		auto intersect = Intersect(pScene, origin, direction);
+		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
-		Vector3<FLOAT> vector_point = origin + best_lambda * direction;
+		Vector3<FLOAT> vector_point = origin + intersect.Lambda * direction;
 		Vector3<FLOAT> vector_light = Normalize(make_vector3<FLOAT>(10, 10, -10) - vector_point);
-		Vector3<FLOAT> vector_normal = Normalize(Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, *best_object).Normal);
+		Vector3<FLOAT> vector_normal = Normalize(Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, *intersect.Object).Normal);
 		Vector4<FLOAT> color_diffuse = make_vector4<FLOAT>(1, 1, 1, 0);
 		Vector4<FLOAT> color_specular = make_vector4<FLOAT>(1, 1, 1, 0);
 		FLOAT scale_reflect = 0;
 		FLOAT scale_refract = 0;
 		FLOAT scale_ior = 1;
-		switch (best_object->Material) {
+		switch (intersect.Object->Material) {
 		case MATERIAL_COMMON:
 		{
-			if (best_object->MaterialOffset != 0) {
-				MaterialCommon<FLOAT> *pMaterial = (MaterialCommon<FLOAT>*)((unsigned char*)pScene + best_object->MaterialOffset);
+			if (intersect.Object->MaterialOffset != 0) {
+				MaterialCommon<FLOAT> *pMaterial = (MaterialCommon<FLOAT>*)((unsigned char*)pScene + intersect.Object->MaterialOffset);
 				color_diffuse = pMaterial->Diffuse;
 				color_specular = pMaterial->Specular;
 				scale_reflect = pMaterial->Reflect.w;

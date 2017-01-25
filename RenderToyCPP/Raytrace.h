@@ -11,25 +11,6 @@ template <typename FLOAT> struct Vector3 { FLOAT x, y, z; };
 template <typename FLOAT> struct Vector4 { FLOAT x, y, z, w; };
 template <typename FLOAT> struct Matrix44 { FLOAT M[16]; };
 
-template <typename FLOAT>
-struct IntersectSimple {
-	FLOAT Lambda;
-};
-
-template <typename FLOAT>
-struct IntersectNormal {
-	FLOAT Lambda;
-	Vector3<FLOAT> Normal;
-};
-
-template <typename FLOAT>
-struct IntersectTBN {
-	FLOAT Lambda;
-	Vector3<FLOAT> Normal;
-	Vector3<FLOAT> Tangent;
-	Vector3<FLOAT> Bitangent;
-};
-
 enum GeometryType {
 	GEOMETRY_NONE = 0,
 	GEOMETRY_PLANE = 1,
@@ -70,6 +51,41 @@ struct Scene {
 	int Reserved0;
 	int Reserved1;
 	SceneObject<FLOAT> Objects[];
+};
+
+// Intersection Query Types.
+// These structures determine the data to be queried when performing an
+// intersection test against the scene. It is prudent to request minimal data
+// as this will reduce the burden on the intersection engine.
+
+// IntersectObject - retrieve only the intersected object and distance.
+template <typename FLOAT>
+struct IntersectObject {
+	FLOAT Lambda;
+	const SceneObject<FLOAT>* Object;
+};
+
+// IntersectSimple - retrieve only the intersection distance.
+template <typename FLOAT>
+struct IntersectSimple {
+	FLOAT Lambda;
+};
+
+// IntersectNormal - retrieve the intersection distance and normal.
+template <typename FLOAT>
+struct IntersectNormal {
+	FLOAT Lambda;
+	Vector3<FLOAT> Normal;
+};
+
+// IntersectTBN - retrieve the intersection distance, normal, tangent and
+// bitangent.
+template <typename FLOAT>
+struct IntersectTBN {
+	FLOAT Lambda;
+	Vector3<FLOAT> Normal;
+	Vector3<FLOAT> Tangent;
+	Vector3<FLOAT> Bitangent;
 };
 
 #endif
