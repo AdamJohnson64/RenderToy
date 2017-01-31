@@ -132,12 +132,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RenderToyCPP\RenderToyCPP.vcxproj">
-      <Project>{70808f18-e22d-4c23-96d9-e3123d87c5dc}</Project>
-      <Name>RenderToyCPP</Name>
+    <ProjectReference Include="..\RenderToyCPP\RenderToyCLI.vcxproj">
+      <Project>{e68e5ecf-2731-45dc-a334-4fc4651ee0af}</Project>
+      <Name>RenderToyCLI</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

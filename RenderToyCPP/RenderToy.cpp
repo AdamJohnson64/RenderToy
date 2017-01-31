@@ -4,21 +4,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <memory>
+#include "RenderToy.h"
 
 typedef void(RENDERFN)(void*, void*, void*, int, int, int);
-
-extern "C" void CPURaycast(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CPURaycastNormals(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CPURaycastTangents(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CPURaycastBitangents(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CPUF32Raytrace(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CPUF64Raytrace(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDARaycast(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDARaycastNormals(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDARaycastTangents(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDARaycastBitangents(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDAF32Raytrace(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDAF64Raytrace(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 
 namespace RenderToy
 {
@@ -27,11 +15,7 @@ namespace RenderToy
 	public:
 		static bool HaveCUDA()
 		{
-			#ifdef CUDA_INSTALLED
-			return true;
-			#else
-			return false;
-			#endif
+			return ::HaveCUDA();
 		}
 		static void RaycastCPU(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 		{
@@ -59,39 +43,27 @@ namespace RenderToy
 		}
 		static void RaycastCUDA(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 		{
-			#ifdef CUDA_INSTALLED
 			MarshalAndCall(CUDARaycast, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-			#endif
 		}
 		static void RaycastNormalsCUDA(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 		{
-			#ifdef CUDA_INSTALLED
 			MarshalAndCall(CUDARaycastNormals, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-			#endif
 		}
 		static void RaycastTangentsCUDA(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 		{
-			#ifdef CUDA_INSTALLED
 			MarshalAndCall(CUDARaycastTangents, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-			#endif
 		}
 		static void RaycastBitangentsCUDA(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 		{
-			#ifdef CUDA_INSTALLED
 			MarshalAndCall(CUDARaycastBitangents, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-			#endif
 		}
 		static void RaytraceCUDAF32(array<unsigned char>^ scene, array<float>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 		{
-			#ifdef CUDA_INSTALLED
 			MarshalAndCall(CUDAF32Raytrace, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-			#endif
 		}
 		static void RaytraceCUDAF64(array<unsigned char>^ scene, array<double>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
 		{
-			#ifdef CUDA_INSTALLED
 			MarshalAndCall(CUDAF64Raytrace, scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
-			#endif
 		}
 	private:
 		static void MarshalAndCall(RENDERFN& fn, array<unsigned char>^ scene, array<float>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
