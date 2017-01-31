@@ -93,10 +93,10 @@
     <None Include="Raytrace.inc">
       <FileType>CppCode</FileType>
     </None>
-    <ClCompile Include="RaytraceCPU.cpp" />
+    <ClCompile Include="Raytrace.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="RaytraceCUDA.cu">
+    <CudaCompile Include="Raytrace.cu">
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">compute_52,sm_52</CodeGeneration>
       <CodeGeneration Condition="'$(Configuration)|$(Platform)'=='Release|x64'">compute_52,sm_52</CodeGeneration>
     </CudaCompile>

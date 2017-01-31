@@ -3,6 +3,15 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+// This file contains the common parts of the raytracer shared by both CPU
+// and CUDA implementations. This file may be compiled with DEVICE_PROTO set to
+// produce CUDA device code, or unset to produce regular CPU code.
+//
+// All parts of this module are templated over their floating point type to
+// support both IEEE 754 32-bit float and 64-bit double implementation.
+////////////////////////////////////////////////////////////////////////////////
+
 // Type-safe Basic Math.
 template <typename FLOAT>
 struct FloatTraits {

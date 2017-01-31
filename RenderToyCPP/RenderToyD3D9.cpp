@@ -3,6 +3,15 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+// A simple Fixed Function Direct3D 9 interface presented to the Common Language
+// Runtime for consumption by .NET languages.
+//
+// This interface is highly-simplistic and does not attempt to model persistent
+// GPU resources or framebuffers. Loss of device is trivially handled by never
+// attempting to reuse devices beyond a single frame.
+////////////////////////////////////////////////////////////////////////////////
+
 #include <d3d9.h>
 
 #define TRY_D3D(D3D9FUNC) if ((D3D9FUNC) != D3D_OK) throw gcnew System::Exception(#D3D9FUNC)
