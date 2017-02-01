@@ -62,12 +62,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Render\Render_ALR.cs" />
-    <Compile Include="Render\Render_ALRWPF.cs" />
     <Compile Include="Render\Render_CUDA.cs" />
     <Compile Include="Render\Render_D3D9.cs" />
-    <Compile Include="Render\Render_ALRGDI.cs" />
-    <Compile Include="Controls\GeometrySwatch.cs" />
     <Compile Include="Utility\ImageHelp.cs" />
     <Compile Include="Controls\RenderViewport.cs" />
     <Page Include="MainWindow.xaml">
