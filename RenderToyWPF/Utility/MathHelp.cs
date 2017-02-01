@@ -3,7 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-#define USE_WPF
+//#define USE_WPF
 
 using System;
 using System.Diagnostics;

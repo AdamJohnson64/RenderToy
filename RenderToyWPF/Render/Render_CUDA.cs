@@ -73,7 +73,7 @@ namespace RenderToy
                 (float)mvp.M11, (float)mvp.M12, (float)mvp.M13, (float)mvp.M14,
                 (float)mvp.M21, (float)mvp.M22, (float)mvp.M23, (float)mvp.M24,
                 (float)mvp.M31, (float)mvp.M32, (float)mvp.M33, (float)mvp.M34,
-                (float)mvp.OffsetX, (float)mvp.OffsetY, (float)mvp.OffsetZ, (float)mvp.M44,
+                (float)mvp.M41, (float)mvp.M42, (float)mvp.M43, (float)mvp.M44,
             };
         }
         static double[] MatrixToDoubles(Matrix3D mvp)
@@ -82,7 +82,7 @@ namespace RenderToy
                 mvp.M11, mvp.M12, mvp.M13, mvp.M14,
                 mvp.M21, mvp.M22, mvp.M23, mvp.M24,
                 mvp.M31, mvp.M32, mvp.M33, mvp.M34,
-                mvp.OffsetX, mvp.OffsetY, mvp.OffsetZ, mvp.M44,
+                mvp.M41, mvp.M42, mvp.M43, mvp.M44,
             };
         }
         class SceneFormatter
@@ -189,7 +189,7 @@ namespace RenderToy
                 Serialize((double)obj.M11); Serialize((double)obj.M12); Serialize((double)obj.M13); Serialize((double)obj.M14);
                 Serialize((double)obj.M21); Serialize((double)obj.M22); Serialize((double)obj.M23); Serialize((double)obj.M24);
                 Serialize((double)obj.M31); Serialize((double)obj.M32); Serialize((double)obj.M33); Serialize((double)obj.M34);
-                Serialize((double)obj.OffsetX); Serialize((double)obj.OffsetY); Serialize((double)obj.OffsetZ); Serialize((double)obj.M44);
+                Serialize((double)obj.M41); Serialize((double)obj.M42); Serialize((double)obj.M43); Serialize((double)obj.M44);
             }
             void Serialize(double obj)
             {
