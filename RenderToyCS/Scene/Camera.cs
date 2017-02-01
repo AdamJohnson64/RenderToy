@@ -11,7 +11,7 @@ namespace RenderToy
     {
         Matrix3D Projection { get; }
     }
-    class CameraPerspective : ProjectionProvider
+    public class CameraPerspective : ProjectionProvider
     {
         public Matrix3D Projection
         {

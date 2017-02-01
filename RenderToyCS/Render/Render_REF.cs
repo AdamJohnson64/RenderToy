@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace RenderToy
 {
-    public static partial class Render
+    public static partial class RenderCS
     {
         #region - Section : General -
         public static uint ColorToUInt32(Point4D color)

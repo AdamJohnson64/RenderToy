@@ -274,13 +274,13 @@ namespace RenderToy
             switch (renderMode)
             {
                 case RenderMode.Point:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Point, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Point, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.Wireframe:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.Raster:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raster, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Raster, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.RaycastCPU:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCPU, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
@@ -367,7 +367,7 @@ namespace RenderToy
             if (renderWireframe)
             {
                 drawingContext.PushOpacity(0.5);
-                drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                 drawingContext.Pop();
             }
             if (renderPreviews)
@@ -386,9 +386,9 @@ namespace RenderToy
                     var imagesource = ImageHelp.CreateImage(fillwith, Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height);
                     drawingContext.DrawImage(imagesource, new Rect(image_l, image_t, image_w, image_h));
                 };
-                drawpreview(Render.Point, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
-                drawpreview(Render.Wireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-                drawpreview(Render.Raster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(RenderCS.Point, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
+                drawpreview(RenderCS.Wireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(RenderCS.Raster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
             }
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
@@ -398,7 +398,7 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            drawingContext.DrawImage(ImageHelp.CreateImage(Render.Point, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+            drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Point, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
         }
     }
     class RenderViewportWireframeGDI : RenderViewportBase
@@ -419,7 +419,7 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raster, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512), new Rect(0, 0, ActualWidth, ActualHeight));
+            drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Raster, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512), new Rect(0, 0, ActualWidth, ActualHeight));
         }
     }
     class RenderViewportRasterD3D : RenderViewportBase

@@ -67,18 +67,9 @@
     <Compile Include="Render\Render_CUDA.cs" />
     <Compile Include="Render\Render_D3D9.cs" />
     <Compile Include="Render\Render_ALRGDI.cs" />
-    <Compile Include="Render\Render_REF.cs" />
     <Compile Include="Controls\GeometrySwatch.cs" />
-    <Compile Include="Scene\Geometry.cs" />
-    <Compile Include="Scene\Material.cs" />
-    <Compile Include="Scene\Camera.cs" />
-    <Compile Include="Scene\Scene.cs" />
-    <Compile Include="Utility\ClipHelp.cs" />
-    <Compile Include="Utility\DrawHelp.cs" />
     <Compile Include="Utility\ImageHelp.cs" />
-    <Compile Include="Utility\MathHelp.cs" />
     <Compile Include="Controls\RenderViewport.cs" />
-    <Compile Include="Scene\Transformed.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -135,6 +126,10 @@
     <ProjectReference Include="..\RenderToyCPP\RenderToyCLI.vcxproj">
       <Project>{e68e5ecf-2731-45dc-a334-4fc4651ee0af}</Project>
       <Name>RenderToyCLI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RenderToyCS\RenderToyCS.csproj">
+      <Project>{f9176a51-4647-4a15-b9ef-e75fd411b12f}</Project>
+      <Name>RenderToyCS</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

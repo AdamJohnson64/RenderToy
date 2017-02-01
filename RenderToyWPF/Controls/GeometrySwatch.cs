@@ -34,7 +34,7 @@ namespace RenderToy
             Matrix3D mvp = View * Projection;
             if (Primitive is IParametricUV)
             {
-                drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, scene, mvp, 64, 64), new Rect(0, 0, ActualWidth, ActualHeight));
+                drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Wireframe, scene, mvp, 64, 64), new Rect(0, 0, ActualWidth, ActualHeight));
                 return;
             }
         }

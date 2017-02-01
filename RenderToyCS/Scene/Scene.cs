@@ -66,7 +66,7 @@ namespace RenderToy
         }
         List<Node> children = new List<Node>();
     }
-    class TransformedObject
+    public class TransformedObject
     {
         public Matrix3D Transform;
         public Node Node;
