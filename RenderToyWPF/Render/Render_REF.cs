@@ -5,20 +5,19 @@
 
 using System;
 using System.Linq;
-using System.Windows.Media;
 
 namespace RenderToy
 {
     public static partial class Render
     {
         #region - Section : General -
-        public static uint ColorToUInt32(Color color)
+        public static uint ColorToUInt32(Point4D color)
         {
             return
-                ((uint)color.A << 24) |
-                ((uint)color.R << 16) |
-                ((uint)color.G << 8) |
-                ((uint)color.B << 0);
+                ((uint)(color.W * 255) << 24) |
+                ((uint)(color.X * 255) << 16) |
+                ((uint)(color.Y * 255) << 8) |
+                ((uint)(color.Z * 255) << 0);
         }
         #endregion
         #region - Section : Phase 1 - Point Rendering (Reference) -

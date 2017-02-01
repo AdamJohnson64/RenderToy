@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Media;
 
 namespace RenderToy
 {
@@ -163,16 +162,16 @@ namespace RenderToy
                 if (obj.Node.material is MaterialCommon) { EmitAndQueue(obj.Node.material); }
                 else { binarywriter.Write((int)0); }
             }
-            void Serialize(Color obj)
+            void Serialize(Point4D obj)
             {
                 if (m.Position % 16 != 0)
                 {
                     throw new Exception("Data will not be 16-byte aligned.");
                 }
-                Serialize((double)(obj.R / 255.0));
-                Serialize((double)(obj.G / 255.0));
-                Serialize((double)(obj.B / 255.0));
-                Serialize((double)(obj.A / 255.0));
+                Serialize((double)obj.X);
+                Serialize((double)obj.Y);
+                Serialize((double)obj.Z);
+                Serialize((double)obj.W);
             }
             void Serialize(MaterialCommon obj)
             {

@@ -3,8 +3,6 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using System.Windows.Media;
-
 namespace RenderToy
 {
     public static partial class AbstractLineRenderer
@@ -20,8 +18,8 @@ namespace RenderToy
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv == null) continue;
                 DrawHelp.fnDrawLineWorld line = CreateLineWorldFunction(renderer, width, height, transformedobject.Transform * mvp);
-                Color color = transformedobject.Node.WireColor;
-                renderer.WireframeColor(color.R / 255.0 / 2, color.G / 255.0 / 2, color.B / 255.0 / 2);
+                var color = transformedobject.Node.WireColor;
+                renderer.WireframeColor(color.X / 2, color.Y / 2, color.Z / 2);
                 DrawHelp.DrawParametricUV(line, uv.GetPointUV);
             }
             renderer.WireframeEnd();
