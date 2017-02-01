@@ -3,8 +3,6 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using System.Windows.Media.Media3D;
-
 namespace RenderToy
 {
     public static class DrawHelp

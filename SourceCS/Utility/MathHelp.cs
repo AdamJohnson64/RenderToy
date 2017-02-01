@@ -3,11 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-//#define USE_WPF
-
 using System;
-using System.Diagnostics;
-using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
@@ -47,7 +43,7 @@ namespace RenderToy
         public static Vector3D Subtract(Point3D lhs, Point3D rhs) { return new Vector3D(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z); }
         public static Point4D Subtract(Point4D lhs, Point4D b) { return new Point4D(lhs.X - b.X, lhs.Y - b.Y, lhs.Z - b.Z, lhs.W - b.W); }
         #endregion
-        #region - Section : Non-Trivial Functions (Type compatible with WPF) -
+        #region - Section : Non-Trivial Functions (Type-compatible with WPF) -
         public static Matrix3D CreateMatrixLookAt(Point3D eye, Point3D at, Vector3D up)
         {
             var lfz = MathHelp.Normalized(at - eye);
@@ -90,21 +86,7 @@ namespace RenderToy
             return new Quaternion(t1, t2, t3, t0);
         }
         #endregion
-        #region - Section : Non-Trivial Functions (Type-incompatible with WPF) -
-        public static System.Windows.Media.Media3D.Matrix3D Invert(System.Windows.Media.Media3D.Matrix3D m)
-        {
-            m.Invert();
-            return m;
-        }
-        public static System.Windows.Media.Media3D.Matrix3D ToMatrix(System.Windows.Media.Media3D.Quaternion q)
-        {
-            var quatrot3 = new QuaternionRotation3D(q);
-            var rottran3 = new RotateTransform3D(quatrot3);
-            return rottran3.Value;
-        }
-        #endregion
     }
-#if !USE_WPF
     public static partial class MathHelp
     {
         public static double Determinant(RenderToy.Matrix3D val)
@@ -167,21 +149,6 @@ namespace RenderToy
                 }
             }
         }
-        /*
-        public static Matrix3D Invert(RenderToy.Matrix3D m)
-        {
-            var mw = new System.Windows.Media.Media3D.Matrix3D(
-                m.M11, m.M12, m.M13, m.M14,
-                m.M21, m.M22, m.M23, m.M24,
-                m.M31, m.M32, m.M33, m.M34,
-                m.M41, m.M42, m.M43, m.M44);
-            mw.Invert();
-            return new Matrix3D(
-                mw.M11, mw.M12, mw.M13, mw.M14,
-                mw.M21, mw.M22, mw.M23, mw.M24,
-                mw.M31, mw.M32, mw.M33, mw.M34,
-                mw.OffsetX, mw.OffsetY, mw.OffsetZ, mw.M44);
-        }*/
         public static Point3D Transform(RenderToy.Matrix3D a, Point3D b)
         {
             return new Point3D(
@@ -261,76 +228,5 @@ namespace RenderToy
         public Quaternion(double x, double y, double z, double w) { X = x; Y = y; Z = z; W = w; }
         public Quaternion(Vector3D axis, double angle) { this = MathHelp.CreateQuaternionRotation(axis, angle); }
         public static Quaternion operator *(Quaternion q, Quaternion r) { return MathHelp.Multiply(q, r); }
-    }
-#endif
-    namespace Test
-    {
-        public static class MathHelp
-        {
-            public static void Run()
-            {
-                // Matrix3D Multiply.
-                {
-                    var scale = new Matrix3D(2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1);
-                    var transform = new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 5, 6, 7, 1);
-                    var result = scale * transform;
-                    Debug.Assert(result.M11 == 2); Debug.Assert(result.M12 == 0); Debug.Assert(result.M13 == 0); Debug.Assert(result.M14 == 0);
-                    Debug.Assert(result.M21 == 0); Debug.Assert(result.M22 == 3); Debug.Assert(result.M23 == 0); Debug.Assert(result.M24 == 0);
-                    Debug.Assert(result.M31 == 0); Debug.Assert(result.M32 == 0); Debug.Assert(result.M33 == 4); Debug.Assert(result.M34 == 0);
-#if !USE_WPF
-                    Debug.Assert(result.M41 == 5); Debug.Assert(result.M42 == 6); Debug.Assert(result.M43 == 7); Debug.Assert(result.M44 == 1);
-#endif
-                }
-                // Point3D Add.
-                {
-                        for (int i = 0; i < 10; ++i)
-                    {
-                        Point3D p;
-                        p = RenderToy.MathHelp.Add(new Point3D(1, 1, 1), new Point3D(i, i, i));
-                        Debug.Assert(p.X == i + 1);
-                        Debug.Assert(p.Y == i + 1);
-                        Debug.Assert(p.Z == i + 1);
-                        p = RenderToy.MathHelp.Add(new Point3D(i, i, i), new Point3D(1, 1, 1));
-                        Debug.Assert(p.X == i + 1);
-                        Debug.Assert(p.Y == i + 1);
-                        Debug.Assert(p.Z == i + 1);
-                    }
-                }
-                // Vector3D Length.
-                {
-                    for (int i = 0; i < 10; ++i)
-                    {
-                        Debug.Assert(RenderToy.MathHelp.Length(new Vector3D(i, 0, 0)) == i);
-                        Debug.Assert(RenderToy.MathHelp.Length(new Vector3D(0, i, 0)) == i);
-                        Debug.Assert(RenderToy.MathHelp.Length(new Vector3D(0, 0, i)) == i);
-                    }
-                    Debug.Assert(RenderToy.MathHelp.Length(new Vector3D(1, 1, 1)) == Math.Sqrt(3));
-                }
-#if !USE_WPF
-                // WPF Equivalence.
-                {
-                    for (int axis = 1; axis < 10; ++axis)
-                    {
-                        for (int angle = 0; angle < 10; ++angle)
-                        {
-                            var my = new RenderToy.Quaternion(new RenderToy.Vector3D(axis, 0, 0), angle);
-                            var wpf = new System.Windows.Media.Media3D.Quaternion(new System.Windows.Media.Media3D.Vector3D(axis, 0, 0), angle);
-                            Debug.Assert(WithinLimits(my.X, wpf.X)); Debug.Assert(WithinLimits(my.Y, wpf.Y)); Debug.Assert(WithinLimits(my.Z, wpf.Z)); Debug.Assert(WithinLimits(my.W, wpf.W));
-                            my = new RenderToy.Quaternion(new RenderToy.Vector3D(0, axis, 0), angle);
-                            wpf = new System.Windows.Media.Media3D.Quaternion(new System.Windows.Media.Media3D.Vector3D(0, axis, 0), angle);
-                            Debug.Assert(WithinLimits(my.X, wpf.X)); Debug.Assert(WithinLimits(my.Y, wpf.Y)); Debug.Assert(WithinLimits(my.Z, wpf.Z)); Debug.Assert(WithinLimits(my.W, wpf.W));
-                            my = new RenderToy.Quaternion(new RenderToy.Vector3D(0, 0, axis), angle);
-                            wpf = new System.Windows.Media.Media3D.Quaternion(new System.Windows.Media.Media3D.Vector3D(0, 0, axis), angle);
-                            Debug.Assert(WithinLimits(my.X, wpf.X)); Debug.Assert(WithinLimits(my.Y, wpf.Y)); Debug.Assert(WithinLimits(my.Z, wpf.Z)); Debug.Assert(WithinLimits(my.W, wpf.W));
-                        }
-                    }
-                }
-#endif
-            }
-            static bool WithinLimits(double a, double b)
-            {
-                return Math.Abs(b - a) < 0.000000001;
-            }
-        }
     }
 }

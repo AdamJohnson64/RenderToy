@@ -4,14 +4,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
     public class Node
     {
-        public Node(ITransformed transform, object primitive, Color wirecolor, IMaterial material)
+        public Node(ITransformed transform, object primitive, Point4D wirecolor, IMaterial material)
         {
             this.transform = transform;
             this.primitive = primitive;
@@ -26,7 +24,7 @@ namespace RenderToy
         {
             get { return primitive; }
         }
-        public Color WireColor
+        public Point4D WireColor
         {
             get { return wirecolor; }
         }
@@ -36,7 +34,7 @@ namespace RenderToy
         }
         public readonly ITransformed transform;
         public readonly object primitive;
-        public readonly Color wirecolor;
+        public readonly Point4D wirecolor;
         public readonly IMaterial material;
         List<Node> children = new List<Node>();
     }
@@ -47,14 +45,14 @@ namespace RenderToy
             get
             {
                 Scene scene = new Scene();
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Colors.LightGray, new CheckerboardMaterial(Colors.Black, Colors.White)));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-5, 1, 0)), new Sphere(), Colors.Red, Materials.PlasticRed));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-3, 1, 0)), new Sphere(), Colors.Green, Materials.PlasticGreen));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-1, 1, 0)), new Sphere(), Colors.Blue, Materials.PlasticBlue));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+1, 1, 0)), new Sphere(), Colors.Yellow, Materials.PlasticYellow));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+3, 1, 0)), new Cube(), Colors.Magenta, Materials.PlasticMagenta));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+5, 1, 0)), new Sphere(), Colors.Cyan, Materials.PlasticCyan));
-                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 3, 0)), new Sphere(), Colors.Black, Materials.Glass));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-5, 1, 0)), new Sphere(), Materials.Red, Materials.PlasticRed));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-3, 1, 0)), new Sphere(), Materials.Green, Materials.PlasticGreen));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-1, 1, 0)), new Sphere(), Materials.Blue, Materials.PlasticBlue));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+1, 1, 0)), new Sphere(), Materials.Yellow, Materials.PlasticYellow));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+3, 1, 0)), new Cube(), Materials.Magenta, Materials.PlasticMagenta));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+5, 1, 0)), new Sphere(), Materials.Cyan, Materials.PlasticCyan));
+                scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 3, 0)), new Sphere(), Materials.Black, Materials.Glass));
                 return scene;
             }
         }
@@ -68,7 +66,7 @@ namespace RenderToy
         }
         List<Node> children = new List<Node>();
     }
-    class TransformedObject
+    public class TransformedObject
     {
         public Matrix3D Transform;
         public Node Node;

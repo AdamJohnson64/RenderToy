@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
@@ -12,7 +11,7 @@ namespace RenderToy
     {
         Matrix3D Projection { get; }
     }
-    class CameraPerspective : ProjectionProvider
+    public class CameraPerspective : ProjectionProvider
     {
         public Matrix3D Projection
         {

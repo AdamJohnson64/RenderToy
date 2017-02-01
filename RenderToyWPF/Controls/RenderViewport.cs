@@ -9,19 +9,15 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Media3D;
 
 namespace RenderToy
 {
     public abstract class RenderViewportBase : FrameworkElement
     {
-        public static DependencyProperty DrawExtraProperty = DependencyProperty.Register("DrawExtra", typeof(RenderViewportBase), typeof(RenderViewportBase));
-        public RenderViewportBase DrawExtra { get { return (RenderViewportBase)GetValue(DrawExtraProperty); } set { SetValue(DrawExtraProperty, value);  } }
         public Scene Scene = Scene.Default;
         public RenderViewportBase()
         {
             ReduceQuality_Init();
-            AllowDrop = true;
         }
         #region - Section : Camera -
         protected Matrix3D View
@@ -63,14 +59,6 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Input Handling -
-        protected override void OnDrop(DragEventArgs e)
-        {
-            base.OnDrop(e);
-            if (e.Data.GetDataPresent(typeof(Sphere)))
-            {
-                int test = 0;
-            }
-        }
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
@@ -131,18 +119,6 @@ namespace RenderToy
             DateTime timeStart = DateTime.Now;
             // Draw our intended visual.
             OnRenderToy(drawingContext);
-            // If we're connected to another view camera then show it here.
-            if (DrawExtra != null)
-            {
-                // Draw the clip space of the Model-View-Projection.
-                Matrix3D other = MathHelp.Invert(DrawExtra.MVP);
-                IWireframeRenderer renderer = new WireframeWPF(drawingContext);
-                DrawHelp.fnDrawLineWorld line = AbstractLineRenderer.CreateLineWorldFunction(renderer, ActualWidth, ActualHeight, MVP);
-                renderer.WireframeBegin();
-                renderer.WireframeColor(0.0, 1.0, 1.0);
-                DrawHelp.DrawClipSpace(line, other);
-                renderer.WireframeEnd();
-            }
             DateTime timeEnd = DateTime.Now;
             // Try to maintain a reasonable framerate by reducing quality.
             ReduceQuality_Decide(timeStart, timeEnd);
@@ -275,13 +251,13 @@ namespace RenderToy
             switch (renderMode)
             {
                 case RenderMode.Point:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Point, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Point, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.Wireframe:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.Raster:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raster, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Raster, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.RaycastCPU:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCPU, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
@@ -368,7 +344,7 @@ namespace RenderToy
             if (renderWireframe)
             {
                 drawingContext.PushOpacity(0.5);
-                drawingContext.DrawImage(ImageHelp.CreateImage(Render.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Wireframe, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                 drawingContext.Pop();
             }
             if (renderPreviews)
@@ -387,9 +363,9 @@ namespace RenderToy
                     var imagesource = ImageHelp.CreateImage(fillwith, Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height);
                     drawingContext.DrawImage(imagesource, new Rect(image_l, image_t, image_w, image_h));
                 };
-                drawpreview(Render.Point, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
-                drawpreview(Render.Wireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-                drawpreview(Render.Raster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(RenderCS.Point, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
+                drawpreview(RenderCS.Wireframe, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(RenderCS.Raster, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
             }
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
             drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
@@ -399,28 +375,14 @@ namespace RenderToy
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            drawingContext.DrawImage(ImageHelp.CreateImage(Render.Point, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
-        }
-    }
-    class RenderViewportWireframeGDI : RenderViewportBase
-    {
-        protected override void OnRenderToy(DrawingContext drawingContext)
-        {
-            AbstractLineRenderer.DrawWireframe(Scene, MVP, new WireframeGDI(drawingContext, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), ActualWidth, ActualHeight);
-        }
-    }
-    class RenderViewportWireframeWPF : RenderViewportBase
-    {
-        protected override void OnRenderToy(DrawingContext drawingContext)
-        {
-            AbstractLineRenderer.DrawWireframe(Scene, MVP, new WireframeWPF(drawingContext), ActualWidth, ActualHeight);
+            drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Point, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
         }
     }
     class RenderViewportRaster : RenderViewportBase
     {
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            drawingContext.DrawImage(ImageHelp.CreateImage(Render.Raster, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512), new Rect(0, 0, ActualWidth, ActualHeight));
+            drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Raster, Scene, MVP, ReduceQuality ? 128 : 512, ReduceQuality ? 128 : 512), new Rect(0, 0, ActualWidth, ActualHeight));
         }
     }
     class RenderViewportRasterD3D : RenderViewportBase

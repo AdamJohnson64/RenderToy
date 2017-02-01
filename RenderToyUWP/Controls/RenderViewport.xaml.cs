@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.InteropServices;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -24,19 +25,25 @@ namespace RenderToy
         public RenderViewport()
         {
             this.InitializeComponent();
-            var bitmap = new WriteableBitmap(256, 256);
-            var buffer = bitmap.PixelBuffer;
-            var length = buffer.Length;
+            int RENDER_WIDTH = 512;
+            int RENDER_HEIGHT = 512;
+            var bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT);
+            byte[] image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];
+            unsafe
+            {
+                GCHandle handle = GCHandle.Alloc(image, GCHandleType.Pinned);
+                try
+                {
+                    RenderCS.Wireframe(Scene.Default, MathHelp.Invert(MathHelp.CreateMatrixTranslate(0, 2, -5)) * CameraPerspective.CreateProjection(0.01, 100.0, 45, 45), handle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                }
+                finally
+                {
+                    handle.Free();
+                }
+            }
             using (var stream = bitmap.PixelBuffer.AsStream())
             {
-                for (int y = 0; y < 256; ++y)
-                {
-                    for (int x = 0; x < 256; ++x)
-                    {
-                        stream.Position = 4 * x + 4 * 256 * y;
-                        stream.Write(new byte[] { (byte)0, (byte)0, (byte)0, (byte)0 }, 0, 4);
-                    }
-                }
+                stream.Write(image, 0, 4 * RENDER_WIDTH * RENDER_HEIGHT);
             }
             bitmap.Invalidate();
             Component_Image.Source = bitmap;

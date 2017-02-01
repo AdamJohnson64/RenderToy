@@ -17,6 +17,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCLI", "RenderToyCP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyUWP", "RenderToyUWP\RenderToyUWP.csproj", "{201B2138-C542-4C95-901C-5F5066C9B625}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyCS", "RenderToyCS\RenderToyCS.csproj", "{F9176A51-4647-4A15-B9EF-E75FD411B12F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyCSU", "RenderToyCSU\RenderToyCSU.csproj", "{9C42B469-5468-4463-AD8B-830FF8D767EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +45,14 @@ Global
 		{201B2138-C542-4C95-901C-5F5066C9B625}.Release|x64.ActiveCfg = Release|x64
 		{201B2138-C542-4C95-901C-5F5066C9B625}.Release|x64.Build.0 = Release|x64
 		{201B2138-C542-4C95-901C-5F5066C9B625}.Release|x64.Deploy.0 = Release|x64
+		{F9176A51-4647-4A15-B9EF-E75FD411B12F}.Debug|x64.ActiveCfg = Debug|x64
+		{F9176A51-4647-4A15-B9EF-E75FD411B12F}.Debug|x64.Build.0 = Debug|x64
+		{F9176A51-4647-4A15-B9EF-E75FD411B12F}.Release|x64.ActiveCfg = Release|x64
+		{F9176A51-4647-4A15-B9EF-E75FD411B12F}.Release|x64.Build.0 = Release|x64
+		{9C42B469-5468-4463-AD8B-830FF8D767EF}.Debug|x64.ActiveCfg = Debug|x64
+		{9C42B469-5468-4463-AD8B-830FF8D767EF}.Debug|x64.Build.0 = Debug|x64
+		{9C42B469-5468-4463-AD8B-830FF8D767EF}.Release|x64.ActiveCfg = Release|x64
+		{9C42B469-5468-4463-AD8B-830FF8D767EF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
