@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Background="Green">
+    <Grid>
         <Image Name="Component_Image" />
     </Grid>
 </UserControl>
