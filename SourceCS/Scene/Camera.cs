@@ -20,6 +20,18 @@ namespace RenderToy
                 return CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0);
             }
         }
+        public static Matrix3D AspectCorrectFit(double width, double height)
+        {
+            double aspect = width / height;
+            if (aspect > 1)
+            {
+                return MathHelp.CreateMatrixScale(1 / aspect, 1, 1);
+            }
+            else
+            {
+                return MathHelp.CreateMatrixScale(1, aspect, 1);
+            }
+        }
         public static Matrix3D CreateProjection(double near_plane, double far_plane, double fov_horiz, double fov_vert)
         {
             double w = 1 / Math.Tan(fov_horiz * 0.5);  // 1/tan(x) == cot(x)

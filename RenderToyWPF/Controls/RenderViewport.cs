@@ -38,25 +38,11 @@ namespace RenderToy
         {
             get
             {
-                return View * Projection * AspectCorrectFit(ActualWidth, ActualHeight);
+                return View * Projection * CameraPerspective.AspectCorrectFit(ActualWidth, ActualHeight);
             }
         }
         TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 2, -5) };
         CameraPerspective CameraMat = new CameraPerspective();
-        #endregion
-        #region - Section : Aspect Correction -
-        public static Matrix3D AspectCorrectFit(double width, double height)
-        {
-            double aspect = width / height;
-            if (aspect > 1)
-            {
-                return MathHelp.CreateMatrixScale(1 / aspect, 1, 1);
-            }
-            else
-            {
-                return MathHelp.CreateMatrixScale(1, aspect, 1);
-            }
-        }
         #endregion
         #region - Section : Input Handling -
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -83,25 +69,28 @@ namespace RenderToy
             double dx = dragTo.X - dragFrom.X;
             double dy = dragTo.Y - dragFrom.Y;
             System.Windows.Forms.Cursor.Position = dragFrom;
-            // Truck Mode (CTRL + SHIFT).
-            if (Keyboard.IsKeyDown(Key.LeftShift) && Keyboard.IsKeyDown(Key.LeftCtrl))
+            // Detect modifier keys.
+            bool isPressedLeftControl = Keyboard.IsKeyDown(Key.LeftCtrl);
+            bool isPressedLeftShift = Keyboard.IsKeyDown(Key.LeftShift);
+            // Process camera motion with modifier keys.
+            if (isPressedLeftShift && isPressedLeftControl)
             {
+                // Truck Mode (CTRL + SHIFT).
                 Camera.TranslatePost(new Vector3D(0, 0, dy * -0.05));
-                InvalidateVisual();
             }
-            else if (!Keyboard.IsKeyDown(Key.LeftShift) && Keyboard.IsKeyDown(Key.LeftCtrl))
+            else if (!isPressedLeftShift && isPressedLeftControl)
             {
                 // Rotate Mode (CTRL Only)
                 Camera.RotatePre(new Quaternion(new Vector3D(0, 1, 0), dx * 0.05));
                 Camera.RotatePost(new Quaternion(new Vector3D(1, 0, 0), dy * 0.05));
-                InvalidateVisual();
             }
-            else if (!Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.LeftCtrl))
+            else if (!isPressedLeftShift && !isPressedLeftControl)
             {
                 // Translation Mode (no modifier keys).
                 Camera.TranslatePost(new Vector3D(dx * -0.05, dy * 0.05, 0));
-                InvalidateVisual();
             }
+            // Update the view.
+            InvalidateVisual();
         }
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
@@ -360,7 +349,7 @@ namespace RenderToy
                     double image_w = frame_w - 8 * 2;
                     double image_h = frame_h - 8 * 2;
                     drawingContext.DrawRoundedRectangle(Brushes.White, new Pen(Brushes.DarkGray, 2), new Rect(frame_l, frame_t, frame_w, frame_h), 8, 8);
-                    var imagesource = ImageHelp.CreateImage(fillwith, Scene, View * Projection * AspectCorrectFit(image_w, image_h), render_width, render_height);
+                    var imagesource = ImageHelp.CreateImage(fillwith, Scene, View * Projection * CameraPerspective.AspectCorrectFit(image_w, image_h), render_width, render_height);
                     drawingContext.DrawImage(imagesource, new Rect(image_l, image_t, image_w, image_h));
                 };
                 drawpreview(RenderCS.Point, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);

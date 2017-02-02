@@ -16,17 +16,21 @@ using Windows.UI.Xaml.Navigation;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Runtime.InteropServices;
 using Windows.UI.Input;
+using Windows.UI.Core;
+using Windows.System;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace RenderToy
 {
-    public sealed partial class RenderViewport : UserControl
+    public sealed class RenderViewport : UserControl
     {
+        Image control_image = new Image();
+        TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 2, -5) };
         public RenderViewport()
         {
-            this.InitializeComponent();
-            Repaint();
+            SizeChanged += (s, e) => { Repaint(); };
+            Content = control_image;
         }
         protected override void OnPointerMoved(PointerRoutedEventArgs e)
         {
@@ -35,9 +39,29 @@ namespace RenderToy
             PointerPoint dragTo = e.GetCurrentPoint(this);
             double dx = dragTo.Position.X - dragFrom.Position.X;
             double dy = dragTo.Position.Y - dragFrom.Position.Y;
-            x += dx * -0.05;
-            y += dy * 0.05;
             dragFrom = dragTo;
+            // Detect modifier keys.
+            var stateLeftControl = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.LeftControl);
+            var stateLeftShift = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.LeftShift);
+            bool isPressedLeftControl = (stateLeftControl & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
+            bool isPressedLeftShift = (stateLeftShift & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
+            // Process camera motion with modifier keys.
+            if (isPressedLeftShift && isPressedLeftControl)
+            {
+                // Truck Mode (CTRL + SHIFT).
+                Camera.TranslatePost(new Vector3D(0, 0, dy * -0.05));
+            }
+            else if (!isPressedLeftShift && isPressedLeftControl)
+            {
+                // Rotate Mode (CTRL Only)
+                Camera.RotatePre(new Quaternion(new Vector3D(0, 1, 0), dx * 0.05));
+                Camera.RotatePost(new Quaternion(new Vector3D(1, 0, 0), dy * 0.05));
+            }
+            else if (!isPressedLeftShift && !isPressedLeftControl)
+            {
+                // Translation Mode (no modifier keys).
+                Camera.TranslatePost(new Vector3D(dx * -0.05, dy * 0.05, 0));
+            }
             Repaint();
         }
         protected override void OnPointerPressed(PointerRoutedEventArgs e)
@@ -55,8 +79,9 @@ namespace RenderToy
         }
         void Repaint()
         {
-            int RENDER_WIDTH = 512;
-            int RENDER_HEIGHT = 512;
+            int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
+            int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
+            if (RENDER_WIDTH < 8 || RENDER_HEIGHT < 8) return;
             var bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT);
             byte[] image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];
             unsafe
@@ -64,7 +89,8 @@ namespace RenderToy
                 GCHandle handle = GCHandle.Alloc(image, GCHandleType.Pinned);
                 try
                 {
-                    RenderCS.Wireframe(Scene.Default, MathHelp.Invert(MathHelp.CreateMatrixTranslate(x, y, z)) * CameraPerspective.CreateProjection(0.01, 100.0, 45, 45), handle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    Matrix3D mvp = MathHelp.Invert(Camera.Transform) * CameraPerspective.CreateProjection(0.01, 100.0, 45, 45) * CameraPerspective.AspectCorrectFit(ActualWidth, ActualHeight);
+                    RenderCS.Wireframe(Scene.Default, mvp, handle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
                 }
                 finally
                 {
@@ -76,7 +102,7 @@ namespace RenderToy
                 stream.Write(image, 0, 4 * RENDER_WIDTH * RENDER_HEIGHT);
             }
             bitmap.Invalidate();
-            Component_Image.Source = bitmap;
+            control_image.Source = bitmap;
         }
         bool isDragging = false;
         PointerPoint dragFrom;
