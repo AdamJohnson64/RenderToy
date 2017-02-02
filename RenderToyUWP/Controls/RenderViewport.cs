@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.System;
 using Windows.UI.Core;
@@ -17,6 +18,9 @@ namespace RenderToy
             SizeChanged += (s, e) => { Repaint(); };
             Content = control_image;
             var flyout = new MenuFlyout();
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Point", Command = new CommandBinding(o => { RenderMode = RenderModes.Point; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Wireframe", Command = new CommandBinding(o => { RenderMode = RenderModes.Wireframe; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raster", Command = new CommandBinding(o => { RenderMode = RenderModes.Raster; }, o => true) });
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastCPU; }, o => true) });
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsCPU; }, o => true) });
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsCPU; }, o => true) });
@@ -88,11 +92,47 @@ namespace RenderToy
             var inverse_mvp = MathHelp.Invert(mvp);
             var bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT);
             byte[] buffer_image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];
-            //GCHandle handle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
-            //RenderCS.Wireframe(Scene.Default, mvp, handle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-            //handle.Free();
             switch (renderMode)
             {
+                case RenderModes.Point:
+                    {
+                        GCHandle gchandle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
+                        try
+                        {
+                            RenderCS.Point(Scene.Default, mvp, gchandle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                        }
+                        finally
+                        {
+                            gchandle.Free();
+                        }
+                    }
+                    break;
+                case RenderModes.Wireframe:
+                    {
+                        GCHandle gchandle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
+                        try
+                        {
+                            RenderCS.Wireframe(Scene.Default, mvp, gchandle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                        }
+                        finally
+                        {
+                            gchandle.Free();
+                        }
+                    }
+                    break;
+                case RenderModes.Raster:
+                    {
+                        GCHandle gchandle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
+                        try
+                        {
+                            RenderCS.Raster(Scene.Default, mvp, gchandle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                        }
+                        finally
+                        {
+                            gchandle.Free();
+                        }
+                    }
+                    break;
                 case RenderModes.RaycastCPU:
                     RenderToyCX.RaycastCPU(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
                     break;
@@ -119,7 +159,7 @@ namespace RenderToy
             bitmap.Invalidate();
             control_image.Source = bitmap;
         }
-        enum RenderModes { RaycastCPU, RaycastNormalsCPU, RaycastTangentsCPU, RaycastBitangentsCPU, RaytraceCPUF32, RaytraceCPUF64 }
+        enum RenderModes { Point, Wireframe, Raster, RaycastCPU, RaycastNormalsCPU, RaycastTangentsCPU, RaycastBitangentsCPU, RaytraceCPUF32, RaytraceCPUF64 }
         RenderModes RenderMode
         {
             get { return renderMode; }
