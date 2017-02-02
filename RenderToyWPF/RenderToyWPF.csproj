@@ -123,11 +123,8 @@
       <Project>{e68e5ecf-2731-45dc-a334-4fc4651ee0af}</Project>
       <Name>RenderToyCLI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\RenderToyCS\RenderToyCS.csproj">
-      <Project>{f9176a51-4647-4a15-b9ef-e75fd411b12f}</Project>
-      <Name>RenderToyCS</Name>
-    </ProjectReference>
   </ItemGroup>
+  <Import Project="..\RenderToyCoreCS\RenderToyCoreCS.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
