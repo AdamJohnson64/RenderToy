@@ -79,27 +79,22 @@ namespace RenderToy
         }
         void Repaint()
         {
-            int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
-            int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
+            int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / 4;
+            int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / 4;
             if (RENDER_WIDTH < 8 || RENDER_HEIGHT < 8) return;
+            var mvp = MathHelp.Invert(Camera.Transform) * CameraPerspective.CreateProjection(0.01, 100.0, 45, 45) * CameraPerspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            var inverse_mvp = MathHelp.Invert(mvp);
             var bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT);
-            byte[] image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];
-            unsafe
-            {
-                GCHandle handle = GCHandle.Alloc(image, GCHandleType.Pinned);
-                try
-                {
-                    Matrix3D mvp = MathHelp.Invert(Camera.Transform) * CameraPerspective.CreateProjection(0.01, 100.0, 45, 45) * CameraPerspective.AspectCorrectFit(ActualWidth, ActualHeight);
-                    RenderCS.Wireframe(Scene.Default, mvp, handle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                }
-                finally
-                {
-                    handle.Free();
-                }
-            }
+            byte[] buffer_image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];
+            byte[] buffer_inverse_mvp = SceneFormatter.CreateFlatMemory(inverse_mvp);
+            byte[] buffer_scene = SceneFormatter.CreateFlatMemory(Scene.Default);
+            //GCHandle handle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
+            //RenderCS.Wireframe(Scene.Default, mvp, handle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+            //handle.Free();
+            RenderToyCX.RaycastCPU(buffer_scene, buffer_inverse_mvp, buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
             using (var stream = bitmap.PixelBuffer.AsStream())
             {
-                stream.Write(image, 0, 4 * RENDER_WIDTH * RENDER_HEIGHT);
+                stream.Write(buffer_image, 0, 4 * RENDER_WIDTH * RENDER_HEIGHT);
             }
             bitmap.Invalidate();
             control_image.Source = bitmap;

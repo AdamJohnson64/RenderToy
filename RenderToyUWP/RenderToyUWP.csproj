@@ -83,6 +83,12 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RenderToyCX\RenderToyCX.vcxproj">
+      <Project>{ead22804-7609-4ebd-ac81-f28db4f18aed}</Project>
+      <Name>RenderToyCX</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\RenderToyCoreCS\RenderToyCoreCS.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

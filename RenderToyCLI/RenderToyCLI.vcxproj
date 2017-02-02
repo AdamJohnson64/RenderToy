@@ -84,7 +84,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\RenderToyCoreCPP\Raytrace.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\RenderToy.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\RenderToyCLI.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RenderToyD3D9.cpp" />
   </ItemGroup>
   <ItemGroup>

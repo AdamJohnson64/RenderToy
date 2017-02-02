@@ -119,7 +119,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RenderToyCPP\RenderToyCLI.vcxproj">
+    <ProjectReference Include="..\RenderToyCLI\RenderToyCLI.vcxproj">
       <Project>{e68e5ecf-2731-45dc-a334-4fc4651ee0af}</Project>
       <Name>RenderToyCLI</Name>
     </ProjectReference>

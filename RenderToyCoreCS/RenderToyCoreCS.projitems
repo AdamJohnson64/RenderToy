@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Transformed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\ClipHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\DrawHelp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\Interop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\MathHelp.cs" />
   </ItemGroup>
 </Project>
