@@ -67,7 +67,7 @@ struct Scene {
 template <typename FLOAT>
 struct IntersectObject {
 	FLOAT Lambda;
-	const SceneObject<FLOAT>* Object;
+	SceneObject<FLOAT> Object;
 };
 
 // IntersectSimple - retrieve only the intersection distance.

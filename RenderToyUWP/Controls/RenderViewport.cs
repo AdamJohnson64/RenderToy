@@ -28,6 +28,10 @@ namespace RenderToy
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsCPU; }, o => true) });
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF32; }, o => true) });
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF64; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastAMPF32; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsAMPF32; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsAMPF32; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsAMPF32; }, o => true) });
             ContextFlyout = flyout;
             ReduceQuality_Init();
         }
@@ -165,6 +169,18 @@ namespace RenderToy
                 case RenderModes.RaytraceCPUF64:
                     RenderToyCX.RaytraceCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
                     break;
+                case RenderModes.RaycastAMPF32:
+                    RenderToyCX.RaycastAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
+                case RenderModes.RaycastNormalsAMPF32:
+                    RenderToyCX.RaycastNormalsAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
+                case RenderModes.RaycastTangentsAMPF32:
+                    RenderToyCX.RaycastTangentsAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
+                case RenderModes.RaycastBitangentsAMPF32:
+                    RenderToyCX.RaycastBitangentsAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
             }
             using (var stream = bitmap.PixelBuffer.AsStream())
             {
@@ -175,13 +191,13 @@ namespace RenderToy
             DateTime timeEnd = DateTime.Now;
             ReduceQuality_Decide(timeStart, timeEnd);
         }
-        enum RenderModes { Point, Wireframe, Raster, RaycastCPU, RaycastNormalsCPU, RaycastTangentsCPU, RaycastBitangentsCPU, RaytraceCPUF32, RaytraceCPUF64 }
+        enum RenderModes { Point, Wireframe, Raster, RaycastCPU, RaycastNormalsCPU, RaycastTangentsCPU, RaycastBitangentsCPU, RaytraceCPUF32, RaytraceCPUF64, RaycastAMPF32, RaycastNormalsAMPF32, RaycastTangentsAMPF32, RaycastBitangentsAMPF32 }
         RenderModes RenderMode
         {
             get { return renderMode; }
             set { renderMode = value; Repaint(); }
         }
-        RenderModes renderMode = RenderModes.RaytraceCPUF32;
+        RenderModes renderMode = RenderModes.RaycastAMPF32;
         #endregion
         #region - Section : Quality Control -
         protected bool ReduceQuality

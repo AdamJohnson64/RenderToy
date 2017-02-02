@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportAMP.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCPU.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RenderToyCX.cpp" />
   </ItemGroup>
@@ -19,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\RenderToyCoreCPP\Raytrace.h" />
+    <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportAMP.h" />
     <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportCPU.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

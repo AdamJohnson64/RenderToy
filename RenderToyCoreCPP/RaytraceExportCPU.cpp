@@ -4,24 +4,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// This file contains the core CPU implementation of the raytracer and the
-// fake CUDA implementation if CUDA is not installed.
+// This file contains the core CPU implementation of the raytracer.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <math.h>
 #include <cfloat>
 #include "Raytrace.h"
 
-namespace RaytraceCPP {
-	#define DEVICE_PROTO
+namespace RaytraceCLI {
+	#define DEVICE_PREFIX
+	#define DEVICE_SUFFIX
 	#include "Raytrace.inc"
-	#undef DEVICE_PROTO
+	#undef DEVICE_SUFFIX
+	#undef DEVICE_PREFIX
 }
 
 extern "C" void RaycastCPU(void* pScene, void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCPP::cudaFill2<double, RaytraceCPP::DoRaycast<double>, 1, 1>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixel<double, RaytraceCLI::DoRaycast<double>>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
 		}
 	}
 }
@@ -29,7 +31,8 @@ extern "C" void RaycastCPU(void* pScene, void* pInverseMVP, void* bitmap_ptr, in
 extern "C" void RaycastNormalsCPU(void* pScene, void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCPP::cudaFill2<double, RaytraceCPP::DoRaycastNormals<double>, 1, 1>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixel<double, RaytraceCLI::DoRaycastNormals<double>>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
 		}
 	}
 }
@@ -37,7 +40,8 @@ extern "C" void RaycastNormalsCPU(void* pScene, void* pInverseMVP, void* bitmap_
 extern "C" void RaycastTangentsCPU(void* pScene, void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCPP::cudaFill2<double, RaytraceCPP::DoRaycastTangents<double>, 1, 1>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixel<double, RaytraceCLI::DoRaycastTangents<double>>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
 		}
 	}
 }
@@ -45,7 +49,8 @@ extern "C" void RaycastTangentsCPU(void* pScene, void* pInverseMVP, void* bitmap
 extern "C" void RaycastBitangentsCPU(void* pScene, void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCPP::cudaFill2<double, RaytraceCPP::DoRaycastBitangents<double>, 1, 1>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixel<double, RaytraceCLI::DoRaycastBitangents<double>>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
 		}
 	}
 }
@@ -53,7 +58,8 @@ extern "C" void RaycastBitangentsCPU(void* pScene, void* pInverseMVP, void* bitm
 extern "C" void RaytraceCPUF32(void* pScene, void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCPP::cudaFill2<float, RaytraceCPP::DoRaytrace<float>, 1, 1>((Scene<float>*)pScene, *(Matrix44<float>*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::SetPixel<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixel<float, RaytraceCLI::DoRaytrace<float>>((Scene<float>*)pScene, *(Matrix44<float>*)pInverseMVP, setpixel);
 		}
 	}
 }
@@ -61,7 +67,8 @@ extern "C" void RaytraceCPUF32(void* pScene, void* pInverseMVP, void* bitmap_ptr
 extern "C" void RaytraceCPUF64(void* pScene, void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCPP::cudaFill2<double, RaytraceCPP::DoRaytrace<double>, 1, 1>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixel<double, RaytraceCLI::DoRaytrace<double>>((Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
 		}
 	}
 }
