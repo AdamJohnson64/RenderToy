@@ -18,15 +18,6 @@ namespace RaytraceCPP {
 	#undef DEVICE_PROTO
 }
 
-extern "C" bool HaveCUDA()
-{
-#ifdef CUDA_INSTALLED
-	return true;
-#else
-	return false;
-#endif
-}
-
 extern "C" void CPURaycast(void* pScene, void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
@@ -74,29 +65,3 @@ extern "C" void CPUF64Raytrace(void* pScene, void* pInverseMVP, void* bitmap_ptr
 		}
 	}
 }
-
-#ifndef CUDA_INSTALLED
-extern "C" void CUDARaycast(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
-}
-
-extern "C" void CUDARaycastBitangents(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
-}
-
-extern "C" void CUDARaycastNormals(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
-}
-
-extern "C" void CUDARaycastTangents(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
-}
-
-extern "C" void CUDAF32Raytrace(void* pScene, float* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
-}
-
-extern "C" void CUDAF64Raytrace(void* pScene, double* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
-{
-}
-#endif

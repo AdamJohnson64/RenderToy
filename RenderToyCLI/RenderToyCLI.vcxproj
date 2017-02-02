@@ -83,7 +83,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\RenderToyCoreCPP\Raytrace.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCPU.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCUDA.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RenderToyCLI.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RenderToyD3D9.cpp" />
   </ItemGroup>
@@ -92,7 +93,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\RenderToyCoreCPP\Raytrace.h" />
-    <ClInclude Include="..\RenderToyCoreCPP\RenderToy.h" />
+    <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportCPU.h" />
+    <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportCUDA.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\RenderToyCoreCPP\Raytrace.inc" />

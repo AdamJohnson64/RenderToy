@@ -9,7 +9,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <memory>
-#include "RenderToy.h"
+#include "RaytraceExportCPU.h"
+#include "RaytraceExportCUDA.h"
 
 typedef void(RENDERFN)(void*, void*, void*, int, int, int);
 

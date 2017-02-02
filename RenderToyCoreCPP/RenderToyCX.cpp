@@ -1,5 +1,4 @@
-extern "C" void CPURaycast(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CPUF64Raytrace(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+#include "RaytraceExportCPU.h"
 
 namespace RenderToy
 {
