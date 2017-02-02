@@ -5,6 +5,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Input;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
@@ -28,8 +29,10 @@ namespace RenderToy
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF32; }, o => true) });
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF64; }, o => true) });
             ContextFlyout = flyout;
+            ReduceQuality_Init();
         }
         Image control_image = new Image();
+        DispatcherTimer timer = new DispatcherTimer();
         #region - Section : Camera -
         TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 2, -5) };
         #endregion
@@ -85,8 +88,19 @@ namespace RenderToy
         #region - Section : Rendering -
         void Repaint()
         {
-            int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / 4;
-            int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / 4;
+            DateTime timeStart = DateTime.Now;
+            int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
+            int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
+            if (ReduceQuality)
+            {
+                RENDER_WIDTH /= 8;
+                RENDER_HEIGHT /= 8;
+            }
+            else
+            {
+                RENDER_WIDTH /= 2;
+                RENDER_HEIGHT /= 2;
+            }
             if (RENDER_WIDTH < 8 || RENDER_HEIGHT < 8) return;
             var mvp = MathHelp.Invert(Camera.Transform) * CameraPerspective.CreateProjection(0.01, 100.0, 45, 45) * CameraPerspective.AspectCorrectFit(ActualWidth, ActualHeight);
             var inverse_mvp = MathHelp.Invert(mvp);
@@ -158,6 +172,8 @@ namespace RenderToy
             }
             bitmap.Invalidate();
             control_image.Source = bitmap;
+            DateTime timeEnd = DateTime.Now;
+            ReduceQuality_Decide(timeStart, timeEnd);
         }
         enum RenderModes { Point, Wireframe, Raster, RaycastCPU, RaycastNormalsCPU, RaycastTangentsCPU, RaycastBitangentsCPU, RaytraceCPUF32, RaytraceCPUF64 }
         RenderModes RenderMode
@@ -166,6 +182,45 @@ namespace RenderToy
             set { renderMode = value; Repaint(); }
         }
         RenderModes renderMode = RenderModes.RaytraceCPUF32;
+        #endregion
+        #region - Section : Quality Control -
+        protected bool ReduceQuality
+        {
+            get { return reduceQuality; }
+        }
+        void ReduceQuality_Init()
+        {
+            reduceQualityTimer = new DispatcherTimer();
+            reduceQualityTimer.Interval = TimeSpan.FromMilliseconds(500);
+            reduceQualityTimer.Tick += (s, e) =>
+            {
+                reduceQualityTimer.Stop();
+                reduceQualityFrames = 0;
+                reduceQuality = false;
+                Repaint();
+            };
+        }
+        void ReduceQuality_Decide(DateTime timeStart, DateTime timeEnd)
+        {
+            if (timeEnd.Subtract(timeStart).Milliseconds > 1000 / 30)
+            {
+                ++reduceQualityFrames;
+                if (reduceQualityFrames >= 2 && !reduceQuality)
+                {
+                    reduceQualityFrames = 0;
+                    reduceQuality = true;
+                }
+            }
+            // Restart the quality reduction timer.
+            if (reduceQuality)
+            {
+                reduceQualityTimer.Stop();
+                reduceQualityTimer.Start();
+            }
+        }
+        bool reduceQuality = false;
+        int reduceQualityFrames = 0;
+        DispatcherTimer reduceQualityTimer;
         #endregion
     }
     class CommandBinding : System.Windows.Input.ICommand
