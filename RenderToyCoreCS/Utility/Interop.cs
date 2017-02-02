@@ -11,7 +11,7 @@ namespace RenderToy
         {
             return new SceneFormatter(scene, false).m.ToArray();
         }
-        public static byte[] CreateFlatMemory(Scene scene)
+        public static byte[] CreateFlatMemoryF64(Scene scene)
         {
             return new SceneFormatter(scene, true).m.ToArray();
         }
@@ -24,7 +24,7 @@ namespace RenderToy
             }
             return memory.ToArray();
         }
-        public static byte[] CreateFlatMemory(Matrix3D obj)
+        public static byte[] CreateFlatMemoryF64(Matrix3D obj)
         {
             var memory = new MemoryStream();
             using (var stream = new BinaryWriter(memory))

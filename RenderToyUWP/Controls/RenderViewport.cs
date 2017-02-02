@@ -86,12 +86,12 @@ namespace RenderToy
             var inverse_mvp = MathHelp.Invert(mvp);
             var bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT);
             byte[] buffer_image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];
-            byte[] buffer_inverse_mvp = SceneFormatter.CreateFlatMemory(inverse_mvp);
-            byte[] buffer_scene = SceneFormatter.CreateFlatMemory(Scene.Default);
+            byte[] buffer_inverse_mvp = SceneFormatter.CreateFlatMemoryF64(inverse_mvp);
+            byte[] buffer_scene = SceneFormatter.CreateFlatMemoryF64(Scene.Default);
             //GCHandle handle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
             //RenderCS.Wireframe(Scene.Default, mvp, handle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
             //handle.Free();
-            RenderToyCX.RaycastCPU(buffer_scene, buffer_inverse_mvp, buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+            RenderToyCX.RaytraceCPUF64(buffer_scene, buffer_inverse_mvp, buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
             using (var stream = bitmap.PixelBuffer.AsStream())
             {
                 stream.Write(buffer_image, 0, 4 * RENDER_WIDTH * RENDER_HEIGHT);

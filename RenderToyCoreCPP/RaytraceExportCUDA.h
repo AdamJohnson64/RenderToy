@@ -12,11 +12,11 @@
 #define RAYTRACEEXPORTCUDA_H
 
 extern "C" bool HaveCUDA();
-extern "C" void CUDARaycast(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDARaycastNormals(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDARaycastTangents(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDARaycastBitangents(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDAF32Raytrace(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void CUDAF64Raytrace(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaycastCUDA(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaycastNormalsCUDA(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaycastTangentsCUDA(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaycastBitangentsCUDA(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaytraceCUDAF32(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaytraceCUDAF64(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 
 #endif  // RAYTRACEEXPORTCUDA_H
