@@ -19,6 +19,7 @@ namespace RenderToy
 		EXPORTGENERATOR(RaycastCPU)
 		EXPORTGENERATOR(RaycastNormalsCPU)
 		EXPORTGENERATOR(RaycastTangentsCPU)
+		EXPORTGENERATOR(RaycastBitangentsCPU)
 		EXPORTGENERATOR(RaytraceCPUF32)
 		EXPORTGENERATOR(RaytraceCPUF64)
 	};

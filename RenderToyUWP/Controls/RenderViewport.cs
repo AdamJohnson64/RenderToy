@@ -1,36 +1,47 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Runtime.InteropServices;
-using Windows.UI.Input;
-using Windows.UI.Core;
 using Windows.System;
-
-// The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
+using Windows.UI.Core;
+using Windows.UI.Input;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace RenderToy
 {
     public sealed class RenderViewport : UserControl
     {
-        Image control_image = new Image();
-        TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 2, -5) };
         public RenderViewport()
         {
             SizeChanged += (s, e) => { Repaint(); };
             Content = control_image;
+            var flyout = new MenuFlyout();
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastCPU; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsCPU; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsCPU; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsCPU; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF32; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF64; }, o => true) });
+            ContextFlyout = flyout;
+        }
+        Image control_image = new Image();
+        #region - Section : Camera -
+        TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 2, -5) };
+        #endregion
+        #region - Section : Input Handling -
+        protected override void OnPointerPressed(PointerRoutedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            CapturePointer(e.Pointer);
+            isDragging = true;
+            dragFrom = e.GetCurrentPoint(this);
+        }
+        protected override void OnPointerReleased(PointerRoutedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+            isDragging = false;
+            ReleasePointerCapture(e.Pointer);
         }
         protected override void OnPointerMoved(PointerRoutedEventArgs e)
         {
@@ -64,19 +75,10 @@ namespace RenderToy
             }
             Repaint();
         }
-        protected override void OnPointerPressed(PointerRoutedEventArgs e)
-        {
-            base.OnPointerPressed(e);
-            CapturePointer(e.Pointer);
-            isDragging = true;
-            dragFrom = e.GetCurrentPoint(this);
-        }
-        protected override void OnPointerReleased(PointerRoutedEventArgs e)
-        {
-            base.OnPointerReleased(e);
-            isDragging = false;
-            ReleasePointerCapture(e.Pointer);
-        }
+        bool isDragging = false;
+        PointerPoint dragFrom;
+        #endregion
+        #region - Section : Rendering -
         void Repaint()
         {
             int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / 4;
@@ -86,12 +88,30 @@ namespace RenderToy
             var inverse_mvp = MathHelp.Invert(mvp);
             var bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT);
             byte[] buffer_image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];
-            byte[] buffer_inverse_mvp = SceneFormatter.CreateFlatMemoryF64(inverse_mvp);
-            byte[] buffer_scene = SceneFormatter.CreateFlatMemoryF64(Scene.Default);
             //GCHandle handle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
             //RenderCS.Wireframe(Scene.Default, mvp, handle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
             //handle.Free();
-            RenderToyCX.RaytraceCPUF64(buffer_scene, buffer_inverse_mvp, buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+            switch (renderMode)
+            {
+                case RenderModes.RaycastCPU:
+                    RenderToyCX.RaycastCPU(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
+                case RenderModes.RaycastNormalsCPU:
+                    RenderToyCX.RaycastNormalsCPU(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
+                case RenderModes.RaycastTangentsCPU:
+                    RenderToyCX.RaycastTangentsCPU(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
+                case RenderModes.RaycastBitangentsCPU:
+                    RenderToyCX.RaycastBitangentsCPU(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
+                case RenderModes.RaytraceCPUF32:
+                    RenderToyCX.RaytraceCPUF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
+                case RenderModes.RaytraceCPUF64:
+                    RenderToyCX.RaytraceCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
+            }
             using (var stream = bitmap.PixelBuffer.AsStream())
             {
                 stream.Write(buffer_image, 0, 4 * RENDER_WIDTH * RENDER_HEIGHT);
@@ -99,10 +119,32 @@ namespace RenderToy
             bitmap.Invalidate();
             control_image.Source = bitmap;
         }
-        bool isDragging = false;
-        PointerPoint dragFrom;
-        double x = 0;
-        double y = 2;
-        double z = -5;
+        enum RenderModes { RaycastCPU, RaycastNormalsCPU, RaycastTangentsCPU, RaycastBitangentsCPU, RaytraceCPUF32, RaytraceCPUF64 }
+        RenderModes RenderMode
+        {
+            get { return renderMode; }
+            set { renderMode = value; Repaint(); }
+        }
+        RenderModes renderMode = RenderModes.RaytraceCPUF32;
+        #endregion
+    }
+    class CommandBinding : System.Windows.Input.ICommand
+    {
+        public CommandBinding(Action<object> execute, Func<object, bool> canexecute)
+        {
+            this.canexecute = canexecute;
+            this.execute = execute;
+        }
+        public event EventHandler CanExecuteChanged;
+        public bool CanExecute(object parameter)
+        {
+            return canexecute(parameter);
+        }
+        public void Execute(object parameter)
+        {
+            execute(parameter);
+        }
+        Func<object, bool> canexecute;
+        Action<object> execute;
     }
 }
