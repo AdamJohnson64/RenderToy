@@ -83,13 +83,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\RenderToyCPP\RenderToy.cpp" />
-    <ClCompile Include="..\RenderToyCPP\RenderToyD3D9.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\Raytrace.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\RenderToy.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\RenderToyD3D9.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RenderToyCPP\RenderToyCPP.vcxproj">
-      <Project>{70808f18-e22d-4c23-96d9-e3123d87c5dc}</Project>
-    </ProjectReference>
+    <CudaCompile Include="..\RenderToyCoreCPP\Raytrace.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\RenderToyCoreCPP\Raytrace.h" />
+    <ClInclude Include="..\RenderToyCoreCPP\RenderToy.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\RenderToyCoreCPP\Raytrace.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
