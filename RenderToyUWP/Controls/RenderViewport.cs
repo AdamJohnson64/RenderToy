@@ -41,7 +41,6 @@ namespace RenderToy
             ReduceQuality_Init();
         }
         Image control_image = new Image();
-        DispatcherTimer timer = new DispatcherTimer();
         #region - Section : Camera -
         TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 2, -5) };
         #endregion
@@ -238,6 +237,7 @@ namespace RenderToy
         }
         void ReduceQuality_Decide(DateTime timeStart, DateTime timeEnd)
         {
+            // If we're below 30FPS then reduce the quality.
             if (timeEnd.Subtract(timeStart).Milliseconds > 1000 / 30)
             {
                 ++reduceQualityFrames;
@@ -246,6 +246,12 @@ namespace RenderToy
                     reduceQualityFrames = 0;
                     reduceQuality = true;
                 }
+            }
+            // If we're exceeding 90FPS and in reduced quality then increase the quality.
+            if (timeEnd.Subtract(timeStart).Milliseconds < 1000 / 90 && reduceQuality)
+            {
+                reduceQualityFrames = 0;
+                reduceQuality = false;
             }
             // Restart the quality reduction timer.
             if (reduceQuality)
