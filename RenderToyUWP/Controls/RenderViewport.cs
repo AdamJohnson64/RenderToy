@@ -19,24 +19,44 @@ namespace RenderToy
             SizeChanged += (s, e) => { Repaint(); };
             Content = control_image;
             var flyout = new MenuFlyout();
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Point (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.Point; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Wireframe (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.Wireframe; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raster (CPU)", Command = new CommandBinding(o => { RenderMode = RenderModes.Raster; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastCPUF32; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastCPUF64; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsCPUF32; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsCPUF64; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsCPUF32; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsCPUF64; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsCPUF32; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsCPUF64; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF32; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF64; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastAMPF32; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsAMPF32; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsAMPF32; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsAMPF32; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceAMPF32; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Point (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.Point; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Wireframe (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.Wireframe; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raster (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.Raster; }, o => true) });
+            {
+                var submenu = new MenuFlyoutSubItem { Text = "Raycast" };
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastCPUF32; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastCPUF64; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastAMPF32; }, o => true) });
+                flyout.Items.Add(submenu);
+            }
+            {
+                var submenu = new MenuFlyoutSubItem { Text = "Raycast Normals" };
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsCPUF32; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsCPUF64; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsAMPF32; }, o => true) });
+                flyout.Items.Add(submenu);
+            }
+            {
+                var submenu = new MenuFlyoutSubItem { Text = "Raycast Tangents" };
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsCPUF32; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsCPUF64; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsAMPF32; }, o => true) });
+                flyout.Items.Add(submenu);
+            }
+            {
+                var submenu = new MenuFlyoutSubItem { Text = "Raycast Bitangents" };
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsCPUF32; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsCPUF64; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsAMPF32; }, o => true) });
+                flyout.Items.Add(submenu);
+            }
+            {
+                var submenu = new MenuFlyoutSubItem { Text = "Raytrace" };
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF32; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF64; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Raytrace (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceAMPF32; }, o => true) });
+                flyout.Items.Add(submenu);
+            }
             ContextFlyout = flyout;
             ReduceQuality_Init();
         }
