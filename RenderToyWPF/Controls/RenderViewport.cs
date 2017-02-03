@@ -156,14 +156,18 @@ namespace RenderToy
     }
     class RenderViewport : RenderViewportBase
     {
-        static RoutedUICommand CommandRenderPoint = new RoutedUICommand("Point", "CommandRenderPoint", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderWireframe = new RoutedUICommand("Wireframe", "CommandRenderWireframe", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaster = new RoutedUICommand("Raster", "CommandRenderRaster", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRasterD3D9 = new RoutedUICommand("Raster (D3D9)", "CommandRenderRasterD3D9", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastCPU = new RoutedUICommand("Raycast (CPU)", "CommandRenderRaycastCPU", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastNormalsCPU = new RoutedUICommand("Raycast Normals (CPU)", "CommandRenderRaycastNormalsCPU", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastTangentsCPU = new RoutedUICommand("Raycast Tangents (CPU)", "CommandRenderRaycastTangentsCPU", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastBitangentsCPU = new RoutedUICommand("Raycast Bitangents (CPU)", "CommandRenderRaycastBitangentsCPU", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderPoint = new RoutedUICommand("Point (CPU/F64)", "CommandRenderPoint", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderWireframe = new RoutedUICommand("Wireframe (CPU/F64)", "CommandRenderWireframe", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaster = new RoutedUICommand("Raster (CPU/F64)", "CommandRenderRaster", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRasterD3D9 = new RoutedUICommand("Raster (D3D9/F32)", "CommandRenderRasterD3D9", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastCPUF32 = new RoutedUICommand("Raycast (CPU/F32)", "CommandRenderRaycastCPUF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastCPUF64 = new RoutedUICommand("Raycast (CPU/F64)", "CommandRenderRaycastCPUF64", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastNormalsCPUF32 = new RoutedUICommand("Raycast Normals (CPU/F32)", "CommandRenderRaycastNormalsCPUF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastNormalsCPUF64 = new RoutedUICommand("Raycast Normals (CPU/F64)", "CommandRenderRaycastNormalsCPUF64", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastTangentsCPUF32 = new RoutedUICommand("Raycast Tangents (CPU/F32)", "CommandRenderRaycastTangentsCPUF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastTangentsCPUF64 = new RoutedUICommand("Raycast Tangents (CPU/F64)", "CommandRenderRaycastTangentsCPUF64", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastBitangentsCPUF32 = new RoutedUICommand("Raycast Bitangents (CPU/F32)", "CommandRenderRaycastBitangentsCPUF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastBitangentsCPUF64 = new RoutedUICommand("Raycast Bitangents (CPU/F64)", "CommandRenderRaycastBitangentsCPUF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytraceCPUF32 = new RoutedUICommand("Raytrace (CPU/F32)", "CommandRenderRaytraceCPUF32", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytraceCPUF64 = new RoutedUICommand("Raytrace (CPU/F64)", "CommandRenderRaytraceCPUF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaycastCUDA = new RoutedUICommand("Raycast (CUDA)", "CommandRenderRaycastCUDA", typeof(RenderViewport));
@@ -181,10 +185,14 @@ namespace RenderToy
             CommandBindings.Add(new CommandBinding(CommandRenderWireframe, (s, e) => { renderMode = RenderMode.Wireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaster, (s, e) => { renderMode = RenderMode.Raster; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRasterD3D9, (s, e) => { renderMode = RenderMode.Direct3D9; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRaycastCPU, (s, e) => { renderMode = RenderMode.RaycastCPU; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCPU, (s, e) => { renderMode = RenderMode.RaycastNormalsCPU; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRaycastTangentsCPU, (s, e) => { renderMode = RenderMode.RaycastTangentsCPU; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRaycastBitangentsCPU, (s, e) => { renderMode = RenderMode.RaycastBitangentsCPU; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastCPUF32, (s, e) => { renderMode = RenderMode.RaycastCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastCPUF64, (s, e) => { renderMode = RenderMode.RaycastCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCPUF32, (s, e) => { renderMode = RenderMode.RaycastNormalsCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCPUF64, (s, e) => { renderMode = RenderMode.RaycastNormalsCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastTangentsCPUF32, (s, e) => { renderMode = RenderMode.RaycastTangentsCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastTangentsCPUF64, (s, e) => { renderMode = RenderMode.RaycastTangentsCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastBitangentsCPUF32, (s, e) => { renderMode = RenderMode.RaycastBitangentsCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastBitangentsCPUF64, (s, e) => { renderMode = RenderMode.RaycastBitangentsCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCPUF32, (s, e) => { renderMode = RenderMode.RaytraceCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCPUF64, (s, e) => { renderMode = RenderMode.RaytraceCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastCUDA, (s, e) => { renderMode = RenderMode.RaycastCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -209,10 +217,14 @@ namespace RenderToy
                 submenu.Items.Add(new MenuItem { Command = CommandRenderWireframe });
                 submenu.Items.Add(new MenuItem { Command = CommandRenderRaster });
                 submenu.Items.Add(new MenuItem { Command = CommandRenderRasterD3D9 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCPU });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCPU });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCPU });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCPU });
+                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCPUF32 });
+                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCPUF64 });
+                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCPUF32 });
+                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCPUF64 });
+                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCPUF32 });
+                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCPUF64 });
+                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCPUF32 });
+                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCPUF64 });
                 submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCPUF32 });
                 submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCPUF64 });
                 submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCUDA });
@@ -226,7 +238,7 @@ namespace RenderToy
             }
             Focusable = true;
         }
-        enum RenderMode { Point, Wireframe, Raster, RaycastCPU, RaycastNormalsCPU, RaycastTangentsCPU, RaycastBitangentsCPU, RaytraceCPUF32, RaytraceCPUF64, RaycastCUDA, RaycastNormalsCUDA, RaycastTangentsCUDA, RaycastBitangentsCUDA, RaytraceCUDAF32, RaytraceCUDAF64, Direct3D9 }
+        enum RenderMode { Point, Wireframe, Raster, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastCUDA, RaycastNormalsCUDA, RaycastTangentsCUDA, RaycastBitangentsCUDA, RaytraceCUDAF32, RaytraceCUDAF64, Direct3D9 }
         RenderMode renderMode = RenderMode.Wireframe;
         bool renderPreviews = true;
         bool renderWireframe = false;
@@ -248,17 +260,29 @@ namespace RenderToy
                 case RenderMode.Raster:
                     drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.Raster, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
-                case RenderMode.RaycastCPU:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCPU, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                case RenderMode.RaycastCPUF32:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
-                case RenderMode.RaycastNormalsCPU:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastNormalsCPU, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                case RenderMode.RaycastCPUF64:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
-                case RenderMode.RaycastTangentsCPU:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastTangentsCPU, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                case RenderMode.RaycastNormalsCPUF32:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastNormalsCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
-                case RenderMode.RaycastBitangentsCPU:
-                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastBitangentsCPU, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                case RenderMode.RaycastNormalsCPUF64:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastNormalsCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
+                case RenderMode.RaycastTangentsCPUF32:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastTangentsCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
+                case RenderMode.RaycastTangentsCPUF64:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastTangentsCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
+                case RenderMode.RaycastBitangentsCPUF32:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastBitangentsCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
+                case RenderMode.RaycastBitangentsCPUF64:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastBitangentsCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.RaytraceCPUF32:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaytraceCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));

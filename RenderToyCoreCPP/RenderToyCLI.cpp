@@ -22,13 +22,16 @@ static void NAME(array<unsigned char>^ scene, array<unsigned char>^ inverse_mvp,
 
 namespace RenderToy
 {
-	public ref class RenderToyCPP
+	public ref class RenderToyCLI
 	{
 	public:
 		static bool HaveCUDA() { return ::HaveCUDA(); }
-		EXPORTGENERATOR(RaycastCPU)
-		EXPORTGENERATOR(RaycastNormalsCPU)
-		EXPORTGENERATOR(RaycastTangentsCPU)
+		EXPORTGENERATOR(RaycastCPUF32)
+		EXPORTGENERATOR(RaycastCPUF64)
+		EXPORTGENERATOR(RaycastNormalsCPUF32)
+		EXPORTGENERATOR(RaycastNormalsCPUF64)
+		EXPORTGENERATOR(RaycastTangentsCPUF32)
+		EXPORTGENERATOR(RaycastTangentsCPUF64)
 		EXPORTGENERATOR(RaytraceCPUF32)
 		EXPORTGENERATOR(RaytraceCPUF64)
 		EXPORTGENERATOR(RaycastCUDA)
