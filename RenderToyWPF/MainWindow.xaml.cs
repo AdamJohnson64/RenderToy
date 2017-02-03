@@ -22,7 +22,6 @@ namespace RenderToy
     {
         public MainWindow()
         {
-            RenderToy.Test.MathHelp.Run();
             InitializeComponent();
         }
     }

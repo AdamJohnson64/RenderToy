@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyWPF", "RenderToyWPF\RenderToyWPF.csproj", "{D98DB157-6492-4FDF-926C-684EF1AFE84A}"
 EndProject
@@ -11,48 +11,64 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCPP", "RenderToyCPP\RenderToyCPP.vcxproj", "{70808F18-E22D-4C23-96D9-E3123D87C5DC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCLI", "RenderToyCLI\RenderToyCLI.vcxproj", "{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyUWP", "RenderToyUWP\RenderToyUWP.csproj", "{201B2138-C542-4C95-901C-5F5066C9B625}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderToy UI UWP", "RenderToy UI UWP", "{F6C625C0-AF0F-4C98-9861-2766422B7B98}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderToy Core", "RenderToy Core", "{538E759D-CC5D-4EBB-90BC-8938046A925B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderToy UI WPF", "RenderToy UI WPF", "{4245020D-436B-458F-85C8-AFC3491A89F0}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderToyCoreCS", "RenderToyCoreCS\RenderToyCoreCS.shproj", "{496D4D78-F405-4D98-90D4-DA9B9FFA7E34}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCX", "RenderToyCX\RenderToyCX.vcxproj", "{EAD22804-7609-4EBD-AC81-F28DB4F18AED}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyQt", "RenderToyQt\RenderToyQt.vcxproj", "{A51928E0-5002-4FBE-B59C-1013B5772AEE}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		RenderToyCoreCS\RenderToyCoreCS.projitems*{201b2138-c542-4c95-901c-5f5066c9b625}*SharedItemsImports = 4
+		RenderToyCoreCS\RenderToyCoreCS.projitems*{496d4d78-f405-4d98-90d4-da9b9ffa7e34}*SharedItemsImports = 13
+		RenderToyCoreCS\RenderToyCoreCS.projitems*{d98db157-6492-4fdf-926c-684ef1afe84a}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D98DB157-6492-4FDF-926C-684EF1AFE84A}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{D98DB157-6492-4FDF-926C-684EF1AFE84A}.Debug|x64.ActiveCfg = Debug|x64
 		{D98DB157-6492-4FDF-926C-684EF1AFE84A}.Debug|x64.Build.0 = Debug|x64
-		{D98DB157-6492-4FDF-926C-684EF1AFE84A}.Debug|x86.ActiveCfg = Debug|x64
-		{D98DB157-6492-4FDF-926C-684EF1AFE84A}.Release|Any CPU.ActiveCfg = Release|x64
 		{D98DB157-6492-4FDF-926C-684EF1AFE84A}.Release|x64.ActiveCfg = Release|x64
 		{D98DB157-6492-4FDF-926C-684EF1AFE84A}.Release|x64.Build.0 = Release|x64
-		{D98DB157-6492-4FDF-926C-684EF1AFE84A}.Release|x86.ActiveCfg = Release|x64
-		{70808F18-E22D-4C23-96D9-E3123D87C5DC}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{70808F18-E22D-4C23-96D9-E3123D87C5DC}.Debug|x64.ActiveCfg = Debug|x64
-		{70808F18-E22D-4C23-96D9-E3123D87C5DC}.Debug|x64.Build.0 = Debug|x64
-		{70808F18-E22D-4C23-96D9-E3123D87C5DC}.Debug|x86.ActiveCfg = Debug|x64
-		{70808F18-E22D-4C23-96D9-E3123D87C5DC}.Release|Any CPU.ActiveCfg = Release|x64
-		{70808F18-E22D-4C23-96D9-E3123D87C5DC}.Release|x64.ActiveCfg = Release|x64
-		{70808F18-E22D-4C23-96D9-E3123D87C5DC}.Release|x64.Build.0 = Release|x64
-		{70808F18-E22D-4C23-96D9-E3123D87C5DC}.Release|x86.ActiveCfg = Release|x64
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}.Debug|x64.ActiveCfg = Debug|x64
+		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}.Debug|x64.Build.0 = Debug|x64
+		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}.Release|x64.ActiveCfg = Release|x64
+		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}.Release|x64.Build.0 = Release|x64
+		{201B2138-C542-4C95-901C-5F5066C9B625}.Debug|x64.ActiveCfg = Debug|x64
+		{201B2138-C542-4C95-901C-5F5066C9B625}.Debug|x64.Build.0 = Debug|x64
+		{201B2138-C542-4C95-901C-5F5066C9B625}.Debug|x64.Deploy.0 = Debug|x64
+		{201B2138-C542-4C95-901C-5F5066C9B625}.Release|x64.ActiveCfg = Release|x64
+		{201B2138-C542-4C95-901C-5F5066C9B625}.Release|x64.Build.0 = Release|x64
+		{201B2138-C542-4C95-901C-5F5066C9B625}.Release|x64.Deploy.0 = Release|x64
+		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Debug|x64.ActiveCfg = Debug|x64
+		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Debug|x64.Build.0 = Debug|x64
+		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Release|x64.ActiveCfg = Release|x64
+		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Release|x64.Build.0 = Release|x64
 		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Debug|x64.ActiveCfg = Debug|x64
 		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Debug|x64.Build.0 = Debug|x64
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Debug|x86.ActiveCfg = Debug|Win32
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Debug|x86.Build.0 = Debug|Win32
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Release|Any CPU.ActiveCfg = Release|Win32
 		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Release|x64.ActiveCfg = Release|x64
 		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Release|x64.Build.0 = Release|x64
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Release|x86.ActiveCfg = Release|Win32
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D98DB157-6492-4FDF-926C-684EF1AFE84A} = {4245020D-436B-458F-85C8-AFC3491A89F0}
+		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF} = {4245020D-436B-458F-85C8-AFC3491A89F0}
+		{201B2138-C542-4C95-901C-5F5066C9B625} = {F6C625C0-AF0F-4C98-9861-2766422B7B98}
+		{496D4D78-F405-4D98-90D4-DA9B9FFA7E34} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
+		{EAD22804-7609-4EBD-AC81-F28DB4F18AED} = {F6C625C0-AF0F-4C98-9861-2766422B7B98}
 	EndGlobalSection
 EndGlobal

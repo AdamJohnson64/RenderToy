@@ -62,23 +62,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Render\Render_ALR.cs" />
-    <Compile Include="Render\Render_ALRWPF.cs" />
     <Compile Include="Render\Render_CUDA.cs" />
     <Compile Include="Render\Render_D3D9.cs" />
-    <Compile Include="Render\Render_ALRGDI.cs" />
-    <Compile Include="Render\Render_REF.cs" />
-    <Compile Include="Controls\GeometrySwatch.cs" />
-    <Compile Include="Scene\Geometry.cs" />
-    <Compile Include="Scene\Material.cs" />
-    <Compile Include="Scene\Camera.cs" />
-    <Compile Include="Scene\Scene.cs" />
-    <Compile Include="Utility\ClipHelp.cs" />
-    <Compile Include="Utility\DrawHelp.cs" />
     <Compile Include="Utility\ImageHelp.cs" />
-    <Compile Include="Utility\MathHelp.cs" />
     <Compile Include="Controls\RenderViewport.cs" />
-    <Compile Include="Scene\Transformed.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -132,12 +119,12 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RenderToyCPP\RenderToyCPP.vcxproj">
-      <Project>{70808f18-e22d-4c23-96d9-e3123d87c5dc}</Project>
-      <Name>RenderToyCPP</Name>
+    <ProjectReference Include="..\RenderToyCLI\RenderToyCLI.vcxproj">
+      <Project>{e68e5ecf-2731-45dc-a334-4fc4651ee0af}</Project>
+      <Name>RenderToyCLI</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <Import Project="..\RenderToyCoreCS\RenderToyCoreCS.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
