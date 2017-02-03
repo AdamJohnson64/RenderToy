@@ -75,7 +75,7 @@ namespace RenderToy
 			TRY_D3D(D3D9GlobalServices::Instance->pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3D9GlobalServices::Instance->hHostWindow, D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDeviceTmp));
 			pDevice = pDeviceTmp;
 			TRY_D3D(pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x00000000, 1.0, 0));
-			IDirect3DSurface9 *pSurfaceTmp = nullptr;
+			IDirect3DSurface9* pSurfaceTmp = nullptr;
 			TRY_D3D(pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pSurfaceTmp));
 			pSurface = pSurfaceTmp;
 		}

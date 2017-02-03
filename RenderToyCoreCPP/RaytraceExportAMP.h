@@ -11,11 +11,11 @@
 #ifndef RAYTRACEEXPORTAMP_H
 #define RAYTRACEEXPORTAMP_H
 
-extern "C" void RaycastAMPF32(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void RaycastNormalsAMPF32(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void RaycastTangentsAMPF32(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void RaycastBitangentsAMPF32(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void RaytraceAMPF32(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-extern "C" void RaytraceAMPF64(void *pScene, void *pMVP, void *bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaycastAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaycastNormalsAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaycastTangentsAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaycastBitangentsAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaytraceAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaytraceAMPF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 
 #endif  // RAYTRACEEXPORTAMP_H
