@@ -488,10 +488,10 @@ public:
 	}
 };
 
-template<typename FLOAT>
+template<typename FLOAT, int RECURSION = 2>
 struct DoRaytrace {
 public:
 	DEVICE_PREFIX static Vector4<FLOAT> Do(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		return Raytrace<FLOAT, 2>::Do(pScene, origin, direction);
+		return Raytrace<FLOAT, RECURSION>::Do(pScene, origin, direction);
 	}
 };

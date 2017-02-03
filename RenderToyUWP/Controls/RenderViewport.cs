@@ -32,6 +32,7 @@ namespace RenderToy
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsAMPF32; }, o => true) });
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsAMPF32; }, o => true) });
             flyout.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsAMPF32; }, o => true) });
+            flyout.Items.Add(new MenuFlyoutItem { Text = "Raytrace (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceAMPF32; }, o => true) });
             ContextFlyout = flyout;
             ReduceQuality_Init();
         }
@@ -181,6 +182,9 @@ namespace RenderToy
                 case RenderModes.RaycastBitangentsAMPF32:
                     RenderToyCX.RaycastBitangentsAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
                     break;
+                case RenderModes.RaytraceAMPF32:
+                    RenderToyCX.RaytraceAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                    break;
             }
             using (var stream = bitmap.PixelBuffer.AsStream())
             {
@@ -191,7 +195,7 @@ namespace RenderToy
             DateTime timeEnd = DateTime.Now;
             ReduceQuality_Decide(timeStart, timeEnd);
         }
-        enum RenderModes { Point, Wireframe, Raster, RaycastCPU, RaycastNormalsCPU, RaycastTangentsCPU, RaycastBitangentsCPU, RaytraceCPUF32, RaytraceCPUF64, RaycastAMPF32, RaycastNormalsAMPF32, RaycastTangentsAMPF32, RaycastBitangentsAMPF32 }
+        enum RenderModes { Point, Wireframe, Raster, RaycastCPU, RaycastNormalsCPU, RaycastTangentsCPU, RaycastBitangentsCPU, RaytraceCPUF32, RaytraceCPUF64, RaycastAMPF32, RaycastNormalsAMPF32, RaycastTangentsAMPF32, RaycastBitangentsAMPF32, RaytraceAMPF32 }
         RenderModes RenderMode
         {
             get { return renderMode; }

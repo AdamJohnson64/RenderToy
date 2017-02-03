@@ -27,6 +27,6 @@ namespace RenderToy
 		EXPORTGENERATOR(RaycastNormalsAMPF32)
 		EXPORTGENERATOR(RaycastTangentsAMPF32)
 		EXPORTGENERATOR(RaycastBitangentsAMPF32)
-		//EXPORTGENERATOR(RaytraceAMPF32)
+		EXPORTGENERATOR(RaytraceAMPF32)
 	};
 }
