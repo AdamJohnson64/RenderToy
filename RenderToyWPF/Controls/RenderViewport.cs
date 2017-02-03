@@ -162,18 +162,22 @@ namespace RenderToy
         static RoutedUICommand CommandRenderRasterD3D9 = new RoutedUICommand("Raster (D3D9/F32)", "CommandRenderRasterD3D9", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaycastCPUF32 = new RoutedUICommand("Raycast (CPU/F32)", "CommandRenderRaycastCPUF32", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaycastCPUF64 = new RoutedUICommand("Raycast (CPU/F64)", "CommandRenderRaycastCPUF64", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastCUDAF32 = new RoutedUICommand("Raycast (CUDA/F32)", "CommandRenderRaycastCUDAF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastCUDAF64 = new RoutedUICommand("Raycast (CUDA/F64)", "CommandRenderRaycastCUDAF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaycastNormalsCPUF32 = new RoutedUICommand("Raycast Normals (CPU/F32)", "CommandRenderRaycastNormalsCPUF32", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaycastNormalsCPUF64 = new RoutedUICommand("Raycast Normals (CPU/F64)", "CommandRenderRaycastNormalsCPUF64", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastNormalsCUDAF32 = new RoutedUICommand("Raycast Normals (CUDA/F32)", "CommandRenderRaycastNormalsCUDAF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastNormalsCUDAF64 = new RoutedUICommand("Raycast Normals (CUDA/F64)", "CommandRenderRaycastNormalsCUDAF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaycastTangentsCPUF32 = new RoutedUICommand("Raycast Tangents (CPU/F32)", "CommandRenderRaycastTangentsCPUF32", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaycastTangentsCPUF64 = new RoutedUICommand("Raycast Tangents (CPU/F64)", "CommandRenderRaycastTangentsCPUF64", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastTangentsCUDAF32 = new RoutedUICommand("Raycast Tangents (CUDA/F32)", "CommandRenderRaycastTangentsCUDAF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastTangentsCUDAF64 = new RoutedUICommand("Raycast Tangents (CUDA/F64)", "CommandRenderRaycastTangentsCUDAF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaycastBitangentsCPUF32 = new RoutedUICommand("Raycast Bitangents (CPU/F32)", "CommandRenderRaycastBitangentsCPUF32", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaycastBitangentsCPUF64 = new RoutedUICommand("Raycast Bitangents (CPU/F64)", "CommandRenderRaycastBitangentsCPUF64", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastBitangentsCUDAF32 = new RoutedUICommand("Raycast Bitangents (CUDA/F32)", "CommandRenderRaycastBitangentsCUDAF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderRaycastBitangentsCUDAF64 = new RoutedUICommand("Raycast Bitangents (CUDA/F64)", "CommandRenderRaycastBitangentsCUDAF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytraceCPUF32 = new RoutedUICommand("Raytrace (CPU/F32)", "CommandRenderRaytraceCPUF32", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytraceCPUF64 = new RoutedUICommand("Raytrace (CPU/F64)", "CommandRenderRaytraceCPUF64", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastCUDA = new RoutedUICommand("Raycast (CUDA)", "CommandRenderRaycastCUDA", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastNormalsCUDA = new RoutedUICommand("Raycast Normals (CUDA)", "CommandRenderRaycastNormalsCUDA", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastTangentsCUDA = new RoutedUICommand("Raycast Tangents (CUDA)", "CommandRenderRaycastTangentsCUDA", typeof(RenderViewport));
-        static RoutedUICommand CommandRenderRaycastBitangentsCUDA = new RoutedUICommand("Raycast Bitangents (CUDA)", "CommandRenderRaycastBitangentsCUDA", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytraceCUDAF32 = new RoutedUICommand("Raytrace (CUDA/F32)", "CommandRenderRaytraceCUDAF32", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytraceCUDAF64 = new RoutedUICommand("Raytrace (CUDA/F64)", "CommandRenderRaytraceCUDAF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(RenderViewport));
@@ -187,18 +191,22 @@ namespace RenderToy
             CommandBindings.Add(new CommandBinding(CommandRenderRasterD3D9, (s, e) => { renderMode = RenderMode.Direct3D9; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastCPUF32, (s, e) => { renderMode = RenderMode.RaycastCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastCPUF64, (s, e) => { renderMode = RenderMode.RaycastCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastCUDAF32, (s, e) => { renderMode = RenderMode.RaycastCUDAF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastCUDAF64, (s, e) => { renderMode = RenderMode.RaycastCUDAF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCPUF32, (s, e) => { renderMode = RenderMode.RaycastNormalsCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCPUF64, (s, e) => { renderMode = RenderMode.RaycastNormalsCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCUDAF32, (s, e) => { renderMode = RenderMode.RaycastNormalsCUDAF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCUDAF64, (s, e) => { renderMode = RenderMode.RaycastNormalsCUDAF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastTangentsCPUF32, (s, e) => { renderMode = RenderMode.RaycastTangentsCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastTangentsCPUF64, (s, e) => { renderMode = RenderMode.RaycastTangentsCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastTangentsCUDAF32, (s, e) => { renderMode = RenderMode.RaycastTangentsCUDAF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastTangentsCUDAF64, (s, e) => { renderMode = RenderMode.RaycastTangentsCUDAF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastBitangentsCPUF32, (s, e) => { renderMode = RenderMode.RaycastBitangentsCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastBitangentsCPUF64, (s, e) => { renderMode = RenderMode.RaycastBitangentsCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastBitangentsCUDAF32, (s, e) => { renderMode = RenderMode.RaycastBitangentsCUDAF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRaycastBitangentsCUDAF64, (s, e) => { renderMode = RenderMode.RaycastBitangentsCUDAF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCPUF32, (s, e) => { renderMode = RenderMode.RaytraceCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCPUF64, (s, e) => { renderMode = RenderMode.RaytraceCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRaycastCUDA, (s, e) => { renderMode = RenderMode.RaycastCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRaycastNormalsCUDA, (s, e) => { renderMode = RenderMode.RaycastNormalsCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRaycastTangentsCUDA, (s, e) => { renderMode = RenderMode.RaycastTangentsCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRaycastBitangentsCUDA, (s, e) => { renderMode = RenderMode.RaycastBitangentsCUDA; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCUDAF32, (s, e) => { renderMode = RenderMode.RaytraceCUDAF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCUDAF64, (s, e) => { renderMode = RenderMode.RaytraceCUDAF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { renderPreviews = !renderPreviews; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -212,33 +220,59 @@ namespace RenderToy
             // Attach a context menu.
             {
                 var menu = new ContextMenu();
-                var submenu = new MenuItem { Header = "Render Mode" };
-                submenu.Items.Add(new MenuItem { Command = CommandRenderPoint });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderWireframe });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaster });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRasterD3D9 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCPUF32 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCPUF64 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCPUF32 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCPUF64 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCPUF32 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCPUF64 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCPUF32 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCPUF64 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCPUF32 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCPUF64 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCUDA });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCUDA });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCUDA });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCUDA });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCUDAF32 });
-                submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCUDAF64 });
-                menu.Items.Add(submenu);
+                menu.Items.Add(new MenuItem { Command = CommandRenderPoint });
+                menu.Items.Add(new MenuItem { Command = CommandRenderWireframe });
+                {
+                    var submenu = new MenuItem { Header = "Raster" };
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaster });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRasterD3D9 });
+                    menu.Items.Add(submenu);
+                }
+                {
+                    var submenu = new MenuItem { Header = "Raycast" };
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCPUF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCPUF64 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCUDAF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastCUDAF64 });
+                    menu.Items.Add(submenu);
+                }
+                {
+                    var submenu = new MenuItem { Header = "Raycast Normals" };
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCPUF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCPUF64 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCUDAF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastNormalsCUDAF64 });
+                    menu.Items.Add(submenu);
+                }
+                {
+                    var submenu = new MenuItem { Header = "Raycast Tangents" };
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCPUF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCPUF64 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCUDAF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastTangentsCUDAF64 });
+                    menu.Items.Add(submenu);
+                }
+                {
+                    var submenu = new MenuItem { Header = "Raycast Bitangents" };
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCPUF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCPUF64 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCUDAF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaycastBitangentsCUDAF64 });
+                    menu.Items.Add(submenu);
+                }
+                {
+                    var submenu = new MenuItem { Header = "Raytrace" };
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCPUF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCPUF64 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCUDAF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderRaytraceCUDAF64 });
+                    menu.Items.Add(submenu);
+                }
                 this.ContextMenu = menu;
             }
             Focusable = true;
         }
-        enum RenderMode { Point, Wireframe, Raster, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastCUDA, RaycastNormalsCUDA, RaycastTangentsCUDA, RaycastBitangentsCUDA, RaytraceCUDAF32, RaytraceCUDAF64, Direct3D9 }
+        enum RenderMode { Point, Wireframe, Raster, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastCUDAF32, RaycastCUDAF64, RaycastNormalsCUDAF32, RaycastNormalsCUDAF64, RaycastTangentsCUDAF32, RaycastTangentsCUDAF64, RaycastBitangentsCUDAF32, RaycastBitangentsCUDAF64, RaytraceCUDAF32, RaytraceCUDAF64, Direct3D9 }
         RenderMode renderMode = RenderMode.Wireframe;
         bool renderPreviews = true;
         bool renderWireframe = false;
@@ -266,11 +300,51 @@ namespace RenderToy
                 case RenderMode.RaycastCPUF64:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
+                case RenderMode.RaycastCUDAF32:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCUDAF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
+                    break;
+                case RenderMode.RaycastCUDAF64:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCUDAF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
+                    break;
                 case RenderMode.RaycastNormalsCPUF32:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastNormalsCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.RaycastNormalsCPUF64:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastNormalsCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
+                case RenderMode.RaycastNormalsCUDAF32:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastNormalsCUDAF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
+                    break;
+                case RenderMode.RaycastNormalsCUDAF64:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastNormalsCUDAF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
                     break;
                 case RenderMode.RaycastTangentsCPUF32:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastTangentsCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
@@ -278,57 +352,57 @@ namespace RenderToy
                 case RenderMode.RaycastTangentsCPUF64:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastTangentsCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
+                case RenderMode.RaycastTangentsCUDAF32:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastTangentsCUDAF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
+                    break;
+                case RenderMode.RaycastTangentsCUDAF64:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastTangentsCUDAF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
+                    break;
                 case RenderMode.RaycastBitangentsCPUF32:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastBitangentsCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.RaycastBitangentsCPUF64:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastBitangentsCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
+                case RenderMode.RaycastBitangentsCUDAF32:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastBitangentsCUDAF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
+                    break;
+                case RenderMode.RaycastBitangentsCUDAF64:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastBitangentsCUDAF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
+                    break;
                 case RenderMode.RaytraceCPUF32:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaytraceCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
                 case RenderMode.RaytraceCPUF64:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaytraceCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
-                    break;
-                case RenderMode.RaycastCUDA:
-                    if (Render.CUDAAvailable())
-                    {
-                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastCUDA, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
-                    }
-                    else
-                    {
-                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
-                    }
-                    break;
-                case RenderMode.RaycastNormalsCUDA:
-                    if (Render.CUDAAvailable())
-                    {
-                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastNormalsCUDA, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
-                    }
-                    else
-                    {
-                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
-                    }
-                    break;
-                case RenderMode.RaycastTangentsCUDA:
-                    if (Render.CUDAAvailable())
-                    {
-                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastTangentsCUDA, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
-                    }
-                    else
-                    {
-                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
-                    }
-                    break;
-                case RenderMode.RaycastBitangentsCUDA:
-                    if (Render.CUDAAvailable())
-                    {
-                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.RaycastBitangentsCUDA, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
-                    }
-                    else
-                    {
-                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
-                    }
                     break;
                 case RenderMode.RaytraceCUDAF32:
                     if (Render.CUDAAvailable())
