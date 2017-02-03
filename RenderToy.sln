@@ -25,8 +25,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderToyCoreCS", "RenderTo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCX", "RenderToyCX\RenderToyCX.vcxproj", "{EAD22804-7609-4EBD-AC81-F28DB4F18AED}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyQt", "RenderToyQt\RenderToyQt.vcxproj", "{A51928E0-5002-4FBE-B59C-1013B5772AEE}"
-EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RenderToyCoreCS\RenderToyCoreCS.projitems*{201b2138-c542-4c95-901c-5f5066c9b625}*SharedItemsImports = 4
@@ -56,10 +54,6 @@ Global
 		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Debug|x64.Build.0 = Debug|x64
 		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Release|x64.ActiveCfg = Release|x64
 		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Release|x64.Build.0 = Release|x64
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Debug|x64.ActiveCfg = Debug|x64
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Debug|x64.Build.0 = Debug|x64
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Release|x64.ActiveCfg = Release|x64
-		{A51928E0-5002-4FBE-B59C-1013B5772AEE}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
