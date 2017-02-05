@@ -14,6 +14,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCLI", "RenderToyCLI\RenderToyCLI.vcxproj", "{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyUWP", "RenderToyUWP\RenderToyUWP.csproj", "{201B2138-C542-4C95-901C-5F5066C9B625}"
+	ProjectSection(ProjectDependencies) = postProject
+		{95D65CDC-0B6B-4D8C-8930-C6E4845829E1} = {95D65CDC-0B6B-4D8C-8930-C6E4845829E1}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderToy UI UWP", "RenderToy UI UWP", "{F6C625C0-AF0F-4C98-9861-2766422B7B98}"
 EndProject
@@ -25,10 +28,13 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderToyCoreCS", "RenderTo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCX", "RenderToyCX\RenderToyCX.vcxproj", "{EAD22804-7609-4EBD-AC81-F28DB4F18AED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyUWP_Art", "RenderToyUWP_Art\RenderToyUWP_Art.csproj", "{95D65CDC-0B6B-4D8C-8930-C6E4845829E1}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RenderToyCoreCS\RenderToyCoreCS.projitems*{201b2138-c542-4c95-901c-5f5066c9b625}*SharedItemsImports = 4
 		RenderToyCoreCS\RenderToyCoreCS.projitems*{496d4d78-f405-4d98-90d4-da9b9ffa7e34}*SharedItemsImports = 13
+		RenderToyCoreCS\RenderToyCoreCS.projitems*{95d65cdc-0b6b-4d8c-8930-c6e4845829e1}*SharedItemsImports = 4
 		RenderToyCoreCS\RenderToyCoreCS.projitems*{d98db157-6492-4fdf-926c-684ef1afe84a}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +60,10 @@ Global
 		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Debug|x64.Build.0 = Debug|x64
 		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Release|x64.ActiveCfg = Release|x64
 		{EAD22804-7609-4EBD-AC81-F28DB4F18AED}.Release|x64.Build.0 = Release|x64
+		{95D65CDC-0B6B-4D8C-8930-C6E4845829E1}.Debug|x64.ActiveCfg = Debug|x64
+		{95D65CDC-0B6B-4D8C-8930-C6E4845829E1}.Debug|x64.Build.0 = Debug|x64
+		{95D65CDC-0B6B-4D8C-8930-C6E4845829E1}.Release|x64.ActiveCfg = Release|x64
+		{95D65CDC-0B6B-4D8C-8930-C6E4845829E1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,5 +74,6 @@ Global
 		{201B2138-C542-4C95-901C-5F5066C9B625} = {F6C625C0-AF0F-4C98-9861-2766422B7B98}
 		{496D4D78-F405-4D98-90D4-DA9B9FFA7E34} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 		{EAD22804-7609-4EBD-AC81-F28DB4F18AED} = {F6C625C0-AF0F-4C98-9861-2766422B7B98}
+		{95D65CDC-0B6B-4D8C-8930-C6E4845829E1} = {F6C625C0-AF0F-4C98-9861-2766422B7B98}
 	EndGlobalSection
 EndGlobal
