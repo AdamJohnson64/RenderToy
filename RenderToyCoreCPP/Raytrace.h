@@ -49,6 +49,8 @@ struct SceneObject {
 	int MaterialOffset;
 };
 
+#pragma warning(push)
+#pragma warning(disable:4200)
 template <typename FLOAT>
 struct Scene {
 	int FileSize;
@@ -57,6 +59,7 @@ struct Scene {
 	int Reserved1;
 	SceneObject<FLOAT> Objects[];
 };
+#pragma warning(pop)
 
 // Intersection Query Types.
 // These structures determine the data to be queried when performing an

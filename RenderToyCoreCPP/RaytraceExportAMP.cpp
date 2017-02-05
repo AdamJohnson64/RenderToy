@@ -92,7 +92,7 @@ extern "C" void RaytraceAMPF32(const void* scene, const void* inverse_mvp, void*
 	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int bitmap_width, int bitmap_height, int bitmap_stride) {
 		Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
 			SetPixelAMP<float> setpixel(view_bitmap, idx);
-			RaytraceCX::ComputePixel<float, RaytraceCX::DoRaytrace<float, 1>>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel);
+			RaytraceCX::ComputePixel<float, RaytraceCX::DoRaytrace<float, 0>>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel);
 		});
 	});
 }

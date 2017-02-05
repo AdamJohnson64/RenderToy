@@ -1,7 +1,9 @@
 *.filters
 *.sdf
 *.user
+*.VC.db
 *.VC.opendb
 *.vspx
+*/project.lock.json
 .vs/*
 Output/*
