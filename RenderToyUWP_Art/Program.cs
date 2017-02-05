@@ -35,9 +35,12 @@ namespace RenderToy
             // Set up a simple scene with a red sphere.
             Scene scene = new Scene();
             //scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixIdentity()), new Plane(), Materials.DarkGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
-            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Materials.Red, Materials.PlasticRed));
+            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-2, 1, 2)), new Sphere(), Materials.Red, Materials.PlasticRed));
+            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 2)), new Sphere(), Materials.Green, Materials.PlasticGreen));
+            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+2, 1, 2)), new Sphere(), Materials.Blue, Materials.PlasticBlue));
+            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Materials.Black, Materials.Glass));
             // Position our camera and build the inverse MVP.
-            Matrix3D view = MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Point3D(0, 2, -2), new Point3D(0, 1, 0), new Vector3D(0, 1, 0)));
+            Matrix3D view = MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Point3D(0, 4, -4), new Point3D(0, 1, 0), new Vector3D(0, 1, 0)));
             Matrix3D proj = CameraPerspective.CreateProjection(0.001, 100.0, 45.0, 45.0);
             // Create the bitmap.
             Bitmap bitmap = new System.Drawing.Bitmap(width, height, PixelFormat.Format32bppArgb);
