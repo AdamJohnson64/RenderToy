@@ -34,24 +34,41 @@ namespace RenderToy
         {
             // Set up a simple scene with a red sphere.
             Scene scene = new Scene();
-            //scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixIdentity()), new Plane(), Materials.DarkGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
-            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-2, 1, 2)), new Sphere(), Materials.Red, Materials.PlasticRed));
-            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 2)), new Sphere(), Materials.Green, Materials.PlasticGreen));
-            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+2, 1, 2)), new Sphere(), Materials.Blue, Materials.PlasticBlue));
-            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Materials.Black, Materials.Glass));
+            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixIdentity()), new Plane(), Materials.DarkGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
+            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-2, 1, 0)), new Sphere(), Materials.Red, Materials.PlasticRed));
+            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Materials.Green, Materials.PlasticGreen));
+            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+2, 1, 0)), new Sphere(), Materials.Blue, Materials.PlasticBlue));
+            scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, -2)), new Sphere(), Materials.Black, Materials.Glass));
             // Position our camera and build the inverse MVP.
-            Matrix3D view = MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Point3D(0, 4, -4), new Point3D(0, 1, 0), new Vector3D(0, 1, 0)));
+            Matrix3D view = MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Point3D(-1, 3, -4), new Point3D(0, 0, 0), new Vector3D(0, 1, 0)));
             Matrix3D proj = CameraPerspective.CreateProjection(0.001, 100.0, 45.0, 45.0);
             // Create the bitmap.
             Bitmap bitmap = new System.Drawing.Bitmap(width, height, PixelFormat.Format32bppArgb);
             BitmapData data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
             {
-                RenderToyCLI.RaytraceCPUF64(SceneFormatter.CreateFlatMemoryF64(scene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(view * proj * CameraPerspective.AspectCorrectFit(width, height))), data.Scan0, width, height, data.Stride);
+                RenderToyCLI.RaytraceCPUF64AA(SceneFormatter.CreateFlatMemoryF64(scene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(view * proj * CameraPerspective.AspectCorrectFit(width, height))), data.Scan0, width, height, data.Stride, 4, 4);
             }
             finally
             {
                 bitmap.UnlockBits(data);
+            }
+            if (width > 1000 && height > 100)
+            {
+                using (Graphics g = Graphics.FromImage(bitmap))
+                {
+                    Brush brush_front = Brushes.White;
+                    Brush brush_shadow = new SolidBrush(Color.FromArgb(64, 64, 64));
+                    string text_tl = "RenderToy";
+                    float text_tls = 72;
+                    g.DrawString(text_tl, new Font("Arial", text_tls), brush_shadow, 8, 8);
+                    g.DrawString(text_tl, new Font("Arial", text_tls), brush_front, 4, 4);
+                    string text_br = "Because everyone should render a teapot...";
+                    float text_brs = 24;
+                    SizeF size = g.MeasureString(text_br, new Font("Arial", text_brs));
+                    g.DrawString(text_br, new Font("Arial", text_brs), brush_shadow, width - size.Width - 4, height - size.Height - 4);
+                    g.DrawString(text_br, new Font("Arial", text_brs), brush_front, width - size.Width - 8, height - size.Height - 8);
+                }
             }
             return bitmap;
         }

@@ -44,5 +44,11 @@ namespace RenderToy
 		EXPORTGENERATOR(RaycastBitangentsCUDAF64)
 		EXPORTGENERATOR(RaytraceCUDAF32)
 		EXPORTGENERATOR(RaytraceCUDAF64)
+		static void RaytraceCPUF64AA(array<unsigned char>^ scene, array<unsigned char>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int superx, int supery)
+		{
+			pin_ptr<unsigned char> pin_scene = &scene[0];
+			pin_ptr<unsigned char> pin_inverse_mvp = &inverse_mvp[0];
+			::RaytraceCPUF64AA(pin_scene, pin_inverse_mvp, (void*)bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, superx, supery);
+		}
 	};
 }

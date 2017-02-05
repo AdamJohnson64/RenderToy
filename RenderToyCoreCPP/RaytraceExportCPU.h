@@ -21,5 +21,6 @@ extern "C" void RaycastBitangentsCPUF32(const void* pScene, const void* pMVP, vo
 extern "C" void RaycastBitangentsCPUF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 extern "C" void RaytraceCPUF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
 extern "C" void RaytraceCPUF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+extern "C" void RaytraceCPUF64AA(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int superx, int supery);
 
 #endif  // RAYTRACEEXPORTCPU_H

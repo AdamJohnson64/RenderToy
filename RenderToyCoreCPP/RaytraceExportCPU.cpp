@@ -108,3 +108,12 @@ extern "C" void RaytraceCPUF64(const void* pScene, const void* pInverseMVP, void
 		}
 	}
 }
+
+extern "C" void RaytraceCPUF64AA(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int superx, int supery) {
+	for (int y = 0; y < bitmap_height; ++y) {
+		for (int x = 0; x < bitmap_width; ++x) {
+			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixel<double, RaytraceCLI::DoRaytrace<double>>(*(Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel, superx, supery);
+		}
+	}
+}

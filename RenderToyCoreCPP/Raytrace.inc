@@ -437,23 +437,23 @@ struct SetPixel {
 	int y;
 };
 
-template <typename FLOAT, typename COLORFUNC, int X_SUPERSAMPLES = 1, int Y_SUPERSAMPLES = 1, typename SETPIXEL = SetPixel<FLOAT>>
-DEVICE_PREFIX void ComputePixel(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel) DEVICE_SUFFIX {
+template <typename FLOAT, typename COLORFUNC, typename SETPIXEL = SetPixel<FLOAT>>
+DEVICE_PREFIX void ComputePixel(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel, int superx = 1, int supery = 1) DEVICE_SUFFIX {
 	if (setpixel.GetX() >= setpixel.GetWidth() || setpixel.GetY() >= setpixel.GetHeight()) return;
 	Vector3<FLOAT> origin;
 	Vector3<FLOAT> direction;
 	Vector4<FLOAT> color = make_vector4<FLOAT>(0, 0, 0, 0);
-	for (int y_supersample = 1; y_supersample <= Y_SUPERSAMPLES; ++y_supersample) {
-		for (int x_supersample = 1; x_supersample <= X_SUPERSAMPLES; ++x_supersample) {
+	for (int y_supersample = 1; y_supersample <= supery; ++y_supersample) {
+		for (int x_supersample = 1; x_supersample <= superx; ++x_supersample) {
 			// Build a ray for this supersample.
-			FLOAT vx = Lerp<FLOAT>(-1, +1, (setpixel.GetX() + FLOAT(x_supersample) / (X_SUPERSAMPLES + 1)) / setpixel.GetWidth());
-			FLOAT vy = Lerp<FLOAT>(+1, -1, (setpixel.GetY() + FLOAT(y_supersample) / (Y_SUPERSAMPLES + 1)) / setpixel.GetHeight());
+			FLOAT vx = Lerp<FLOAT>(-1, +1, (setpixel.GetX() + FLOAT(x_supersample) / (superx + 1)) / setpixel.GetWidth());
+			FLOAT vy = Lerp<FLOAT>(+1, -1, (setpixel.GetY() + FLOAT(y_supersample) / (supery + 1)) / setpixel.GetHeight());
 			ComputeRay(inverse_mvp, vx, vy, origin, direction);
 			// Compute intersection with plane.
 			color = color + COLORFUNC::Do(pScene, origin, direction);
 		}
 	}
-	setpixel.Do(color / FLOAT(X_SUPERSAMPLES * Y_SUPERSAMPLES));
+	setpixel.Do(color / FLOAT(superx * supery));
 }
 
 template<typename FLOAT>

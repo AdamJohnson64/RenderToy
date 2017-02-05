@@ -26,7 +26,7 @@ __device__ void cudaFill(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
 	RaytraceCUDA::SetPixel<FLOAT> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-	RaytraceCUDA::ComputePixel<FLOAT, T, X_SUPERSAMPLES, Y_SUPERSAMPLES>(pScene, inverse_mvp, setpixel);
+	RaytraceCUDA::ComputePixel<FLOAT, T>(pScene, inverse_mvp, setpixel, X_SUPERSAMPLES, Y_SUPERSAMPLES);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
