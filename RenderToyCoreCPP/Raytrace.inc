@@ -51,6 +51,7 @@ template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> operator/(const Vector4<F
 
 // Common Math Primitives.
 template <typename FLOAT> DEVICE_PREFIX FLOAT Clamp(FLOAT min, FLOAT max, FLOAT val) DEVICE_SUFFIX { return val < min ? min : (val > max ? max : val); }
+template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> Cross(const Vector3<FLOAT>& lhs, const Vector3<FLOAT> rhs) DEVICE_SUFFIX { return make_vector3<FLOAT>(lhs.y * rhs.z - lhs.z * rhs.y, lhs.z * rhs.x - lhs.x * rhs.z, lhs.x * rhs.y - lhs.y * rhs.x); }
 template <typename FLOAT> DEVICE_PREFIX FLOAT Dot(const Vector3<FLOAT>& lhs, const Vector3<FLOAT>& rhs) DEVICE_SUFFIX { return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z; }
 template <typename FLOAT> DEVICE_PREFIX FLOAT Length(FLOAT x, FLOAT y, FLOAT z) DEVICE_SUFFIX { return SquareRoot(x * x + y * y + z * z); }
 template <typename FLOAT> DEVICE_PREFIX FLOAT Lerp(FLOAT y1, FLOAT y2, FLOAT x) DEVICE_SUFFIX { return y1 + (y2 - y1) * x; }
@@ -140,6 +141,17 @@ DEVICE_PREFIX RAYQUERY IntersectCube(const Vector3<FLOAT>& origin, const Vector3
 		make_vector3<FLOAT>(0,-1,0), make_vector3<FLOAT>(0,+1,0),
 		make_vector3<FLOAT>(0,0,-1), make_vector3<FLOAT>(0,0,+1),
 	};
+	Vector3<FLOAT> face_tangent[] = {
+		make_vector3<FLOAT>(0,0,-1), make_vector3<FLOAT>(0,0,+1),
+		make_vector3<FLOAT>(+1,0,0), make_vector3<FLOAT>(+1,0,0),
+		make_vector3<FLOAT>(+1,0,0), make_vector3<FLOAT>(-1,0,0),
+	
+	};
+	Vector3<FLOAT> face_bitangent[] = {
+		make_vector3<FLOAT>(0,-1,0), make_vector3<FLOAT>(0,-1,0),
+		make_vector3<FLOAT>(0,0,+1), make_vector3<FLOAT>(0,0,-1),
+		make_vector3<FLOAT>(0,-1,0), make_vector3<FLOAT>(0,-1,0),
+	};
 	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
 	for (int face_index = 0; face_index < 6; ++face_index) {
 		FLOAT lambda = IntersectPlane<FLOAT>(origin, direction, face_normal[face_index], 1);
@@ -158,6 +170,8 @@ DEVICE_PREFIX RAYQUERY IntersectCube(const Vector3<FLOAT>& origin, const Vector3
 		if (use_face) {
 			best_lambda = lambda;
 			SetNormal(result, face_normal[face_index]);
+			SetTangent(result, face_tangent[face_index]);
+			SetBitangent(result, face_bitangent[face_index]);
 		}
 	}
 	SetLambda(result, best_lambda);
@@ -192,8 +206,15 @@ DEVICE_PREFIX RAYQUERY IntersectSphere(const Vector3<FLOAT>& origin, const Vecto
 	FLOAT lambda_best = FloatTraits<FLOAT>::Max;
 	if (lambda1 >= 0 && lambda1 < lambda_best) lambda_best = lambda1;
 	if (lambda2 >= 0 && lambda2 < lambda_best) lambda_best = lambda2;
+	// Construct a tangent basis at this point.
+	Vector3<FLOAT> vector_normal = Normalize(origin + lambda_best * direction);
+	Vector3<FLOAT> vector_bitangent = make_vector3<FLOAT>(0,-1,0);
+	Vector3<FLOAT> vector_tangent = Normalize(Cross(vector_bitangent, vector_normal));
+	vector_bitangent = Normalize(Cross(vector_normal, vector_bitangent));
 	SetLambda(result, lambda_best);
-	SetNormal(result, origin + lambda_best * direction);
+	SetNormal(result, vector_normal);
+	SetTangent(result, vector_tangent);
+	SetBitangent(result, vector_bitangent);
 	// TODO: Implement tangent and bitangent.
 	return result;
 }
