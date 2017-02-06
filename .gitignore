@@ -1,4 +1,5 @@
 *.filters
+*.pdb
 *.sdf
 *.user
 *.VC.db
