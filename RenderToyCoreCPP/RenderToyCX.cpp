@@ -32,5 +32,9 @@ namespace RenderToy
 		EXPORTGENERATOR(RaycastTangentsAMPF32)
 		EXPORTGENERATOR(RaycastBitangentsAMPF32)
 		EXPORTGENERATOR(RaytraceAMPF32)
+		static void AmbientOcclusionAMPF32(const Platform::Array<unsigned char>^ scene, const Platform::Array<unsigned char>^ inverse_mvp, Platform::WriteOnlyArray<unsigned char>^ bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const Platform::Array<unsigned char>^ hemisamples)
+		{
+			::AmbientOcclusionAMPF32(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples->Data); \
+		}
 	};
 }

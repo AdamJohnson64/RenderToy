@@ -96,3 +96,20 @@ extern "C" void RaytraceAMPF32(const void* scene, const void* inverse_mvp, void*
 		});
 	});
 }
+
+extern "C" void AmbientOcclusionAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
+	Concurrency::array_view<int, 1> view_scene(((Scene<float>*)scene)->FileSize / sizeof(int), (int*)scene);
+	Concurrency::array_view<float, 1> view_imvp(4 * 4, (float*)inverse_mvp);
+	Concurrency::array_view<float, 1> view_hemisamples(4 * hemisample_count, (float*)hemisamples);
+	std::unique_ptr<int[]> result(new int[bitmap_width * bitmap_height]);
+	Concurrency::array_view<int, 2> view_bitmap(bitmap_height, bitmap_width, result.get());
+	view_bitmap.discard_data();
+	Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
+		SetPixelAMP<float> setpixel(view_bitmap, idx);
+		RaytraceCX::ComputePixelAOC<float>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel, hemisample_count, (Vector4<float>*)&view_hemisamples[0]);
+	});
+	view_bitmap.synchronize();
+	for (int y = 0; y < bitmap_height; ++y) {
+		memcpy((uint8*)bitmap_ptr + bitmap_stride * y, &result[bitmap_width * y], sizeof(int) * bitmap_width);
+	}
+}

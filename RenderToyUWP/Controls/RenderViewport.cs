@@ -5,6 +5,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.System;
@@ -60,6 +61,11 @@ namespace RenderToy
                 submenu.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF32; }, o => true) });
                 submenu.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF64; }, o => true) });
                 submenu.Items.Add(new MenuFlyoutItem { Text = "Raytrace (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceAMPF32; }, o => true) });
+                flyout.Items.Add(submenu);
+            }
+            {
+                var submenu = new MenuFlyoutSubItem { Text = "Ambient Occlusion" };
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Ambient Occlusion (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.AmbientOcclusionF32; }, o => true) });
                 flyout.Items.Add(submenu);
             }
             ContextFlyout = flyout;
@@ -225,6 +231,13 @@ namespace RenderToy
                 case RenderModes.RaytraceAMPF32:
                     RenderToyCX.RaytraceAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
                     break;
+                case RenderModes.AmbientOcclusionF32:
+                    {
+                        var hemisample_list = MathHelp.HemisphereSamples(1024).ToList();
+                        int hemisample_count = hemisample_list.Count;
+                        RenderToyCX.AmbientOcclusionAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, hemisample_count, SceneFormatter.CreateFlatMemoryF32(hemisample_list));
+                    }
+                    break;
             }
             using (var stream = bitmap.PixelBuffer.AsStream())
             {
@@ -235,7 +248,7 @@ namespace RenderToy
             DateTime timeEnd = DateTime.Now;
             ReduceQuality_Decide(timeStart, timeEnd);
         }
-        enum RenderModes { Point, Wireframe, Raster, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastAMPF32, RaycastNormalsAMPF32, RaycastTangentsAMPF32, RaycastBitangentsAMPF32, RaytraceAMPF32 }
+        enum RenderModes { Point, Wireframe, Raster, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastAMPF32, RaycastNormalsAMPF32, RaycastTangentsAMPF32, RaycastBitangentsAMPF32, RaytraceAMPF32, AmbientOcclusionF32 }
         RenderModes RenderMode
         {
             get { return renderMode; }
