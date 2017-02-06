@@ -181,3 +181,54 @@ extern "C" void RaytraceCUDAF64(const void* pScene, const void* pInverseMVP, voi
 		cudaRaytraceKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
 	});
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Ambient Occlusion.
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename FLOAT>
+__global__ void cudaAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const Vector4<FLOAT>* hemisamples) {
+	int x = blockDim.x * blockIdx.x + threadIdx.x;
+	int y = blockDim.y * blockIdx.y + threadIdx.y;
+	RaytraceCUDA::SetPixel<FLOAT> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+	RaytraceCUDA::ComputePixelAOC<FLOAT>(pScene, inverse_mvp, setpixel, hemisample_count, hemisamples);
+}
+
+template <typename FLOAT>
+void AmbientOcclusionCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+{
+	// Allocate the scene buffer for CUDA.
+	Scene<FLOAT>* host_scene = (Scene<FLOAT>*)pScene;
+	Scene<FLOAT>* device_scene = nullptr;
+	TRY_CUDA(cudaMalloc((void**)&device_scene, host_scene->FileSize));
+	TRY_CUDA(cudaMemcpy(device_scene, host_scene, host_scene->FileSize, cudaMemcpyHostToDevice));
+	// Allocate the bitmap buffer for CUDA.
+	void* device_bitmap_ptr = nullptr;
+	int device_bitmap_stride = 4 * bitmap_width;
+	TRY_CUDA(cudaMalloc((void**)&device_bitmap_ptr, device_bitmap_stride * bitmap_height));
+	// Allocate the hemisample buffer for CUDA.
+	Vector4<FLOAT>* device_hemisamples = nullptr;
+	TRY_CUDA(cudaMalloc((void**)&device_hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count));
+	TRY_CUDA(cudaMemcpy(device_hemisamples, hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count, cudaMemcpyHostToDevice));
+	// Launch the kernel.
+	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
+	dim3 threads(16, 16, 1);
+	cudaAOC<<<grid, threads>>>(*device_scene, *(Matrix44<FLOAT>*)pMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width, hemisample_count, device_hemisamples);
+	// Copy back the render result to the CPU buffer.
+	for (int y = 0; y < bitmap_height; ++y)
+	{
+		void* pDevice = (unsigned char*)device_bitmap_ptr + device_bitmap_stride * y;
+		void* pHost = (unsigned char*)bitmap_ptr + bitmap_stride * y;
+		TRY_CUDA(cudaMemcpy(pHost, pDevice, 4 * bitmap_width, cudaMemcpyDeviceToHost));
+	}
+	// Clean up.
+	TRY_CUDA(cudaFree(device_bitmap_ptr));
+	device_bitmap_ptr = nullptr;
+	TRY_CUDA(cudaFree(device_scene));
+	device_scene = nullptr;
+}
+
+extern "C" void AmbientOcclusionCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+{
+	AmbientOcclusionCUDA<float>(pScene, pMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples);
+}

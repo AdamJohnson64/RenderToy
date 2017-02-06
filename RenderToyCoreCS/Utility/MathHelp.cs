@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 
 namespace RenderToy
 {
@@ -44,6 +45,26 @@ namespace RenderToy
         public static Point4D Subtract(Point4D lhs, Point4D b) { return new Point4D(lhs.X - b.X, lhs.Y - b.Y, lhs.Z - b.Z, lhs.W - b.W); }
         #endregion
         #region - Section : Non-Trivial Functions (Type-compatible with WPF) -
+        public static IEnumerable<Vector3D> HemisphereSamples(int count)
+        {
+            Random r = new Random(123456789);
+            while (count > 0)
+            {
+                // Generate XYZ coordinates inside the hemi-cube.
+                double x = -1 + r.NextDouble() * 2;
+                double y = -1 + r.NextDouble() * 2;
+                double z = r.NextDouble();
+                Vector3D v = new Vector3D(x, y, z);
+                // Precompute the length of this vector.
+                double l = MathHelp.Length(v);
+                // Reject points that are not inside the unit sphere.
+                // If you don't do this you'll get a non-uniform distribution.
+                if (l > 1) continue;
+                // Bring the points back onto the sphere.
+                yield return MathHelp.Multiply(v, 1 / l);
+                --count;
+            }
+        }
         public static Matrix3D CreateMatrixLookAt(Point3D eye, Point3D at, Vector3D up)
         {
             var lfz = MathHelp.Normalized(at - eye);

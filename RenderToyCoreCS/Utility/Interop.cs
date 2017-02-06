@@ -38,12 +38,31 @@ namespace RenderToy
             }
             return memory.ToArray();
         }
+        public static byte[] CreateFlatMemoryF32(IEnumerable<Vector3D> obj)
+        {
+            var memory = new MemoryStream();
+            using (var stream = new BinaryWriter(memory))
+            {
+                foreach (var vec in obj)
+                {
+                    Serialize(vec, v => stream.Write((float)v));
+                }
+            }
+            return memory.ToArray();
+        }
         static void Serialize(Matrix3D obj, Action<double> write)
         {
             write(obj.M11); write(obj.M12); write(obj.M13); write(obj.M14);
             write(obj.M21); write(obj.M22); write(obj.M23); write(obj.M24);
             write(obj.M31); write(obj.M32); write(obj.M33); write(obj.M34);
             write(obj.M41); write(obj.M42); write(obj.M43); write(obj.M44);
+        }
+        static void Serialize(Vector3D obj, Action<double> write)
+        {
+            write(obj.X);
+            write(obj.Y);
+            write(obj.Z);
+            write(0);
         }
         SceneFormatter(Scene scene, bool use_f64)
         {

@@ -106,5 +106,13 @@ namespace RenderToy
             RenderToy.RenderToyCLI.RaytraceCUDAF64(SceneFormatter.CreateFlatMemoryF64(scene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
         #endregion
+        #region - Section : Ambient Occlusion -
+        public static void AmbientOcclusionCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        {
+            var hemisample_list = MathHelp.HemisphereSamples(1024).ToList();
+            int hemisample_count = hemisample_list.Count;
+            RenderToy.RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, SceneFormatter.CreateFlatMemoryF32(hemisample_list));
+        }
+        #endregion
     }
 }

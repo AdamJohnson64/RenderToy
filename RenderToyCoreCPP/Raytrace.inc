@@ -186,7 +186,7 @@ DEVICE_PREFIX RAYQUERY IntersectPlane(const Vector3<FLOAT>& origin, const Vector
 	SetLambda(result, (PLANE_DISTANCE - Dot(PLANE_NORMAL, origin)) / Dot(PLANE_NORMAL, direction));
 	SetNormal(result, PLANE_NORMAL);
 	SetTangent(result, make_vector3<FLOAT>(1, 0, 0));
-	SetBitangent(result, make_vector3<FLOAT>(0, 0, 1));
+	SetBitangent(result, make_vector3<FLOAT>(0, 0, -1));
 	return result;
 }
 
@@ -210,7 +210,7 @@ DEVICE_PREFIX RAYQUERY IntersectSphere(const Vector3<FLOAT>& origin, const Vecto
 	Vector3<FLOAT> vector_normal = Normalize(origin + lambda_best * direction);
 	Vector3<FLOAT> vector_bitangent = make_vector3<FLOAT>(0,-1,0);
 	Vector3<FLOAT> vector_tangent = Normalize(Cross(vector_bitangent, vector_normal));
-	vector_bitangent = Normalize(Cross(vector_normal, vector_bitangent));
+	vector_bitangent = Cross(vector_normal, vector_tangent); // No normalization required.
 	SetLambda(result, lambda_best);
 	SetNormal(result, vector_normal);
 	SetTangent(result, vector_tangent);
@@ -516,3 +516,39 @@ public:
 		return Raytrace<FLOAT, RECURSION>::Do(pScene, origin, direction);
 	}
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// Ambient Occlusion.
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename FLOAT>
+DEVICE_PREFIX Vector4<FLOAT> DoAOC(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, int hemisample_count, const Vector4<FLOAT>* hemisamples) DEVICE_SUFFIX {
+	auto intersect = Intersect(pScene, origin, direction);
+	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
+		return make_vector4<FLOAT>(0, 0, 0, 0);
+	}
+	auto intersect_tbn = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, intersect.Object);
+	auto vector_point = origin + intersect_tbn.Lambda * direction + FLOAT(0.0001) * intersect_tbn.Normal;
+	FLOAT contribution = 0;
+	for (int i = 0; i < hemisample_count; ++i)
+	{
+		const Vector3<FLOAT>& hemisample = *(Vector3<FLOAT>*)(hemisamples + i);
+		const Vector3<FLOAT> hemisample_mapped = hemisample.x * intersect_tbn.Tangent + hemisample.y * intersect_tbn.Bitangent + hemisample.z * intersect_tbn.Normal;
+		if (!RayShadow(pScene, vector_point, hemisample_mapped)) contribution += 1; //Dot(hemisample_mapped, intersect_tbn.Normal);
+	}
+	FLOAT c = FLOAT(contribution) / hemisample_count;
+	return make_vector4<FLOAT>(c, c, c, 1);
+}
+
+template <typename FLOAT, typename SETPIXEL = SetPixel<FLOAT>>
+DEVICE_PREFIX void ComputePixelAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel, int hemisample_count, const Vector4<FLOAT>* hemisamples) DEVICE_SUFFIX {
+	if (setpixel.GetX() >= setpixel.GetWidth() || setpixel.GetY() >= setpixel.GetHeight()) return;
+	Vector3<FLOAT> origin;
+	Vector3<FLOAT> direction;
+	// Build a ray for this supersample.
+	FLOAT vx = Lerp<FLOAT>(-1, +1, (setpixel.GetX() + FLOAT(0.5)) / setpixel.GetWidth());
+	FLOAT vy = Lerp<FLOAT>(+1, -1, (setpixel.GetY() + FLOAT(0.5)) / setpixel.GetHeight());
+	ComputeRay(inverse_mvp, vx, vy, origin, direction);
+	// Compute intersection with plane.
+	setpixel.Do(DoAOC<FLOAT>(pScene, origin, direction, hemisample_count, hemisamples));
+}
