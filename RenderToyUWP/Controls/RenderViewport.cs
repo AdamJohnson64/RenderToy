@@ -254,7 +254,7 @@ namespace RenderToy
             get { return renderMode; }
             set { renderMode = value; Repaint(); }
         }
-        RenderModes renderMode = RenderModes.RaycastAMPF32;
+        RenderModes renderMode = RenderModes.Wireframe;
         #endregion
         #region - Section : Quality Control -
         bool ReduceQuality
