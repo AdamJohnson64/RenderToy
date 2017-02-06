@@ -257,7 +257,7 @@ namespace RenderToy
         RenderModes renderMode = RenderModes.RaycastAMPF32;
         #endregion
         #region - Section : Quality Control -
-        protected bool ReduceQuality
+        bool ReduceQuality
         {
             get { return reduceQuality; }
         }

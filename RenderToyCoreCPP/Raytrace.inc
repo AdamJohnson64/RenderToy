@@ -215,7 +215,6 @@ DEVICE_PREFIX RAYQUERY IntersectSphere(const Vector3<FLOAT>& origin, const Vecto
 	SetNormal(result, vector_normal);
 	SetTangent(result, vector_tangent);
 	SetBitangent(result, vector_bitangent);
-	// TODO: Implement tangent and bitangent.
 	return result;
 }
 
@@ -532,7 +531,7 @@ DEVICE_PREFIX Vector4<FLOAT> DoAOC(const Scene<FLOAT>& pScene, const Vector3<FLO
 	FLOAT contribution = 0;
 	for (int i = 0; i < hemisample_count; ++i)
 	{
-		const Vector3<FLOAT>& hemisample = *(Vector3<FLOAT>*)(hemisamples + i);
+		const Vector3<FLOAT>& hemisample = *(const Vector3<FLOAT>*)(hemisamples + i);
 		const Vector3<FLOAT> hemisample_mapped = hemisample.x * intersect_tbn.Tangent + hemisample.y * intersect_tbn.Bitangent + hemisample.z * intersect_tbn.Normal;
 		if (!RayShadow(pScene, vector_point, hemisample_mapped)) contribution += 1; //Dot(hemisample_mapped, intersect_tbn.Normal);
 	}

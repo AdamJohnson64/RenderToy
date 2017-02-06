@@ -154,7 +154,8 @@ namespace RenderToy
                 a.M41 * b.M12 + a.M42 * b.M22 + a.M43 * b.M32 + a.M44 * b.M42,
                 a.M41 * b.M13 + a.M42 * b.M23 + a.M43 * b.M33 + a.M44 * b.M43,
                 a.M41 * b.M14 + a.M42 * b.M24 + a.M43 * b.M34 + a.M44 * b.M44);
-            // This code doesn't normally run but was used to generate the code above.
+            /*
+            // This code was used to generate the code above.
             string buildcode = "return new Matrix3D(\n";
             for (int row = 0; row < 4; ++row)
             {
@@ -169,6 +170,7 @@ namespace RenderToy
                     buildcode += (row == 3 && col == 3) ? ");" : ",\n";
                 }
             }
+            */
         }
         public static Point3D Transform(RenderToy.Matrix3D a, Point3D b)
         {
