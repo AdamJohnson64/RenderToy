@@ -222,6 +222,8 @@ void AmbientOcclusionCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr
 		TRY_CUDA(cudaMemcpy(pHost, pDevice, 4 * bitmap_width, cudaMemcpyDeviceToHost));
 	}
 	// Clean up.
+	TRY_CUDA(cudaFree(device_hemisamples));
+	device_hemisamples = nullptr;
 	TRY_CUDA(cudaFree(device_bitmap_ptr));
 	device_bitmap_ptr = nullptr;
 	TRY_CUDA(cudaFree(device_scene));
@@ -231,4 +233,9 @@ void AmbientOcclusionCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr
 extern "C" void AmbientOcclusionCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
 {
 	AmbientOcclusionCUDA<float>(pScene, pMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples);
+}
+
+extern "C" void AmbientOcclusionCUDAF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+{
+	AmbientOcclusionCUDA<double>(pScene, pMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples);
 }

@@ -117,3 +117,21 @@ extern "C" void RaytraceCPUF64AA(const void* pScene, const void* pInverseMVP, vo
 		}
 	}
 }
+
+extern "C" void AmbientOcclusionCPUF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
+	for (int y = 0; y < bitmap_height; ++y) {
+		for (int x = 0; x < bitmap_width; ++x) {
+			RaytraceCLI::SetPixel<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixelAOC<float>(*(Scene<float>*)pScene, *(Matrix44<float>*)pInverseMVP, setpixel, hemisample_count, (Vector4<float>*)hemisamples);
+		}
+	}
+}
+
+extern "C" void AmbientOcclusionCPUF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
+	for (int y = 0; y < bitmap_height; ++y) {
+		for (int x = 0; x < bitmap_width; ++x) {
+			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixelAOC<double>(*(Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel, hemisample_count, (Vector4<double>*)hemisamples);
+		}
+	}
+}

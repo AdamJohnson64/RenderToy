@@ -65,7 +65,9 @@ namespace RenderToy
             }
             {
                 var submenu = new MenuFlyoutSubItem { Text = "Ambient Occlusion" };
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Ambient Occlusion (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.AmbientOcclusionF32; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Ambient Occlusion (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.AmbientOcclusionCPUF32; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Ambient Occlusion (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.AmbientOcclusionCPUF64; }, o => true) });
+                submenu.Items.Add(new MenuFlyoutItem { Text = "Ambient Occlusion (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.AmbientOcclusionAMPF32; }, o => true) });
                 flyout.Items.Add(submenu);
             }
             ContextFlyout = flyout;
@@ -231,7 +233,21 @@ namespace RenderToy
                 case RenderModes.RaytraceAMPF32:
                     RenderToyCX.RaytraceAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
                     break;
-                case RenderModes.AmbientOcclusionF32:
+                case RenderModes.AmbientOcclusionCPUF32:
+                    {
+                        var hemisample_list = MathHelp.HemisphereSamples(16).ToList();
+                        int hemisample_count = hemisample_list.Count;
+                        RenderToyCX.AmbientOcclusionCPUF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, hemisample_count, SceneFormatter.CreateFlatMemoryF32(hemisample_list));
+                    }
+                    break;
+                case RenderModes.AmbientOcclusionCPUF64:
+                    {
+                        var hemisample_list = MathHelp.HemisphereSamples(16).ToList();
+                        int hemisample_count = hemisample_list.Count;
+                        RenderToyCX.AmbientOcclusionCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, hemisample_count, SceneFormatter.CreateFlatMemoryF64(hemisample_list));
+                    }
+                    break;
+                case RenderModes.AmbientOcclusionAMPF32:
                     {
                         var hemisample_list = MathHelp.HemisphereSamples(1024).ToList();
                         int hemisample_count = hemisample_list.Count;
@@ -248,7 +264,7 @@ namespace RenderToy
             DateTime timeEnd = DateTime.Now;
             ReduceQuality_Decide(timeStart, timeEnd);
         }
-        enum RenderModes { Point, Wireframe, Raster, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastAMPF32, RaycastNormalsAMPF32, RaycastTangentsAMPF32, RaycastBitangentsAMPF32, RaytraceAMPF32, AmbientOcclusionF32 }
+        enum RenderModes { Point, Wireframe, Raster, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastAMPF32, RaycastNormalsAMPF32, RaycastTangentsAMPF32, RaycastBitangentsAMPF32, RaytraceAMPF32, AmbientOcclusionCPUF32, AmbientOcclusionCPUF64, AmbientOcclusionAMPF32 }
         RenderModes RenderMode
         {
             get { return renderMode; }

@@ -180,7 +180,10 @@ namespace RenderToy
         static RoutedUICommand CommandRenderRaytraceCPUF64 = new RoutedUICommand("Raytrace (CPU/F64)", "CommandRenderRaytraceCPUF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytraceCUDAF32 = new RoutedUICommand("Raytrace (CUDA/F32)", "CommandRenderRaytraceCUDAF32", typeof(RenderViewport));
         static RoutedUICommand CommandRenderRaytraceCUDAF64 = new RoutedUICommand("Raytrace (CUDA/F64)", "CommandRenderRaytraceCUDAF64", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderAmbientOcclusionCPUF32 = new RoutedUICommand("Ambient Occlusion (CPU/F32)", "CommandRenderAmbientOcclusionCPUF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderAmbientOcclusionCPUF64 = new RoutedUICommand("Ambient Occlusion (CPU/F64)", "CommandRenderAmbientOcclusionCPUF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderAmbientOcclusionCUDAF32 = new RoutedUICommand("Ambient Occlusion (CUDA/F32)", "CommandRenderAmbientOcclusionCUDAF32", typeof(RenderViewport));
+        static RoutedUICommand CommandRenderAmbientOcclusionCUDAF64 = new RoutedUICommand("Ambient Occlusion (CUDA/F64)", "CommandRenderAmbientOcclusionCUDAF64", typeof(RenderViewport));
         static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(RenderViewport));
         static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(RenderViewport));
         public RenderViewport()
@@ -189,7 +192,7 @@ namespace RenderToy
             CommandBindings.Add(new CommandBinding(CommandRenderPoint, (s, e) => { renderMode = RenderMode.Point; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderWireframe, (s, e) => { renderMode = RenderMode.Wireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaster, (s, e) => { renderMode = RenderMode.Raster; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderRasterD3D9, (s, e) => { renderMode = RenderMode.Direct3D9; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderRasterD3D9, (s, e) => { renderMode = RenderMode.RasterD3D9; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastCPUF32, (s, e) => { renderMode = RenderMode.RaycastCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastCPUF64, (s, e) => { renderMode = RenderMode.RaycastCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaycastCUDAF32, (s, e) => { renderMode = RenderMode.RaycastCUDAF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -210,7 +213,10 @@ namespace RenderToy
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCPUF64, (s, e) => { renderMode = RenderMode.RaytraceCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCUDAF32, (s, e) => { renderMode = RenderMode.RaytraceCUDAF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderRaytraceCUDAF64, (s, e) => { renderMode = RenderMode.RaytraceCUDAF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderAmbientOcclusionCPUF32, (s, e) => { renderMode = RenderMode.AmbientOcclusionCPUF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderAmbientOcclusionCPUF64, (s, e) => { renderMode = RenderMode.AmbientOcclusionCPUF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderAmbientOcclusionCUDAF32, (s, e) => { renderMode = RenderMode.AmbientOcclusionCUDAF32; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderAmbientOcclusionCUDAF64, (s, e) => { renderMode = RenderMode.AmbientOcclusionCUDAF64; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { renderPreviews = !renderPreviews; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderWireframeToggle, (s, e) => { renderWireframe = !renderWireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             // Define input bindings for common display modes.
@@ -272,14 +278,17 @@ namespace RenderToy
                 }
                 {
                     var submenu = new MenuItem { Header = "Ambient Occlusion" };
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderAmbientOcclusionCPUF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderAmbientOcclusionCPUF64 });
                     submenu.Items.Add(new MenuItem { Command = CommandRenderAmbientOcclusionCUDAF32 });
+                    submenu.Items.Add(new MenuItem { Command = CommandRenderAmbientOcclusionCUDAF64 });
                     menu.Items.Add(submenu);
                 }
                 this.ContextMenu = menu;
             }
             Focusable = true;
         }
-        enum RenderMode { Point, Wireframe, Raster, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastCUDAF32, RaycastCUDAF64, RaycastNormalsCUDAF32, RaycastNormalsCUDAF64, RaycastTangentsCUDAF32, RaycastTangentsCUDAF64, RaycastBitangentsCUDAF32, RaycastBitangentsCUDAF64, RaytraceCUDAF32, RaytraceCUDAF64, AmbientOcclusionCUDAF32, Direct3D9 }
+        enum RenderMode { Point, Wireframe, Raster, RasterD3D9, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastCUDAF32, RaycastCUDAF64, RaycastNormalsCUDAF32, RaycastNormalsCUDAF64, RaycastTangentsCUDAF32, RaycastTangentsCUDAF64, RaycastBitangentsCUDAF32, RaycastBitangentsCUDAF64, RaytraceCUDAF32, RaytraceCUDAF64, AmbientOcclusionCPUF32, AmbientOcclusionCPUF64, AmbientOcclusionCUDAF32, AmbientOcclusionCUDAF64 }
         RenderMode renderMode = RenderMode.Wireframe;
         bool renderPreviews = true;
         bool renderWireframe = false;
@@ -431,6 +440,12 @@ namespace RenderToy
                         drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
                     }
                     break;
+                case RenderMode.AmbientOcclusionCPUF32:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.AmbientOcclusionCPUF32, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
+                case RenderMode.AmbientOcclusionCPUF64:
+                    drawingContext.DrawImage(ImageHelp.CreateImage(Render.AmbientOcclusionCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    break;
                 case RenderMode.AmbientOcclusionCUDAF32:
                     if (Render.CUDAAvailable())
                     {
@@ -441,7 +456,17 @@ namespace RenderToy
                         drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
                     }
                     break;
-                case RenderMode.Direct3D9:
+                case RenderMode.AmbientOcclusionCUDAF64:
+                    if (Render.CUDAAvailable())
+                    {
+                        drawingContext.DrawImage(ImageHelp.CreateImage(Render.AmbientOcclusionCUDAF64, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                    }
+                    else
+                    {
+                        drawingContext.DrawText(new FormattedText("CUDA is not available or was not built for this configuration.", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Red), new Point(8, ActualHeight / 2));
+                    }
+                    break;
+                case RenderMode.RasterD3D9:
                     drawingContext.DrawImage(ImageHelp.CreateImage(Render.RasterD3D9, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                     break;
             }
