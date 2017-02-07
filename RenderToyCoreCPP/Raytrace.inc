@@ -527,7 +527,7 @@ DEVICE_PREFIX Vector4<FLOAT> DoAOC(const Scene<FLOAT>& pScene, const Vector3<FLO
 		return make_vector4<FLOAT>(0, 0, 0, 0);
 	}
 	auto intersect_tbn = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, intersect.Object);
-	auto vector_point = origin + intersect_tbn.Lambda * direction + FLOAT(0.0001) * intersect_tbn.Normal;
+	auto vector_point = origin + intersect_tbn.Lambda * direction + FLOAT(0.001) * intersect_tbn.Normal;
 	FLOAT contribution = 0;
 	for (int i = 0; i < hemisample_count; ++i)
 	{
