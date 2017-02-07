@@ -73,7 +73,7 @@ void cudaRender(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, i
 ////////////////////////////////////////////////////////////////////////////////
 
 __global__ void cudaRaycastKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::DoRaycast<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<float, RaytraceCUDA::RenderModeRaycast<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaycastCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
@@ -84,7 +84,7 @@ extern "C" void RaycastCUDAF32(const void* pScene, const void* pInverseMVP, void
 }
 
 __global__ void cudaRaycastKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::DoRaycast<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<double, RaytraceCUDA::RenderModeRaycast<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaycastCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
@@ -95,7 +95,7 @@ extern "C" void RaycastCUDAF64(const void* pScene, const void* pInverseMVP, void
 }
 
 __global__ void cudaRaycastBitangentsKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::DoRaycastBitangents<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<float, RaytraceCUDA::RenderModeRaycastBitangents<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaycastBitangentsCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
@@ -106,7 +106,7 @@ extern "C" void RaycastBitangentsCUDAF32(const void* pScene, const void* pInvers
 }
 
 __global__ void cudaRaycastBitangentsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::DoRaycastBitangents<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<double, RaytraceCUDA::RenderModeRaycastBitangents<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaycastBitangentsCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
@@ -117,7 +117,7 @@ extern "C" void RaycastBitangentsCUDAF64(const void* pScene, const void* pInvers
 }
 
 __global__ void cudaRaycastNormalsKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::DoRaycastNormals<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<float, RaytraceCUDA::RenderModeRaycastNormals<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaycastNormalsCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
@@ -128,7 +128,7 @@ extern "C" void RaycastNormalsCUDAF32(const void* pScene, const void* pInverseMV
 }
 
 __global__ void cudaRaycastNormalsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::DoRaycastNormals<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<double, RaytraceCUDA::RenderModeRaycastNormals<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaycastNormalsCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
@@ -139,7 +139,7 @@ extern "C" void RaycastNormalsCUDAF64(const void* pScene, const void* pInverseMV
 }
 
 __global__ void cudaRaycastTangentsKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::DoRaycastTangents<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<float, RaytraceCUDA::RenderModeRaycastTangents<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaycastTangentsCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
@@ -150,7 +150,7 @@ extern "C" void RaycastTangentsCUDAF32(const void* pScene, const void* pInverseM
 }
 
 __global__ void cudaRaycastTangentsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::DoRaycastTangents<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<double, RaytraceCUDA::RenderModeRaycastTangents<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaycastTangentsCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
@@ -161,7 +161,7 @@ extern "C" void RaycastTangentsCUDAF64(const void* pScene, const void* pInverseM
 }
 
 __global__ void cudaRaytraceKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::DoRaytrace<float>, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<float, RaytraceCUDA::RenderModeRaytrace<float>, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaytraceCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
@@ -172,7 +172,7 @@ extern "C" void RaytraceCUDAF32(const void* pScene, const void* pInverseMVP, voi
 }
 
 __global__ void cudaRaytraceKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::DoRaytrace<double>, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+	cudaFill<double, RaytraceCUDA::RenderModeRaytrace<double>, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
 }
 
 extern "C" void RaytraceCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)

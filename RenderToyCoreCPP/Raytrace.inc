@@ -11,7 +11,7 @@
 // support both IEEE 754 32-bit float and 64-bit double implementation.
 ////////////////////////////////////////////////////////////////////////////////
 
-// Type-safe Basic Math.
+#pragma region - Section : Type Safe Shims & Traits. -
 template <typename FLOAT>
 struct FloatTraits {
 };
@@ -30,12 +30,14 @@ DEVICE_PREFIX float Power(float v, float p) DEVICE_SUFFIX { return powf(v, p); }
 DEVICE_PREFIX double Power(double v, double p) DEVICE_SUFFIX { return pow(v, p); }
 DEVICE_PREFIX float SquareRoot(float v) DEVICE_SUFFIX { return sqrtf(v); }
 DEVICE_PREFIX double SquareRoot(double v) DEVICE_SUFFIX { return sqrt(v); }
+#pragma endregion
 
-// Vector construction.
+#pragma region - Section : Basic Vector Construction. -
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> make_vector3(FLOAT x, FLOAT y, FLOAT z) DEVICE_SUFFIX { Vector3<FLOAT> o; o.x = x; o.y = y; o.z = z; return o; }
 template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> make_vector4(FLOAT x, FLOAT y, FLOAT z, FLOAT w) DEVICE_SUFFIX { Vector4<FLOAT> o; o.x = x; o.y = y; o.z = z; o.w = w; return o; }
+#pragma endregion
 
-// Basic Math Primitives.
+#pragma region - Section : Basic Vector Math Support. -
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> operator-(const Vector3<FLOAT>& val) DEVICE_SUFFIX { return make_vector3<FLOAT>(-val.x, -val.y, -val.z); }
 template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> operator-(const Vector4<FLOAT>& val) DEVICE_SUFFIX { return make_vector4<FLOAT>(-val.z, -val.y, -val.z, -val.w); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> operator+(const Vector3<FLOAT>& lhs, const Vector3<FLOAT>& rhs) DEVICE_SUFFIX { return make_vector3<FLOAT>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z); }
@@ -48,16 +50,18 @@ template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> operator*(const Vector4<F
 template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> operator*(FLOAT lhs, const Vector4<FLOAT>& rhs) DEVICE_SUFFIX { return rhs * lhs; }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> operator/(const Vector3<FLOAT>& lhs, FLOAT rhs) DEVICE_SUFFIX { return lhs * (1 / rhs); }
 template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> operator/(const Vector4<FLOAT>& lhs, FLOAT rhs) DEVICE_SUFFIX { return lhs * (1 / rhs); }
+#pragma endregion
 
-// Common Math Primitives.
+#pragma region - Section : Common Scalar & Vector Math Support. -
 template <typename FLOAT> DEVICE_PREFIX FLOAT Clamp(FLOAT min, FLOAT max, FLOAT val) DEVICE_SUFFIX { return val < min ? min : (val > max ? max : val); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> Cross(const Vector3<FLOAT>& lhs, const Vector3<FLOAT> rhs) DEVICE_SUFFIX { return make_vector3<FLOAT>(lhs.y * rhs.z - lhs.z * rhs.y, lhs.z * rhs.x - lhs.x * rhs.z, lhs.x * rhs.y - lhs.y * rhs.x); }
 template <typename FLOAT> DEVICE_PREFIX FLOAT Dot(const Vector3<FLOAT>& lhs, const Vector3<FLOAT>& rhs) DEVICE_SUFFIX { return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z; }
 template <typename FLOAT> DEVICE_PREFIX FLOAT Length(FLOAT x, FLOAT y, FLOAT z) DEVICE_SUFFIX { return SquareRoot(x * x + y * y + z * z); }
 template <typename FLOAT> DEVICE_PREFIX FLOAT Lerp(FLOAT y1, FLOAT y2, FLOAT x) DEVICE_SUFFIX { return y1 + (y2 - y1) * x; }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> Normalize(const Vector3<FLOAT>& val) DEVICE_SUFFIX { return val / Length(val.x, val.y, val.z); }
+#pragma endregion
 
-// Matrix Math.
+#pragma region - Section : Matrix Math Support. -
 template <typename FLOAT>
 DEVICE_PREFIX Vector3<FLOAT> TransformPoint(const Matrix44<FLOAT>& m, const Vector3<FLOAT>& p) DEVICE_SUFFIX {
 	return make_vector3<FLOAT>(
@@ -82,7 +86,9 @@ DEVICE_PREFIX Vector4<FLOAT> Transform(const Matrix44<FLOAT>& m, const Vector4<F
 		m.M[2] * p.x + m.M[6] * p.y + m.M[10] * p.z + m.M[14] * p.w,
 		m.M[3] * p.x + m.M[7] * p.y + m.M[11] * p.z + m.M[15] * p.w);
 }
+#pragma endregion
 
+#pragma region - Section : Secondary Ray and Optics Helpers. -
 template <typename FLOAT>
 DEVICE_PREFIX Vector3<FLOAT> Reflect(const Vector3<FLOAT>& incident, const Vector3<FLOAT>& normal) DEVICE_SUFFIX {
 	return incident - 2 * Dot(incident, normal) * normal;
@@ -106,8 +112,9 @@ DEVICE_PREFIX FLOAT SchlickApprox(const Vector3<FLOAT>& incident, const Vector3<
 	coeff = coeff * coeff;
 	return coeff + (1 - coeff) * Power((1 - Dot(-incident, normal)), 5);
 }
+#pragma endregion
 
-// Geometric Math.
+#pragma region - Section : Intersection engine and attribute calculation. -
 template <typename FLOAT>
 DEVICE_PREFIX FLOAT IntersectPlane(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& plane_normal, FLOAT plane_distance) DEVICE_SUFFIX {
 	return (plane_distance - Dot(plane_normal, origin)) / Dot(plane_normal, direction);
@@ -265,7 +272,6 @@ DEVICE_PREFIX IntersectObject<FLOAT> Intersect(const Scene<FLOAT>& pScene, const
 	return result;
 }
 
-// Raytracer Ray Tests.
 template <typename FLOAT>
 DEVICE_PREFIX bool RayShadow(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
 	for (int i = 0; i < pScene.ObjectCount; ++i) {
@@ -277,68 +283,158 @@ DEVICE_PREFIX bool RayShadow(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& o
 	}
 	return false;
 }
+#pragma endregion
+
+#pragma region - Section : Core Raytracer. -
+template <typename FLOAT>
+DEVICE_PREFIX void ComputeScreenRay(const Matrix44<FLOAT>& inverse_mvp, FLOAT clipx, FLOAT clipy, Vector3<FLOAT>& origin, Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+	Vector4<FLOAT> v41 = Transform(inverse_mvp, make_vector4<FLOAT>(clipx, clipy, 0, 1));
+	Vector4<FLOAT> v42 = Transform(inverse_mvp, make_vector4<FLOAT>(clipx, clipy, 1, 1));
+	Vector3<FLOAT> ray_p1 = make_vector3<FLOAT>(v41.x / v41.w, v41.y / v41.w, v41.z / v41.w);
+	Vector3<FLOAT> ray_p2 = make_vector3<FLOAT>(v42.x / v42.w, v42.y / v42.w, v42.z / v42.w);
+	origin = ray_p1;
+	direction = ray_p2 - ray_p1;
+}
 
 template <typename FLOAT>
-DEVICE_PREFIX Vector4<FLOAT> Raycast(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-	auto intersect = Intersect(pScene, origin, direction);
-	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
-		return make_vector4<FLOAT>(0, 0, 0, 0);
-	}
-	Vector3<FLOAT> vector_point = origin + intersect.Lambda * direction;
-	switch (intersect.Object.Material) {
-	case MATERIAL_COMMON:
+DEVICE_PREFIX unsigned int Vector4ToA8R8G8B8(const Vector4<FLOAT>& color) DEVICE_SUFFIX {
+	unsigned char r = unsigned int(color.x < 0 ? 0 : (color.x > 1 ? 1 : color.x) * 255);
+	unsigned char g = unsigned int(color.y < 0 ? 0 : (color.y > 1 ? 1 : color.y) * 255);
+	unsigned char b = unsigned int(color.z < 0 ? 0 : (color.z > 1 ? 1 : color.z) * 255);
+	unsigned char a = unsigned int(color.w < 0 ? 0 : (color.w > 1 ? 1 : color.w) * 255);
+	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
+}
+
+template<typename FLOAT>
+struct SetPixel {
+	DEVICE_PREFIX SetPixel(void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int x, int y) DEVICE_SUFFIX :
+		bitmap_ptr(bitmap_ptr),
+		bitmap_width(bitmap_width),
+		bitmap_height(bitmap_height),
+		bitmap_stride(bitmap_stride),
+		x(x),
+		y(y)
 	{
-		if (intersect.Object.MaterialOffset != 0) {
-			const MaterialCommon<FLOAT>* pMaterial = (const MaterialCommon<FLOAT>*)((const int*)&pScene + intersect.Object.MaterialOffset / 4);
-			return pMaterial->Diffuse;
+	}
+	DEVICE_PREFIX int GetX() const DEVICE_SUFFIX { return x; }
+	DEVICE_PREFIX int GetY() const DEVICE_SUFFIX { return y; }
+	DEVICE_PREFIX int GetWidth() const DEVICE_SUFFIX { return bitmap_width; }
+	DEVICE_PREFIX int GetHeight() const DEVICE_SUFFIX { return bitmap_height; }
+	DEVICE_PREFIX void PutPixel(const Vector4<FLOAT>& color) const DEVICE_SUFFIX {
+		void* pRaster = (unsigned char*)bitmap_ptr + bitmap_stride * y;
+		unsigned int* pPixel = (unsigned int*)pRaster + x;
+		*pPixel = Vector4ToA8R8G8B8(color);
+	}
+	void* bitmap_ptr;
+	int bitmap_width;
+	int bitmap_height;
+	int bitmap_stride;
+	int x;
+	int y;
+};
+
+template <typename FLOAT, typename RENDERMODE, typename SETPIXEL = SetPixel<FLOAT>>
+DEVICE_PREFIX void ComputePixel(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel, int superx = 1, int supery = 1) DEVICE_SUFFIX {
+	if (setpixel.GetX() >= setpixel.GetWidth() || setpixel.GetY() >= setpixel.GetHeight()) return;
+	Vector3<FLOAT> origin;
+	Vector3<FLOAT> direction;
+	Vector4<FLOAT> color = make_vector4<FLOAT>(0, 0, 0, 0);
+	for (int y_supersample = 1; y_supersample <= supery; ++y_supersample) {
+		for (int x_supersample = 1; x_supersample <= superx; ++x_supersample) {
+			// Build a ray for this supersample.
+			FLOAT vx = Lerp<FLOAT>(-1, +1, (setpixel.GetX() + FLOAT(x_supersample) / (superx + 1)) / setpixel.GetWidth());
+			FLOAT vy = Lerp<FLOAT>(+1, -1, (setpixel.GetY() + FLOAT(y_supersample) / (supery + 1)) / setpixel.GetHeight());
+			ComputeScreenRay(inverse_mvp, vx, vy, origin, direction);
+			// Compute intersection with plane.
+			color = color + RENDERMODE::CalculateColor(pScene, origin, direction);
 		}
 	}
-	break;
-	case MATERIAL_CHECKERBOARD_XZ:
-	{
-		int mx = (vector_point.x - floor(vector_point.x)) < 0.5 ? 0 : 1;
-		int mz = (vector_point.z - floor(vector_point.z)) < 0.5 ? 0 : 1;
-		FLOAT c = FLOAT((mx + mz) % 2);
-		return make_vector4<FLOAT>(c, c, c, 1);
-	}
-	}
-	return make_vector4<FLOAT>(0, 0, 0, 0);
+	setpixel.PutPixel(color / FLOAT(superx * supery));
 }
+#pragma endregion
 
-template <typename FLOAT>
-DEVICE_PREFIX Vector4<FLOAT> RaycastBitangents(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-	auto intersect = Intersect(pScene, origin, direction);
-	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
+#pragma region - Render Mode : Raycast. -
+template<typename FLOAT>
+struct RenderModeRaycast {
+public:
+	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+		auto intersect = Intersect(pScene, origin, direction);
+		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
+			return make_vector4<FLOAT>(0, 0, 0, 0);
+		}
+		Vector3<FLOAT> vector_point = origin + intersect.Lambda * direction;
+		switch (intersect.Object.Material) {
+		case MATERIAL_COMMON:
+		{
+			if (intersect.Object.MaterialOffset != 0) {
+				const MaterialCommon<FLOAT>* pMaterial = (const MaterialCommon<FLOAT>*)((const int*)&pScene + intersect.Object.MaterialOffset / 4);
+				return pMaterial->Diffuse;
+			}
+		}
+		break;
+		case MATERIAL_CHECKERBOARD_XZ:
+		{
+			int mx = (vector_point.x - floor(vector_point.x)) < 0.5 ? 0 : 1;
+			int mz = (vector_point.z - floor(vector_point.z)) < 0.5 ? 0 : 1;
+			FLOAT c = FLOAT((mx + mz) % 2);
+			return make_vector4<FLOAT>(c, c, c, 1);
+		}
+		}
 		return make_vector4<FLOAT>(0, 0, 0, 0);
 	}
-	Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, intersect.Object).Bitangent;
-	return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
-}
+};
+#pragma endregion
 
-template <typename FLOAT>
-DEVICE_PREFIX Vector4<FLOAT> RaycastNormals(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-	auto intersect = Intersect(pScene, origin, direction);
-	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
-		return make_vector4<FLOAT>(0, 0, 0, 0);
+#pragma region - Render Mode : Raycast Bitangents. -
+template<typename FLOAT>
+struct RenderModeRaycastBitangents {
+public:
+	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+		auto intersect = Intersect(pScene, origin, direction);
+		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
+			return make_vector4<FLOAT>(0, 0, 0, 0);
+		}
+		Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, intersect.Object).Bitangent;
+		return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
 	}
-	Vector3<FLOAT> n = Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, intersect.Object).Normal;
-	return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
-}
+};
+#pragma endregion
 
-template <typename FLOAT>
-DEVICE_PREFIX Vector4<FLOAT> RaycastTangents(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-	auto intersect = Intersect(pScene, origin, direction);
-	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
-		return make_vector4<FLOAT>(0, 0, 0, 0);
+#pragma region - Render Mode : Raycast Normals. -
+template<typename FLOAT>
+struct RenderModeRaycastNormals {
+public:
+	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+		auto intersect = Intersect(pScene, origin, direction);
+		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
+			return make_vector4<FLOAT>(0, 0, 0, 0);
+		}
+		Vector3<FLOAT> n = Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, intersect.Object).Normal;
+		return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
 	}
-	Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, intersect.Object).Tangent;
-	return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
-}
+};
+#pragma endregion
 
-template <typename FLOAT, int RECURSE>
-struct Raytrace
-{
-	DEVICE_PREFIX static Vector4<FLOAT> Do(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+#pragma region - Render Mode : Raycast Tangents. -
+template<typename FLOAT>
+struct RenderModeRaycastTangents {
+public:
+	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+		auto intersect = Intersect(pScene, origin, direction);
+		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
+			return make_vector4<FLOAT>(0, 0, 0, 0);
+		}
+		Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, intersect.Object).Tangent;
+		return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
+	}
+};
+#pragma endregion
+
+#pragma region - Render Mode : Raytrace. -
+template<typename FLOAT, int RECURSE = 2>
+struct RenderModeRaytrace {
+public:
+	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
 		// Start intersecting objects.
 		auto intersect = Intersect(pScene, origin, direction);
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
@@ -392,136 +488,29 @@ struct Raytrace
 			FLOAT R = SchlickApprox<FLOAT>(vector_incident, vector_normal, 1, scale_ior);
 			scale_reflect = R;
 			//Add refraction contribution.
-			color = color + Raytrace<FLOAT, RECURSE - 1>::Do(pScene, vector_point + vector_refract * FLOAT(0.001), vector_refract) * scale_refract;
+			color = color + RenderModeRaytrace<FLOAT, RECURSE - 1>::CalculateColor(pScene, vector_point + vector_refract * FLOAT(0.001), vector_refract) * scale_refract;
 		}
 		if (scale_reflect > 0) {
-			color = color + Raytrace<FLOAT, RECURSE - 1>::Do(pScene, vector_point + vector_reflect * FLOAT(0.001), vector_reflect) * scale_reflect;
+			color = color + RenderModeRaytrace<FLOAT, RECURSE - 1>::CalculateColor(pScene, vector_point + vector_reflect * FLOAT(0.001), vector_reflect) * scale_reflect;
 		}
 		color.w = 1;
 		return color;
 	}
 };
 
+// Recursion Terminator Specialization (Recursion Depth -1 always evaluates to black).
 template <typename FLOAT>
-struct Raytrace<FLOAT, -1>
+struct RenderModeRaytrace<FLOAT, -1>
 {
-	DEVICE_PREFIX static Vector4<FLOAT> Do(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
 		return make_vector4<FLOAT>(0, 0, 0, 0);
 	}
 };
+#pragma endregion
 
+#pragma region - Render Mode : Ambient Occlusion. -
 template <typename FLOAT>
-DEVICE_PREFIX void ComputeRay(const Matrix44<FLOAT>& inverse_mvp, FLOAT clipx, FLOAT clipy, Vector3<FLOAT>& origin, Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-	Vector4<FLOAT> v41 = Transform(inverse_mvp, make_vector4<FLOAT>(clipx, clipy, 0, 1));
-	Vector4<FLOAT> v42 = Transform(inverse_mvp, make_vector4<FLOAT>(clipx, clipy, 1, 1));
-	Vector3<FLOAT> ray_p1 = make_vector3<FLOAT>(v41.x / v41.w, v41.y / v41.w, v41.z / v41.w);
-	Vector3<FLOAT> ray_p2 = make_vector3<FLOAT>(v42.x / v42.w, v42.y / v42.w, v42.z / v42.w);
-	origin = ray_p1;
-	direction = ray_p2 - ray_p1;
-}
-
-template <typename FLOAT>
-DEVICE_PREFIX unsigned int MakePixel(const Vector4<FLOAT>& color) DEVICE_SUFFIX {
-	unsigned char r = unsigned int(color.x < 0 ? 0 : (color.x > 1 ? 1 : color.x) * 255);
-	unsigned char g = unsigned int(color.y < 0 ? 0 : (color.y > 1 ? 1 : color.y) * 255);
-	unsigned char b = unsigned int(color.z < 0 ? 0 : (color.z > 1 ? 1 : color.z) * 255);
-	unsigned char a = unsigned int(color.w < 0 ? 0 : (color.w > 1 ? 1 : color.w) * 255);
-	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
-}
-
-template<typename FLOAT>
-struct SetPixel {
-	DEVICE_PREFIX SetPixel(void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int x, int y) DEVICE_SUFFIX :
-		bitmap_ptr(bitmap_ptr),
-		bitmap_width(bitmap_width),
-		bitmap_height(bitmap_height),
-		bitmap_stride(bitmap_stride),
-		x(x),
-		y(y)
-	{
-	}
-	DEVICE_PREFIX void Do(const Vector4<FLOAT>& color) const DEVICE_SUFFIX {
-		void* pRaster = (unsigned char*)bitmap_ptr + bitmap_stride * y;
-		unsigned int* pPixel = (unsigned int*)pRaster + x;
-		*pPixel = MakePixel(color);
-	}
-	DEVICE_PREFIX int GetX() const DEVICE_SUFFIX { return x; }
-	DEVICE_PREFIX int GetY() const DEVICE_SUFFIX { return y; }
-	DEVICE_PREFIX int GetWidth() const DEVICE_SUFFIX { return bitmap_width; }
-	DEVICE_PREFIX int GetHeight() const DEVICE_SUFFIX { return bitmap_height; }
-	void* bitmap_ptr;
-	int bitmap_width;
-	int bitmap_height;
-	int bitmap_stride;
-	int x;
-	int y;
-};
-
-template <typename FLOAT, typename COLORFUNC, typename SETPIXEL = SetPixel<FLOAT>>
-DEVICE_PREFIX void ComputePixel(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel, int superx = 1, int supery = 1) DEVICE_SUFFIX {
-	if (setpixel.GetX() >= setpixel.GetWidth() || setpixel.GetY() >= setpixel.GetHeight()) return;
-	Vector3<FLOAT> origin;
-	Vector3<FLOAT> direction;
-	Vector4<FLOAT> color = make_vector4<FLOAT>(0, 0, 0, 0);
-	for (int y_supersample = 1; y_supersample <= supery; ++y_supersample) {
-		for (int x_supersample = 1; x_supersample <= superx; ++x_supersample) {
-			// Build a ray for this supersample.
-			FLOAT vx = Lerp<FLOAT>(-1, +1, (setpixel.GetX() + FLOAT(x_supersample) / (superx + 1)) / setpixel.GetWidth());
-			FLOAT vy = Lerp<FLOAT>(+1, -1, (setpixel.GetY() + FLOAT(y_supersample) / (supery + 1)) / setpixel.GetHeight());
-			ComputeRay(inverse_mvp, vx, vy, origin, direction);
-			// Compute intersection with plane.
-			color = color + COLORFUNC::Do(pScene, origin, direction);
-		}
-	}
-	setpixel.Do(color / FLOAT(superx * supery));
-}
-
-template<typename FLOAT>
-struct DoRaycast {
-public:
-	DEVICE_PREFIX static Vector4<FLOAT> Do(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		return Raycast(pScene, origin, direction);
-	}
-};
-
-template<typename FLOAT>
-struct DoRaycastBitangents {
-public:
-	DEVICE_PREFIX static Vector4<FLOAT> Do(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		return RaycastBitangents(pScene, origin, direction);
-	}
-};
-
-template<typename FLOAT>
-struct DoRaycastNormals {
-public:
-	DEVICE_PREFIX static Vector4<FLOAT> Do(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		return RaycastNormals(pScene, origin, direction);
-	}
-};
-
-template<typename FLOAT>
-struct DoRaycastTangents {
-public:
-	DEVICE_PREFIX static Vector4<FLOAT> Do(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		return RaycastTangents(pScene, origin, direction);
-	}
-};
-
-template<typename FLOAT, int RECURSION = 2>
-struct DoRaytrace {
-public:
-	DEVICE_PREFIX static Vector4<FLOAT> Do(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		return Raytrace<FLOAT, RECURSION>::Do(pScene, origin, direction);
-	}
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// Ambient Occlusion.
-////////////////////////////////////////////////////////////////////////////////
-
-template <typename FLOAT>
-DEVICE_PREFIX Vector4<FLOAT> DoAOC(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, int hemisample_count, const Vector4<FLOAT>* hemisamples) DEVICE_SUFFIX {
+DEVICE_PREFIX Vector4<FLOAT> CalculateColorAOC(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, int hemisample_count, const Vector4<FLOAT>* hemisamples) DEVICE_SUFFIX {
 	auto intersect = Intersect(pScene, origin, direction);
 	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 		return make_vector4<FLOAT>(0, 0, 0, 0);
@@ -547,7 +536,8 @@ DEVICE_PREFIX void ComputePixelAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> i
 	// Build a ray for this supersample.
 	FLOAT vx = Lerp<FLOAT>(-1, +1, (setpixel.GetX() + FLOAT(0.5)) / setpixel.GetWidth());
 	FLOAT vy = Lerp<FLOAT>(+1, -1, (setpixel.GetY() + FLOAT(0.5)) / setpixel.GetHeight());
-	ComputeRay(inverse_mvp, vx, vy, origin, direction);
+	ComputeScreenRay(inverse_mvp, vx, vy, origin, direction);
 	// Compute intersection with plane.
-	setpixel.Do(DoAOC<FLOAT>(pScene, origin, direction, hemisample_count, hemisamples));
+	setpixel.PutPixel(CalculateColorAOC<FLOAT>(pScene, origin, direction, hemisample_count, hemisamples));
 }
+#pragma endregion
