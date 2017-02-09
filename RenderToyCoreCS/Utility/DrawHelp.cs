@@ -7,6 +7,16 @@ namespace RenderToy
 {
     public static class DrawHelp
     {
+        #region - Section : General -
+        public static uint ColorToUInt32(Point4D color)
+        {
+            return
+                ((uint)(color.W * 255) << 24) |
+                ((uint)(color.X * 255) << 16) |
+                ((uint)(color.Y * 255) << 8) |
+                ((uint)(color.Z * 255) << 0);
+        }
+        #endregion
         #region - Section : Delegates for shape access -
         public delegate Point3D GetPointUV(double u, double v);
         public delegate Point3D GetPointUVW(double u, double v, double w);
