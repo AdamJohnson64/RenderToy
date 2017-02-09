@@ -5,18 +5,15 @@
 
 using System;
 using System.Linq;
-using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
 
 namespace RenderToy
 {
     public static partial class Render
     {
         #region - Section : Phase 3 - Rasterized Rendering (Direct3D 9) -
-        public static ImageSource RasterD3D9(Scene scene, Matrix3D mvp, int render_width, int render_height)
+        public static void RasterD3D9(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            D3D9Surface d3dsurface = new D3D9Surface(render_width, render_height);
+            D3D9Surface d3dsurface = new D3D9Surface(bitmap_width, bitmap_height);
             d3dsurface.BeginScene();
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
@@ -59,12 +56,7 @@ namespace RenderToy
                 }
             }
             d3dsurface.EndScene();
-            D3DImage d3dimage = new D3DImage();
-            d3dimage.Lock();
-            d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3dsurface.SurfacePtr, true);
-            d3dimage.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
-            d3dimage.Unlock();
-            return d3dimage;
+            d3dsurface.CopyTo(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
         }
         #endregion
     }

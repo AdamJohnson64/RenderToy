@@ -71,6 +71,7 @@ namespace RenderToy
 			d3dpp.Windowed = TRUE;
 			d3dpp.EnableAutoDepthStencil = TRUE;
 			d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
+			d3dpp.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
 			IDirect3DDevice9* pDeviceTmp = nullptr;
 			TRY_D3D(D3D9GlobalServices::Instance->pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3D9GlobalServices::Instance->hHostWindow, D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDeviceTmp));
 			pDevice = pDeviceTmp;
@@ -118,6 +119,16 @@ namespace RenderToy
 		}
 		void SetColor(unsigned int color) {
 			this->color = color;
+		}
+		void CopyTo(System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+			D3DLOCKED_RECT rectd3d = { 0 };
+			RECT rect = { 0, 0, bitmap_width, bitmap_height };
+			TRY_D3D(pSurface->LockRect(&rectd3d, &rect, D3DLOCK_READONLY));
+			void* copyTo = (void*)bitmap_ptr;
+			for (int y = 0; y < bitmap_height; ++y) {
+				memcpy((unsigned char*)copyTo + bitmap_stride * y, (unsigned char*)rectd3d.pBits + rectd3d.Pitch * y, 4 * bitmap_width);
+			}
+			TRY_D3D(pSurface->UnlockRect());
 		}
 		#pragma endregion
 	private:
