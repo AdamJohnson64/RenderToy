@@ -25,51 +25,12 @@ namespace RenderToy
             SizeChanged += (s, e) => { Repaint(); };
             Content = control_image;
             var flyout = new MenuFlyout();
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Point (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.Point; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Wireframe (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.Wireframe; }, o => true) });
-            flyout.Items.Add(new MenuFlyoutItem { Text = "Raster (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.Raster; }, o => true) });
+            var calls = RenderCall.Generate(new[] { typeof(RenderCS), typeof(RenderToyCX) }).ToArray();
+            foreach (var call in calls)
             {
-                var submenu = new MenuFlyoutSubItem { Text = "Raycast" };
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastCPUF32; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastCPUF64; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastAMPF32; }, o => true) });
-                flyout.Items.Add(submenu);
+                flyout.Items.Add(new MenuFlyoutItem { Text = call.MethodInfo.Name, Command = new CommandBinding(o => { RenderMode = call; }, o => true) });
             }
-            {
-                var submenu = new MenuFlyoutSubItem { Text = "Raycast Normals" };
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsCPUF32; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsCPUF64; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Normals (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastNormalsAMPF32; }, o => true) });
-                flyout.Items.Add(submenu);
-            }
-            {
-                var submenu = new MenuFlyoutSubItem { Text = "Raycast Tangents" };
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsCPUF32; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsCPUF64; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Tangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastTangentsAMPF32; }, o => true) });
-                flyout.Items.Add(submenu);
-            }
-            {
-                var submenu = new MenuFlyoutSubItem { Text = "Raycast Bitangents" };
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsCPUF32; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsCPUF64; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raycast Bitangents (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaycastBitangentsAMPF32; }, o => true) });
-                flyout.Items.Add(submenu);
-            }
-            {
-                var submenu = new MenuFlyoutSubItem { Text = "Raytrace" };
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF32; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raytrace (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceCPUF64; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Raytrace (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.RaytraceAMPF32; }, o => true) });
-                flyout.Items.Add(submenu);
-            }
-            {
-                var submenu = new MenuFlyoutSubItem { Text = "Ambient Occlusion" };
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Ambient Occlusion (CPU/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.AmbientOcclusionCPUF32; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Ambient Occlusion (CPU/F64)", Command = new CommandBinding(o => { RenderMode = RenderModes.AmbientOcclusionCPUF64; }, o => true) });
-                submenu.Items.Add(new MenuFlyoutItem { Text = "Ambient Occlusion (AMP/F32)", Command = new CommandBinding(o => { RenderMode = RenderModes.AmbientOcclusionAMPF32; }, o => true) });
-                flyout.Items.Add(submenu);
-            }
+            renderMode = calls[0];
             ContextFlyout = flyout;
             ReduceQuality_Init();
         }
@@ -147,113 +108,9 @@ namespace RenderToy
             var inverse_mvp = MathHelp.Invert(mvp);
             var bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT);
             byte[] buffer_image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];
-            switch (renderMode)
+            if (renderMode != null)
             {
-                case RenderModes.Point:
-                    {
-                        GCHandle gchandle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
-                        try
-                        {
-                            RenderCS.Point(Scene.Default, mvp, gchandle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                        }
-                        finally
-                        {
-                            gchandle.Free();
-                        }
-                    }
-                    break;
-                case RenderModes.Wireframe:
-                    {
-                        GCHandle gchandle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
-                        try
-                        {
-                            RenderCS.Wireframe(Scene.Default, mvp, gchandle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                        }
-                        finally
-                        {
-                            gchandle.Free();
-                        }
-                    }
-                    break;
-                case RenderModes.Raster:
-                    {
-                        GCHandle gchandle = GCHandle.Alloc(buffer_image, GCHandleType.Pinned);
-                        try
-                        {
-                            RenderCS.Raster(Scene.Default, mvp, gchandle.AddrOfPinnedObject(), RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                        }
-                        finally
-                        {
-                            gchandle.Free();
-                        }
-                    }
-                    break;
-                case RenderModes.RaycastCPUF32:
-                    RenderToyCX.RaycastCPUF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastCPUF64:
-                    RenderToyCX.RaycastCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastNormalsCPUF32:
-                    RenderToyCX.RaycastNormalsCPUF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastNormalsCPUF64:
-                    RenderToyCX.RaycastNormalsCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastTangentsCPUF32:
-                    RenderToyCX.RaycastTangentsCPUF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastTangentsCPUF64:
-                    RenderToyCX.RaycastTangentsCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastBitangentsCPUF32:
-                    RenderToyCX.RaycastBitangentsCPUF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastBitangentsCPUF64:
-                    RenderToyCX.RaycastBitangentsCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaytraceCPUF32:
-                    RenderToyCX.RaytraceCPUF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaytraceCPUF64:
-                    RenderToyCX.RaytraceCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastAMPF32:
-                    RenderToyCX.RaycastAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastNormalsAMPF32:
-                    RenderToyCX.RaycastNormalsAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastTangentsAMPF32:
-                    RenderToyCX.RaycastTangentsAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaycastBitangentsAMPF32:
-                    RenderToyCX.RaycastBitangentsAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.RaytraceAMPF32:
-                    RenderToyCX.RaytraceAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
-                    break;
-                case RenderModes.AmbientOcclusionCPUF32:
-                    {
-                        var hemisample_list = MathHelp.HemiHammerslyCosineBias(16).ToList();
-                        int hemisample_count = hemisample_list.Count;
-                        RenderToyCX.AmbientOcclusionCPUF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, hemisample_count, SceneFormatter.CreateFlatMemoryF32(hemisample_list));
-                    }
-                    break;
-                case RenderModes.AmbientOcclusionCPUF64:
-                    {
-                        var hemisample_list = MathHelp.HemiHammerslyCosineBias(16).ToList();
-                        int hemisample_count = hemisample_list.Count;
-                        RenderToyCX.AmbientOcclusionCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, hemisample_count, SceneFormatter.CreateFlatMemoryF64(hemisample_list));
-                    }
-                    break;
-                case RenderModes.AmbientOcclusionAMPF32:
-                    {
-                        var hemisample_list = MathHelp.HemiHammerslyCosineBias(1024).ToList();
-                        int hemisample_count = hemisample_list.Count;
-                        RenderToyCX.AmbientOcclusionAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, hemisample_count, SceneFormatter.CreateFlatMemoryF32(hemisample_list));
-                    }
-                    break;
+                renderMode.Action(Scene.Default, mvp, buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
             }
             using (var stream = bitmap.PixelBuffer.AsStream())
             {
@@ -265,12 +122,12 @@ namespace RenderToy
             ReduceQuality_Decide(timeStart, timeEnd);
         }
         enum RenderModes { Point, Wireframe, Raster, RaycastCPUF32, RaycastCPUF64, RaycastNormalsCPUF32, RaycastNormalsCPUF64, RaycastTangentsCPUF32, RaycastTangentsCPUF64, RaycastBitangentsCPUF32, RaycastBitangentsCPUF64, RaytraceCPUF32, RaytraceCPUF64, RaycastAMPF32, RaycastNormalsAMPF32, RaycastTangentsAMPF32, RaycastBitangentsAMPF32, RaytraceAMPF32, AmbientOcclusionCPUF32, AmbientOcclusionCPUF64, AmbientOcclusionAMPF32 }
-        RenderModes RenderMode
+        RenderCall RenderMode
         {
             get { return renderMode; }
             set { renderMode = value; Repaint(); }
         }
-        RenderModes renderMode = RenderModes.Wireframe;
+        RenderCall renderMode;
         #endregion
         #region - Section : Quality Control -
         bool ReduceQuality
