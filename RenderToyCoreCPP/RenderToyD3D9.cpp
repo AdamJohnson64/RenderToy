@@ -119,13 +119,6 @@ namespace RenderToy
 		void SetColor(unsigned int color) {
 			this->color = color;
 		}
-		void CopyTo(System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-			D3DLOCKED_RECT rectd3d = { 0 };
-			RECT rect = { 0, 0, bitmap_width, bitmap_height };
-			TRY_D3D(pSurface->LockRect(&rectd3d, &rect, D3DLOCK_READONLY));
-			int test = 0;
-			TRY_D3D(pSurface->UnlockRect());
-		}
 		#pragma endregion
 	private:
 		IDirect3DDevice9* pDevice = nullptr;

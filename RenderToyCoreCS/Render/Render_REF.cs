@@ -10,13 +10,23 @@ namespace RenderToy
 {
     public static partial class RenderCS
     {
+        #region - Section : General -
+        public static uint ColorToUInt32(Point4D color)
+        {
+            return
+                ((uint)(color.W * 255) << 24) |
+                ((uint)(color.X * 255) << 16) |
+                ((uint)(color.Y * 255) << 8) |
+                ((uint)(color.Z * 255) << 0);
+        }
+        #endregion
         #region - Section : Phase 1 - Point Rendering (Reference) -
         public static void Point(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 Matrix3D model_mvp = transformedobject.Transform * mvp;
-                uint color = DrawHelp.ColorToUInt32(transformedobject.Node.WireColor);
+                uint color = ColorToUInt32(transformedobject.Node.WireColor);
                 // Draw a single pixel to the framebuffer (safety function).
                 Action<int, int> drawpixel2d = (x, y) =>
                 {
@@ -55,7 +65,7 @@ namespace RenderToy
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 Matrix3D model_mvp = transformedobject.Transform * mvp;
-                uint color = DrawHelp.ColorToUInt32(transformedobject.Node.WireColor);
+                uint color = ColorToUInt32(transformedobject.Node.WireColor);
                 // Draw a single pixel to the framebuffer (safety function).
                 Action<int, int> drawpixel2d = (x, y) =>
                 {
@@ -133,7 +143,7 @@ namespace RenderToy
                 Matrix3D model_mvp = transformedobject.Transform * mvp;
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv == null) continue;
-                uint color = DrawHelp.ColorToUInt32(transformedobject.Node.WireColor);
+                uint color = ColorToUInt32(transformedobject.Node.WireColor);
                 // Fill one scanline.
                 Action<int, Point3D, Point3D> fillscan = (y, x1, x2) =>
                 {

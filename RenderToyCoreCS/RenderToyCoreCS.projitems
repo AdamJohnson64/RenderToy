@@ -15,7 +15,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Material.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Scene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Transformed.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\CallHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\ClipHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\DrawHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\IntegrateHelp.cs" />
