@@ -11,7 +11,7 @@ namespace RenderToy
     public static partial class RenderCS
     {
         #region - Section : Phase 1 - Point Rendering (Reference) -
-        public static void Point(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void PointCPUF64(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
@@ -50,7 +50,7 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Phase 2 - Wireframe Rendering (Reference) -
-        public static void Wireframe(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void WireframeCPUF64(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
@@ -124,7 +124,7 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Phase 3 - Rasterized Rendering (Reference) -
-        public static void Raster(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void RasterCPUF64(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             float[] depthbuffer = new float[bitmap_width * bitmap_height];
             for (int i = 0; i < depthbuffer.Length; ++i) depthbuffer[i] = 1;

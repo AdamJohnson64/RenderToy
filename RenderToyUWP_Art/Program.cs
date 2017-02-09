@@ -87,7 +87,7 @@ namespace RenderToy
             BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
             {
-                RenderToy.RenderCS.Wireframe(DefaultScene, DefaultMVP * CameraPerspective.AspectCorrectFit(width, height), bitmapdata.Scan0, width, height, bitmapdata.Stride);
+                RenderToy.RenderCS.WireframeCPUF64(DefaultScene, DefaultMVP * CameraPerspective.AspectCorrectFit(width, height), bitmapdata.Scan0, width, height, bitmapdata.Stride);
             }
             finally
             {

@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace RenderToy
 {
-    public static partial class Render
+    public static class RenderD3D
     {
         #region - Section : Phase 3 - Rasterized Rendering (Direct3D 9) -
         public static void RasterD3D9(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)

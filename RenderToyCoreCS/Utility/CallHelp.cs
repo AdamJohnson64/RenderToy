@@ -5,12 +5,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace RenderToy
 {
+    [DebuggerDisplay("{MethodInfo.Name}")]
     public class RenderCall
     {
         public RenderCall(MethodInfo methodinfo, VFillFunction action)
@@ -25,6 +27,33 @@ namespace RenderToy
         public void Fill(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             Action(scene, mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+        }
+        public static string GetDisplayNameBare(string methodname)
+        {
+            var chop_mode = new[] { "AMP", "CPU", "CUDA", "D3D9" }
+                .Select(x => new { Chop = methodname.IndexOf(x), Name = x })
+                .Where(x => x.Chop != -1).OrderBy(x => x.Chop);
+            var chop_prec = new[] { "F32", "F64" }
+                .Select(x => new { Chop = methodname.IndexOf(x), Name = x })
+                .Where(x => x.Chop != -1).OrderBy(x => x.Chop);
+            var chop_any = chop_mode.Concat(chop_prec).OrderBy(x => x.Chop);
+            // Return the formatted string.
+            return methodname.Substring(0, chop_any.FirstOrDefault().Chop);
+        }
+        public static string GetDisplayNameFull(string methodname)
+        {
+            var chop_mode = new[] { "AMP", "CPU", "CUDA", "D3D9" }
+                .Select(x => new { Chop = methodname.IndexOf(x), Name = x })
+                .Where(x => x.Chop != -1).OrderBy(x => x.Chop);
+            var chop_prec = new[] { "F32", "F64" }
+                .Select(x => new { Chop = methodname.IndexOf(x), Name = x })
+                .Where(x => x.Chop != -1).OrderBy(x => x.Chop);
+            var chop_any = chop_mode.Concat(chop_prec).OrderBy(x => x.Chop);
+            // Return the formatted string.
+            var name = methodname.Substring(0, chop_any.FirstOrDefault().Chop);
+            var categories = chop_any.Select(x => x.Name);
+            var category = categories.Count() == 0 ? "" : " (" + string.Join("/", categories) + ")";
+            return name + category;
         }
         public static IEnumerable<RenderCall> Generate(IEnumerable<Type> types)
         {
