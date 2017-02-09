@@ -235,21 +235,21 @@ namespace RenderToy
                     break;
                 case RenderModes.AmbientOcclusionCPUF32:
                     {
-                        var hemisample_list = MathHelp.HemisphereSamplesCosineBias(16).ToList();
+                        var hemisample_list = MathHelp.HemiHammerslyCosineBias(16).ToList();
                         int hemisample_count = hemisample_list.Count;
                         RenderToyCX.AmbientOcclusionCPUF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, hemisample_count, SceneFormatter.CreateFlatMemoryF32(hemisample_list));
                     }
                     break;
                 case RenderModes.AmbientOcclusionCPUF64:
                     {
-                        var hemisample_list = MathHelp.HemisphereSamplesCosineBias(16).ToList();
+                        var hemisample_list = MathHelp.HemiHammerslyCosineBias(16).ToList();
                         int hemisample_count = hemisample_list.Count;
                         RenderToyCX.AmbientOcclusionCPUF64(SceneFormatter.CreateFlatMemoryF64(Scene.Default), SceneFormatter.CreateFlatMemoryF64(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, hemisample_count, SceneFormatter.CreateFlatMemoryF64(hemisample_list));
                     }
                     break;
                 case RenderModes.AmbientOcclusionAMPF32:
                     {
-                        var hemisample_list = MathHelp.HemisphereSamplesCosineBias(1024).ToList();
+                        var hemisample_list = MathHelp.HemiHammerslyCosineBias(1024).ToList();
                         int hemisample_count = hemisample_list.Count;
                         RenderToyCX.AmbientOcclusionAMPF32(SceneFormatter.CreateFlatMemoryF32(Scene.Default), SceneFormatter.CreateFlatMemoryF32(inverse_mvp), buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, hemisample_count, SceneFormatter.CreateFlatMemoryF32(hemisample_list));
                     }

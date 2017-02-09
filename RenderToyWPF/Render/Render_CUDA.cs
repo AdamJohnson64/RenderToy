@@ -109,25 +109,25 @@ namespace RenderToy
         #region - Section : Ambient Occlusion -
         public static void AmbientOcclusionCPUF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            var hemisample_list = MathHelp.HemisphereSamplesCosineBias(16).ToList();
+            var hemisample_list = MathHelp.HemiHammerslyCosineBias(16).ToList();
             int hemisample_count = hemisample_list.Count;
             RenderToy.RenderToyCLI.AmbientOcclusionCPUF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, SceneFormatter.CreateFlatMemoryF32(hemisample_list));
         }
         public static void AmbientOcclusionCPUF64(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            var hemisample_list = MathHelp.HemisphereSamplesCosineBias(16).ToList();
+            var hemisample_list = MathHelp.HemiHammerslyCosineBias(16).ToList();
             int hemisample_count = hemisample_list.Count;
             RenderToy.RenderToyCLI.AmbientOcclusionCPUF32(SceneFormatter.CreateFlatMemoryF64(scene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, SceneFormatter.CreateFlatMemoryF64(hemisample_list));
         }
         public static void AmbientOcclusionCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            var hemisample_list = MathHelp.HemisphereSamplesCosineBias(1024).ToList();
+            var hemisample_list = MathHelp.HemiHammerslyCosineBias(1024).ToList();
             int hemisample_count = hemisample_list.Count;
             RenderToy.RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, SceneFormatter.CreateFlatMemoryF32(hemisample_list));
         }
         public static void AmbientOcclusionCUDAF64(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
-            var hemisample_list = MathHelp.HemisphereSamplesCosineBias(256).ToList();
+            var hemisample_list = MathHelp.HemiHammerslyCosineBias(256).ToList();
             int hemisample_count = hemisample_list.Count;
             RenderToy.RenderToyCLI.AmbientOcclusionCUDAF64(SceneFormatter.CreateFlatMemoryF64(scene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, SceneFormatter.CreateFlatMemoryF64(hemisample_list));
         }
