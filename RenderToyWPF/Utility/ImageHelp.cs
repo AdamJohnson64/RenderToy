@@ -13,7 +13,6 @@ namespace RenderToy
     public static class ImageHelp
     {
         public delegate ImageSource ImageFunction(Scene scene, Matrix3D mvp, int render_width, int render_height);
-        public delegate void FillFunction(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
         /// <summary>
         /// Create an image from a FillFunction.
         /// </summary>
@@ -23,7 +22,7 @@ namespace RenderToy
         /// <param name="render_width">The desired pixel width of the output.</param>
         /// <param name="render_height">The desired pixel height of the output.</param>
         /// <returns></returns>
-        public static ImageSource CreateImage(FillFunction fillwith, Scene scene, Matrix3D mvp, int render_width, int render_height)
+        public static ImageSource CreateImage(RenderCall.FillFunction fillwith, Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
             WriteableBitmap bitmap = new WriteableBitmap(render_width, render_height, 0, 0, PixelFormats.Bgra32, null);
             bitmap.Lock();

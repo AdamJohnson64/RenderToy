@@ -478,7 +478,7 @@ namespace RenderToy
             }
             if (renderPreviews)
             {
-                Action<ImageHelp.FillFunction, int, int, int> drawpreview = (fillwith, stacky, render_width, render_height) =>
+                Action<RenderCall.FillFunction, int, int, int> drawpreview = (fillwith, stacky, render_width, render_height) =>
                 {
                     double frame_l = ActualWidth - 128 - 8;
                     double frame_t = 8 + (96 + 8) * stacky;
