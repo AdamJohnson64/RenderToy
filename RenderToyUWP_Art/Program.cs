@@ -9,6 +9,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
+using System.Linq;
 
 namespace RenderToy
 {
@@ -23,27 +24,46 @@ namespace RenderToy
             }
             string cwd = args[0];
             // Create the UWP application resources.
-            BitmapRaytrace(48, 48).Frame(2, 2).Save(Path.Combine(cwd, "LockScreenLogo.scale-200.png"));
-            BitmapMultimode(1240, 600).Frame(8, 2).Title().Save(Path.Combine(cwd, "SplashScreen.scale-200.png"));
-            BitmapMultimode(300, 300).Frame(4, 2).Save(Path.Combine(cwd, "Square150x150Logo.scale-200.png"));
-            BitmapRaytrace(88, 88).Frame(2, 2).Save(Path.Combine(cwd, "Square44x44Logo.scale-200.png"));
-            BitmapRaytrace(24, 24).Frame(1, 1).Save(Path.Combine(cwd, "Square44x44Logo.targetsize-24_altform-unplated.png"));
-            BitmapRaytrace(50, 50).Frame(2, 2).Save(Path.Combine(cwd, "StoreLogo.png"));
-            BitmapMultimode(620, 300).Frame(4, 2).Save(Path.Combine(cwd, "Wide310x150Logo.scale-200.png"));
+            BitmapRaytrace(48, 48)
+                .Frame(2, 2)
+                .Save(Path.Combine(cwd, "LockScreenLogo.scale-200.png"));
+            var aoc = BitmapAOC(1240 / 2, 600 / 2);
+            BitmapRaytrace(1240, 600)
+                .Overlay(aoc, new Rectangle(0, 0, 1240, 128))
+                .Overlay(aoc, new Rectangle(0, 600 - 64, 1240, 64))
+                .Overlay(BitmapWireframe(1240, 600))
+                .Frame(8, 2)
+                .Title()
+                .Save(Path.Combine(cwd, "SplashScreen.scale-200.png"));
+            BitmapRaytrace(300, 300)
+                .Overlay(BitmapWireframe(300, 300))
+                .Frame(4, 2)
+                .Save(Path.Combine(cwd, "Square150x150Logo.scale-200.png"));
+            BitmapRaytrace(88, 88)
+                .Frame(2, 2)
+                .Save(Path.Combine(cwd, "Square44x44Logo.scale-200.png"));
+            BitmapRaytrace(24, 24)
+                .Frame(1, 1)
+                .Save(Path.Combine(cwd, "Square44x44Logo.targetsize-24_altform-unplated.png"));
+            BitmapRaytrace(50, 50)
+                .Frame(2, 2).Save(Path.Combine(cwd, "StoreLogo.png"));
+            BitmapRaytrace(620, 300)
+                .Overlay(BitmapWireframe(620, 300))
+                .Frame(4, 2).Save(Path.Combine(cwd, "Wide310x150Logo.scale-200.png"));
             return 0;
         }
-        static Bitmap BitmapMultimode(int width, int height)
+        static Bitmap BitmapAOC(int width, int height)
         {
-            Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-            using (Graphics g = Graphics.FromImage(bitmap))
+            Bitmap bitmap = new System.Drawing.Bitmap(width, height, PixelFormat.Format32bppArgb);
+            BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            try
             {
-                // Use best quality rendering.
-                g.SmoothingMode = SmoothingMode.HighQuality;
-                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                // Draw the whole raytrace scene.
-                g.DrawImage(BitmapRaytrace(width, height), new Point(0, 0));
-                // Draw the overlay wireframe.
-                g.DrawImage(BitmapWireframe(width, height), new Point(0, 0));
+                var hemi = MathHelp.HemiHammerslyCosineBias(256).ToList();
+                RenderToyCLI.AmbientOcclusionCPUF64(SceneFormatter.CreateFlatMemoryF64(DefaultScene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(DefaultMVP * CameraPerspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, hemi.Count, SceneFormatter.CreateFlatMemoryF64(hemi));
+            }
+            finally
+            {
+                bitmap.UnlockBits(bitmapdata);
             }
             return bitmap;
         }
@@ -127,6 +147,23 @@ namespace RenderToy
             }
             return finalcomposition;
         }
+        public static Bitmap Overlay(this Bitmap baseimage, Bitmap addimage)
+        {
+            return Overlay(baseimage, addimage, new Rectangle(0, 0, baseimage.Width, baseimage.Height));
+        }
+        public static Bitmap Overlay(this Bitmap baseimage, Bitmap addimage, Rectangle clip)
+        {
+            Bitmap finalcomposition = new Bitmap(baseimage.Width, baseimage.Height, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(finalcomposition))
+            {
+                g.SmoothingMode = SmoothingMode.HighQuality;
+                g.DrawImage(baseimage, new Point(0, 0));
+                g.SetClip(clip);
+                g.DrawImage(addimage, new Rectangle(0, 0, baseimage.Width, baseimage.Height));
+                g.ResetClip();
+            }
+            return finalcomposition;
+        }
         public static Bitmap Title(this Bitmap baseimage)
         {
             Bitmap finalcomposition = new Bitmap(baseimage.Width, baseimage.Height, PixelFormat.Format32bppArgb);
@@ -138,17 +175,11 @@ namespace RenderToy
                 // Draw in the base image.
                 g.DrawImage(baseimage, new Point(0, 0));
                 // Draw in the splash text.
-                Brush brush_text = Brushes.White;
-                Brush brush_text_shadow = new SolidBrush(Color.FromArgb(64, 64, 64));
-                string text_top_string = "RenderToy";
                 float text_top_size = 72;
-                g.DrawString(text_top_string, new Font("Arial", text_top_size), brush_text_shadow, 8, 8);
-                g.DrawString(text_top_string, new Font("Arial", text_top_size), brush_text, 4, 4);
-                string text_bottom_string = "© 2016 Adam Johnson";
+                g.DrawString("RenderToy", new Font("Arial", text_top_size), Brushes.Black, 4, 4);
                 float text_bottom_size = 16;
-                SizeF text_bottom_rect = g.MeasureString(text_bottom_string, new Font("Arial", text_bottom_size));
-                g.DrawString(text_bottom_string, new Font("Arial", text_bottom_size), brush_text_shadow, baseimage.Width - text_bottom_rect.Width - 4, baseimage.Height - text_bottom_rect.Height - 4);
-                g.DrawString(text_bottom_string, new Font("Arial", text_bottom_size), brush_text, baseimage.Width - text_bottom_rect.Width - 8, baseimage.Height - text_bottom_rect.Height - 8);
+                SizeF text_bottom_rect = g.MeasureString("© 2016 Adam Johnson", new Font("Arial", text_bottom_size));
+                g.DrawString("© 2016 Adam Johnson", new Font("Arial", text_bottom_size), Brushes.Black, baseimage.Width - text_bottom_rect.Width - 8, baseimage.Height - text_bottom_rect.Height - 8);
             }
             return finalcomposition;
         }
