@@ -6,12 +6,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace RenderToy
 {
     public partial class MathHelp
     {
         #region - Section : Top Level Hemisphere Sample Generators -
+        public static IEnumerable<Vector3D> HemiHaltonCosineBias(int count)
+        {
+            return UVHalton(count).Select(x => HemisphereCosineBias(x));
+        }
+        public static IEnumerable<Vector3D> HemiHaltonUnbiased(int count)
+        {
+            return UVHalton(count).Select(x => HemisphereUnbiased(x));
+        }
         public static IEnumerable<Vector3D> HemiHammerslyCosineBias(int count)
         {
             return UVHammersley(count).Select(x => HemisphereCosineBias(x));
@@ -22,11 +31,11 @@ namespace RenderToy
         }
         public static IEnumerable<Vector3D> HemiRandomCosineBias(int count)
         {
-            return UVHammersley(count).Select(x => HemisphereCosineBias(x));
+            return UVRandom(count).Select(x => HemisphereCosineBias(x));
         }
         public static IEnumerable<Vector3D> HemiRandomUnbiased(int count)
         {
-            return UVHammersley(count).Select(x => HemisphereUnbiased(x));
+            return UVRandom(count).Select(x => HemisphereUnbiased(x));
         }
         public static IEnumerable<Vector3D> HemiRandomCube(int count)
         {
@@ -49,26 +58,51 @@ namespace RenderToy
             }
         }
         #endregion
+        #region - Section : Sequence Generators -
+        public static double SequenceHalton(int radix, int x)
+        {
+            double result = 0;
+            int div = radix;
+            while (x > 0)
+            {
+                int mod = x % radix;
+                result += (double)mod / div;
+                x = x / radix;
+                div = div * radix;
+            }
+            return result;
+        }
+        static double SequenceVanDerCorput(int x)
+        {
+            // Van der Corput sequence (Halton sequence for base-2).
+            // For each bit set in the index iterator we sum the corresponding binary fraction.
+            // Bit 0 : 1.0 / 2.0 = +0.5
+            // Bit 1 : 1.0 / 4.0 = +0.25
+            // Bit 2 : 1.0 / 8.0 = +0.125
+            // Bit 3 : 1.0 / 16.0 = +0.0625
+            // * Note: This isn't intended to be FAST and there are much
+            // * faster ways to achieve this with float bit-hacking.
+            double result = 0;
+            for (int bits = 0; bits < 24; ++bits)
+            {          
+                if ((x & (1 << bits)) != 0) result += 1.0 / (2 << bits);
+            }
+            return result;
+        }
+        #endregion
         #region - Section : UV Coordinate Generators -
+        static IEnumerable<Point2> UVHalton(int count)
+        {
+            for (int x = 0; x < count; ++x)
+            {
+                yield return new Point2(SequenceHalton(2, x), SequenceHalton(3, x));
+            }
+        }
         static IEnumerable<Point2> UVHammersley(int count)
         {
             for (int x = 0; x < count; ++x)
             {
-                double u = (double)x / count;
-                double v = 0;
-                // Van der Corput sequence (Halton sequence for base-2).
-                // For each bit set in the index iterator we sum the corresponding binary fraction.
-                // Bit 0 : 1.0 / 2.0 = +0.5
-                // Bit 1 : 1.0 / 4.0 = +0.25
-                // Bit 2 : 1.0 / 8.0 = +0.125
-                // Bit 3 : 1.0 / 16.0 = +0.0625
-                // * Note: This isn't intended to be FAST and there are much
-                // * faster ways to achieve this with float bit-hacking.
-                for (int bits = 0; bits < 24; ++bits)
-                {
-                    if ((x & (1 << bits)) != 0) v += 1.0 / (2 << bits);
-                }
-                yield return new Point2(u, v);
+                yield return new Point2((double)x / count, SequenceVanDerCorput(x));
             }
         }
         static IEnumerable<Point2> UVRandom(int count)
