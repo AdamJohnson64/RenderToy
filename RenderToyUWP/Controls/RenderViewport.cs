@@ -31,7 +31,7 @@ namespace RenderToy
                 var flyout_group = new MenuFlyoutSubItem { Text = group.Key };
                 foreach (var call in group)
                 {
-                    flyout_group.Items.Add(new MenuFlyoutItem { Text = call.MethodInfo.Name, Command = new CommandBinding(o => { RenderMode = call; }, o => true) });
+                    flyout_group.Items.Add(new MenuFlyoutItem { Text = RenderCall.GetDisplayNameFull(call.MethodInfo.Name), Command = new CommandBinding(o => { RenderMode = call; }, o => true) });
                 }
                 flyout.Items.Add(flyout_group);
             }
