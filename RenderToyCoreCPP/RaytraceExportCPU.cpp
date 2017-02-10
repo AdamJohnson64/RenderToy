@@ -19,119 +19,74 @@ namespace RaytraceCLI {
 	#undef DEVICE_PREFIX
 }
 
-extern "C" void RaycastCPUF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+template <typename FLOAT, typename RENDERMODE>
+static void RenderImageCPU(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int superx = 1, int supery = 1) {
+	for (int y = 0; y < bitmap_height; ++y) {
+		for (int x = 0; x < bitmap_width; ++x) {
+			RaytraceCLI::SetPixel<FLOAT> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::ComputePixel<FLOAT, RENDERMODE>(*(Scene<FLOAT>*)scene, *(Matrix44<FLOAT>*)inverse_mvp, setpixel, superx, supery);
+		}
+	}
+}
+
+extern "C" void RaycastCPUF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<float, RaytraceCLI::RenderModeRaycast<float>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaycastCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<double, RaytraceCLI::RenderModeRaycast<double>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaycastNormalsCPUF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<float, RaytraceCLI::RenderModeRaycastNormals<float>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaycastNormalsCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<double, RaytraceCLI::RenderModeRaycastNormals<double>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaycastTangentsCPUF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<float, RaytraceCLI::RenderModeRaycastTangents<float>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaycastTangentsCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<double, RaytraceCLI::RenderModeRaycastTangents<double>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaycastBitangentsCPUF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<float, RaytraceCLI::RenderModeRaycastBitangents<float>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaycastBitangentsCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<double, RaytraceCLI::RenderModeRaycastBitangents<double>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaytraceCPUF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<float, RaytraceCLI::RenderModeRaytrace<float>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaytraceCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+	RenderImageCPU<double, RaytraceCLI::RenderModeRaytrace<double>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+}
+
+extern "C" void RaytraceCPUF64AA(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int superx, int supery) {
+	RenderImageCPU<double, RaytraceCLI::RenderModeRaytrace<double>>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, superx, supery);
+}
+
+extern "C" void AmbientOcclusionCPUF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
 			RaytraceCLI::SetPixel<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<float, RaytraceCLI::RenderModeRaycast<float>>(*(Scene<float>*)pScene, *(Matrix44<float>*)pInverseMVP, setpixel);
+			RaytraceCLI::ComputePixelAOC<float>(*(Scene<float>*)scene, *(Matrix44<float>*)inverse_mvp, setpixel, hemisample_count, (Vector4<float>*)hemisamples);
 		}
 	}
 }
 
-extern "C" void RaycastCPUF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+extern "C" void AmbientOcclusionCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
 			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<double, RaytraceCLI::RenderModeRaycast<double>>(*(Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
-		}
-	}
-}
-
-extern "C" void RaycastNormalsCPUF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<float, RaytraceCLI::RenderModeRaycastNormals<float>>(*(Scene<float>*)pScene, *(Matrix44<float>*)pInverseMVP, setpixel);
-		}
-	}
-}
-
-extern "C" void RaycastNormalsCPUF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<double, RaytraceCLI::RenderModeRaycastNormals<double>>(*(Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
-		}
-	}
-}
-
-extern "C" void RaycastTangentsCPUF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<float, RaytraceCLI::RenderModeRaycastTangents<float>>(*(Scene<float>*)pScene, *(Matrix44<float>*)pInverseMVP, setpixel);
-		}
-	}
-}
-
-extern "C" void RaycastTangentsCPUF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<double, RaytraceCLI::RenderModeRaycastTangents<double>>(*(Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
-		}
-	}
-}
-
-extern "C" void RaycastBitangentsCPUF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<float, RaytraceCLI::RenderModeRaycastBitangents<float>>(*(Scene<float>*)pScene, *(Matrix44<float>*)pInverseMVP, setpixel);
-		}
-	}
-}
-
-extern "C" void RaycastBitangentsCPUF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<double, RaytraceCLI::RenderModeRaycastBitangents<double>>(*(Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
-		}
-	}
-}
-
-extern "C" void RaytraceCPUF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<float, RaytraceCLI::RenderModeRaytrace<float>>(*(Scene<float>*)pScene, *(Matrix44<float>*)pInverseMVP, setpixel);
-		}
-	}
-}
-
-extern "C" void RaytraceCPUF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<double, RaytraceCLI::RenderModeRaytrace<double>>(*(Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel);
-		}
-	}
-}
-
-extern "C" void RaytraceCPUF64AA(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int superx, int supery) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixel<double, RaytraceCLI::RenderModeRaytrace<double>>(*(Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel, superx, supery);
-		}
-	}
-}
-
-extern "C" void AmbientOcclusionCPUF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixelAOC<float>(*(Scene<float>*)pScene, *(Matrix44<float>*)pInverseMVP, setpixel, hemisample_count, (Vector4<float>*)hemisamples);
-		}
-	}
-}
-
-extern "C" void AmbientOcclusionCPUF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
-	for (int y = 0; y < bitmap_height; ++y) {
-		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixelAOC<double>(*(Scene<double>*)pScene, *(Matrix44<double>*)pInverseMVP, setpixel, hemisample_count, (Vector4<double>*)hemisamples);
+			RaytraceCLI::ComputePixelAOC<double>(*(Scene<double>*)scene, *(Matrix44<double>*)inverse_mvp, setpixel, hemisample_count, (Vector4<double>*)hemisamples);
 		}
 	}
 }
