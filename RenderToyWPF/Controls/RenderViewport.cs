@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace RenderToy
 {
@@ -171,7 +172,7 @@ namespace RenderToy
             // Generate commands for render modes.
             foreach (var call in RenderCallCommands.Calls)
             {
-                CommandBindings.Add(new CommandBinding(RenderCallCommands.Commands[call], (s, e) => { RenderMode = call; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+                CommandBindings.Add(new CommandBinding(RenderCallCommands.Commands[call], (s, e) => { RenderMode = new SinglePass(call); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             }
             // Generate context menu.
             var menu = new ContextMenu();
@@ -186,11 +187,11 @@ namespace RenderToy
             }
             this.ContextMenu = menu;
         }
-        RenderCall RenderMode
+        IMultipass RenderMode
         {
             set { renderMode = value; InvalidateVisual(); }
         }
-        RenderCall renderMode = RenderCallCommands.Calls[0];
+        IMultipass renderMode = new SinglePass(RenderCallCommands.Calls[0]);
         bool renderPreviews = true;
         bool renderWireframe = false;
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -202,7 +203,17 @@ namespace RenderToy
         {
             if (renderMode != null)
             {
-                drawingContext.DrawImage(ImageHelp.CreateImage(renderMode.Fill, Scene, MVP, (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1), (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1)), new Rect(0, 0, ActualWidth, ActualHeight));
+                int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1);
+                int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1);
+                renderMode.SetScene(Scene);
+                renderMode.SetCamera(MVP);
+                renderMode.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
+                WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
+                bitmap.Lock();
+                renderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
+                bitmap.AddDirtyRect(new Int32Rect(0, 0, RENDER_WIDTH, RENDER_HEIGHT));
+                bitmap.Unlock();
+                drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
             }
             if (renderWireframe)
             {
@@ -232,8 +243,8 @@ namespace RenderToy
             }
             if (renderMode != null)
             {
-                drawingContext.DrawText(new FormattedText(renderMode.MethodInfo.Name, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
-                drawingContext.DrawText(new FormattedText(renderMode.MethodInfo.Name, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
+                drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
+                drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
             }
         }
     }

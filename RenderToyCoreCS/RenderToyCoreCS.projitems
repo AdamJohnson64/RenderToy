@@ -9,6 +9,7 @@
     <Import_RootNamespace>RenderToyCoreCS</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Render\Render_Multipass.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Render\Render_REF.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Camera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Geometry.cs" />
