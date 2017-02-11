@@ -80,5 +80,12 @@ namespace RenderToy
 			pin_ptr<unsigned char> pin_hemisamples = &hemisamples[0];
 			::AmbientOcclusionCUDAF64(pin_scene, pin_inverse_mvp, (void*)bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, pin_hemisamples);
 		}
+		static void AmbientOcclusionMPCUDAF32(array<unsigned char>^ scene, array<unsigned char>^ inverse_mvp, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, array<unsigned char>^ hemisamples)
+		{
+			pin_ptr<unsigned char> pin_scene = &scene[0];
+			pin_ptr<unsigned char> pin_inverse_mvp = &inverse_mvp[0];
+			pin_ptr<unsigned char> pin_hemisamples = &hemisamples[0];
+			::AmbientOcclusionMPCUDAF32(pin_scene, pin_inverse_mvp, (void*)bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, pin_hemisamples);
+		}
 	};
 }

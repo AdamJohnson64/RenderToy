@@ -23,7 +23,7 @@ template <typename FLOAT, typename RENDERMODE>
 static void RenderImageCPU(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int superx = 1, int supery = 1) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<FLOAT> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::PixelSetARGB<FLOAT> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
 			RaytraceCLI::ComputePixel<FLOAT, RENDERMODE>(*(Scene<FLOAT>*)scene, *(Matrix44<FLOAT>*)inverse_mvp, setpixel, superx, supery);
 		}
 	}
@@ -76,7 +76,7 @@ extern "C" void RaytraceCPUF64AA(const void* scene, const void* inverse_mvp, voi
 extern "C" void AmbientOcclusionCPUF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::PixelSetARGB<float> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
 			RaytraceCLI::ComputePixelAOC<float>(*(Scene<float>*)scene, *(Matrix44<float>*)inverse_mvp, setpixel, hemisample_count, (Vector4<float>*)hemisamples);
 		}
 	}
@@ -85,7 +85,7 @@ extern "C" void AmbientOcclusionCPUF32(const void* scene, const void* inverse_mv
 extern "C" void AmbientOcclusionCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
 	for (int y = 0; y < bitmap_height; ++y) {
 		for (int x = 0; x < bitmap_width; ++x) {
-			RaytraceCLI::SetPixel<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+			RaytraceCLI::PixelSetARGB<double> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
 			RaytraceCLI::ComputePixelAOC<double>(*(Scene<double>*)scene, *(Matrix44<double>*)inverse_mvp, setpixel, hemisample_count, (Vector4<double>*)hemisamples);
 		}
 	}

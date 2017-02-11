@@ -69,7 +69,7 @@ namespace RenderToy
                     bool isF32 = method.Name.Contains("F32");
                     bool isF64 = method.Name.Contains("F64");
                     var generateargs = new List<Func<Dictionary<string, object>, Converted>>();
-                    var hemisamples = MathHelp.HemiHammerslyCosineBias(256).ToArray();
+                    var hemisamples = MathHelp.HemiHaltonCosineBias(256).ToArray();
                     foreach (var param in method.GetParameters())
                     {
                         if (param.ParameterType == typeof(Scene) && param.Name == "scene")

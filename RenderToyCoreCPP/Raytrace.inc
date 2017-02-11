@@ -306,16 +306,26 @@ DEVICE_PREFIX unsigned int Vector4ToA8R8G8B8(const Vector4<FLOAT>& color) DEVICE
 }
 
 template<typename FLOAT>
-struct SetPixel {
-	DEVICE_PREFIX SetPixel(void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int x, int y) DEVICE_SUFFIX :
-		bitmap_ptr(bitmap_ptr),
-		bitmap_width(bitmap_width),
-		bitmap_height(bitmap_height),
-		bitmap_stride(bitmap_stride),
-		x(x),
-		y(y)
-	{
+struct PixelAccumulateVec4 {
+	DEVICE_PREFIX PixelAccumulateVec4(void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int x, int y) DEVICE_SUFFIX :
+	bitmap_ptr(bitmap_ptr), bitmap_width(bitmap_width), bitmap_height(bitmap_height), bitmap_stride(bitmap_stride), x(x), y(y) { }
+	DEVICE_PREFIX int GetX() const DEVICE_SUFFIX { return x; }
+	DEVICE_PREFIX int GetY() const DEVICE_SUFFIX { return y; }
+	DEVICE_PREFIX int GetWidth() const DEVICE_SUFFIX { return bitmap_width; }
+	DEVICE_PREFIX int GetHeight() const DEVICE_SUFFIX { return bitmap_height; }
+	DEVICE_PREFIX void PutPixel(const Vector4<FLOAT>& color) const DEVICE_SUFFIX {
+		void* pRaster = (unsigned char*)bitmap_ptr + bitmap_stride * y;
+		Vector4<FLOAT>* pPixel = (Vector4<FLOAT>*)pRaster + x;
+		*pPixel = *pPixel + color;
 	}
+	void* bitmap_ptr;
+	int bitmap_width, bitmap_height, bitmap_stride, x, y;
+};
+
+template<typename FLOAT>
+struct PixelSetARGB {
+	DEVICE_PREFIX PixelSetARGB(void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int x, int y) DEVICE_SUFFIX :
+		bitmap_ptr(bitmap_ptr), bitmap_width(bitmap_width), bitmap_height(bitmap_height), bitmap_stride(bitmap_stride), x(x), y(y) { }
 	DEVICE_PREFIX int GetX() const DEVICE_SUFFIX { return x; }
 	DEVICE_PREFIX int GetY() const DEVICE_SUFFIX { return y; }
 	DEVICE_PREFIX int GetWidth() const DEVICE_SUFFIX { return bitmap_width; }
@@ -326,14 +336,10 @@ struct SetPixel {
 		*pPixel = Vector4ToA8R8G8B8(color);
 	}
 	void* bitmap_ptr;
-	int bitmap_width;
-	int bitmap_height;
-	int bitmap_stride;
-	int x;
-	int y;
+	int bitmap_width, bitmap_height, bitmap_stride, x, y;
 };
 
-template <typename FLOAT, typename RENDERMODE, typename SETPIXEL = SetPixel<FLOAT>>
+template <typename FLOAT, typename RENDERMODE, typename SETPIXEL>
 DEVICE_PREFIX void ComputePixel(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel, int superx = 1, int supery = 1) DEVICE_SUFFIX {
 	if (setpixel.GetX() >= setpixel.GetWidth() || setpixel.GetY() >= setpixel.GetHeight()) return;
 	Vector3<FLOAT> origin;
@@ -528,7 +534,7 @@ DEVICE_PREFIX Vector4<FLOAT> CalculateColorAOC(const Scene<FLOAT>& pScene, const
 	return make_vector4<FLOAT>(c, c, c, 1);
 }
 
-template <typename FLOAT, typename SETPIXEL = SetPixel<FLOAT>>
+template <typename FLOAT, typename SETPIXEL = PixelSetARGB<FLOAT>>
 DEVICE_PREFIX void ComputePixelAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel, int hemisample_count, const Vector4<FLOAT>* hemisamples) DEVICE_SUFFIX {
 	if (setpixel.GetX() >= setpixel.GetWidth() || setpixel.GetY() >= setpixel.GetHeight()) return;
 	Vector3<FLOAT> origin;
