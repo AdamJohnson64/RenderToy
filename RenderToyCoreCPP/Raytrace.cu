@@ -284,12 +284,12 @@ __global__ void globalRescaleVec4(const Vector4<FLOAT>* acc_ptr, int acc_stride,
 template <typename FLOAT>
 void ToneMapCUDA(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, float rescale)
 {
-	CudaMemory2DIn cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>*) * bitmap_width, bitmap_height);
+	CudaMemory2DIn cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>) * bitmap_width, bitmap_height);
 	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * bitmap_width, bitmap_height);
 	// Execute the tonemap kernel.
 	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
-	globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>*) * bitmap_width, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, sizeof(int) * bitmap_width, rescale);
+	globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>) * bitmap_width, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, sizeof(int) * bitmap_width, rescale);
 }
 
 extern "C" void ToneMap(const void* acc_ptr, int acc_stride, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, float rescale)
@@ -346,7 +346,7 @@ void AmbientOcclusionFMPCUDA(const void* pScene, const void* pMVP, void* acc_ptr
 {
 	CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
 	CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
-	CudaMemory2DInOut cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>*) * acc_width, acc_height);
+	CudaMemory2DInOut cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>) * acc_width, acc_height);
 	// Launch the accumulator kernel.
 	{
 		int thread_tile = 32;
