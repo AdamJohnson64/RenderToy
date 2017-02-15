@@ -63,9 +63,6 @@ namespace RenderToy
                 if (((method.Attributes & MethodAttributes.Public) == MethodAttributes.Public) &&
                     ((method.Attributes & MethodAttributes.Static) == MethodAttributes.Static))
                 {
-                    bool isAMP = method.Name.Contains("AMP");
-                    bool isCPU = method.Name.Contains("CPU");
-                    bool isCUDA = method.Name.Contains("CUDA");
                     bool isF32 = method.Name.Contains("F32");
                     bool isF64 = method.Name.Contains("F64");
                     var generateargs = new List<Func<Dictionary<string, object>, Converted>>();
@@ -145,6 +142,7 @@ namespace RenderToy
                         }
                         else
                         {
+                            goto SKIP;
                             throw new Exception("Unrecognized argument '" + param.Name + "' in render provider '" + method.DeclaringType.Name + "." + method.Name + "'.");
                         }
                     }
@@ -162,6 +160,8 @@ namespace RenderToy
                         method.Invoke(null, parameters);
                     };
                     rendercalls.Add(new RenderCall(method, action));
+                SKIP:
+                    continue;
                 }
             }
             return rendercalls;

@@ -260,6 +260,11 @@ namespace RenderToy
     }
     class RenderToyInjections
     {
+        public static void AOCHaltonBiasedMPCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        {
+            var hemisamples = MathHelp.HemiHaltonCosineBias(8192).ToArray();
+            RenderToyCLI.AmbientOcclusionMPCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+        }
         public static void AOCHaltonBiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
         {
             var hemisamples = MathHelp.HemiHaltonCosineBias(512).ToArray();

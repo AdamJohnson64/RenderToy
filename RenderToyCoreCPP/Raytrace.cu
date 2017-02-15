@@ -27,6 +27,74 @@ void CUDA_CALL(cudaError_t error) {
 }
 
 #define TRY_CUDA(fn) CUDA_CALL(fn);
+
+// CudaMemoryBase is the base of all in/out and backed memory helper objects.
+class CudaMemoryBase abstract
+{
+public:
+	CudaMemoryBase(int width) {
+		TRY_CUDA(cudaMalloc((void**)&device_ptr, width));
+	}
+	~CudaMemoryBase() {
+		TRY_CUDA(cudaFree(device_ptr));
+		device_ptr = nullptr;
+	}
+	void* DeviceMemory() {
+		return device_ptr;
+	}
+protected:
+	void* device_ptr;
+};
+
+// CudaMemory1DBuffer allocates unbacked temporary device memory.
+class CudaMemory1DBuffer : public CudaMemoryBase {
+public:
+	CudaMemory1DBuffer(int width) : CudaMemoryBase(width) {
+	}
+};
+
+// CudaMemory1DIn automatically copies memory from host to device.
+class CudaMemory1DIn : public CudaMemoryBase {
+public:
+	CudaMemory1DIn(const void* host_ptr, int width) : CudaMemoryBase(width) {
+		TRY_CUDA(cudaMemcpy(device_ptr, host_ptr, width, cudaMemcpyHostToDevice));
+	}
+};
+
+// CudaMemory2DIn allocates device memory and copies to device.
+class CudaMemory2DIn : public CudaMemoryBase {
+public:
+	CudaMemory2DIn(const void* host_ptr, int stride, int width, int height) : CudaMemoryBase(width * height) {
+		TRY_CUDA(cudaMemcpy2D(device_ptr, width, host_ptr, stride, width, height, cudaMemcpyHostToDevice));
+	}
+};
+
+// CudaMemory2DInOut allocates device memory, copies to device and copies back to host on destruct.
+class CudaMemory2DInOut : public CudaMemoryBase {
+public:
+	CudaMemory2DInOut(void* host_ptr, int stride, int width, int height) : CudaMemoryBase(width * height), host_ptr(host_ptr), stride(stride), width(width), height(height) {
+		TRY_CUDA(cudaMemcpy2D(device_ptr, width, host_ptr, stride, width, height, cudaMemcpyHostToDevice));
+	}
+	~CudaMemory2DInOut() {
+		TRY_CUDA(cudaMemcpy2D(host_ptr, stride, device_ptr, width, width, height, cudaMemcpyDeviceToHost));
+	}
+private:
+	void* host_ptr;
+	int stride, width, height;
+};
+
+// CudaMemory2DOut allocates device memory and copies back to host on destruct.
+class CudaMemory2DOut : public CudaMemoryBase {
+public:
+	CudaMemory2DOut(void* host_ptr, int stride, int width, int height) : CudaMemoryBase(width * height), host_ptr(host_ptr), stride(stride), width(width), height(height) {
+	}
+	~CudaMemory2DOut() {
+		TRY_CUDA(cudaMemcpy2D(host_ptr, stride, device_ptr, width, width, height, cudaMemcpyDeviceToHost));
+	}
+private:
+	void* host_ptr;
+	int stride, width, height;
+};
 #pragma endregion
 
 #pragma region - Render Mode : Common -
@@ -40,31 +108,11 @@ __device__ void cudaFill(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp
 
 template <typename FLOAT>
 void cudaRender(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, std::function<void(const Scene<FLOAT>&, const Matrix44<FLOAT>&, void*, int, int, const dim3&, const dim3&)> fn) {
-	// Allocate the scene buffer for CUDA.
-	Scene<FLOAT>* host_scene = (Scene<FLOAT>*)pScene;
-	Scene<FLOAT>* device_scene = nullptr;
-	TRY_CUDA(cudaMalloc((void**)&device_scene, host_scene->FileSize));
-	TRY_CUDA(cudaMemcpy(device_scene, host_scene, host_scene->FileSize, cudaMemcpyHostToDevice));
-	// Allocate the bitmap buffer for CUDA.
-	void* device_bitmap_ptr = nullptr;
-	int device_bitmap_stride = 4 * bitmap_width;
-	TRY_CUDA(cudaMalloc((void **)&device_bitmap_ptr, device_bitmap_stride * bitmap_height));
-	// Launch the kernel.
+	CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
+	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * bitmap_width, bitmap_height);
 	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
-	fn(*device_scene, *(Matrix44<FLOAT>*)pInverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, grid, threads);
-	// Copy back the render result to the CPU buffer.
-	for (int y = 0; y < bitmap_height; ++y)
-	{
-		void* pDevice = (unsigned char*)device_bitmap_ptr + device_bitmap_stride * y;
-		void* pHost = (unsigned char*)bitmap_ptr + bitmap_stride * y;
-		TRY_CUDA(cudaMemcpy(pHost, pDevice, 4 * bitmap_width, cudaMemcpyDeviceToHost));
-	}
-	// Clean up.
-	TRY_CUDA(cudaFree(device_bitmap_ptr));
-	device_bitmap_ptr = nullptr;
-	TRY_CUDA(cudaFree(device_scene));
-	device_scene = nullptr;
+	fn(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pInverseMVP, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, grid, threads);
 }
 #pragma endregion
 
@@ -200,37 +248,12 @@ __global__ void cudaAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp,
 template <typename FLOAT>
 void AmbientOcclusionCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
 {
-	// Allocate the scene buffer for CUDA.
-	Scene<FLOAT>* host_scene = (Scene<FLOAT>*)pScene;
-	Scene<FLOAT>* device_scene = nullptr;
-	TRY_CUDA(cudaMalloc((void**)&device_scene, host_scene->FileSize));
-	TRY_CUDA(cudaMemcpy(device_scene, host_scene, host_scene->FileSize, cudaMemcpyHostToDevice));
-	// Allocate the bitmap buffer for CUDA.
-	void* device_bitmap_ptr = nullptr;
-	int device_bitmap_stride = 4 * bitmap_width;
-	TRY_CUDA(cudaMalloc((void**)&device_bitmap_ptr, device_bitmap_stride * bitmap_height));
-	// Allocate the hemisample buffer for CUDA.
-	Vector4<FLOAT>* device_hemisamples = nullptr;
-	TRY_CUDA(cudaMalloc((void**)&device_hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count));
-	TRY_CUDA(cudaMemcpy(device_hemisamples, hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count, cudaMemcpyHostToDevice));
-	// Launch the kernel.
+	CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
+	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * bitmap_width, bitmap_height);
+	CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
 	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
-	cudaAOC<<<grid, threads>>>(*device_scene, *(Matrix44<FLOAT>*)pMVP, device_bitmap_ptr, bitmap_width, bitmap_height, device_bitmap_stride, hemisample_count, device_hemisamples);
-	// Copy back the render result to the CPU buffer.
-	for (int y = 0; y < bitmap_height; ++y)
-	{
-		void* pDevice = (unsigned char*)device_bitmap_ptr + device_bitmap_stride * y;
-		void* pHost = (unsigned char*)bitmap_ptr + bitmap_stride * y;
-		TRY_CUDA(cudaMemcpy(pHost, pDevice, 4 * bitmap_width, cudaMemcpyDeviceToHost));
-	}
-	// Clean up.
-	TRY_CUDA(cudaFree(device_hemisamples));
-	device_hemisamples = nullptr;
-	TRY_CUDA(cudaFree(device_bitmap_ptr));
-	device_bitmap_ptr = nullptr;
-	TRY_CUDA(cudaFree(device_scene));
-	device_scene = nullptr;
+	cudaAOC<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, sizeof(int) * bitmap_width, hemisample_count, (const Vector4<FLOAT>*)cudaHemisamples.DeviceMemory());
 }
 
 extern "C" void AmbientOcclusionCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
@@ -244,7 +267,7 @@ extern "C" void AmbientOcclusionCUDAF64(const void* pScene, const void* pMVP, vo
 }
 #pragma endregion
 
-#pragma region - Render Mode : Ambient Occlusion (Multipass) -
+#pragma region - Render Mode : Ambient Occlusion (ToneMap) -
 template <typename FLOAT>
 __global__ void globalRescaleVec4(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, FLOAT scale) {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -259,6 +282,24 @@ __global__ void globalRescaleVec4(const Vector4<FLOAT>* acc_ptr, int acc_stride,
 }
 
 template <typename FLOAT>
+void ToneMapCUDA(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, float rescale)
+{
+	CudaMemory2DIn cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>*) * bitmap_width, bitmap_height);
+	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * bitmap_width, bitmap_height);
+	// Execute the tonemap kernel.
+	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
+	dim3 threads(16, 16, 1);
+	globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>*) * bitmap_width, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, sizeof(int) * bitmap_width, rescale);
+}
+
+extern "C" void ToneMap(const void* acc_ptr, int acc_stride, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, float rescale)
+{
+	ToneMapCUDA<float>((const Vector4<float>*)acc_ptr, acc_stride, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, rescale);
+}
+#pragma endregion
+
+#pragma region - Render Mode : Ambient Occlusion (Multipass) -
+template <typename FLOAT>
 __global__ void globalAmbientOcclusionMPCUDA(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const Vector4<FLOAT>* hemisamples) {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
@@ -269,60 +310,54 @@ __global__ void globalAmbientOcclusionMPCUDA(const Scene<FLOAT>& pScene, Matrix4
 template <typename FLOAT>
 void AmbientOcclusionMPCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
 {
-	// Allocate the scene buffer for CUDA.
-	Scene<FLOAT>* host_scene = (Scene<FLOAT>*)pScene;
-	Scene<FLOAT>* device_scene = nullptr;
-	TRY_CUDA(cudaMalloc((void**)&device_scene, host_scene->FileSize));
-	TRY_CUDA(cudaMemcpy(device_scene, host_scene, host_scene->FileSize, cudaMemcpyHostToDevice));
-	// Allocate the accumulation buffer for CUDA.
-	Vector4<FLOAT>* device_acc_ptr = nullptr;
-	int device_acc_stride = sizeof(Vector4<FLOAT>) * bitmap_width;
-	TRY_CUDA(cudaMalloc((void**)&device_acc_ptr, device_acc_stride * bitmap_height));
-	// Allocate the hemisample buffer for CUDA.
-	Vector4<FLOAT>* device_hemisamples = nullptr;
-	TRY_CUDA(cudaMalloc((void**)&device_hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count));
-	TRY_CUDA(cudaMemcpy(device_hemisamples, hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count, cudaMemcpyHostToDevice));
-	// Launch the accumulator kernel.
+	CudaMemory1DBuffer cudaAccumulator(sizeof(Vector4<FLOAT>) * bitmap_width * bitmap_height);
 	int pass_hemisample_count = 64;
 	int pass_count = hemisample_count / pass_hemisample_count;
+	// Launch the accumulator kernel.
 	{
-		dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
-		dim3 threads(16, 16, 1);
+		CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
+		CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
+		int thread_tile = 32;
+		dim3 grid((bitmap_width + thread_tile - 1) / thread_tile, (bitmap_height + thread_tile - 1) / thread_tile, 1);
+		dim3 threads(thread_tile, thread_tile, 1);
 		for (int pass = 0; pass < pass_count; ++pass) {
-			Vector4<FLOAT>* pass_device_hemisamples = device_hemisamples + pass * pass_hemisample_count;
-			globalAmbientOcclusionMPCUDA << <grid, threads >> >(*device_scene, *(Matrix44<FLOAT>*)pMVP, device_acc_ptr, bitmap_width, bitmap_height, device_acc_stride, pass_hemisample_count, pass_device_hemisamples);
+			const Vector4<FLOAT>* pass_device_hemisamples = (const Vector4<FLOAT>*)cudaHemisamples.DeviceMemory() + pass * pass_hemisample_count;
+			globalAmbientOcclusionMPCUDA<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaAccumulator.DeviceMemory(), bitmap_width, bitmap_height, sizeof(Vector4<FLOAT>) * bitmap_width, pass_hemisample_count, pass_device_hemisamples);
 		}
 	}
-	// Allocate the tonemap buffer for CUDA.
-	void* device_bitmap_ptr = nullptr;
-	int device_bitmap_stride = sizeof(int) * bitmap_width;
-	TRY_CUDA(cudaMalloc((void**)&device_bitmap_ptr, device_bitmap_stride * bitmap_height));
 	// Apply the tonemap and divide the accumulated buffer.
 	{
+		CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * bitmap_width, bitmap_height);
 		dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
 		dim3 threads(16, 16, 1);
-		globalRescaleVec4<<<grid, threads>>>(device_acc_ptr, device_acc_stride, device_bitmap_ptr, bitmap_width, bitmap_height, device_bitmap_stride, FLOAT(1) / pass_count);
+		globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>) * bitmap_width, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, sizeof(int) * bitmap_width, FLOAT(1) / pass_count);
 	}
-	// Copy back the render result to the CPU buffer.
-	for (int y = 0; y < bitmap_height; ++y)
-	{
-		void* pDevice = (unsigned char*)device_bitmap_ptr + device_bitmap_stride * y;
-		void* pHost = (unsigned char*)bitmap_ptr + bitmap_stride * y;
-		TRY_CUDA(cudaMemcpy(pHost, pDevice, 4 * bitmap_width, cudaMemcpyDeviceToHost));
-	}
-	// Clean up.
-	TRY_CUDA(cudaFree(device_bitmap_ptr));
-	device_bitmap_ptr = nullptr;
-	TRY_CUDA(cudaFree(device_hemisamples));
-	device_hemisamples = nullptr;
-	TRY_CUDA(cudaFree(device_acc_ptr));
-	device_bitmap_ptr = nullptr;
-	TRY_CUDA(cudaFree(device_scene));
-	device_scene = nullptr;
 }
 
 extern "C" void AmbientOcclusionMPCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
 {
 	AmbientOcclusionMPCUDA<float>(pScene, pMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples);
+}
+#pragma endregion
+
+#pragma region - Render Mode : Ambient Occlusion (FMP Buffered) - 
+template <typename FLOAT>
+void AmbientOcclusionFMPCUDA(const void* pScene, const void* pMVP, void* acc_ptr, int acc_width, int acc_height, int acc_stride, int hemisample_count, const void* hemisamples)
+{
+	CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
+	CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
+	CudaMemory2DInOut cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>*) * acc_width, acc_height);
+	// Launch the accumulator kernel.
+	{
+		int thread_tile = 32;
+		dim3 grid((acc_width + thread_tile - 1) / thread_tile, (acc_height + thread_tile - 1) / thread_tile, 1);
+		dim3 threads(thread_tile, thread_tile, 1);
+		globalAmbientOcclusionMPCUDA<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaAccumulator.DeviceMemory(), acc_width, acc_height, sizeof(Vector4<FLOAT>) * acc_width, hemisample_count, (const Vector4<FLOAT>*)cudaHemisamples.DeviceMemory());
+	}
+}
+
+extern "C" void AmbientOcclusionFMPCUDAF32(const void* pScene, const void* pMVP, void* acc_ptr, int acc_width, int acc_height, int acc_stride, int hemisample_count, const void* hemisamples)
+{
+	AmbientOcclusionFMPCUDA<float>(pScene, pMVP, acc_ptr, acc_width, acc_height, acc_stride, hemisample_count, hemisamples);
 }
 #pragma endregion
