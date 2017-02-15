@@ -94,5 +94,9 @@ namespace RenderToy
 			pin_ptr<unsigned char> pin_hemisamples = &hemisamples[0];
 			::AmbientOcclusionFMPCUDAF32(pin_scene, pin_inverse_mvp, (void*)acc_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, pin_hemisamples);
 		}
+		static void ToneMap(System::IntPtr acc_ptr, int acc_stride, System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, float rescale)
+		{
+			::ToneMap((const void*)acc_ptr, acc_stride, (void*)bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, rescale);
+		}
 	};
 }
