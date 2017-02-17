@@ -11,9 +11,9 @@ namespace RenderToy
     public static class RenderD3D
     {
         #region - Section : Phase 3 - Rasterized Rendering (Direct3D 9) -
-        public static void RasterD3D9(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void RasterD3D9(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            D3D9Surface d3dsurface = new D3D9Surface(bitmap_width, bitmap_height);
+            D3D9Surface d3dsurface = new D3D9Surface(render_width, render_height);
             d3dsurface.BeginScene();
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
@@ -56,7 +56,7 @@ namespace RenderToy
                 }
             }
             d3dsurface.EndScene();
-            d3dsurface.CopyTo(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+            d3dsurface.CopyTo(bitmap_ptr, render_width, render_height, bitmap_stride);
         }
         #endregion
     }

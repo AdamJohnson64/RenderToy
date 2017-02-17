@@ -120,13 +120,13 @@ namespace RenderToy
 		void SetColor(unsigned int color) {
 			this->color = color;
 		}
-		void CopyTo(System::IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+		void CopyTo(System::IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 			D3DLOCKED_RECT rectd3d = { 0 };
-			RECT rect = { 0, 0, bitmap_width, bitmap_height };
+			RECT rect = { 0, 0, render_width, render_height };
 			TRY_D3D(pSurface->LockRect(&rectd3d, &rect, D3DLOCK_READONLY));
 			void* copyTo = (void*)bitmap_ptr;
-			for (int y = 0; y < bitmap_height; ++y) {
-				memcpy((unsigned char*)copyTo + bitmap_stride * y, (unsigned char*)rectd3d.pBits + rectd3d.Pitch * y, 4 * bitmap_width);
+			for (int y = 0; y < render_height; ++y) {
+				memcpy((unsigned char*)copyTo + bitmap_stride * y, (unsigned char*)rectd3d.pBits + rectd3d.Pitch * y, 4 * render_width);
 			}
 			TRY_D3D(pSurface->UnlockRect());
 		}

@@ -31,9 +31,9 @@ namespace RenderToy
         public void SetCamera(Matrix3D mvp) { this.mvp = mvp; }
         public void SetTarget(int width, int height) { }
         public void Start() { }
-        public bool CopyTo(IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public bool CopyTo(IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            fillwith.Action(scene, mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+            fillwith.Action(scene, mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
             return false;
         }
         RenderCall fillwith;

@@ -39,21 +39,21 @@ struct SetPixelAMP {
 };
 
 template <typename FLOAT>
-void AMPExecutor(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, std::function<void(Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<FLOAT, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int bitmap_width, int bitmap_height, int bitmap_stride)> exec) {
+void AMPExecutor(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, std::function<void(Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<FLOAT, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int render_width, int render_height, int bitmap_stride)> exec) {
 	Concurrency::array_view<int, 1> view_scene(((Scene<FLOAT>*)scene)->FileSize / sizeof(int), (int*)scene);
 	Concurrency::array_view<FLOAT, 1> view_imvp(4 * 4 * sizeof(FLOAT), (FLOAT*)inverse_mvp);
-	std::unique_ptr<int[]> result(new int[bitmap_width * bitmap_height]);
-	Concurrency::array_view<int, 2> view_bitmap(bitmap_height, bitmap_width, result.get());
+	std::unique_ptr<int[]> result(new int[render_width * render_height]);
+	Concurrency::array_view<int, 2> view_bitmap(render_height, render_width, result.get());
 	view_bitmap.discard_data();
-	exec(view_scene, view_imvp, view_bitmap, bitmap_width, bitmap_height, bitmap_stride);
+	exec(view_scene, view_imvp, view_bitmap, render_width, render_height, bitmap_stride);
 	view_bitmap.synchronize();
-	for (int y = 0; y < bitmap_height; ++y) {
-		memcpy((uint8*)bitmap_ptr + bitmap_stride * y, &result[bitmap_width * y], sizeof(int) * bitmap_width);
+	for (int y = 0; y < render_height; ++y) {
+		memcpy((uint8*)bitmap_ptr + bitmap_stride * y, &result[render_width * y], sizeof(int) * render_width);
 	}
 }
 
-extern "C" void RaycastAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int bitmap_width, int bitmap_height, int bitmap_stride) {
+extern "C" void RaycastAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int render_width, int render_height, int bitmap_stride) {
 		Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
 			SetPixelAMP<float> setpixel(view_bitmap, idx);
 			RaytraceCX::ComputePixel<float, RaytraceCX::RenderModeRaycast<float>>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel);
@@ -61,8 +61,8 @@ extern "C" void RaycastAMPF32(const void* scene, const void* inverse_mvp, void* 
 	});
 }
 
-extern "C" void RaycastNormalsAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int bitmap_width, int bitmap_height, int bitmap_stride) {
+extern "C" void RaycastNormalsAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int render_width, int render_height, int bitmap_stride) {
 		Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
 			SetPixelAMP<float> setpixel(view_bitmap, idx);
 			RaytraceCX::ComputePixel<float, RaytraceCX::RenderModeRaycastNormals<float>>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel);
@@ -70,8 +70,8 @@ extern "C" void RaycastNormalsAMPF32(const void* scene, const void* inverse_mvp,
 	});
 }
 
-extern "C" void RaycastTangentsAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int bitmap_width, int bitmap_height, int bitmap_stride) {
+extern "C" void RaycastTangentsAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int render_width, int render_height, int bitmap_stride) {
 		Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
 			SetPixelAMP<float> setpixel(view_bitmap, idx);
 			RaytraceCX::ComputePixel<float, RaytraceCX::RenderModeRaycastTangents<float>>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel);
@@ -79,8 +79,8 @@ extern "C" void RaycastTangentsAMPF32(const void* scene, const void* inverse_mvp
 	});
 }
 
-extern "C" void RaycastBitangentsAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int bitmap_width, int bitmap_height, int bitmap_stride) {
+extern "C" void RaycastBitangentsAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int render_width, int render_height, int bitmap_stride) {
 		Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
 			SetPixelAMP<float> setpixel(view_bitmap, idx);
 			RaytraceCX::ComputePixel<float, RaytraceCX::RenderModeRaycastBitangents<float>>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel);
@@ -88,8 +88,8 @@ extern "C" void RaycastBitangentsAMPF32(const void* scene, const void* inverse_m
 	});
 }
 
-extern "C" void RaytraceAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int bitmap_width, int bitmap_height, int bitmap_stride) {
+extern "C" void RaytraceAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int render_width, int render_height, int bitmap_stride) {
 		Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
 			SetPixelAMP<float> setpixel(view_bitmap, idx);
 			RaytraceCX::ComputePixel<float, RaytraceCX::RenderModeRaytrace<float, 0>>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel);
@@ -97,19 +97,19 @@ extern "C" void RaytraceAMPF32(const void* scene, const void* inverse_mvp, void*
 	});
 }
 
-extern "C" void AmbientOcclusionAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
+extern "C" void AmbientOcclusionAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
 	Concurrency::array_view<int, 1> view_scene(((Scene<float>*)scene)->FileSize / sizeof(int), (int*)scene);
 	Concurrency::array_view<float, 1> view_imvp(4 * 4, (float*)inverse_mvp);
 	Concurrency::array_view<float, 1> view_hemisamples(4 * hemisample_count, (float*)hemisamples);
-	std::unique_ptr<int[]> result(new int[bitmap_width * bitmap_height]);
-	Concurrency::array_view<int, 2> view_bitmap(bitmap_height, bitmap_width, result.get());
+	std::unique_ptr<int[]> result(new int[render_width * render_height]);
+	Concurrency::array_view<int, 2> view_bitmap(render_height, render_width, result.get());
 	view_bitmap.discard_data();
 	Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
 		SetPixelAMP<float> setpixel(view_bitmap, idx);
 		RaytraceCX::ComputePixelAOC<float>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel, hemisample_count, (Vector4<float>*)&view_hemisamples[0]);
 	});
 	view_bitmap.synchronize();
-	for (int y = 0; y < bitmap_height; ++y) {
-		memcpy((uint8*)bitmap_ptr + bitmap_stride * y, &result[bitmap_width * y], sizeof(int) * bitmap_width);
+	for (int y = 0; y < render_height; ++y) {
+		memcpy((uint8*)bitmap_ptr + bitmap_stride * y, &result[render_width * y], sizeof(int) * render_width);
 	}
 }

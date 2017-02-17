@@ -7,9 +7,9 @@
 #include "RaytraceExportAMP.h"
 
 #define EXPORTGENERATOR(NAME) \
-static void NAME(const Platform::Array<unsigned char>^ scene, const Platform::Array<unsigned char>^ inverse_mvp, Platform::WriteOnlyArray<unsigned char>^ bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) \
+static void NAME(const Platform::Array<unsigned char>^ scene, const Platform::Array<unsigned char>^ inverse_mvp, Platform::WriteOnlyArray<unsigned char>^ bitmap_ptr, int render_width, int render_height, int bitmap_stride) \
 { \
-	::NAME(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, bitmap_width, bitmap_height, bitmap_stride); \
+	::NAME(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, render_width, render_height, bitmap_stride); \
 }
 
 namespace RenderToy
@@ -32,17 +32,17 @@ namespace RenderToy
 		EXPORTGENERATOR(RaycastTangentsAMPF32)
 		EXPORTGENERATOR(RaycastBitangentsAMPF32)
 		EXPORTGENERATOR(RaytraceAMPF32)
-		static void AmbientOcclusionCPUF32(const Platform::Array<unsigned char>^ scene, const Platform::Array<unsigned char>^ inverse_mvp, Platform::WriteOnlyArray<unsigned char>^ bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const Platform::Array<unsigned char>^ hemisamples)
+		static void AmbientOcclusionCPUF32(const Platform::Array<unsigned char>^ scene, const Platform::Array<unsigned char>^ inverse_mvp, Platform::WriteOnlyArray<unsigned char>^ bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const Platform::Array<unsigned char>^ hemisamples)
 		{
-			::AmbientOcclusionCPUF32(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples->Data);
+			::AmbientOcclusionCPUF32(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, render_width, render_height, bitmap_stride, hemisample_count, hemisamples->Data);
 		}
-		static void AmbientOcclusionCPUF64(const Platform::Array<unsigned char>^ scene, const Platform::Array<unsigned char>^ inverse_mvp, Platform::WriteOnlyArray<unsigned char>^ bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const Platform::Array<unsigned char>^ hemisamples)
+		static void AmbientOcclusionCPUF64(const Platform::Array<unsigned char>^ scene, const Platform::Array<unsigned char>^ inverse_mvp, Platform::WriteOnlyArray<unsigned char>^ bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const Platform::Array<unsigned char>^ hemisamples)
 		{
-			::AmbientOcclusionCPUF64(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples->Data);
+			::AmbientOcclusionCPUF64(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, render_width, render_height, bitmap_stride, hemisample_count, hemisamples->Data);
 		}
-		static void AmbientOcclusionAMPF32(const Platform::Array<unsigned char>^ scene, const Platform::Array<unsigned char>^ inverse_mvp, Platform::WriteOnlyArray<unsigned char>^ bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const Platform::Array<unsigned char>^ hemisamples)
+		static void AmbientOcclusionAMPF32(const Platform::Array<unsigned char>^ scene, const Platform::Array<unsigned char>^ inverse_mvp, Platform::WriteOnlyArray<unsigned char>^ bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const Platform::Array<unsigned char>^ hemisamples)
 		{
-			::AmbientOcclusionAMPF32(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples->Data);
+			::AmbientOcclusionAMPF32(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, render_width, render_height, bitmap_stride, hemisample_count, hemisamples->Data);
 		}
 	};
 }

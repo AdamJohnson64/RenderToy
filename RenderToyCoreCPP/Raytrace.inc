@@ -307,36 +307,36 @@ DEVICE_PREFIX unsigned int Vector4ToA8R8G8B8(const Vector4<FLOAT>& color) DEVICE
 
 template<typename FLOAT>
 struct PixelAccumulateVec4 {
-	DEVICE_PREFIX PixelAccumulateVec4(void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int x, int y) DEVICE_SUFFIX :
-	bitmap_ptr(bitmap_ptr), bitmap_width(bitmap_width), bitmap_height(bitmap_height), bitmap_stride(bitmap_stride), x(x), y(y) { }
+	DEVICE_PREFIX PixelAccumulateVec4(void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int x, int y) DEVICE_SUFFIX :
+	bitmap_ptr(bitmap_ptr), render_width(render_width), render_height(render_height), bitmap_stride(bitmap_stride), x(x), y(y) { }
 	DEVICE_PREFIX int GetX() const DEVICE_SUFFIX { return x; }
 	DEVICE_PREFIX int GetY() const DEVICE_SUFFIX { return y; }
-	DEVICE_PREFIX int GetWidth() const DEVICE_SUFFIX { return bitmap_width; }
-	DEVICE_PREFIX int GetHeight() const DEVICE_SUFFIX { return bitmap_height; }
+	DEVICE_PREFIX int GetWidth() const DEVICE_SUFFIX { return render_width; }
+	DEVICE_PREFIX int GetHeight() const DEVICE_SUFFIX { return render_height; }
 	DEVICE_PREFIX void PutPixel(const Vector4<FLOAT>& color) const DEVICE_SUFFIX {
 		void* pRaster = (unsigned char*)bitmap_ptr + bitmap_stride * y;
 		Vector4<FLOAT>* pPixel = (Vector4<FLOAT>*)pRaster + x;
 		*pPixel = *pPixel + color;
 	}
 	void* bitmap_ptr;
-	int bitmap_width, bitmap_height, bitmap_stride, x, y;
+	int render_width, render_height, bitmap_stride, x, y;
 };
 
 template<typename FLOAT>
 struct PixelSetARGB {
-	DEVICE_PREFIX PixelSetARGB(void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int x, int y) DEVICE_SUFFIX :
-		bitmap_ptr(bitmap_ptr), bitmap_width(bitmap_width), bitmap_height(bitmap_height), bitmap_stride(bitmap_stride), x(x), y(y) { }
+	DEVICE_PREFIX PixelSetARGB(void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int x, int y) DEVICE_SUFFIX :
+		bitmap_ptr(bitmap_ptr), render_width(render_width), render_height(render_height), bitmap_stride(bitmap_stride), x(x), y(y) { }
 	DEVICE_PREFIX int GetX() const DEVICE_SUFFIX { return x; }
 	DEVICE_PREFIX int GetY() const DEVICE_SUFFIX { return y; }
-	DEVICE_PREFIX int GetWidth() const DEVICE_SUFFIX { return bitmap_width; }
-	DEVICE_PREFIX int GetHeight() const DEVICE_SUFFIX { return bitmap_height; }
+	DEVICE_PREFIX int GetWidth() const DEVICE_SUFFIX { return render_width; }
+	DEVICE_PREFIX int GetHeight() const DEVICE_SUFFIX { return render_height; }
 	DEVICE_PREFIX void PutPixel(const Vector4<FLOAT>& color) const DEVICE_SUFFIX {
 		void* pRaster = (unsigned char*)bitmap_ptr + bitmap_stride * y;
 		unsigned int* pPixel = (unsigned int*)pRaster + x;
 		*pPixel = Vector4ToA8R8G8B8(color);
 	}
 	void* bitmap_ptr;
-	int bitmap_width, bitmap_height, bitmap_stride, x, y;
+	int render_width, render_height, bitmap_stride, x, y;
 };
 
 template <typename FLOAT, typename RENDERMODE, typename SETPIXEL>

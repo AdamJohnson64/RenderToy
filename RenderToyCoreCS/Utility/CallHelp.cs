@@ -20,13 +20,13 @@ namespace RenderToy
             this.MethodInfo = methodinfo;
             this.Action = action;
         }
-        public delegate void FillFunction(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
-        public delegate void VFillFunction(Scene scene, Matrix3D mvp, object bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride);
+        public delegate void FillFunction(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride);
+        public delegate void VFillFunction(Scene scene, Matrix3D mvp, object bitmap_ptr, int render_width, int render_height, int bitmap_stride);
         public readonly MethodInfo MethodInfo;
         public readonly VFillFunction Action;
-        public void Fill(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public void Fill(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            Action(scene, mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+            Action(scene, mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
         public static string GetDisplayNameBare(string methodname)
         {
@@ -111,13 +111,13 @@ namespace RenderToy
                                 }
                             );
                         }
-                        else if (param.ParameterType == typeof(int) && param.Name == "bitmap_width")
+                        else if (param.ParameterType == typeof(int) && param.Name == "render_width")
                         {
-                            generateargs.Add((args) => new ConvertedPrimitive(args["bitmap_width"]));
+                            generateargs.Add((args) => new ConvertedPrimitive(args["render_width"]));
                         }
-                        else if (param.ParameterType == typeof(int) && param.Name == "bitmap_height")
+                        else if (param.ParameterType == typeof(int) && param.Name == "render_height")
                         {
-                            generateargs.Add((args) => new ConvertedPrimitive(args["bitmap_height"]));
+                            generateargs.Add((args) => new ConvertedPrimitive(args["render_height"]));
                         }
                         else if (param.ParameterType == typeof(int) && param.Name == "bitmap_stride")
                         {
@@ -147,13 +147,13 @@ namespace RenderToy
                         }
                     }
                     if (generateargs.Count == 0) continue;
-                    VFillFunction action = (scene, mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride) => {
+                    VFillFunction action = (scene, mvp, bitmap_ptr, render_width, render_height, bitmap_stride) => {
                         var arguments = new Dictionary<string, object>();
                         arguments["scene"] = scene;
                         arguments["mvp"] = mvp;
                         arguments["bitmap_ptr"] = bitmap_ptr;
-                        arguments["bitmap_width"] = bitmap_width;
-                        arguments["bitmap_height"] = bitmap_height;
+                        arguments["render_width"] = render_width;
+                        arguments["render_height"] = render_height;
                         arguments["bitmap_stride"] = bitmap_stride;
                         var converters = generateargs.Select(x => x(arguments)).ToArray();
                         var parameters = converters.Select(x => x.Value).ToArray();

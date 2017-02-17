@@ -261,50 +261,50 @@ namespace RenderToy
     }
     class RenderToyInjections
     {
-        public static void AOCHaltonBiasedMPCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void AOCHaltonBiasedMPCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var hemisamples = MathHelp.HemiHaltonCosineBias(8192).ToArray();
-            RenderToyCLI.AmbientOcclusionMPCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+            RenderToyCLI.AmbientOcclusionMPCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, render_width, render_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
         }
-        public static void AOCHaltonBiasedFMPCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void AOCHaltonBiasedFMPCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            float[] acc = new float[4 * bitmap_width * bitmap_height];
-            int acc_stride = sizeof(float) * 4 * bitmap_width;
+            float[] acc = new float[4 * render_width * render_height];
+            int acc_stride = sizeof(float) * 4 * render_width;
             var hemisamples = MathHelp.HemiHaltonCosineBias(32).ToArray();
             GCHandle handle_acc = GCHandle.Alloc(acc, GCHandleType.Pinned);
-            RenderToyCLI.AmbientOcclusionFMPCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), handle_acc.AddrOfPinnedObject(), bitmap_width, bitmap_height, acc_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
-            RenderToyCLI.ToneMap(handle_acc.AddrOfPinnedObject(), acc_stride, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, 1.0f);
+            RenderToyCLI.AmbientOcclusionFMPCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), handle_acc.AddrOfPinnedObject(), render_width, render_height, acc_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+            RenderToyCLI.ToneMap(handle_acc.AddrOfPinnedObject(), acc_stride, bitmap_ptr, render_width, render_height, bitmap_stride, 1.0f);
             handle_acc.Free();
         }
-        public static void AOCHaltonBiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void AOCHaltonBiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var hemisamples = MathHelp.HemiHaltonCosineBias(512).ToArray();
-            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, render_width, render_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
         }
-        public static void AOCHaltonUnbiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void AOCHaltonUnbiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var hemisamples = MathHelp.HemiHaltonUnbiased(512).ToArray();
-            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, render_width, render_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
         }
-        public static void AOCHammerslyBiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void AOCHammerslyBiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var hemisamples = MathHelp.HemiHammerslyCosineBias(512).ToArray();
-            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, render_width, render_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
         }
-        public static void AOCHammerslyUnbiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void AOCHammerslyUnbiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var hemisamples = MathHelp.HemiHammerslyUnbiased(512).ToArray();
-            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, render_width, render_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
         }
-        public static void AOCRandomBiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void AOCRandomBiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var hemisamples = MathHelp.HemiRandomCosineBias(512).ToArray();
-            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, render_width, render_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
         }
-        public static void AOCRandomUnbiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+        public static void AOCRandomUnbiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var hemisamples = MathHelp.HemiRandomUnbiased(512).ToArray();
-            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+            RenderToyCLI.AmbientOcclusionCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, render_width, render_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
         }
     }
 }

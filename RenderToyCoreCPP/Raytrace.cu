@@ -99,180 +99,180 @@ private:
 
 #pragma region - Render Mode : Common -
 template <typename FLOAT, typename T, int X_SUPERSAMPLES = 1, int Y_SUPERSAMPLES = 1>
-__device__ void cudaFill(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
+__device__ void cudaFill(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
-	RaytraceCUDA::PixelSetARGB<FLOAT> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+	RaytraceCUDA::PixelSetARGB<FLOAT> setpixel(bitmap_ptr, render_width, render_height, bitmap_stride, x, y);
 	RaytraceCUDA::ComputePixel<FLOAT, T>(pScene, inverse_mvp, setpixel, X_SUPERSAMPLES, Y_SUPERSAMPLES);
 }
 
 template <typename FLOAT>
-void cudaRender(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, std::function<void(const Scene<FLOAT>&, const Matrix44<FLOAT>&, void*, int, int, const dim3&, const dim3&)> fn) {
+void cudaRender(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, std::function<void(const Scene<FLOAT>&, const Matrix44<FLOAT>&, void*, int, int, const dim3&, const dim3&)> fn) {
 	CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
-	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * bitmap_width, bitmap_height);
-	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
+	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * render_width, render_height);
+	dim3 grid((render_width + 15) / 16, (render_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
-	fn(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pInverseMVP, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, grid, threads);
+	fn(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pInverseMVP, cudaBitmap.DeviceMemory(), render_width, render_height, grid, threads);
 }
 #pragma endregion
 
 #pragma region - Render Mode : Raycast -
-__global__ void cudaRaycastKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::RenderModeRaycast<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaycastKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<float, RaytraceCUDA::RenderModeRaycast<float>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaycastCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaycastCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaycastKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaycastKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 
-__global__ void cudaRaycastKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::RenderModeRaycast<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaycastKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<double, RaytraceCUDA::RenderModeRaycast<double>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaycastCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaycastCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaycastKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaycastKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 #pragma endregion
 
 #pragma region - Render Mode : Raycast Bitangents -
-__global__ void cudaRaycastBitangentsKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::RenderModeRaycastBitangents<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaycastBitangentsKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<float, RaytraceCUDA::RenderModeRaycastBitangents<float>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaycastBitangentsCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaycastBitangentsCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaycastBitangentsKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaycastBitangentsKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 
-__global__ void cudaRaycastBitangentsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::RenderModeRaycastBitangents<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaycastBitangentsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<double, RaytraceCUDA::RenderModeRaycastBitangents<double>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaycastBitangentsCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaycastBitangentsCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaycastBitangentsKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaycastBitangentsKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 #pragma endregion
 
 #pragma region - Render Mode : Raycast Normals -
-__global__ void cudaRaycastNormalsKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::RenderModeRaycastNormals<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaycastNormalsKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<float, RaytraceCUDA::RenderModeRaycastNormals<float>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaycastNormalsCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaycastNormalsCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaycastNormalsKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaycastNormalsKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 
-__global__ void cudaRaycastNormalsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::RenderModeRaycastNormals<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaycastNormalsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<double, RaytraceCUDA::RenderModeRaycastNormals<double>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaycastNormalsCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaycastNormalsCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaycastNormalsKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaycastNormalsKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 #pragma endregion
 
 #pragma region - Render Mode : Raycast Tangents -
-__global__ void cudaRaycastTangentsKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::RenderModeRaycastTangents<float>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaycastTangentsKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<float, RaytraceCUDA::RenderModeRaycastTangents<float>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaycastTangentsCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaycastTangentsCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaycastTangentsKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaycastTangentsKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 
-__global__ void cudaRaycastTangentsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::RenderModeRaycastTangents<double>>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaycastTangentsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<double, RaytraceCUDA::RenderModeRaycastTangents<double>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaycastTangentsCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaycastTangentsCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaycastTangentsKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaycastTangentsKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 #pragma endregion
 
 #pragma region - Render Mode : Raytrace -
-__global__ void cudaRaytraceKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<float, RaytraceCUDA::RenderModeRaytrace<float>, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaytraceKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<float, RaytraceCUDA::RenderModeRaytrace<float>, 2, 2>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaytraceCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaytraceCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaytraceKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaytraceKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 
-__global__ void cudaRaytraceKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride) {
-	cudaFill<double, RaytraceCUDA::RenderModeRaytrace<double>, 2, 2>(pScene, inverse_mvp, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride);
+__global__ void cudaRaytraceKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<double, RaytraceCUDA::RenderModeRaytrace<double>, 2, 2>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
 
-extern "C" void RaytraceCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride)
+extern "C" void RaytraceCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 {
-	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int bitmap_width, int bitmap_height, const dim3& grid, const dim3& threads) {
-		cudaRaytraceKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, bitmap_width, bitmap_height, 4 * bitmap_width);
+	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaRaytraceKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
 #pragma endregion
 
 #pragma region - Render Mode : Ambient Occlusion -
 template <typename FLOAT>
-__global__ void cudaAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const Vector4<FLOAT>* hemisamples) {
+__global__ void cudaAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const Vector4<FLOAT>* hemisamples) {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
-	RaytraceCUDA::PixelSetARGB<FLOAT> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+	RaytraceCUDA::PixelSetARGB<FLOAT> setpixel(bitmap_ptr, render_width, render_height, bitmap_stride, x, y);
 	RaytraceCUDA::ComputePixelAOC<FLOAT>(pScene, inverse_mvp, setpixel, hemisample_count, hemisamples);
 }
 
 template <typename FLOAT>
-void AmbientOcclusionCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+void AmbientOcclusionCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
 {
 	CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
-	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * bitmap_width, bitmap_height);
+	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * render_width, render_height);
 	CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
-	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
+	dim3 grid((render_width + 15) / 16, (render_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
-	cudaAOC<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, sizeof(int) * bitmap_width, hemisample_count, (const Vector4<FLOAT>*)cudaHemisamples.DeviceMemory());
+	cudaAOC<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaBitmap.DeviceMemory(), render_width, render_height, sizeof(int) * render_width, hemisample_count, (const Vector4<FLOAT>*)cudaHemisamples.DeviceMemory());
 }
 
-extern "C" void AmbientOcclusionCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+extern "C" void AmbientOcclusionCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
 {
-	AmbientOcclusionCUDA<float>(pScene, pMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples);
+	AmbientOcclusionCUDA<float>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, hemisample_count, hemisamples);
 }
 
-extern "C" void AmbientOcclusionCUDAF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+extern "C" void AmbientOcclusionCUDAF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
 {
-	AmbientOcclusionCUDA<double>(pScene, pMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples);
+	AmbientOcclusionCUDA<double>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, hemisample_count, hemisamples);
 }
 #pragma endregion
 
 #pragma region - Render Mode : Ambient Occlusion (ToneMap) -
 template <typename FLOAT>
-__global__ void globalRescaleVec4(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, FLOAT scale) {
+__global__ void globalRescaleVec4(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, FLOAT scale) {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
-	if (x >= bitmap_width || y >= bitmap_height) return;
+	if (x >= render_width || y >= render_height) return;
 	Vector4<FLOAT>* pRaster_Accum = (Vector4<FLOAT>*)((unsigned char*)acc_ptr + acc_stride * y);
 	unsigned int* pRaster_Bitmap = (unsigned int*)((unsigned char*)bitmap_ptr + bitmap_stride * y);
 	Vector4<FLOAT>* pPixel_Accum = pRaster_Accum + x;
@@ -282,35 +282,35 @@ __global__ void globalRescaleVec4(const Vector4<FLOAT>* acc_ptr, int acc_stride,
 }
 
 template <typename FLOAT>
-void ToneMapCUDA(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, float rescale)
+void ToneMapCUDA(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, float rescale)
 {
-	CudaMemory2DIn cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>) * bitmap_width, bitmap_height);
-	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * bitmap_width, bitmap_height);
+	CudaMemory2DIn cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>) * render_width, render_height);
+	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * render_width, render_height);
 	// Execute the tonemap kernel.
-	dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
+	dim3 grid((render_width + 15) / 16, (render_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
-	globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>) * bitmap_width, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, sizeof(int) * bitmap_width, rescale);
+	globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>) * render_width, cudaBitmap.DeviceMemory(), render_width, render_height, sizeof(int) * render_width, rescale);
 }
 
-extern "C" void ToneMap(const void* acc_ptr, int acc_stride, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, float rescale)
+extern "C" void ToneMap(const void* acc_ptr, int acc_stride, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, float rescale)
 {
-	ToneMapCUDA<float>((const Vector4<float>*)acc_ptr, acc_stride, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, rescale);
+	ToneMapCUDA<float>((const Vector4<float>*)acc_ptr, acc_stride, bitmap_ptr, render_width, render_height, bitmap_stride, rescale);
 }
 #pragma endregion
 
 #pragma region - Render Mode : Ambient Occlusion (Multipass) -
 template <typename FLOAT>
-__global__ void globalAmbientOcclusionMPCUDA(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const Vector4<FLOAT>* hemisamples) {
+__global__ void globalAmbientOcclusionMPCUDA(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const Vector4<FLOAT>* hemisamples) {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
-	RaytraceCUDA::PixelAccumulateVec4<FLOAT> setpixel(bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, x, y);
+	RaytraceCUDA::PixelAccumulateVec4<FLOAT> setpixel(bitmap_ptr, render_width, render_height, bitmap_stride, x, y);
 	RaytraceCUDA::ComputePixelAOC<FLOAT>(pScene, inverse_mvp, setpixel, hemisample_count, hemisamples);
 }
 
 template <typename FLOAT>
-void AmbientOcclusionMPCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+void AmbientOcclusionMPCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
 {
-	CudaMemory1DBuffer cudaAccumulator(sizeof(Vector4<FLOAT>) * bitmap_width * bitmap_height);
+	CudaMemory1DBuffer cudaAccumulator(sizeof(Vector4<FLOAT>) * render_width * render_height);
 	int pass_hemisample_count = 64;
 	int pass_count = hemisample_count / pass_hemisample_count;
 	// Launch the accumulator kernel.
@@ -318,25 +318,25 @@ void AmbientOcclusionMPCUDA(const void* pScene, const void* pMVP, void* bitmap_p
 		CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
 		CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
 		int thread_tile = 32;
-		dim3 grid((bitmap_width + thread_tile - 1) / thread_tile, (bitmap_height + thread_tile - 1) / thread_tile, 1);
+		dim3 grid((render_width + thread_tile - 1) / thread_tile, (render_height + thread_tile - 1) / thread_tile, 1);
 		dim3 threads(thread_tile, thread_tile, 1);
 		for (int pass = 0; pass < pass_count; ++pass) {
 			const Vector4<FLOAT>* pass_device_hemisamples = (const Vector4<FLOAT>*)cudaHemisamples.DeviceMemory() + pass * pass_hemisample_count;
-			globalAmbientOcclusionMPCUDA<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaAccumulator.DeviceMemory(), bitmap_width, bitmap_height, sizeof(Vector4<FLOAT>) * bitmap_width, pass_hemisample_count, pass_device_hemisamples);
+			globalAmbientOcclusionMPCUDA<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaAccumulator.DeviceMemory(), render_width, render_height, sizeof(Vector4<FLOAT>) * render_width, pass_hemisample_count, pass_device_hemisamples);
 		}
 	}
 	// Apply the tonemap and divide the accumulated buffer.
 	{
-		CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * bitmap_width, bitmap_height);
-		dim3 grid((bitmap_width + 15) / 16, (bitmap_height + 15) / 16, 1);
+		CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * render_width, render_height);
+		dim3 grid((render_width + 15) / 16, (render_height + 15) / 16, 1);
 		dim3 threads(16, 16, 1);
-		globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>) * bitmap_width, cudaBitmap.DeviceMemory(), bitmap_width, bitmap_height, sizeof(int) * bitmap_width, FLOAT(1) / pass_count);
+		globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>) * render_width, cudaBitmap.DeviceMemory(), render_width, render_height, sizeof(int) * render_width, FLOAT(1) / pass_count);
 	}
 }
 
-extern "C" void AmbientOcclusionMPCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int bitmap_width, int bitmap_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+extern "C" void AmbientOcclusionMPCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
 {
-	AmbientOcclusionMPCUDA<float>(pScene, pMVP, bitmap_ptr, bitmap_width, bitmap_height, bitmap_stride, hemisample_count, hemisamples);
+	AmbientOcclusionMPCUDA<float>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, hemisample_count, hemisamples);
 }
 #pragma endregion
 
