@@ -269,11 +269,11 @@ namespace RenderToy
         public static void AOCHaltonBiasedFMPCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             float[] acc = new float[4 * render_width * render_height];
-            int acc_stride = sizeof(float) * 4 * render_width;
+            int accumulator_stride = sizeof(float) * 4 * render_width;
             var hemisamples = MathHelp.HemiHaltonCosineBias(32).ToArray();
             GCHandle handle_acc = GCHandle.Alloc(acc, GCHandleType.Pinned);
-            RenderToyCLI.AmbientOcclusionFMPCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), handle_acc.AddrOfPinnedObject(), render_width, render_height, acc_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
-            RenderToyCLI.ToneMap(handle_acc.AddrOfPinnedObject(), acc_stride, bitmap_ptr, render_width, render_height, bitmap_stride, 1.0f);
+            RenderToyCLI.AmbientOcclusionFMPCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), handle_acc.AddrOfPinnedObject(), render_width, render_height, accumulator_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
+            RenderToyCLI.ToneMap(handle_acc.AddrOfPinnedObject(), accumulator_stride, bitmap_ptr, render_width, render_height, bitmap_stride, 1.0f);
             handle_acc.Free();
         }
         public static void AOCHaltonBiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)

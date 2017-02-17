@@ -269,11 +269,11 @@ extern "C" void AmbientOcclusionCUDAF64(const void* pScene, const void* pMVP, vo
 
 #pragma region - Render Mode : Ambient Occlusion (ToneMap) -
 template <typename FLOAT>
-__global__ void globalRescaleVec4(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, FLOAT scale) {
+__global__ void globalRescaleVec4(const Vector4<FLOAT>* accumulator_ptr, int accumulator_stride, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, FLOAT scale) {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
 	if (x >= render_width || y >= render_height) return;
-	Vector4<FLOAT>* pRaster_Accum = (Vector4<FLOAT>*)((unsigned char*)acc_ptr + acc_stride * y);
+	Vector4<FLOAT>* pRaster_Accum = (Vector4<FLOAT>*)((unsigned char*)accumulator_ptr + accumulator_stride * y);
 	unsigned int* pRaster_Bitmap = (unsigned int*)((unsigned char*)bitmap_ptr + bitmap_stride * y);
 	Vector4<FLOAT>* pPixel_Accum = pRaster_Accum + x;
 	unsigned int* pPixel_Bitmap = pRaster_Bitmap + x;
@@ -282,9 +282,9 @@ __global__ void globalRescaleVec4(const Vector4<FLOAT>* acc_ptr, int acc_stride,
 }
 
 template <typename FLOAT>
-void ToneMapCUDA(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, float rescale)
+void ToneMapCUDA(const Vector4<FLOAT>* accumulator_ptr, int accumulator_stride, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, float rescale)
 {
-	CudaMemory2DIn cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>) * render_width, render_height);
+	CudaMemory2DIn cudaAccumulator(accumulator_ptr, accumulator_stride, sizeof(Vector4<FLOAT>) * render_width, render_height);
 	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * render_width, render_height);
 	// Execute the tonemap kernel.
 	dim3 grid((render_width + 15) / 16, (render_height + 15) / 16, 1);
@@ -292,9 +292,9 @@ void ToneMapCUDA(const Vector4<FLOAT>* acc_ptr, int acc_stride, void* bitmap_ptr
 	globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>) * render_width, cudaBitmap.DeviceMemory(), render_width, render_height, sizeof(int) * render_width, rescale);
 }
 
-extern "C" void ToneMap(const void* acc_ptr, int acc_stride, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, float rescale)
+extern "C" void ToneMap(const void* accumulator_ptr, int accumulator_stride, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, float rescale)
 {
-	ToneMapCUDA<float>((const Vector4<float>*)acc_ptr, acc_stride, bitmap_ptr, render_width, render_height, bitmap_stride, rescale);
+	ToneMapCUDA<float>((const Vector4<float>*)accumulator_ptr, accumulator_stride, bitmap_ptr, render_width, render_height, bitmap_stride, rescale);
 }
 #pragma endregion
 
@@ -342,11 +342,11 @@ extern "C" void AmbientOcclusionMPCUDAF32(const void* pScene, const void* pMVP, 
 
 #pragma region - Render Mode : Ambient Occlusion (FMP Buffered) - 
 template <typename FLOAT>
-void AmbientOcclusionFMPCUDA(const void* pScene, const void* pMVP, void* acc_ptr, int acc_width, int acc_height, int acc_stride, int hemisample_count, const void* hemisamples)
+void AmbientOcclusionFMPCUDA(const void* pScene, const void* pMVP, void* accumulator_ptr, int acc_width, int acc_height, int accumulator_stride, int hemisample_count, const void* hemisamples)
 {
 	CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
 	CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
-	CudaMemory2DInOut cudaAccumulator(acc_ptr, acc_stride, sizeof(Vector4<FLOAT>) * acc_width, acc_height);
+	CudaMemory2DInOut cudaAccumulator(accumulator_ptr, accumulator_stride, sizeof(Vector4<FLOAT>) * acc_width, acc_height);
 	// Launch the accumulator kernel.
 	{
 		int thread_tile = 32;
@@ -356,8 +356,8 @@ void AmbientOcclusionFMPCUDA(const void* pScene, const void* pMVP, void* acc_ptr
 	}
 }
 
-extern "C" void AmbientOcclusionFMPCUDAF32(const void* pScene, const void* pMVP, void* acc_ptr, int acc_width, int acc_height, int acc_stride, int hemisample_count, const void* hemisamples)
+extern "C" void AmbientOcclusionFMPCUDAF32(const void* pScene, const void* pMVP, void* accumulator_ptr, int acc_width, int acc_height, int accumulator_stride, int hemisample_count, const void* hemisamples)
 {
-	AmbientOcclusionFMPCUDA<float>(pScene, pMVP, acc_ptr, acc_width, acc_height, acc_stride, hemisample_count, hemisamples);
+	AmbientOcclusionFMPCUDA<float>(pScene, pMVP, accumulator_ptr, acc_width, acc_height, accumulator_stride, hemisample_count, hemisamples);
 }
 #pragma endregion
