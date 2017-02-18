@@ -298,10 +298,10 @@ DEVICE_PREFIX void ComputeScreenRay(const Matrix44<FLOAT>& inverse_mvp, FLOAT cl
 
 template <typename FLOAT>
 DEVICE_PREFIX unsigned int Vector4ToA8R8G8B8(const Vector4<FLOAT>& color) DEVICE_SUFFIX {
-	unsigned char r = unsigned int(color.x < 0 ? 0 : (color.x > 1 ? 1 : color.x) * 255);
-	unsigned char g = unsigned int(color.y < 0 ? 0 : (color.y > 1 ? 1 : color.y) * 255);
-	unsigned char b = unsigned int(color.z < 0 ? 0 : (color.z > 1 ? 1 : color.z) * 255);
-	unsigned char a = unsigned int(color.w < 0 ? 0 : (color.w > 1 ? 1 : color.w) * 255);
+	unsigned int r = unsigned int(color.x < 0 ? 0 : (color.x > 1 ? 1 : color.x) * 254);
+	unsigned int g = unsigned int(color.y < 0 ? 0 : (color.y > 1 ? 1 : color.y) * 254);
+	unsigned int b = unsigned int(color.z < 0 ? 0 : (color.z > 1 ? 1 : color.z) * 254);
+	unsigned int a = unsigned int(color.w < 0 ? 0 : (color.w > 1 ? 1 : color.w) * 254);
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
@@ -523,15 +523,14 @@ DEVICE_PREFIX Vector4<FLOAT> CalculateColorAOC(const Scene<FLOAT>& pScene, const
 	}
 	auto intersect_tbn = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, intersect.Object);
 	auto vector_point = origin + intersect_tbn.Lambda * direction + FLOAT(0.001) * intersect_tbn.Normal;
-	FLOAT contribution = 0;
+	FLOAT c = 0;
 	for (int i = 0; i < hemisample_count; ++i)
 	{
 		const Vector3<FLOAT>& hemisample = *(const Vector3<FLOAT>*)(hemisamples + i);
 		const Vector3<FLOAT> hemisample_mapped = hemisample.x * intersect_tbn.Tangent + hemisample.y * intersect_tbn.Bitangent + hemisample.z * intersect_tbn.Normal;
-		if (!RayShadow(pScene, vector_point, hemisample_mapped)) contribution += 1; //Dot(hemisample_mapped, intersect_tbn.Normal);
+		if (!RayShadow(pScene, vector_point, hemisample_mapped)) c += 1; //Dot(hemisample_mapped, intersect_tbn.Normal);
 	}
-	FLOAT c = FLOAT(contribution) / hemisample_count;
-	return make_vector4<FLOAT>(c, c, c, 1);
+	return make_vector4<FLOAT>(c, c, c, hemisample_count);
 }
 
 template <typename FLOAT, typename SETPIXEL = PixelSetARGB<FLOAT>>

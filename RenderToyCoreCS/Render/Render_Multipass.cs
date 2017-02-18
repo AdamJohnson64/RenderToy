@@ -89,31 +89,33 @@ namespace RenderToy
             public override void Start() { }
             public override bool CopyTo(IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
             {
-                PassRun();
+                bool again = PassRun();
                 GCHandle handle_accumulator = GCHandle.Alloc(accumulator, GCHandleType.Pinned);
                 #if !WINDOWS_UWP
                 // TODO(fixme): AMP doesn't have a tonemapper yet.
-                RenderToyCLI.ToneMap(handle_accumulator.AddrOfPinnedObject(), sizeof(float) * 4 * width, bitmap_ptr, width, height, bitmap_stride, 1.0f / pass);
+                RenderToyCLI.ToneMap(handle_accumulator.AddrOfPinnedObject(), sizeof(float) * 4 * width, bitmap_ptr, width, height, bitmap_stride, 1.0f / (pass * SAMPLES_PER_PASS));
                 #endif
                 handle_accumulator.Free();
-                return pass < (hemisamples.Length / SAMPLES_PER_PASS);
+                return again;
             }
             void PassDirty()
             {
                 accumulator = null;
                 pass = 0;
             }
-            void PassRun()
+            bool PassRun()
             {
                 if (accumulator == null)
                 {
                     accumulator = new byte[sizeof(float) * 4 * width * height];
                     pass = 0;
                 }
+                if (SAMPLES_PER_PASS * pass >= hemisamples.Length) return false;
                 var overrides = new Dictionary<string, object>();
                 overrides[RenderCall.HEMISAMPLES] = hemisamples.Skip(SAMPLES_PER_PASS * pass).Take(SAMPLES_PER_PASS).ToArray();
                 ++pass;
                 fillwith.Action(scene, mvp, accumulator, width, height, sizeof(float) * 4 * width, overrides);
+                return true;
             }
             RenderCall fillwith;
             Scene scene;
