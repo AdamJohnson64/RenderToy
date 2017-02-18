@@ -115,7 +115,7 @@ namespace RenderToy
             byte[] buffer_image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];
             if (renderMode != null)
             {
-                renderMode.Action(Scene.Default, mvp, buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH);
+                renderMode.Action(Scene.Default, mvp, buffer_image, RENDER_WIDTH, RENDER_HEIGHT, 4 * RENDER_WIDTH, null);
             }
             using (var stream = bitmap.PixelBuffer.AsStream())
             {

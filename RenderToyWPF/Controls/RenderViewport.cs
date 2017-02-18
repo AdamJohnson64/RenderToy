@@ -173,7 +173,7 @@ namespace RenderToy
             // Generate commands for render modes.
             foreach (var call in RenderCallCommands.Calls)
             {
-                CommandBindings.Add(new CommandBinding(RenderCallCommands.Commands[call], (s, e) => { RenderMode = new SinglePass(call); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+                CommandBindings.Add(new CommandBinding(RenderCallCommands.Commands[call], (s, e) => { RenderMode = MultiPass.Create(call); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             }
             // Generate context menu.
             var menu = new ContextMenu();
@@ -188,11 +188,11 @@ namespace RenderToy
             }
             this.ContextMenu = menu;
         }
-        IMultipass RenderMode
+        MultiPass RenderMode
         {
             set { renderMode = value; InvalidateVisual(); }
         }
-        IMultipass renderMode = new SinglePass(RenderCallCommands.Calls[0]);
+        MultiPass renderMode = MultiPass.Create(RenderCallCommands.Calls[0]);
         bool renderPreviews = true;
         bool renderWireframe = false;
         protected override void OnMouseDown(MouseButtonEventArgs e)
