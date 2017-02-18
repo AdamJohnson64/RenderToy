@@ -21,8 +21,16 @@ namespace RenderToy
         public Scene Scene = Scene.Default;
         public RenderViewportBase()
         {
-            ReduceQuality_Init();
+            // HACK: This causes a repaint every 10ms for multipass renders.
+            multipassRedraw = new System.Windows.Forms.Timer();
+            multipassRedraw.Interval = 10;
+            multipassRedraw.Tick += (s, e) =>
+            {
+                InvalidateVisual();
+            };
+            multipassRedraw.Start();
         }
+        System.Windows.Forms.Timer multipassRedraw;
         #region - Section : Camera -
         protected Matrix3D View
         {
@@ -109,53 +117,9 @@ namespace RenderToy
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            DateTime timeStart = DateTime.Now;
-            // Draw our intended visual.
             OnRenderToy(drawingContext);
-            DateTime timeEnd = DateTime.Now;
-            // Try to maintain a reasonable framerate by reducing quality.
-            ReduceQuality_Decide(timeStart, timeEnd);
         }
         protected abstract void OnRenderToy(DrawingContext drawingContext);
-        #endregion
-        #region - Section : Quality Control -
-        protected bool ReduceQuality
-        {
-            get { return reduceQuality; }
-        }
-        void ReduceQuality_Init()
-        {
-            reduceQualityTimer = new System.Windows.Forms.Timer();
-            reduceQualityTimer.Interval = 500;
-            reduceQualityTimer.Tick += (s, e) =>
-            {
-                reduceQualityTimer.Enabled = false;
-                reduceQualityFrames = 0;
-                reduceQuality = false;
-                InvalidateVisual();
-            };
-        }
-        void ReduceQuality_Decide(DateTime timeStart, DateTime timeEnd)
-        {
-            if (timeEnd.Subtract(timeStart).Milliseconds > 1000 / 30)
-            {
-                ++reduceQualityFrames;
-                if (reduceQualityFrames >= 2 && !reduceQuality)
-                {
-                    reduceQualityFrames = 0;
-                    reduceQuality = true;
-                }
-            }
-            // Restart the quality reduction timer.
-            if (reduceQuality)
-            {
-                reduceQualityTimer.Enabled = false;
-                reduceQualityTimer.Enabled = true;
-            }
-        }
-        bool reduceQuality = false;
-        int reduceQualityFrames = 0;
-        System.Windows.Forms.Timer reduceQualityTimer;
         #endregion
     }
     class RenderViewport : RenderViewportBase
@@ -204,8 +168,8 @@ namespace RenderToy
         {
             if (renderMode != null)
             {
-                int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / (ReduceQuality ? 2 : 1);
-                int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / (ReduceQuality ? 2 : 1);
+                int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
+                int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
                 renderMode.SetScene(Scene);
                 renderMode.SetCamera(MVP);
                 renderMode.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
@@ -219,7 +183,7 @@ namespace RenderToy
             if (renderWireframe)
             {
                 drawingContext.PushOpacity(0.5);
-                drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.WireframeCPUF64, Scene, MVP, ReduceQuality ? 256 : (int)Math.Ceiling(ActualWidth), ReduceQuality ? 256 : (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
+                drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.WireframeCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                 drawingContext.Pop();
             }
             if (renderPreviews)
@@ -238,9 +202,9 @@ namespace RenderToy
                     var imagesource = ImageHelp.CreateImage(fillwith, Scene, View * Projection * CameraPerspective.AspectCorrectFit(image_w, image_h), render_width, render_height);
                     drawingContext.DrawImage(imagesource, new Rect(image_l, image_t, image_w, image_h));
                 };
-                drawpreview(RenderCS.PointCPUF64, 0, ReduceQuality ? 32 : 64, ReduceQuality ? 32 : 64);
-                drawpreview(RenderCS.WireframeCPUF64, 1, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
-                drawpreview(RenderCS.RasterCPUF64, 2, ReduceQuality ? 32 : 128, ReduceQuality ? 32 : 128);
+                drawpreview(RenderCS.PointCPUF64, 0, 64, 64);
+                drawpreview(RenderCS.WireframeCPUF64, 1, 128, 128);
+                drawpreview(RenderCS.RasterCPUF64, 2, 128, 128);
             }
             if (renderMode != null)
             {
@@ -261,21 +225,6 @@ namespace RenderToy
     }
     class RenderToyInjections
     {
-        public static void AOCHaltonBiasedMPCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
-        {
-            var hemisamples = MathHelp.HemiHaltonCosineBias(8192).ToArray();
-            RenderToyCLI.AmbientOcclusionMPCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), bitmap_ptr, render_width, render_height, bitmap_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
-        }
-        public static void AOCHaltonBiasedFMPCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
-        {
-            float[] acc = new float[4 * render_width * render_height];
-            int accumulator_stride = sizeof(float) * 4 * render_width;
-            var hemisamples = MathHelp.HemiHaltonCosineBias(32).ToArray();
-            GCHandle handle_acc = GCHandle.Alloc(acc, GCHandleType.Pinned);
-            RenderToyCLI.AmbientOcclusionFMPCUDAF32(SceneFormatter.CreateFlatMemoryF32(scene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(mvp)), handle_acc.AddrOfPinnedObject(), render_width, render_height, accumulator_stride, hemisamples.Length, SceneFormatter.CreateFlatMemoryF32(hemisamples));
-            RenderToyCLI.ToneMap(handle_acc.AddrOfPinnedObject(), accumulator_stride, bitmap_ptr, render_width, render_height, bitmap_stride, 1.0f);
-            handle_acc.Free();
-        }
         public static void AOCHaltonBiasedCUDAF32(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var hemisamples = MathHelp.HemiHaltonCosineBias(512).ToArray();
