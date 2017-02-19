@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Camera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Geometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Material.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Scene\Mesh_PLY.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Scene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Transformed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\CallHelp.cs" />

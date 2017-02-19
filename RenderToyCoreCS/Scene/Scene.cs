@@ -40,6 +40,7 @@ namespace RenderToy
     }
     public class Scene
     {
+        static Mesh bunny = MeshPLY.LoadFromPath("bun_zipper_res4.ply");
         public static Scene Default
         {
             get
@@ -54,6 +55,10 @@ namespace RenderToy
                 scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+5, 1, 0)), new Sphere(), Materials.Cyan, Materials.PlasticCyan));
                 scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 3, 0)), new Sphere(), Materials.Black, Materials.Glass));
                 scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(3, 2.1, 0)), new Triangle(), Materials.Green, Materials.PlasticGreen));
+                if (bunny != null)
+                {
+                    scene.children.Add(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(100, 100, 100) * MathHelp.CreateMatrixTranslate(0, 0, 2)), bunny, Materials.LightGray, Materials.PlasticRed));
+                }
                 return scene;
             }
         }

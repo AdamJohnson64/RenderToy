@@ -4,9 +4,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RenderToy
 {
+    public interface IMesh
+    {
+        IReadOnlyList<Point3D> GetMeshVertices();
+        IReadOnlyList<Mesh.Triangle> GetMeshTriangles();
+    }
     public interface IParametricUV
     {
         /// <summary>
@@ -123,5 +130,28 @@ namespace RenderToy
     /// </summary>
     public class Triangle
     {
+    }
+    /// <summary>
+    /// Triangle-only mesh.
+    /// </summary>
+    public class Mesh : IMesh
+    {
+        public Mesh(IEnumerable<Point3D> vertices, IEnumerable<Triangle> triangles)
+        {
+            Vertices = vertices.ToArray();
+            Triangles = triangles.ToArray();
+        }
+        public IReadOnlyList<Point3D> GetMeshVertices() { return Vertices; }
+        public IReadOnlyList<Triangle> GetMeshTriangles() { return Triangles; }
+        public Point3D[] Vertices;
+        public Triangle[] Triangles;
+        public struct Triangle
+        {
+            public Triangle(int i0, int i1, int i2)
+            {
+                Index0 = i0; Index1 = i1; Index2 = i2;
+            }
+            public readonly int Index0, Index1, Index2;
+        }
     }
 }

@@ -18,16 +18,26 @@ template <typename FLOAT> struct Matrix44 { FLOAT M[16]; };
 
 enum GeometryType {
 	GEOMETRY_NONE = 0,
-	GEOMETRY_PLANE = 1,
-	GEOMETRY_SPHERE = 2,
-	GEOMETRY_CUBE = 3,
-	GEOMETRY_TRIANGLE = 4,
+	GEOMETRY_PLANE = 0x6e616c50,		// FOURCC "Plan"
+	GEOMETRY_SPHERE = 0x72687053,		// FOURCC "Sphr"
+	GEOMETRY_CUBE = 0x65627543,			// FOURCC "Cube"
+	GEOMETRY_TRIANGLE = 0x61697254,		// FOURCC "Tria"
+	GEOMETRY_TRIANGLELIST = 0x4c697254, // FOURCC "TriL"
 };
 
 enum MaterialType {
 	MATERIAL_NONE = 0,
-	MATERIAL_COMMON,
-	MATERIAL_CHECKERBOARD_XZ,
+	MATERIAL_COMMON = 0x6c74614d,           // FOURCC "Matl"
+	MATERIAL_CHECKERBOARD_XZ = 0x5a586843,  // FOURCC "ChXZ"
+};
+
+template <typename FLOAT>
+struct TriangleList {
+	int TriangleCount;
+	int Padding0;
+	int Padding1;
+	int Padding2;
+	Vector4<FLOAT> Vertices[];
 };
 
 template <typename FLOAT>

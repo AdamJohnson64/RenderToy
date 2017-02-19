@@ -36,6 +36,14 @@ namespace RenderToy
                     if (v4.W <= 0) return;
                     drawpixel2d((int)((1 + v4.X / v4.W) * render_width / 2), (int)((1 - v4.Y / v4.W) * render_height / 2));
                 };
+                IMesh mesh = transformedobject.Node.Primitive as IMesh;
+                if (mesh != null)
+                {
+                    foreach (var p in mesh.GetMeshVertices())
+                    {
+                        drawpoint(p);
+                    }
+                }
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv != null)
                 {
@@ -110,6 +118,17 @@ namespace RenderToy
                         new Point3D((1 + v41.X / v41.W) * render_width / 2, (1 - v41.Y / v41.W) * render_height / 2, v41.Z / v41.W),
                         new Point3D((1 + v42.X / v42.W) * render_width / 2, (1 - v42.Y / v42.W) * render_height / 2, v42.Z / v42.W));
                 };
+                IMesh mesh = transformedobject.Node.Primitive as IMesh;
+                if (mesh != null)
+                {
+                    var verts = mesh.GetMeshVertices();
+                    foreach (var t in mesh.GetMeshTriangles())
+                    {
+                        drawline3d(verts[t.Index0], verts[t.Index1]);
+                        drawline3d(verts[t.Index1], verts[t.Index2]);
+                        drawline3d(verts[t.Index2], verts[t.Index0]);
+                    }
+                }
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv != null)
                 {
@@ -131,8 +150,6 @@ namespace RenderToy
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 Matrix3D model_mvp = transformedobject.Transform * mvp;
-                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
-                if (uv == null) continue;
                 uint color = DrawHelp.ColorToUInt32(transformedobject.Node.WireColor);
                 // Fill one scanline.
                 Action<int, Point3D, Point3D> fillscan = (y, x1, x2) =>
@@ -196,25 +213,40 @@ namespace RenderToy
                         filltri_viewspace(v3t[0], v3t[1], v3t[2]);
                     }
                 };
-                for (int v = 0; v < 10; ++v)
+                Func<Point3D, Point4D> TransformToClip = (p) =>
                 {
-                    for (int u = 0; u < 10; ++u)
+                    return model_mvp.Transform(new Point4D(p.X, p.Y, p.Z, 1));
+                };
+                Action<Point3D, Point3D, Point3D> filltri = (p1, p2, p3) =>
+                {
+                    filltri_clipspace(TransformToClip(p1), TransformToClip(p2), TransformToClip(p3));
+                };
+                IMesh mesh = transformedobject.Node.Primitive as IMesh;
+                if (mesh != null)
+                {
+                    var verts = mesh.GetMeshVertices();
+                    foreach (var t in mesh.GetMeshTriangles())
                     {
-                        Point3D[] v3 =
+                        filltri(verts[t.Index0], verts[t.Index1], verts[t.Index2]);
+                    }
+                }
+                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                if (uv != null)
+                {
+                    for (int v = 0; v < 10; ++v)
+                    {
+                        for (int u = 0; u < 10; ++u)
                         {
-                            uv.GetPointUV((u + 0.0) / 10, (v + 0.0) / 10),
-                            uv.GetPointUV((u + 1.0) / 10, (v + 0.0) / 10),
-                            uv.GetPointUV((u + 0.0) / 10, (v + 1.0) / 10),
-                            uv.GetPointUV((u + 1.0) / 10, (v + 1.0) / 10),
-                        };
-                        // Transform all points into clip space.
-                        Point4D[] v3t = v3
-                            .Select(p => new Point4D(p.X, p.Y, p.Z, 1))
-                            .Select(p => model_mvp.Transform(p))
-                            .ToArray();
-                        // Fill the clip space triangle.
-                        filltri_clipspace(v3t[0], v3t[1], v3t[3]);
-                        filltri_clipspace(v3t[3], v3t[2], v3t[0]);
+                            Point3D[] v3 =
+                            {
+                                uv.GetPointUV((u + 0.0) / 10, (v + 0.0) / 10),
+                                uv.GetPointUV((u + 1.0) / 10, (v + 0.0) / 10),
+                                uv.GetPointUV((u + 0.0) / 10, (v + 1.0) / 10),
+                                uv.GetPointUV((u + 1.0) / 10, (v + 1.0) / 10),
+                            };
+                            filltri(v3[0], v3[1], v3[3]);
+                            filltri(v3[3], v3[2], v3[0]);
+                        }
                     }
                 }
             }
