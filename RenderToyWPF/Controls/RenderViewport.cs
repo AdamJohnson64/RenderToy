@@ -19,18 +19,6 @@ namespace RenderToy
     public abstract class RenderViewportBase : FrameworkElement
     {
         public Scene Scene = Scene.Default;
-        public RenderViewportBase()
-        {
-            // HACK: This causes a repaint every 10ms for multipass renders.
-            multipassRedraw = new System.Windows.Forms.Timer();
-            multipassRedraw.Interval = 10;
-            multipassRedraw.Tick += (s, e) =>
-            {
-                InvalidateVisual();
-            };
-            multipassRedraw.Start();
-        }
-        System.Windows.Forms.Timer multipassRedraw;
         #region - Section : Camera -
         protected Matrix3D View
         {
@@ -126,11 +114,20 @@ namespace RenderToy
     {
         static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(RenderViewport));
         static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(RenderViewport));
+        static RoutedUICommand CommandResolution100 = new RoutedUICommand("100% Resolution", "CommandResolution100", typeof(RenderViewport));
+        static RoutedUICommand CommandResolution50 = new RoutedUICommand("50% Resolution", "CommandResolution50", typeof(RenderViewport));
+        static RoutedUICommand CommandResolution25 = new RoutedUICommand("25% Resolution", "CommandResolution25", typeof(RenderViewport));
+        static RoutedUICommand CommandResolution10 = new RoutedUICommand("10% Resolution", "CommandResolution10", typeof(RenderViewport));
         public RenderViewport()
         {
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             Focusable = true;
             CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { renderPreviews = !renderPreviews; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderWireframeToggle, (s, e) => { renderWireframe = !renderWireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandResolution100, (s, e) => { renderResolution = 1; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandResolution50, (s, e) => { renderResolution = 2; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandResolution25, (s, e) => { renderResolution = 4; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandResolution10, (s, e) => { renderResolution = 10; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             // Define input bindings for common display modes.
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
@@ -150,13 +147,41 @@ namespace RenderToy
                 }
                 menu.Items.Add(menu_group);
             }
+            {
+                var menu_group = new MenuItem { Header = "Overlays" };
+                menu_group.Items.Add(new MenuItem { Command = CommandRenderPreviewsToggle });
+                menu_group.Items.Add(new MenuItem { Command = CommandRenderWireframeToggle });
+                menu.Items.Add(menu_group);
+            }
+            {
+                var menu_group = new MenuItem { Header = "Resolution" };
+                menu_group.Items.Add(new MenuItem { Command = CommandResolution100 });
+                menu_group.Items.Add(new MenuItem { Command = CommandResolution50 });
+                menu_group.Items.Add(new MenuItem { Command = CommandResolution25 });
+                menu_group.Items.Add(new MenuItem { Command = CommandResolution10 });
+                menu.Items.Add(menu_group);
+            }
             this.ContextMenu = menu;
+            // HACK: This causes a repaint every 10ms for multipass renders.
+            multipassRedraw = new System.Windows.Forms.Timer();
+            multipassRedraw.Interval = 10;
+            multipassRedraw.Tick += (s, e) =>
+            {
+                if (renderAgain)
+                {
+                    InvalidateVisual();
+                }
+            };
+            multipassRedraw.Start();
         }
+        System.Windows.Forms.Timer multipassRedraw;
         MultiPass RenderMode
         {
             set { renderMode = value; InvalidateVisual(); }
         }
         MultiPass renderMode = MultiPass.Create(RenderCallCommands.Calls[0]);
+        int renderResolution = 1;
+        bool renderAgain = false;
         bool renderPreviews = true;
         bool renderWireframe = false;
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -168,14 +193,14 @@ namespace RenderToy
         {
             if (renderMode != null)
             {
-                int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
-                int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
+                int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / renderResolution;
+                int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / renderResolution;
                 renderMode.SetScene(Scene);
                 renderMode.SetCamera(MVP);
                 renderMode.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
                 WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
                 bitmap.Lock();
-                renderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
+                renderAgain = renderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
                 bitmap.AddDirtyRect(new Int32Rect(0, 0, RENDER_WIDTH, RENDER_HEIGHT));
                 bitmap.Unlock();
                 drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
