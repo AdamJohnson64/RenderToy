@@ -306,10 +306,12 @@ DEVICE_PREFIX void ComputeScreenRay(const Matrix44<FLOAT>& inverse_mvp, FLOAT cl
 
 template <typename FLOAT>
 DEVICE_PREFIX unsigned int Vector4ToA8R8G8B8(const Vector4<FLOAT>& color) DEVICE_SUFFIX {
-	unsigned int r = unsigned int(color.x < 0 ? 0 : (color.x > 1 ? 1 : color.x) * 254);
-	unsigned int g = unsigned int(color.y < 0 ? 0 : (color.y > 1 ? 1 : color.y) * 254);
-	unsigned int b = unsigned int(color.z < 0 ? 0 : (color.z > 1 ? 1 : color.z) * 254);
-	unsigned int a = unsigned int(color.w < 0 ? 0 : (color.w > 1 ? 1 : color.w) * 255);
+	// We scale to 254 because there's a large gray difference between #FEFEFE and #FFFFFF.
+	// I can only assume this is a color calibration issue on my laptop screen but whatever.
+	unsigned int r = unsigned int(Clamp<FLOAT>(0, 1, color.x) * 254);
+	unsigned int g = unsigned int(Clamp<FLOAT>(0, 1, color.y) * 254);
+	unsigned int b = unsigned int(Clamp<FLOAT>(0, 1, color.z) * 254);
+	unsigned int a = unsigned int(Clamp<FLOAT>(0, 1, color.w) * 255);
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
