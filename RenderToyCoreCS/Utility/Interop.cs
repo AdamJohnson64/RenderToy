@@ -38,30 +38,6 @@ namespace RenderToy
             }
             return memory.ToArray();
         }
-        public static byte[] CreateFlatMemoryF32(IEnumerable<Vector3D> obj)
-        {
-            var memory = new MemoryStream();
-            using (var stream = new BinaryWriter(memory))
-            {
-                foreach (var vec in obj)
-                {
-                    Serialize(vec, v => stream.Write((float)v));
-                }
-            }
-            return memory.ToArray();
-        }
-        public static byte[] CreateFlatMemoryF64(IEnumerable<Vector3D> obj)
-        {
-            var memory = new MemoryStream();
-            using (var stream = new BinaryWriter(memory))
-            {
-                foreach (var vec in obj)
-                {
-                    Serialize(vec, v => stream.Write((double)v));
-                }
-            }
-            return memory.ToArray();
-        }
         static void Serialize(Matrix3D obj, Action<double> write)
         {
             write(obj.M11); write(obj.M12); write(obj.M13); write(obj.M14);

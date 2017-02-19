@@ -22,7 +22,7 @@ extern "C" void RaycastBitangentsCPUF64(const void* pScene, const void* pMVP, vo
 extern "C" void RaytraceCPUF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride);
 extern "C" void RaytraceCPUF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride);
 extern "C" void RaytraceCPUF64AA(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int superx, int supery);
-extern "C" void AmbientOcclusionCPUF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples);
-extern "C" void AmbientOcclusionCPUF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples);
+extern "C" void AmbientOcclusionCPUF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count);
+extern "C" void AmbientOcclusionCPUF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count);
 
 #endif  // RAYTRACEEXPORTCPU_H

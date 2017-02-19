@@ -73,20 +73,22 @@ extern "C" void RaytraceCPUF64AA(const void* scene, const void* inverse_mvp, voi
 	RenderImageCPU<double, RaytraceCLI::RenderModeRaytrace<double>>(scene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride, superx, supery);
 }
 
-extern "C" void AmbientOcclusionCPUF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
+extern "C" void AmbientOcclusionCPUF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 	for (int y = 0; y < render_height; ++y) {
 		for (int x = 0; x < render_width; ++x) {
 			RaytraceCLI::PixelSetARGB<float> setpixel(bitmap_ptr, render_width, render_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixelAOC<float>(*(Scene<float>*)scene, *(Matrix44<float>*)inverse_mvp, setpixel, hemisample_count, (Vector4<float>*)hemisamples);
+			RaytraceCLI::HemisampleHalton<float> hemisamples(0, 256);
+			RaytraceCLI::ComputePixelAOC<float>(*(Scene<float>*)scene, *(Matrix44<float>*)inverse_mvp, setpixel, hemisamples);
 		}
 	}
 }
 
-extern "C" void AmbientOcclusionCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples) {
+extern "C" void AmbientOcclusionCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 	for (int y = 0; y < render_height; ++y) {
 		for (int x = 0; x < render_width; ++x) {
 			RaytraceCLI::PixelSetARGB<double> setpixel(bitmap_ptr, render_width, render_height, bitmap_stride, x, y);
-			RaytraceCLI::ComputePixelAOC<double>(*(Scene<double>*)scene, *(Matrix44<double>*)inverse_mvp, setpixel, hemisample_count, (Vector4<double>*)hemisamples);
+			RaytraceCLI::HemisampleHalton<double> hemisamples(0, 256);
+			RaytraceCLI::ComputePixelAOC<double>(*(Scene<double>*)scene, *(Matrix44<double>*)inverse_mvp, setpixel, hemisamples);
 		}
 	}
 }

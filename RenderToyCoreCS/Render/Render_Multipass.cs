@@ -91,7 +91,7 @@ namespace RenderToy
             {
                 bool again = PassRun();
                 GCHandle handle_accumulator = GCHandle.Alloc(accumulator, GCHandleType.Pinned);
-                #if !WINDOWS_UWP
+#if !WINDOWS_UWP
                 // TODO(fixme): AMP doesn't have a tonemapper yet.
                 RenderToyCLI.ToneMap(handle_accumulator.AddrOfPinnedObject(), sizeof(float) * 4 * width, bitmap_ptr, width, height, bitmap_stride, 1.0f / (pass * SAMPLES_PER_PASS));
                 #endif
@@ -110,9 +110,9 @@ namespace RenderToy
                     accumulator = new byte[sizeof(float) * 4 * width * height];
                     pass = 0;
                 }
-                if (SAMPLES_PER_PASS * pass >= hemisamples.Length) return false;
                 var overrides = new Dictionary<string, object>();
-                overrides[RenderCall.HEMISAMPLES] = hemisamples.Skip(SAMPLES_PER_PASS * pass).Take(SAMPLES_PER_PASS).ToArray();
+                overrides[RenderCall.SAMPLE_OFFSET] = pass * SAMPLES_PER_PASS;
+                overrides[RenderCall.SAMPLE_COUNT] = SAMPLES_PER_PASS;
                 ++pass;
                 fillwith.Action(scene, mvp, accumulator, width, height, sizeof(float) * 4 * width, overrides);
                 return true;
@@ -124,7 +124,6 @@ namespace RenderToy
             int height;
             byte[] accumulator;
             int pass = 0;
-            static Vector3D[] hemisamples = MathHelp.HemiHaltonCosineBias(65536).ToArray();
             const int SAMPLES_PER_PASS = 64;
         }
     }

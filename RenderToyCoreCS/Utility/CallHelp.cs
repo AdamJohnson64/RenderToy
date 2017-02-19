@@ -37,8 +37,8 @@ namespace RenderToy
         public static readonly string BITMAP_STRIDE = "bitmap_stride";
         public static readonly string BUFFER_PTR = "buffer_ptr";
         public static readonly string BUFFER_STRIDE = "buffer_stride";
-        public static readonly string HEMISAMPLES = "hemisamples";
-        public static readonly string HEMISAMPLE_COUNT = "hemisample_count";
+        public static readonly string SAMPLE_OFFSET = "sample_offset";
+        public static readonly string SAMPLE_COUNT = "sample_count";
         public static readonly string SUPERX = "superx";
         public static readonly string SUPERY = "supery";
         public void Fill(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride, Dictionary<string, object> overrides)
@@ -85,16 +85,6 @@ namespace RenderToy
                     bool isF32 = method.Name.Contains("F32");
                     bool isF64 = method.Name.Contains("F64");
                     var generateargs = new List<Func<Dictionary<string, object>, Converted>>();
-                    var hemisamples = MathHelp.HemiHaltonCosineBias(256).ToArray();
-                    Func<Dictionary<string, object>, Vector3D[]> select_hemi = (args) =>
-                    {
-                        var use_hemisamples = hemisamples;
-                        if (args.ContainsKey("hemisamples"))
-                        {
-                            use_hemisamples = ((IEnumerable<Vector3D>)args[HEMISAMPLES]).ToArray();
-                        }
-                        return use_hemisamples;
-                    };
                     foreach (var param in method.GetParameters())
                     {
                         if (param.ParameterType == typeof(Scene) && param.Name == SCENE)
@@ -178,6 +168,14 @@ namespace RenderToy
                         {
                             generateargs.Add((args) => new ConvertedPrimitive(args[BUFFER_STRIDE]));
                         }
+                        else if (param.ParameterType == typeof(int) && param.Name == SAMPLE_OFFSET)
+                        {
+                            generateargs.Add((args) => new ConvertedPrimitive(args.ContainsKey(SAMPLE_OFFSET) ? args[SAMPLE_OFFSET] : 0));
+                        }
+                        else if (param.ParameterType == typeof(int) && param.Name == SAMPLE_COUNT)
+                        {
+                            generateargs.Add((args) => new ConvertedPrimitive(args.ContainsKey(SAMPLE_COUNT) ? args[SAMPLE_COUNT] : 64));
+                        }
                         else if (param.ParameterType == typeof(int) && param.Name == SUPERX)
                         {
                             generateargs.Add((args) => new ConvertedPrimitive(1));
@@ -185,15 +183,6 @@ namespace RenderToy
                         else if (param.ParameterType == typeof(int) && param.Name == SUPERY)
                         {
                             generateargs.Add((args) => new ConvertedPrimitive(1));
-                        }
-                        else if (param.ParameterType == typeof(int) && param.Name == HEMISAMPLE_COUNT)
-                        {
-                            generateargs.Add((args) => new ConvertedPrimitive(select_hemi(args).Length));
-                        }
-                        else if (param.ParameterType == typeof(byte[]) && param.Name == HEMISAMPLES)
-                        {
-                            if (isF32) generateargs.Add((args) => new ConvertedPrimitive(SceneFormatter.CreateFlatMemoryF32(select_hemi(args))));
-                            if (isF64) generateargs.Add((args) => new ConvertedPrimitive(SceneFormatter.CreateFlatMemoryF64(select_hemi(args))));
                         }
                         else
                         {

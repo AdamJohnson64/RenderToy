@@ -58,8 +58,7 @@ namespace RenderToy
             BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
             {
-                var hemi = MathHelp.HemiHammerslyCosineBias(256).ToList();
-                RenderToyCLI.AmbientOcclusionCPUF64(SceneFormatter.CreateFlatMemoryF64(DefaultScene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(DefaultMVP * CameraPerspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, hemi.Count, SceneFormatter.CreateFlatMemoryF64(hemi));
+                RenderToyCLI.AmbientOcclusionCPUF64(SceneFormatter.CreateFlatMemoryF64(DefaultScene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(DefaultMVP * CameraPerspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, 0, 256);
             }
             finally
             {

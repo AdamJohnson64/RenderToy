@@ -238,32 +238,32 @@ extern "C" void RaytraceCUDAF64(const void* pScene, const void* pInverseMVP, voi
 
 #pragma region - Render Mode : Ambient Occlusion -
 template <typename FLOAT>
-__global__ void cudaAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const Vector4<FLOAT>* hemisamples) {
+__global__ void cudaAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count) {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
-	RaytraceCUDA::PixelSetARGB<FLOAT> setpixel(bitmap_ptr, render_width, render_height, bitmap_stride, x, y);
-	RaytraceCUDA::ComputePixelAOC<FLOAT>(pScene, inverse_mvp, setpixel, hemisample_count, hemisamples);
+	RaytraceCUDA::HemisampleHalton<FLOAT> hemisamples(sample_offset, sample_count);
+	RaytraceCUDA::PixelSetScaledARGB<FLOAT> setpixel(bitmap_ptr, render_width, render_height, bitmap_stride, x, y, FLOAT(1) / hemisamples.Count());
+	RaytraceCUDA::ComputePixelAOC<FLOAT>(pScene, inverse_mvp, setpixel, hemisamples);
 }
 
 template <typename FLOAT>
-void AmbientOcclusionCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+void AmbientOcclusionCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count)
 {
 	CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
 	CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * render_width, render_height);
-	CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
 	dim3 grid((render_width + 15) / 16, (render_height + 15) / 16, 1);
 	dim3 threads(16, 16, 1);
-	cudaAOC<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaBitmap.DeviceMemory(), render_width, render_height, sizeof(int) * render_width, hemisample_count, (const Vector4<FLOAT>*)cudaHemisamples.DeviceMemory());
+	cudaAOC<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaBitmap.DeviceMemory(), render_width, render_height, sizeof(int) * render_width, sample_offset, sample_count);
 }
 
-extern "C" void AmbientOcclusionCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+extern "C" void AmbientOcclusionCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count)
 {
-	AmbientOcclusionCUDA<float>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, hemisample_count, hemisamples);
+	AmbientOcclusionCUDA<float>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, sample_offset, sample_count);
 }
 
-extern "C" void AmbientOcclusionCUDAF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
+extern "C" void AmbientOcclusionCUDAF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count)
 {
-	AmbientOcclusionCUDA<double>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, hemisample_count, hemisamples);
+	AmbientOcclusionCUDA<double>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, sample_offset, sample_count);
 }
 #pragma endregion
 
@@ -298,66 +298,30 @@ extern "C" void ToneMap(const void* accumulator_ptr, int accumulator_stride, voi
 }
 #pragma endregion
 
-#pragma region - Render Mode : Ambient Occlusion (Multipass) -
+#pragma region - Render Mode : Ambient Occlusion (FMP Buffered) - 
 template <typename FLOAT>
-__global__ void globalAmbientOcclusionMPCUDA(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const Vector4<FLOAT>* hemisamples) {
+__global__ void globalAmbientOcclusionFMPCUDA(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count) {
 	int x = blockDim.x * blockIdx.x + threadIdx.x;
 	int y = blockDim.y * blockIdx.y + threadIdx.y;
 	RaytraceCUDA::PixelAccumulateVec4<FLOAT> setpixel(bitmap_ptr, render_width, render_height, bitmap_stride, x, y);
-	RaytraceCUDA::ComputePixelAOC<FLOAT>(pScene, inverse_mvp, setpixel, hemisample_count, hemisamples);
+	RaytraceCUDA::HemisampleHalton<FLOAT> hemisamples(sample_offset, sample_count);
+	RaytraceCUDA::ComputePixelAOC<FLOAT>(pScene, inverse_mvp, setpixel, hemisamples);
 }
 
 template <typename FLOAT>
-void AmbientOcclusionMPCUDA(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
-{
-	CudaMemory1DBuffer cudaAccumulator(sizeof(Vector4<FLOAT>) * render_width * render_height);
-	int pass_hemisample_count = 64;
-	int pass_count = hemisample_count / pass_hemisample_count;
-	// Launch the accumulator kernel.
-	{
-		CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
-		CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
-		int thread_tile = 32;
-		dim3 grid((render_width + thread_tile - 1) / thread_tile, (render_height + thread_tile - 1) / thread_tile, 1);
-		dim3 threads(thread_tile, thread_tile, 1);
-		for (int pass = 0; pass < pass_count; ++pass) {
-			const Vector4<FLOAT>* pass_device_hemisamples = (const Vector4<FLOAT>*)cudaHemisamples.DeviceMemory() + pass * pass_hemisample_count;
-			globalAmbientOcclusionMPCUDA<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaAccumulator.DeviceMemory(), render_width, render_height, sizeof(Vector4<FLOAT>) * render_width, pass_hemisample_count, pass_device_hemisamples);
-		}
-	}
-	// Apply the tonemap and divide the accumulated buffer.
-	{
-		CudaMemory2DOut cudaBitmap(bitmap_ptr, bitmap_stride, sizeof(int) * render_width, render_height);
-		dim3 grid((render_width + 15) / 16, (render_height + 15) / 16, 1);
-		dim3 threads(16, 16, 1);
-		globalRescaleVec4<<<grid, threads>>>((const Vector4<FLOAT>*)cudaAccumulator.DeviceMemory(), sizeof(Vector4<FLOAT>) * render_width, cudaBitmap.DeviceMemory(), render_width, render_height, sizeof(int) * render_width, FLOAT(1) / pass_count);
-	}
-}
-
-extern "C" void AmbientOcclusionMPCUDAF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int hemisample_count, const void* hemisamples)
-{
-	AmbientOcclusionMPCUDA<float>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, hemisample_count, hemisamples);
-}
-#pragma endregion
-
-#pragma region - Render Mode : Ambient Occlusion (FMP Buffered) - 
-template <typename FLOAT>
-void AmbientOcclusionFMPCUDA(const void* pScene, const void* pMVP, void* accumulator_ptr, int acc_width, int acc_height, int accumulator_stride, int hemisample_count, const void* hemisamples)
+void AmbientOcclusionFMPCUDA(const void* pScene, const void* pMVP, void* accumulator_ptr, int acc_width, int acc_height, int accumulator_stride, int sample_offset, int sample_count)
 {
 	CudaMemory1DIn cudaScene((const Scene<FLOAT>*)pScene, ((const Scene<FLOAT>*)pScene)->FileSize);
-	CudaMemory1DIn cudaHemisamples(hemisamples, sizeof(Vector4<FLOAT>) * hemisample_count);
 	CudaMemory2DInOut cudaAccumulator(accumulator_ptr, accumulator_stride, sizeof(Vector4<FLOAT>) * acc_width, acc_height);
 	// Launch the accumulator kernel.
-	{
-		int thread_tile = 32;
-		dim3 grid((acc_width + thread_tile - 1) / thread_tile, (acc_height + thread_tile - 1) / thread_tile, 1);
-		dim3 threads(thread_tile, thread_tile, 1);
-		globalAmbientOcclusionMPCUDA<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaAccumulator.DeviceMemory(), acc_width, acc_height, sizeof(Vector4<FLOAT>) * acc_width, hemisample_count, (const Vector4<FLOAT>*)cudaHemisamples.DeviceMemory());
-	}
+	int thread_tile = 16;
+	dim3 grid((acc_width + thread_tile - 1) / thread_tile, (acc_height + thread_tile - 1) / thread_tile, 1);
+	dim3 threads(thread_tile, thread_tile, 1);
+	globalAmbientOcclusionFMPCUDA<<<grid, threads>>>(*(const Scene<FLOAT>*)cudaScene.DeviceMemory(), *(Matrix44<FLOAT>*)pMVP, cudaAccumulator.DeviceMemory(), acc_width, acc_height, sizeof(Vector4<FLOAT>) * acc_width, sample_offset, sample_count);
 }
 
-extern "C" void AmbientOcclusionFMPCUDAF32(const void* pScene, const void* pMVP, void* accumulator_ptr, int acc_width, int acc_height, int accumulator_stride, int hemisample_count, const void* hemisamples)
+extern "C" void AmbientOcclusionFMPCUDAF32(const void* pScene, const void* pMVP, void* accumulator_ptr, int acc_width, int acc_height, int accumulator_stride, int sample_offset, int sample_count)
 {
-	AmbientOcclusionFMPCUDA<float>(pScene, pMVP, accumulator_ptr, acc_width, acc_height, accumulator_stride, hemisample_count, hemisamples);
+	AmbientOcclusionFMPCUDA<float>(pScene, pMVP, accumulator_ptr, acc_width, acc_height, accumulator_stride, sample_offset, sample_count);
 }
 #pragma endregion

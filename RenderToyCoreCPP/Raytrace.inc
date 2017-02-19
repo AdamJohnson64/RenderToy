@@ -19,15 +19,23 @@ struct FloatTraits {
 template <>
 struct FloatTraits<float> {
 	constexpr static float Max = FLT_MAX;
+	constexpr static float PI = 3.1415926535897932384626433832795028841971693993751058209749445923078164062;
 };
 
 template <>
 struct FloatTraits<double> {
 	constexpr static double Max = DBL_MAX;
+	constexpr static double PI = 3.1415926535897932384626433832795028841971693993751058209749445923078164062;
 };
 
+DEVICE_PREFIX float Acos(float v) DEVICE_SUFFIX { return acosf(v); }
+DEVICE_PREFIX double Acos(double v) DEVICE_SUFFIX { return acos(v); }
+DEVICE_PREFIX float Cos(float v) DEVICE_SUFFIX { return cosf(v); }
+DEVICE_PREFIX double Cos(double v) DEVICE_SUFFIX { return cos(v); }
 DEVICE_PREFIX float Power(float v, float p) DEVICE_SUFFIX { return powf(v, p); }
 DEVICE_PREFIX double Power(double v, double p) DEVICE_SUFFIX { return pow(v, p); }
+DEVICE_PREFIX float Sin(float v) DEVICE_SUFFIX { return sinf(v); }
+DEVICE_PREFIX double Sin(double v) DEVICE_SUFFIX { return sin(v); }
 DEVICE_PREFIX float SquareRoot(float v) DEVICE_SUFFIX { return sqrtf(v); }
 DEVICE_PREFIX double SquareRoot(double v) DEVICE_SUFFIX { return sqrt(v); }
 #pragma endregion
@@ -301,7 +309,7 @@ DEVICE_PREFIX unsigned int Vector4ToA8R8G8B8(const Vector4<FLOAT>& color) DEVICE
 	unsigned int r = unsigned int(color.x < 0 ? 0 : (color.x > 1 ? 1 : color.x) * 254);
 	unsigned int g = unsigned int(color.y < 0 ? 0 : (color.y > 1 ? 1 : color.y) * 254);
 	unsigned int b = unsigned int(color.z < 0 ? 0 : (color.z > 1 ? 1 : color.z) * 254);
-	unsigned int a = unsigned int(color.w < 0 ? 0 : (color.w > 1 ? 1 : color.w) * 254);
+	unsigned int a = unsigned int(color.w < 0 ? 0 : (color.w > 1 ? 1 : color.w) * 255);
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
@@ -339,6 +347,23 @@ struct PixelSetARGB {
 	int render_width, render_height, bitmap_stride, x, y;
 };
 
+template<typename FLOAT>
+struct PixelSetScaledARGB {
+	DEVICE_PREFIX PixelSetScaledARGB(void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int x, int y, FLOAT scale) DEVICE_SUFFIX :
+	bitmap_ptr(bitmap_ptr), render_width(render_width), render_height(render_height), bitmap_stride(bitmap_stride), x(x), y(y), scale(scale) { }
+	DEVICE_PREFIX int GetX() const DEVICE_SUFFIX { return x; }
+	DEVICE_PREFIX int GetY() const DEVICE_SUFFIX { return y; }
+	DEVICE_PREFIX int GetWidth() const DEVICE_SUFFIX { return render_width; }
+	DEVICE_PREFIX int GetHeight() const DEVICE_SUFFIX { return render_height; }
+	DEVICE_PREFIX void PutPixel(const Vector4<FLOAT>& color) const DEVICE_SUFFIX {
+		void* pRaster = (unsigned char*)bitmap_ptr + bitmap_stride * y;
+		unsigned int* pPixel = (unsigned int*)pRaster + x;
+		*pPixel = Vector4ToA8R8G8B8(color * scale);
+	}
+	void* bitmap_ptr;
+	int render_width, render_height, bitmap_stride, x, y;
+	FLOAT scale;
+};
 template <typename FLOAT, typename RENDERMODE, typename SETPIXEL>
 DEVICE_PREFIX void ComputePixel(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel, int superx = 1, int supery = 1) DEVICE_SUFFIX {
 	if (setpixel.GetX() >= setpixel.GetWidth() || setpixel.GetY() >= setpixel.GetHeight()) return;
@@ -516,7 +541,41 @@ struct RenderModeRaytrace<FLOAT, -1>
 
 #pragma region - Render Mode : Ambient Occlusion. -
 template <typename FLOAT>
-DEVICE_PREFIX Vector4<FLOAT> CalculateColorAOC(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, int hemisample_count, const Vector4<FLOAT>* hemisamples) DEVICE_SUFFIX {
+DEVICE_PREFIX Vector3<FLOAT> HemisphereCosineBias(FLOAT u, FLOAT v) DEVICE_SUFFIX {
+	FLOAT azimuth = u * 2 * FloatTraits<FLOAT>::PI;
+	FLOAT altitude = Acos(SquareRoot(v));
+	FLOAT cos_alt = Cos(altitude);
+	return make_vector3<FLOAT>(Sin(azimuth) * cos_alt, Cos(azimuth) * cos_alt, Sin(altitude));
+}
+
+template <typename FLOAT>
+DEVICE_PREFIX FLOAT Halton(int radix, int x) DEVICE_SUFFIX {
+	FLOAT result = 0;
+	int div = 1;
+	for (int i = 0; i < 16; ++i) {
+		int mod = x % radix;
+		div = div * radix;
+		result += FLOAT(mod) / div;
+		x = x / radix;
+	}
+	return result;
+}
+
+template <typename FLOAT>
+DEVICE_PREFIX Vector3<FLOAT> HaltonSample(int x) DEVICE_SUFFIX {
+	return HemisphereCosineBias<FLOAT>(Halton<FLOAT>(2, x), Halton<FLOAT>(3, x));
+}
+
+template <typename FLOAT>
+struct HemisampleHalton {
+	DEVICE_PREFIX HemisampleHalton(int sample_offset, int sample_count) DEVICE_SUFFIX : sample_offset(sample_offset), sample_count(sample_count) {}
+	DEVICE_PREFIX int Count() DEVICE_SUFFIX { return sample_count; }
+	DEVICE_PREFIX Vector3<FLOAT> Sample(int i) DEVICE_SUFFIX { return HaltonSample<FLOAT>(sample_offset + i); }
+	int sample_offset, sample_count;
+};
+
+template <typename FLOAT, typename HEMISAMPLE>
+DEVICE_PREFIX Vector4<FLOAT> CalculateColorAOC(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, HEMISAMPLE& hemisamples) DEVICE_SUFFIX {
 	auto intersect = Intersect(pScene, origin, direction);
 	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 		return make_vector4<FLOAT>(0, 0, 0, 0);
@@ -524,17 +583,17 @@ DEVICE_PREFIX Vector4<FLOAT> CalculateColorAOC(const Scene<FLOAT>& pScene, const
 	auto intersect_tbn = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, intersect.Object);
 	auto vector_point = origin + intersect_tbn.Lambda * direction + FLOAT(0.001) * intersect_tbn.Normal;
 	FLOAT c = 0;
-	for (int i = 0; i < hemisample_count; ++i)
+	for (int i = 0; i < hemisamples.Count(); ++i)
 	{
-		const Vector3<FLOAT>& hemisample = *(const Vector3<FLOAT>*)(hemisamples + i);
+		Vector3<FLOAT> hemisample = hemisamples.Sample(i);
 		const Vector3<FLOAT> hemisample_mapped = hemisample.x * intersect_tbn.Tangent + hemisample.y * intersect_tbn.Bitangent + hemisample.z * intersect_tbn.Normal;
 		if (!RayShadow(pScene, vector_point, hemisample_mapped)) c += 1; //Dot(hemisample_mapped, intersect_tbn.Normal);
 	}
-	return make_vector4<FLOAT>(c, c, c, hemisample_count);
+	return make_vector4<FLOAT>(c, c, c, hemisamples.Count());
 }
 
-template <typename FLOAT, typename SETPIXEL = PixelSetARGB<FLOAT>>
-DEVICE_PREFIX void ComputePixelAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel, int hemisample_count, const Vector4<FLOAT>* hemisamples) DEVICE_SUFFIX {
+template <typename FLOAT, typename SETPIXEL = PixelSetARGB<FLOAT>, typename HEMISAMPLE>
+DEVICE_PREFIX void ComputePixelAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, const SETPIXEL& setpixel, HEMISAMPLE& hemisamples) DEVICE_SUFFIX {
 	if (setpixel.GetX() >= setpixel.GetWidth() || setpixel.GetY() >= setpixel.GetHeight()) return;
 	Vector3<FLOAT> origin;
 	Vector3<FLOAT> direction;
@@ -543,6 +602,6 @@ DEVICE_PREFIX void ComputePixelAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> i
 	FLOAT vy = Lerp<FLOAT>(+1, -1, (setpixel.GetY() + FLOAT(0.5)) / setpixel.GetHeight());
 	ComputeScreenRay(inverse_mvp, vx, vy, origin, direction);
 	// Compute intersection with plane.
-	setpixel.PutPixel(CalculateColorAOC<FLOAT>(pScene, origin, direction, hemisample_count, hemisamples));
+	setpixel.PutPixel(CalculateColorAOC<FLOAT>(pScene, origin, direction, hemisamples));
 }
 #pragma endregion
