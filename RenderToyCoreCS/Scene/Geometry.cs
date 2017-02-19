@@ -118,4 +118,10 @@ namespace RenderToy
             return new Point3D(-usin * vsin, vcos, ucos * vsin);
         }
     }
+    /// <summary>
+    /// Single triangle [0,0,0], [0,1,0], [1,0,0].
+    /// </summary>
+    public class Triangle
+    {
+    }
 }

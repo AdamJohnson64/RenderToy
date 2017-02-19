@@ -107,10 +107,11 @@ namespace RenderToy
             // Write the inverse transform.
             Serialize(MathHelp.Invert(obj.Transform));
             // Write the object type.
-            if (obj.Node.primitive is Plane) { binarywriter.Write((int)1); }
-            else if (obj.Node.primitive is Sphere) { binarywriter.Write((int)2); }
-            else if (obj.Node.primitive is Cube) { binarywriter.Write((int)3); }
-            else { binarywriter.Write((int)0); }
+            if (obj.Node.primitive is Plane) { binarywriter.Write((int)Geometry.GEOMETRY_PLANE); }
+            else if (obj.Node.primitive is Sphere) { binarywriter.Write((int)Geometry.GEOMETRY_SPHERE); }
+            else if (obj.Node.primitive is Cube) { binarywriter.Write((int)Geometry.GEOMETRY_CUBE); }
+            else if (obj.Node.primitive is Triangle) { binarywriter.Write((int)Geometry.GEOMETRY_TRIANGLE); }
+            else { binarywriter.Write((int)Geometry.GEOMETRY_NONE); }
             // Write the offset to the object (or zero).
             binarywriter.Write((int)0);
             // Write the material type.
@@ -181,5 +182,13 @@ namespace RenderToy
             public List<int> References = new List<int>();
         }
         Dictionary<object, PointerRecord> WriteObjects = new Dictionary<object, PointerRecord>();
+        enum Geometry
+        {
+            GEOMETRY_NONE = 0,
+            GEOMETRY_PLANE = 1,
+            GEOMETRY_SPHERE = 2,
+            GEOMETRY_CUBE = 3,
+            GEOMETRY_TRIANGLE = 4,
+        }
     }
 }

@@ -21,6 +21,7 @@ enum GeometryType {
 	GEOMETRY_PLANE = 1,
 	GEOMETRY_SPHERE = 2,
 	GEOMETRY_CUBE = 3,
+	GEOMETRY_TRIANGLE = 4,
 };
 
 enum MaterialType {

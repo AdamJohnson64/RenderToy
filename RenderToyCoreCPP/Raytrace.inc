@@ -40,12 +40,10 @@ DEVICE_PREFIX float SquareRoot(float v) DEVICE_SUFFIX { return sqrtf(v); }
 DEVICE_PREFIX double SquareRoot(double v) DEVICE_SUFFIX { return sqrt(v); }
 #pragma endregion
 
-#pragma region - Section : Basic Vector Construction. -
+#pragma region - Section : Basic Vector Math. -
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> make_vector3(FLOAT x, FLOAT y, FLOAT z) DEVICE_SUFFIX { Vector3<FLOAT> o; o.x = x; o.y = y; o.z = z; return o; }
 template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> make_vector4(FLOAT x, FLOAT y, FLOAT z, FLOAT w) DEVICE_SUFFIX { Vector4<FLOAT> o; o.x = x; o.y = y; o.z = z; o.w = w; return o; }
-#pragma endregion
 
-#pragma region - Section : Basic Vector Math Support. -
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> operator-(const Vector3<FLOAT>& val) DEVICE_SUFFIX { return make_vector3<FLOAT>(-val.x, -val.y, -val.z); }
 template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> operator-(const Vector4<FLOAT>& val) DEVICE_SUFFIX { return make_vector4<FLOAT>(-val.z, -val.y, -val.z, -val.w); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> operator+(const Vector3<FLOAT>& lhs, const Vector3<FLOAT>& rhs) DEVICE_SUFFIX { return make_vector3<FLOAT>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z); }
@@ -58,9 +56,7 @@ template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> operator*(const Vector4<F
 template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> operator*(FLOAT lhs, const Vector4<FLOAT>& rhs) DEVICE_SUFFIX { return rhs * lhs; }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> operator/(const Vector3<FLOAT>& lhs, FLOAT rhs) DEVICE_SUFFIX { return lhs * (1 / rhs); }
 template <typename FLOAT> DEVICE_PREFIX Vector4<FLOAT> operator/(const Vector4<FLOAT>& lhs, FLOAT rhs) DEVICE_SUFFIX { return lhs * (1 / rhs); }
-#pragma endregion
 
-#pragma region - Section : Common Scalar & Vector Math Support. -
 template <typename FLOAT> DEVICE_PREFIX FLOAT Clamp(FLOAT min, FLOAT max, FLOAT val) DEVICE_SUFFIX { return val < min ? min : (val > max ? max : val); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> Cross(const Vector3<FLOAT>& lhs, const Vector3<FLOAT> rhs) DEVICE_SUFFIX { return make_vector3<FLOAT>(lhs.y * rhs.z - lhs.z * rhs.y, lhs.z * rhs.x - lhs.x * rhs.z, lhs.x * rhs.y - lhs.y * rhs.x); }
 template <typename FLOAT> DEVICE_PREFIX FLOAT Dot(const Vector3<FLOAT>& lhs, const Vector3<FLOAT>& rhs) DEVICE_SUFFIX { return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z; }
@@ -69,7 +65,7 @@ template <typename FLOAT> DEVICE_PREFIX FLOAT Lerp(FLOAT y1, FLOAT y2, FLOAT x) 
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> Normalize(const Vector3<FLOAT>& val) DEVICE_SUFFIX { return val / Length(val.x, val.y, val.z); }
 #pragma endregion
 
-#pragma region - Section : Matrix Math Support. -
+#pragma region - Section : Basic Matrix Math. -
 template <typename FLOAT>
 DEVICE_PREFIX Vector3<FLOAT> TransformPoint(const Matrix44<FLOAT>& m, const Vector3<FLOAT>& p) DEVICE_SUFFIX {
 	return make_vector3<FLOAT>(
@@ -234,6 +230,47 @@ DEVICE_PREFIX RAYQUERY IntersectSphere(const Vector3<FLOAT>& origin, const Vecto
 }
 
 template <typename FLOAT, typename RAYQUERY>
+DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& p0, const Vector3<FLOAT>& p1, const Vector3<FLOAT>& p2) DEVICE_SUFFIX {
+	RAYQUERY result = { 0 };
+	// Determine if we intersect the plane of the triangle in front of the eye.
+	const Vector3<FLOAT> plane_normal = Normalize(Cross(p1 - p0, p2 - p0));
+	FLOAT plane_distance = Dot(plane_normal, p0);
+	FLOAT lambda = IntersectPlane<FLOAT>(origin, direction, plane_normal, plane_distance);
+	if (lambda < 0) {
+		SetLambda(result, FloatTraits<FLOAT>::Max);
+		return result;
+	}
+	// Calculate the intersection point.
+	const Vector3<FLOAT> intersect = origin + lambda * direction;
+	// Determine if the point of intersection is within the triangle edges.
+	const Vector3<FLOAT> edge0 = Cross(p1 - p0, plane_normal);
+	FLOAT edge0_distance = Dot(edge0, p0);
+	if (Dot(intersect, edge0) - edge0_distance > 0) {
+		SetLambda(result, FloatTraits<FLOAT>::Max);
+		return result;
+	}
+	const Vector3<FLOAT> edge1 = Cross(p2 - p1, plane_normal);
+	FLOAT edge1_distance = Dot(edge1, p1);
+	if (Dot(intersect, edge1) - edge1_distance > 0) {
+		SetLambda(result, FloatTraits<FLOAT>::Max);
+		return result;
+	}
+	const Vector3<FLOAT> edge2 = Cross(p0 - p2, plane_normal);
+	FLOAT edge2_distance = Dot(edge2, p2);
+	if (Dot(intersect, edge2) - edge2_distance > 0) {
+		SetLambda(result, FloatTraits<FLOAT>::Max);
+		return result;
+	}
+	// Complete hit; fill the intersection record.
+	SetLambda(result, lambda);
+	SetNormal(result, plane_normal);
+	const Vector3<FLOAT> edge0n = Normalize(edge0);
+	SetTangent(result, edge0n);
+	SetBitangent(result, Cross(plane_normal, edge0n));
+	return result;
+}
+
+template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, GeometryType geometry) DEVICE_SUFFIX {
 	switch (geometry) {
 	case GEOMETRY_PLANE:
@@ -242,6 +279,8 @@ DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLO
 		return IntersectSphere<FLOAT, RAYQUERY>(origin, direction);
 	case GEOMETRY_CUBE:
 		return IntersectCube<FLOAT, RAYQUERY>(origin, direction);
+	case GEOMETRY_TRIANGLE:
+		return IntersectTriangle<FLOAT, RAYQUERY>(origin, direction, make_vector3<FLOAT>(0, 0, 0), make_vector3<FLOAT>(0, 1, 0), make_vector3<FLOAT>(1, 0, 0));
 	default:
 		RAYQUERY result;
 		SetLambda(result, FloatTraits<FLOAT>::Max);
