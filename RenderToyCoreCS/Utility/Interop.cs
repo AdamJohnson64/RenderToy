@@ -115,9 +115,9 @@ namespace RenderToy
             // Write the offset to the object (or zero).
             binarywriter.Write((int)0);
             // Write the material type.
-            if (obj.Node.material is MaterialCommon) { binarywriter.Write((int)1); }
-            else if (obj.Node.material is CheckerboardMaterial) { binarywriter.Write((int)2); }
-            else { binarywriter.Write((int)0); }
+            if (obj.Node.material is MaterialCommon) { binarywriter.Write((int)Material.MATERIAL_COMMON); }
+            else if (obj.Node.material is CheckerboardMaterial) { binarywriter.Write((int)Material.MATERIAL_CHECKERBOARD); }
+            else { binarywriter.Write((int)Material.MATERIAL_NONE); }
             // Write the offset to the material (or zero).
             if (obj.Node.material is MaterialCommon) { EmitAndQueue(obj.Node.material); }
             else { binarywriter.Write((int)0); }
@@ -189,6 +189,12 @@ namespace RenderToy
             GEOMETRY_SPHERE = 2,
             GEOMETRY_CUBE = 3,
             GEOMETRY_TRIANGLE = 4,
+        }
+        enum Material
+        {
+            MATERIAL_NONE = 0,
+            MATERIAL_COMMON = 1,
+            MATERIAL_CHECKERBOARD = 2,
         }
     }
 }
