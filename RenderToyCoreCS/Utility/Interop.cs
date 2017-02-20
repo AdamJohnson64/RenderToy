@@ -168,10 +168,17 @@ namespace RenderToy
         }
         void Serialize(Mesh obj)
         {
+            // Write the header.
             binarywriter.Write((int)obj.Triangles.Length);
             binarywriter.Write((int)0);
             binarywriter.Write((int)0);
             binarywriter.Write((int)0);
+            // Write the bounds.
+            Point3D min = new Point3D(obj.Vertices.Min(x => x.X), obj.Vertices.Min(x => x.Y), obj.Vertices.Min(x => x.Z));
+            Point3D max = new Point3D(obj.Vertices.Max(x => x.X), obj.Vertices.Max(x => x.Y), obj.Vertices.Max(x => x.Z));
+            Serialize(min, Serialize);
+            Serialize(max, Serialize);
+            // Write all the triangles.
             foreach (var vtx in obj.Triangles
                 .SelectMany( t => new[] { t.Index0, t.Index1, t.Index2 })
                 .Select(v => obj.Vertices[v]))

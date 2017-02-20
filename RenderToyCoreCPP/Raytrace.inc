@@ -144,6 +144,39 @@ template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const Inters
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const IntersectNormal<FLOAT>& result) DEVICE_SUFFIX { return make_vector3<FLOAT>(0, 0, 0); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const IntersectTBN<FLOAT>& result) DEVICE_SUFFIX { return result.Bitangent; }
 
+template <typename FLOAT>
+DEVICE_PREFIX bool IntersectBound(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& min, const Vector3<FLOAT>& max) DEVICE_SUFFIX {
+	Vector4<FLOAT> planes[] = {
+		make_vector4<FLOAT>(-1, 0, 0, -min.x),
+		make_vector4<FLOAT>(+1, 0, 0, max.x),
+		make_vector4<FLOAT>(0, -1, 0, -min.y),
+		make_vector4<FLOAT>(0, +1, 0, max.y),
+		make_vector4<FLOAT>(0, 0, -1, -min.z),
+		make_vector4<FLOAT>(0, 0, +1, max.z)
+	};
+	for (int face_index = 0; face_index < 6; ++face_index) {
+		const Vector3<FLOAT>& normal = *(Vector3<FLOAT>*)(planes + face_index);
+		const FLOAT& distance = planes[face_index].w;
+		FLOAT lambda = IntersectPlane<FLOAT>(origin, direction, normal, distance);
+		if (!(lambda > 0 && lambda < FloatTraits<FLOAT>::Max)) continue;
+		Vector3<FLOAT> point = origin + lambda * direction;
+		// Check that the point is inside every other plane.
+		bool use_face = true;
+		for (int check_face = 0; check_face < 6; ++check_face) {
+			if (face_index == check_face) continue;
+			const Vector3<FLOAT>& check_normal = *(Vector3<FLOAT>*)(planes + check_face);
+			const FLOAT& check_distance = planes[check_face].w;
+			FLOAT inside = Dot(point, check_normal) - check_distance;
+			if (inside > 0) {
+				use_face = false;
+				break;
+			}
+		}
+		if (use_face) return true;
+	}
+	return false;
+}
+
 template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX RAYQUERY IntersectCube(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
 	RAYQUERY result;
@@ -272,12 +305,15 @@ DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vec
 
 template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX RAYQUERY IntersectTriangleList(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const TriangleList<FLOAT>& mesh) DEVICE_SUFFIX {
+	RAYQUERY result = { 0 };
+	SetLambda(result, FloatTraits<FLOAT>::Max);
+	if (!IntersectBound<FLOAT>(origin, direction, *(const Vector3<FLOAT>*)&mesh.BoundMin, *(const Vector3<FLOAT>*)&mesh.BoundMax)) return result;
 	int best_index = -1;
 	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
 	for (int t = 0; t < mesh.TriangleCount; ++t) {
-		const Vector3<FLOAT>& p0 = *(Vector3<FLOAT>*)(mesh.Vertices + t * 3 + 0);
-		const Vector3<FLOAT>& p1 = *(Vector3<FLOAT>*)(mesh.Vertices + t * 3 + 1);
-		const Vector3<FLOAT>& p2 = *(Vector3<FLOAT>*)(mesh.Vertices + t * 3 + 2);
+		const Vector3<FLOAT>& p0 = *(const Vector3<FLOAT>*)(mesh.Vertices + t * 3 + 0);
+		const Vector3<FLOAT>& p1 = *(const Vector3<FLOAT>*)(mesh.Vertices + t * 3 + 1);
+		const Vector3<FLOAT>& p2 = *(const Vector3<FLOAT>*)(mesh.Vertices + t * 3 + 2);
 		auto intersect = IntersectTriangle<FLOAT, IntersectSimple<FLOAT>>(origin, direction, p0, p1, p2);
 		if (intersect.Lambda > 0 && intersect.Lambda < best_lambda)
 		{
@@ -285,14 +321,13 @@ DEVICE_PREFIX RAYQUERY IntersectTriangleList(const Vector3<FLOAT>& origin, const
 			best_lambda = intersect.Lambda;
 		}
 	}
-	RAYQUERY result;
-	SetLambda(result, best_lambda);
 	if (best_index != -1)
 	{
-		const Vector3<FLOAT>& p0 = *(Vector3<FLOAT>*)(mesh.Vertices + best_index * 3 + 0);
-		const Vector3<FLOAT>& p1 = *(Vector3<FLOAT>*)(mesh.Vertices + best_index * 3 + 1);
-		const Vector3<FLOAT>& p2 = *(Vector3<FLOAT>*)(mesh.Vertices + best_index * 3 + 2);
+		const Vector3<FLOAT>& p0 = *(const Vector3<FLOAT>*)(mesh.Vertices + best_index * 3 + 0);
+		const Vector3<FLOAT>& p1 = *(const Vector3<FLOAT>*)(mesh.Vertices + best_index * 3 + 1);
+		const Vector3<FLOAT>& p2 = *(const Vector3<FLOAT>*)(mesh.Vertices + best_index * 3 + 2);
 		auto intersect = IntersectTriangle<FLOAT, IntersectTBN<FLOAT>>(origin, direction, p0, p1, p2);
+		SetLambda(result, best_lambda);
 		SetNormal(result, GetNormal(intersect));
 		SetTangent(result, GetTangent(intersect));
 		SetBitangent(result, GetBitangent(intersect));
@@ -324,7 +359,7 @@ template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const SceneObject<FLOAT>& scene_object) DEVICE_SUFFIX {
 	Vector3<FLOAT> transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
 	Vector3<FLOAT> transformed_direction = TransformVector(scene_object.TransformInverse, direction);
-	RAYQUERY result = Intersect<FLOAT, RAYQUERY>(transformed_origin, transformed_direction, scene_object, (unsigned int*)&pScene + scene_object.GeometryOffset / 4);
+	RAYQUERY result = Intersect<FLOAT, RAYQUERY>(transformed_origin, transformed_direction, scene_object, (const unsigned int*)&pScene + scene_object.GeometryOffset / 4);
 	SetNormal(result, TransformVector(scene_object.Transform, GetNormal(result)));
 	SetTangent(result, TransformVector(scene_object.Transform, GetTangent(result)));
 	SetBitangent(result, TransformVector(scene_object.Transform, GetBitangent(result)));
@@ -352,7 +387,16 @@ DEVICE_PREFIX IntersectObject<FLOAT> Intersect(const Scene<FLOAT>& pScene, const
 }
 
 template <typename FLOAT>
-DEVICE_PREFIX bool RayShadow(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+DEVICE_PREFIX bool RayShadowBounded(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+	for (int i = 0; i < pScene.ObjectCount; ++i) {
+		FLOAT lambda = Intersect<FLOAT, IntersectSimple<FLOAT>>(origin, direction, pScene, pScene.Objects[i]).Lambda;
+		if (lambda >= 0 && lambda < 1) return true;
+	}
+	return false;
+}
+
+template <typename FLOAT>
+DEVICE_PREFIX bool RayShadowInfinite(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
 	for (int i = 0; i < pScene.ObjectCount; ++i) {
 		FLOAT lambda = Intersect<FLOAT, IntersectSimple<FLOAT>>(origin, direction, pScene, pScene.Objects[i]).Lambda;
 		if (lambda >= 0 && lambda < FloatTraits<FLOAT>::Max) return true;
@@ -541,9 +585,10 @@ public:
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
-		Vector3<FLOAT> vector_point = origin + intersect.Lambda * direction;
-		Vector3<FLOAT> vector_light = Normalize(make_vector3<FLOAT>(10, 10, -10) - vector_point);
-		Vector3<FLOAT> vector_normal = Normalize(Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, pScene, intersect.Object).Normal);
+		const Vector3<FLOAT> vector_point = origin + intersect.Lambda * direction;
+		const Vector3<FLOAT> vector_light = make_vector3<FLOAT>(10, 10, -10) - vector_point;
+		const Vector3<FLOAT> vector_light_normal = Normalize(vector_light);
+		const Vector3<FLOAT> vector_normal = Normalize(Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, pScene, intersect.Object).Normal);
 		Vector4<FLOAT> color_diffuse = make_vector4<FLOAT>(1, 1, 1, 0);
 		Vector4<FLOAT> color_specular = make_vector4<FLOAT>(1, 1, 1, 0);
 		FLOAT scale_reflect = 0;
@@ -574,15 +619,15 @@ public:
 		}
 		break;
 		}
-		Vector3<FLOAT> vector_incident = Normalize(direction);
-		Vector3<FLOAT> vector_reflect = Reflect(vector_incident, vector_normal);
-		Vector3<FLOAT> vector_refract = Refract(vector_incident, vector_normal, scale_ior);
-		FLOAT scale_diffuse = Dot(vector_light, vector_normal);
+		const Vector3<FLOAT> vector_incident = Normalize(direction);
+		const Vector3<FLOAT> vector_reflect = Reflect(vector_incident, vector_normal);
+		const Vector3<FLOAT> vector_refract = Refract(vector_incident, vector_normal, scale_ior);
+		FLOAT scale_diffuse = Dot(vector_light_normal, vector_normal);
 		scale_diffuse = scale_diffuse > 0 ? scale_diffuse : 0;
-		FLOAT scale_specular = Dot(vector_light, vector_reflect);
+		FLOAT scale_specular = Dot(vector_light_normal, vector_reflect);
 		scale_specular = scale_specular > 0 ? scale_specular : 0;
 		scale_specular = Power(scale_specular, 100);
-		if (RayShadow(pScene, vector_point + FLOAT(0.0001) * vector_normal, vector_light)) scale_diffuse *= FLOAT(0.5);
+		if (RayShadowBounded(pScene, vector_point + FLOAT(0.0001) * vector_normal, vector_light)) scale_diffuse *= FLOAT(0.5);
 		Vector4<FLOAT> color = color_diffuse * scale_diffuse + color_specular * scale_specular;
 		if (scale_refract > 0) {
 			//Schlick's Approximation for reflectance.
@@ -657,9 +702,9 @@ DEVICE_PREFIX Vector4<FLOAT> CalculateColorAOC(const Scene<FLOAT>& pScene, const
 	{
 		Vector3<FLOAT> hemisample = hemisamples.Sample(i);
 		const Vector3<FLOAT> hemisample_mapped = hemisample.x * intersect_tbn.Tangent + hemisample.y * intersect_tbn.Bitangent + hemisample.z * intersect_tbn.Normal;
-		if (!RayShadow(pScene, vector_point, hemisample_mapped)) c += 1; //Dot(hemisample_mapped, intersect_tbn.Normal);
+		if (!RayShadowInfinite(pScene, vector_point, hemisample_mapped)) c += 1; //Dot(hemisample_mapped, intersect_tbn.Normal);
 	}
-	return make_vector4<FLOAT>(c, c, c, hemisamples.Count());
+	return make_vector4<FLOAT>(c, c, c, FLOAT(hemisamples.Count()));
 }
 
 template <typename FLOAT, typename SETPIXEL = PixelSetARGB<FLOAT>, typename HEMISAMPLE>

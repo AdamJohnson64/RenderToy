@@ -37,6 +37,8 @@ struct TriangleList {
 	int Padding0;
 	int Padding1;
 	int Padding2;
+	Vector4<FLOAT> BoundMin;
+	Vector4<FLOAT> BoundMax;
 	Vector4<FLOAT> Vertices[];
 };
 

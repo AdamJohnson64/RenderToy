@@ -180,7 +180,7 @@ namespace RenderToy
             set { renderMode = value; InvalidateVisual(); }
         }
         MultiPass renderMode = MultiPass.Create(RenderCallCommands.Calls[0]);
-        int renderResolution = 1;
+        int renderResolution = 2;
         bool renderAgain = false;
         bool renderPreviews = true;
         bool renderWireframe = false;
