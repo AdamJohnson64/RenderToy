@@ -146,35 +146,78 @@ template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const Inters
 
 template <typename FLOAT>
 DEVICE_PREFIX bool IntersectBound(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& min, const Vector3<FLOAT>& max) DEVICE_SUFFIX {
-	Vector4<FLOAT> planes[] = {
-		make_vector4<FLOAT>(-1, 0, 0, -min.x),
-		make_vector4<FLOAT>(+1, 0, 0, max.x),
-		make_vector4<FLOAT>(0, -1, 0, -min.y),
-		make_vector4<FLOAT>(0, +1, 0, max.y),
-		make_vector4<FLOAT>(0, 0, -1, -min.z),
-		make_vector4<FLOAT>(0, 0, +1, max.z)
-	};
-	for (int face_index = 0; face_index < 6; ++face_index) {
-		const Vector3<FLOAT>& normal = *(Vector3<FLOAT>*)(planes + face_index);
-		const FLOAT& distance = planes[face_index].w;
-		FLOAT lambda = IntersectPlane<FLOAT>(origin, direction, normal, distance);
-		if (!(lambda > 0 && lambda < FloatTraits<FLOAT>::Max)) continue;
-		Vector3<FLOAT> point = origin + lambda * direction;
-		// Check that the point is inside every other plane.
-		bool use_face = true;
-		for (int check_face = 0; check_face < 6; ++check_face) {
-			if (face_index == check_face) continue;
-			const Vector3<FLOAT>& check_normal = *(Vector3<FLOAT>*)(planes + check_face);
-			const FLOAT& check_distance = planes[check_face].w;
-			FLOAT inside = Dot(point, check_normal) - check_distance;
-			if (inside > 0) {
-				use_face = false;
-				break;
-			}
-		}
-		if (use_face) return true;
+	// This is the fast clipping or "slab method".
+	// Form a line P1->P2 and clip against the min max planes of each side of the box.
+	Vector3<FLOAT> p1 = origin;
+	Vector3<FLOAT> p2 = origin + direction;
+	// All the subsequent tests take the form of:
+	//
+	// if (p1.x < min.x) {
+	//     if (p2.x < min.x) return false;
+	//     p1 = p1 + (min.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
+	//               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ LAMBDA
+	// } else if (p2.x < min.x) {
+	//     if (p1.x < min.x) return false;
+	//     p2 = p1 + (min.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
+	// }
+	//
+	// Summarized:
+	// If P1 is outside AND P2 is outside then the whole line is outside = reject.
+	// Otherwise, P1 is outside and P2 is inside = clip P1 to the boundary.
+	// The else clause is the same condition with P1 and P2 reversed and moves P2 to the boundary instead.
+	// If we manage to find a clipped line segment that passes all these tests for all planes then the ray *MUST* intersect.
+	// BEGIN
+	// Test and clip against min.x
+	if (p1.x < min.x) {
+		if (p2.x < min.x) return false;
+		p1 = p1 + (min.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
+	} else if (p2.x < min.x) {
+		if (p1.x < min.x) return false;
+		p2 = p1 + (min.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
 	}
-	return false;
+	// Test and clip against max.x
+	if (p1.x > max.x) {
+		if (p2.x > max.x) return false;
+		p1 = p1 + (max.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
+	}
+	else if (p2.x > max.x) {
+		if (p1.x > max.x) return false;
+		p2 = p1 + (max.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
+	}
+	// Test and clip against min.y
+	if (p1.y < min.y) {
+		if (p2.y < min.y) return false;
+		p1 = p1 + (min.y - p1.y) / (p2.y - p1.y) * (p2 - p1);
+	} else if (p2.y < min.y) {
+		if (p1.y < min.y) return false;
+		p2 = p1 + (min.y - p1.y) / (p2.y - p1.y) * (p2 - p1);
+    }
+	// Test and clip against max.y
+	if (p1.y > max.y) {
+		if (p2.y > max.y) return false;
+		p1 = p1 + (max.y - p1.y) / (p2.y - p1.y) * (p2 - p1);
+	}
+	else if (p2.y > max.y) {
+		if (p1.y > max.y) return false;
+		p2 = p1 + (max.y - p1.y) / (p2.y - p1.y) * (p2 - p1);
+	}
+	// Test and clip against min.z
+	if (p1.z < min.z) {
+		if (p2.z < min.z) return false;
+		p1 = p1 + (min.z - p1.z) / (p2.z - p1.z) * (p2 - p1);
+	} else if (p2.z < min.z) {
+		if (p1.z < min.z) return false;
+		p1 = p1 + (min.z - p1.z) / (p2.z - p1.z) * (p2 - p1);
+	}
+	// Test and clip against max.z
+	if (p1.z > max.z) {
+		if (p2.z > max.z) return false;
+		p1 = p1 + (max.z - p1.z) / (p2.z - p1.z) * (p2 - p1);
+	} else if (p2.z > max.z) {
+		if (p1.z > max.z) return false;
+		p1 = p1 + (max.z - p1.z) / (p2.z - p1.z) * (p2 - p1);
+	}
+	return true;
 }
 
 template <typename FLOAT, typename RAYQUERY>
@@ -266,7 +309,7 @@ template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& p0, const Vector3<FLOAT>& p1, const Vector3<FLOAT>& p2) DEVICE_SUFFIX {
 	RAYQUERY result = { 0 };
 	// Determine if we intersect the plane of the triangle in front of the eye.
-	const Vector3<FLOAT> plane_normal = Normalize(Cross(p1 - p0, p2 - p0));
+	Vector3<FLOAT> plane_normal = Cross(p1 - p0, p2 - p0); // Defer normalization
 	FLOAT plane_distance = Dot(plane_normal, p0);
 	FLOAT lambda = IntersectPlane<FLOAT>(origin, direction, plane_normal, plane_distance);
 	if (lambda < 0) {
@@ -295,6 +338,7 @@ DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vec
 		return result;
 	}
 	// Complete hit; fill the intersection record.
+	plane_normal = Normalize(plane_normal);
 	SetLambda(result, lambda);
 	SetNormal(result, plane_normal);
 	const Vector3<FLOAT> edge0n = Normalize(edge0);
