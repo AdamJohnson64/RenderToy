@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -118,6 +119,8 @@ namespace RenderToy
         static RoutedUICommand CommandResolution50 = new RoutedUICommand("50% Resolution", "CommandResolution50", typeof(RenderViewport));
         static RoutedUICommand CommandResolution25 = new RoutedUICommand("25% Resolution", "CommandResolution25", typeof(RenderViewport));
         static RoutedUICommand CommandResolution10 = new RoutedUICommand("10% Resolution", "CommandResolution10", typeof(RenderViewport));
+        static RoutedUICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(RenderViewport));
+        static RoutedUICommand CommandSceneLoad = new RoutedUICommand("Load Scene (PLY)", "CommandSceneLoad", typeof(RenderViewport));
         public RenderViewport()
         {
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
@@ -128,6 +131,20 @@ namespace RenderToy
             CommandBindings.Add(new CommandBinding(CommandResolution50, (s, e) => { renderResolution = 2; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandResolution25, (s, e) => { renderResolution = 4; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandResolution10, (s, e) => { renderResolution = 10; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => { Scene = Scene.Default; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandSceneLoad, (s, e) => {
+                OpenFileDialog ofd = new OpenFileDialog();
+                ofd.Title = "Choose Model File";
+                if (ofd.ShowDialog() == true)
+                {
+                    Scene scene = new Scene();
+                    scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
+                    scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(100, 100, 100)), MeshPLY.LoadFromPath(ofd.FileName), Materials.LightGray, Materials.PlasticRed));
+                    Scene = scene;
+                    InvalidateVisual();
+                }
+                e.Handled = true;
+            }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             // Define input bindings for common display modes.
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
@@ -138,13 +155,10 @@ namespace RenderToy
             }
             // Generate context menu.
             var menu = new ContextMenu();
-            foreach (var group in RenderCallCommands.Calls.GroupBy(x => RenderCall.GetDisplayNameBare(x.MethodInfo.Name)))
             {
-                var menu_group = new MenuItem { Header = group.Key };
-                foreach (var call in group)
-                {
-                    menu_group.Items.Add(new MenuItem { Command = RenderCallCommands.Commands[call] });
-                }
+                var menu_group = new MenuItem { Header = "File" };
+                menu_group.Items.Add(new MenuItem { Command = CommandSceneNew });
+                menu_group.Items.Add(new MenuItem { Command = CommandSceneLoad });
                 menu.Items.Add(menu_group);
             }
             {
@@ -159,6 +173,15 @@ namespace RenderToy
                 menu_group.Items.Add(new MenuItem { Command = CommandResolution50 });
                 menu_group.Items.Add(new MenuItem { Command = CommandResolution25 });
                 menu_group.Items.Add(new MenuItem { Command = CommandResolution10 });
+                menu.Items.Add(menu_group);
+            }
+            foreach (var group in RenderCallCommands.Calls.GroupBy(x => RenderCall.GetDisplayNameBare(x.MethodInfo.Name)))
+            {
+                var menu_group = new MenuItem { Header = group.Key };
+                foreach (var call in group)
+                {
+                    menu_group.Items.Add(new MenuItem { Command = RenderCallCommands.Commands[call] });
+                }
                 menu.Items.Add(menu_group);
             }
             this.ContextMenu = menu;
