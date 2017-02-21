@@ -34,12 +34,10 @@ enum MaterialType {
 template <typename FLOAT>
 struct TriangleList {
 	int TriangleCount;
-	int Padding0;
-	int Padding1;
-	int Padding2;
-	Vector4<FLOAT> BoundMin;
-	Vector4<FLOAT> BoundMax;
-	Vector4<FLOAT> Vertices[];
+	int Padding0; // Forces padding to 8 bytes for double mode.
+	Vector3<FLOAT> BoundMin;
+	Vector3<FLOAT> BoundMax;
+	Vector3<FLOAT> Vertices[];
 };
 
 template <typename FLOAT>
@@ -68,8 +66,6 @@ template <typename FLOAT>
 struct Scene {
 	int FileSize;
 	int ObjectCount;
-	int Reserved0;
-	int Reserved1;
 	SceneObject<FLOAT> Objects[];
 };
 #pragma warning(pop)

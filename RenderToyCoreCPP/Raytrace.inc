@@ -355,10 +355,7 @@ DEVICE_PREFIX RAYQUERY IntersectTriangleList(const Vector3<FLOAT>& origin, const
 	int best_index = -1;
 	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
 	for (int t = 0; t < mesh.TriangleCount; ++t) {
-		const Vector3<FLOAT>& p0 = *(const Vector3<FLOAT>*)(mesh.Vertices + t * 3 + 0);
-		const Vector3<FLOAT>& p1 = *(const Vector3<FLOAT>*)(mesh.Vertices + t * 3 + 1);
-		const Vector3<FLOAT>& p2 = *(const Vector3<FLOAT>*)(mesh.Vertices + t * 3 + 2);
-		auto intersect = IntersectTriangle<FLOAT, IntersectSimple<FLOAT>>(origin, direction, p0, p1, p2);
+		auto intersect = IntersectTriangle<FLOAT, IntersectSimple<FLOAT>>(origin, direction, mesh.Vertices[t * 3 + 0], mesh.Vertices[t * 3 + 1], mesh.Vertices[t * 3 + 2]);
 		if (intersect.Lambda > 0 && intersect.Lambda < best_lambda)
 		{
 			best_index = t;
@@ -367,10 +364,8 @@ DEVICE_PREFIX RAYQUERY IntersectTriangleList(const Vector3<FLOAT>& origin, const
 	}
 	if (best_index != -1)
 	{
-		const Vector3<FLOAT>& p0 = *(const Vector3<FLOAT>*)(mesh.Vertices + best_index * 3 + 0);
-		const Vector3<FLOAT>& p1 = *(const Vector3<FLOAT>*)(mesh.Vertices + best_index * 3 + 1);
-		const Vector3<FLOAT>& p2 = *(const Vector3<FLOAT>*)(mesh.Vertices + best_index * 3 + 2);
-		auto intersect = IntersectTriangle<FLOAT, IntersectTBN<FLOAT>>(origin, direction, p0, p1, p2);
+		int t = best_index;
+		auto intersect = IntersectTriangle<FLOAT, IntersectTBN<FLOAT>>(origin, direction, mesh.Vertices[t * 3 + 0], mesh.Vertices[t * 3 + 1], mesh.Vertices[t * 3 + 2]);
 		SetLambda(result, best_lambda);
 		SetNormal(result, GetNormal(intersect));
 		SetTangent(result, GetTangent(intersect));

@@ -48,8 +48,6 @@ namespace RenderToy
                 // Write the file size and object count.
                 binarywriter.Write((int)0);
                 binarywriter.Write((int)transformedobjects.Count);
-                binarywriter.Write((int)0);
-                binarywriter.Write((int)0);
                 // Write all the objects.
                 foreach (var obj in transformedobjects)
                 {
@@ -58,9 +56,9 @@ namespace RenderToy
                 // Write all the outstanding queued object references and patch their reference sources.
                 foreach (var writeremaining in WriteObjects)
                 {
-                    // Always pad additional objects to 16 bytes for safety.
+                    // Always pad additional objects to 8 bytes in double mode.
                     // We don't want to inherit alignment from any previous data.
-                    while (m.Position % 16 != 0)
+                    while (UseF64 && m.Position % 8 != 0)
                     {
                         binarywriter.Write((byte)0xCC);
                     }
@@ -171,8 +169,6 @@ namespace RenderToy
             // Write the header.
             binarywriter.Write((int)obj.Triangles.Length);
             binarywriter.Write((int)0);
-            binarywriter.Write((int)0);
-            binarywriter.Write((int)0);
             // Write the bounds.
             Point3D min = new Point3D(obj.Vertices.Min(x => x.X), obj.Vertices.Min(x => x.Y), obj.Vertices.Min(x => x.Z));
             Point3D max = new Point3D(obj.Vertices.Max(x => x.X), obj.Vertices.Max(x => x.Y), obj.Vertices.Max(x => x.Z));
@@ -190,10 +186,18 @@ namespace RenderToy
         {
             if (UseF64)
             {
+                if (binarywriter.BaseStream.Position % 8 != 0)
+                {
+                    throw new DataMisalignedException("Misaligned double (suboptimal on CPU and illegal on GPU).");
+                }
                 binarywriter.Write((double)obj);
             }
             else
             {
+                if (binarywriter.BaseStream.Position % 4 != 0)
+                {
+                    throw new DataMisalignedException("Misaligned float (suboptimal on CPU and illegal on GPU).");
+                }
                 binarywriter.Write((float)obj);
             }
         }
@@ -246,7 +250,7 @@ namespace RenderToy
         }
         static void Serialize(Point3D obj, Action<double> write)
         {
-            write(obj.X); write(obj.Y); write(obj.Z); write(0);
+            write(obj.X); write(obj.Y); write(obj.Z);
         }
         static void Serialize(Point4D obj, Action<double> write)
         {
@@ -254,7 +258,7 @@ namespace RenderToy
         }
         static void Serialize(Vector3D obj, Action<double> write)
         {
-            write(obj.X); write(obj.Y); write(obj.Z); write(0);
+            write(obj.X); write(obj.Y); write(obj.Z);
         }
         #endregion
     }
