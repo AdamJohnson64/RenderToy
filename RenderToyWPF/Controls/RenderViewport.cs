@@ -19,7 +19,27 @@ namespace RenderToy
 {
     public abstract class RenderViewportBase : FrameworkElement
     {
-        public Scene Scene = Scene.Default;
+        #region - Section : Scene -
+        protected Scene Scene {
+            get
+            {
+                return scene;
+            }
+            set
+            {
+                scene = value;
+                InvalidateScene();
+            }
+        }
+        Scene scene = Scene.Default;
+        void InvalidateScene()
+        {
+            if (SceneChanged != null) SceneChanged();
+            InvalidateVisual();
+        }
+        public delegate void SceneChangedHandler();
+        public event SceneChangedHandler SceneChanged;
+        #endregion
         #region - Section : Camera -
         protected Matrix3D View
         {
@@ -44,8 +64,23 @@ namespace RenderToy
         }
         TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 2, -5) };
         CameraPerspective CameraMat = new CameraPerspective();
+        void InvalidateCamera()
+        {
+            if (CameraChanged != null) CameraChanged();
+            InvalidateVisual();
+        }
+        public delegate void CameraChangedHandler();
+        public event CameraChangedHandler CameraChanged;
         #endregion
-        #region - Section : Input Handling -
+        #region - Section : Rendering -
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            base.OnRender(drawingContext);
+            OnRenderToy(drawingContext);
+        }
+        protected abstract void OnRenderToy(DrawingContext drawingContext);
+        #endregion
+        #region - Overrides : UIElement -
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
@@ -78,37 +113,30 @@ namespace RenderToy
             {
                 // Truck Mode (CTRL + SHIFT).
                 Camera.TranslatePost(new Vector3D(0, 0, dy * -0.05));
+                InvalidateCamera();
             }
             else if (!isPressedLeftShift && isPressedLeftControl)
             {
                 // Rotate Mode (CTRL Only)
                 Camera.RotatePre(new Quaternion(new Vector3D(0, 1, 0), dx * 0.05));
                 Camera.RotatePost(new Quaternion(new Vector3D(1, 0, 0), dy * 0.05));
+                InvalidateCamera();
             }
             else if (!isPressedLeftShift && !isPressedLeftControl)
             {
                 // Translation Mode (no modifier keys).
                 Camera.TranslatePost(new Vector3D(dx * -0.05, dy * 0.05, 0));
+                InvalidateCamera();
             }
-            // Update the view.
-            InvalidateVisual();
         }
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
             Camera.TranslatePost(new Vector3D(0, 0, e.Delta * 0.01));
-            InvalidateVisual();
+            InvalidateCamera();
         }
         bool isDragging = false;
         System.Drawing.Point dragFrom;
-        #endregion
-        #region - Section : Rendering -
-        protected override void OnRender(DrawingContext drawingContext)
-        {
-            base.OnRender(drawingContext);
-            OnRenderToy(drawingContext);
-        }
-        protected abstract void OnRenderToy(DrawingContext drawingContext);
         #endregion
     }
     class RenderViewport : RenderViewportBase
@@ -125,13 +153,13 @@ namespace RenderToy
         {
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             Focusable = true;
-            CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { renderPreviews = !renderPreviews; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderWireframeToggle, (s, e) => { renderWireframe = !renderWireframe; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandResolution100, (s, e) => { renderResolution = 1; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandResolution50, (s, e) => { renderResolution = 2; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandResolution25, (s, e) => { renderResolution = 4; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandResolution10, (s, e) => { renderResolution = 10; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => { Scene = Scene.Default; InvalidateVisual(); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { RenderPreviews = !RenderPreviews; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandRenderWireframeToggle, (s, e) => { RenderWireframe = !RenderWireframe; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandResolution100, (s, e) => { RenderResolution = 1; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandResolution50, (s, e) => { RenderResolution = 2; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandResolution25, (s, e) => { RenderResolution = 4; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandResolution10, (s, e) => { RenderResolution = 10; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => { Scene = Scene.Default; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandSceneLoad, (s, e) => {
                 OpenFileDialog ofd = new OpenFileDialog();
                 ofd.Title = "Choose Model File";
@@ -141,7 +169,6 @@ namespace RenderToy
                     scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
                     scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(100, 100, 100)), MeshPLY.LoadFromPath(ofd.FileName), Materials.LightGray, Materials.PlasticRed));
                     Scene = scene;
-                    InvalidateVisual();
                 }
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -198,43 +225,62 @@ namespace RenderToy
             multipassRedraw.Start();
         }
         System.Windows.Forms.Timer multipassRedraw;
+        #region - Section : RenderMode Option -
         MultiPass RenderMode
         {
+            get { return renderMode; }
             set { renderMode = value; InvalidateVisual(); }
         }
         MultiPass renderMode = MultiPass.Create(RenderCallCommands.Calls[0]);
-        int renderResolution = 2;
-        bool renderAgain = false;
-        bool renderPreviews = true;
-        bool renderWireframe = false;
-        protected override void OnMouseDown(MouseButtonEventArgs e)
+        #endregion
+        #region - Section : RenderResolution Option -
+        int RenderResolution
         {
-            base.OnMouseDown(e);
-            Focus();
+            get { return renderResolution; }
+            set { renderResolution = value; InvalidateVisual(); }
         }
+        int renderResolution = 2;
+        #endregion
+        #region - Section : RenderPreviews Option -
+        bool RenderPreviews
+        {
+            get { return renderPreviews; }
+            set { renderPreviews = value; InvalidateVisual(); }
+        }
+        bool renderPreviews = true;
+        #endregion
+        #region - Section : RenderWireframe Option -
+        bool RenderWireframe
+        {
+            get { return renderWireframe; }
+            set { renderWireframe = value; InvalidateVisual(); }
+        }
+        bool renderWireframe = false;
+        #endregion
+        #region - Overrides : RenderViewportBase -
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
-            if (renderMode != null)
+            if (RenderMode != null)
             {
-                int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / renderResolution;
-                int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / renderResolution;
-                renderMode.SetScene(Scene);
-                renderMode.SetCamera(MVP);
-                renderMode.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
+                int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / RenderResolution;
+                int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / RenderResolution;
+                RenderMode.SetScene(Scene);
+                RenderMode.SetCamera(MVP);
+                RenderMode.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
                 WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
                 bitmap.Lock();
-                renderAgain = renderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
+                renderAgain = RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
                 bitmap.AddDirtyRect(new Int32Rect(0, 0, RENDER_WIDTH, RENDER_HEIGHT));
                 bitmap.Unlock();
                 drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
             }
-            if (renderWireframe)
+            if (RenderWireframe)
             {
                 drawingContext.PushOpacity(0.5);
                 drawingContext.DrawImage(ImageHelp.CreateImage(RenderCS.WireframeCPUF64, Scene, MVP, (int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight)), new Rect(0, 0, ActualWidth, ActualHeight));
                 drawingContext.Pop();
             }
-            if (renderPreviews)
+            if (RenderPreviews)
             {
                 Action<RenderCall.FillFunction, int, int, int> drawpreview = (fillwith, stacky, render_width, render_height) =>
                 {
@@ -254,12 +300,21 @@ namespace RenderToy
                 drawpreview(RenderCS.WireframeCPUF64, 1, 128, 128);
                 drawpreview(RenderCS.RasterCPUF64, 2, 128, 128);
             }
-            if (renderMode != null)
+            if (RenderMode != null)
             {
-                drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
-                drawingContext.DrawText(new FormattedText(renderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
+                drawingContext.DrawText(new FormattedText(RenderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.LightGray), new Point(10, 10));
+                drawingContext.DrawText(new FormattedText(RenderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
             }
         }
+        bool renderAgain = false;
+        #endregion
+        #region - Overrides : UIElement -
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseDown(e);
+            Focus();
+        }
+        #endregion
     }
     class RenderCallCommands
     {
