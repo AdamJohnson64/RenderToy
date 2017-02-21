@@ -36,6 +36,18 @@ namespace RenderToy
                     if (v4.W <= 0) return;
                     drawpixel2d((int)((1 + v4.X / v4.W) * render_width / 2), (int)((1 - v4.Y / v4.W) * render_height / 2));
                 };
+                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                if (uv != null)
+                {
+                    DrawHelp.DrawParametricUV(drawpoint, uv.GetPointUV);
+                    continue;
+                }
+                IParametricUVW uvw = transformedobject.Node.Primitive as IParametricUVW;
+                if (uvw != null)
+                {
+                    DrawHelp.DrawParametricUVW(drawpoint, uvw.GetPointUVW);
+                    continue;
+                }
                 IMesh mesh = transformedobject.Node.Primitive as IMesh;
                 if (mesh != null)
                 {
@@ -43,16 +55,16 @@ namespace RenderToy
                     {
                         drawpoint(p);
                     }
+                    continue;
                 }
-                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
-                if (uv != null)
+                IPoints points = transformedobject.Node.Primitive as IPoints;
+                if (points != null)
                 {
-                    DrawHelp.DrawParametricUV(drawpoint, uv.GetPointUV);
-                }
-                IParametricUVW uvw = transformedobject.Node.Primitive as IParametricUVW;
-                if (uvw != null)
-                {
-                    DrawHelp.DrawParametricUVW(drawpoint, uvw.GetPointUVW);
+                    foreach (var p in points.GetPoints())
+                    {
+                        drawpoint(p);
+                    }
+                    continue;
                 }
             }
         }
@@ -118,6 +130,18 @@ namespace RenderToy
                         new Point3D((1 + v41.X / v41.W) * render_width / 2, (1 - v41.Y / v41.W) * render_height / 2, v41.Z / v41.W),
                         new Point3D((1 + v42.X / v42.W) * render_width / 2, (1 - v42.Y / v42.W) * render_height / 2, v42.Z / v42.W));
                 };
+                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
+                if (uv != null)
+                {
+                    DrawHelp.DrawParametricUV(drawline3d, uv.GetPointUV);
+                    continue;
+                }
+                IParametricUVW uvw = transformedobject.Node.Primitive as IParametricUVW;
+                if (uvw != null)
+                {
+                    DrawHelp.DrawParametricUVW(drawline3d, uvw.GetPointUVW);
+                    continue;
+                }
                 IMesh mesh = transformedobject.Node.Primitive as IMesh;
                 if (mesh != null)
                 {
@@ -128,16 +152,7 @@ namespace RenderToy
                         drawline3d(verts[t.Index1], verts[t.Index2]);
                         drawline3d(verts[t.Index2], verts[t.Index0]);
                     }
-                }
-                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
-                if (uv != null)
-                {
-                    DrawHelp.DrawParametricUV(drawline3d, uv.GetPointUV);
-                }
-                IParametricUVW uvw = transformedobject.Node.Primitive as IParametricUVW;
-                if (uvw != null)
-                {
-                    DrawHelp.DrawParametricUVW(drawline3d, uvw.GetPointUVW);
+                    continue;
                 }
             }
         }
@@ -221,15 +236,6 @@ namespace RenderToy
                 {
                     filltri_clipspace(TransformToClip(p1), TransformToClip(p2), TransformToClip(p3));
                 };
-                IMesh mesh = transformedobject.Node.Primitive as IMesh;
-                if (mesh != null)
-                {
-                    var verts = mesh.GetMeshVertices();
-                    foreach (var t in mesh.GetMeshTriangles())
-                    {
-                        filltri(verts[t.Index0], verts[t.Index1], verts[t.Index2]);
-                    }
-                }
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv != null)
                 {
@@ -248,6 +254,17 @@ namespace RenderToy
                             filltri(v3[3], v3[2], v3[0]);
                         }
                     }
+                    continue;
+                }
+                IMesh mesh = transformedobject.Node.Primitive as IMesh;
+                if (mesh != null)
+                {
+                    var verts = mesh.GetMeshVertices();
+                    foreach (var t in mesh.GetMeshTriangles())
+                    {
+                        filltri(verts[t.Index0], verts[t.Index1], verts[t.Index2]);
+                    }
+                    continue;
                 }
             }
         }

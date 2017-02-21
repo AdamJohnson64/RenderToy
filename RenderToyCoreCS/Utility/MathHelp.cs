@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace RenderToy
 {
@@ -175,6 +176,7 @@ namespace RenderToy
                 a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z);
         }
     }
+    [DebuggerDisplay("[{X}, {Y}, {Z}]")]
     public struct Vector3D
     {
         public double X, Y, Z;
@@ -184,6 +186,7 @@ namespace RenderToy
         public static Vector3D operator *(Vector3D a, double b) { return MathHelp.Multiply(a, b); }
         public static Vector3D operator *(double a, Vector3D b) { return MathHelp.Multiply(a, b); }
     }
+    [DebuggerDisplay("[{X}, {Y}, {Z}]")]
     public struct Point3D
     {
         public double X, Y, Z;
@@ -194,6 +197,7 @@ namespace RenderToy
         public static Point3D operator +(Vector3D a, Point3D b) { return MathHelp.Add(a, b); }
         public static Vector3D operator -(Point3D a, Point3D b) { return MathHelp.Subtract(a, b); }
     }
+    [DebuggerDisplay("[{X}, {Y}, {Z}, {W}]")]
     public struct Point4D
     {
         public double X, Y, Z, W;
