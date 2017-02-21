@@ -23,6 +23,7 @@ enum GeometryType {
 	GEOMETRY_CUBE = 0x65627543,			// FOURCC "Cube"
 	GEOMETRY_TRIANGLE = 0x61697254,		// FOURCC "Tria"
 	GEOMETRY_TRIANGLELIST = 0x4c697254, // FOURCC "TriL"
+	GEOMETRY_MESHBVH = 0x4268734d,      // FOURCC "MshB"
 };
 
 enum MaterialType {
@@ -38,6 +39,44 @@ struct TriangleList {
 	Vector3<FLOAT> BoundMin;
 	Vector3<FLOAT> BoundMax;
 	Vector3<FLOAT> Vertices[];
+};
+
+template <typename FLOAT>
+struct MeshBVH {
+	int VertexOffset;
+	int RootOffset;
+};
+
+template <typename FLOAT>
+struct MeshBVHNode {
+	Vector3<FLOAT> Min;
+	Vector3<FLOAT> Max;
+	int ChildrenOffset;
+	int TriangleOffset;
+};
+
+template <typename FLOAT>
+struct MeshBVHNodeList {
+	int Count;
+	int Padding0;
+	MeshBVHNode<FLOAT> Nodes[];
+};
+
+struct TriIndex {
+	int Index[3];
+};
+
+struct TriIndexList {
+	int Count;
+	TriIndex Triangles[];
+};
+
+template <typename FLOAT>
+struct Vector3List
+{
+	int Count;
+	int Padding0;
+	Vector3<FLOAT> Data;
 };
 
 template <typename FLOAT>

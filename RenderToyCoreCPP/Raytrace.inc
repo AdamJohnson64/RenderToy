@@ -38,6 +38,11 @@ DEVICE_PREFIX float Sin(float v) DEVICE_SUFFIX { return sinf(v); }
 DEVICE_PREFIX double Sin(double v) DEVICE_SUFFIX { return sin(v); }
 DEVICE_PREFIX float SquareRoot(float v) DEVICE_SUFFIX { return sqrtf(v); }
 DEVICE_PREFIX double SquareRoot(double v) DEVICE_SUFFIX { return sqrt(v); }
+
+template <typename FLOAT>
+DEVICE_PREFIX const int* FollowPointer(const Scene<FLOAT>& pScene, int offset) DEVICE_SUFFIX {
+	return (const int*)&pScene + offset / 4;
+}
 #pragma endregion
 
 #pragma region - Section : Basic Vector Math. -
@@ -374,8 +379,59 @@ DEVICE_PREFIX RAYQUERY IntersectTriangleList(const Vector3<FLOAT>& origin, const
 	return result;
 }
 
+template <typename FLOAT, typename RAYQUERY, int RECURSION>
+struct IntersectMeshBVHNodeRecurse {
+	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node, const Vector3<FLOAT>* vertices) DEVICE_SUFFIX {
+		RAYQUERY result = { 0 };
+		SetLambda(result, FloatTraits<FLOAT>::Max);
+		// Make sure we're hitting this node first.
+		if (!IntersectBound(origin, direction, node.Min, node.Max)) return result;
+		// Descend into child nodes if we have them.
+		if (node.ChildrenOffset != 0) {
+			const MeshBVHNodeList<FLOAT>& children = *(const MeshBVHNodeList<FLOAT>*)FollowPointer(pScene, node.ChildrenOffset);
+			for (int i = 0; i < children.Count; ++i) {
+				const MeshBVHNode<FLOAT>& child = children.Nodes[i];
+				auto intersect = IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, RECURSION - 1>::Traverse(origin, direction, pScene, child, vertices);
+				if (intersect.Lambda < result.Lambda) {
+					result = intersect;
+				}
+			}
+		}
+		// Check the triangles if we have them.
+		if (node.TriangleOffset != 0) {
+			const TriIndexList& triangles = *(const TriIndexList*)FollowPointer(pScene, node.TriangleOffset);
+			for (int i = 0; i < triangles.Count; ++i) {
+				const Vector3<FLOAT> p0 = vertices[triangles.Triangles[i].Index[0]];
+				const Vector3<FLOAT> p1 = vertices[triangles.Triangles[i].Index[1]];
+				const Vector3<FLOAT> p2 = vertices[triangles.Triangles[i].Index[2]];
+				auto intersect = IntersectTriangle<FLOAT, RAYQUERY>(origin, direction, p0, p1, p2);
+				if (intersect.Lambda < result.Lambda) {
+					result = intersect;
+				}
+			}
+		}
+		return result;
+	}
+};
+
 template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const SceneObject<FLOAT>& scene_object, const void* pObjectData) DEVICE_SUFFIX {
+struct IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, -1> {
+	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node, const Vector3<FLOAT>* vertices) DEVICE_SUFFIX {
+		RAYQUERY result = { 0 };
+		SetLambda(result, FloatTraits<FLOAT>::Max);
+		return result;
+	}
+};
+
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PREFIX RAYQUERY IntersectMeshBVH(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVH<FLOAT>& mesh) DEVICE_SUFFIX {
+	const Vector3List<FLOAT>* vertices = (const Vector3List<FLOAT>*)FollowPointer(pScene, mesh.VertexOffset);
+	const MeshBVHNode<FLOAT>& root = *(const MeshBVHNode<FLOAT>*)FollowPointer(pScene, mesh.RootOffset);
+	return IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, 8>::Traverse(origin, direction, pScene, root, &vertices->Data);
+}
+
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const SceneObject<FLOAT>& scene_object, const void* pObjectData) DEVICE_SUFFIX {
 	switch (scene_object.Geometry) {
 	case GEOMETRY_PLANE:
 		return IntersectPlane<FLOAT, RAYQUERY>(origin, direction);
@@ -387,6 +443,8 @@ DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLO
 		return IntersectTriangle<FLOAT, RAYQUERY>(origin, direction, make_vector3<FLOAT>(0, 0, 0), make_vector3<FLOAT>(0, 1, 0), make_vector3<FLOAT>(1, 0, 0));
 	case GEOMETRY_TRIANGLELIST:
 		return IntersectTriangleList<FLOAT, RAYQUERY>(origin, direction, *(TriangleList<FLOAT>*)pObjectData);
+	case GEOMETRY_MESHBVH:
+		return IntersectMeshBVH<FLOAT, RAYQUERY>(origin, direction, pScene, *(MeshBVH<FLOAT>*)pObjectData);
 	default:
 		RAYQUERY result;
 		SetLambda(result, FloatTraits<FLOAT>::Max);
@@ -398,7 +456,7 @@ template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const SceneObject<FLOAT>& scene_object) DEVICE_SUFFIX {
 	Vector3<FLOAT> transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
 	Vector3<FLOAT> transformed_direction = TransformVector(scene_object.TransformInverse, direction);
-	RAYQUERY result = Intersect<FLOAT, RAYQUERY>(transformed_origin, transformed_direction, scene_object, (const unsigned int*)&pScene + scene_object.GeometryOffset / 4);
+	RAYQUERY result = Intersect<FLOAT, RAYQUERY>(transformed_origin, transformed_direction, pScene, scene_object, FollowPointer(pScene, scene_object.GeometryOffset));
 	SetNormal(result, TransformVector(scene_object.Transform, GetNormal(result)));
 	SetTangent(result, TransformVector(scene_object.Transform, GetTangent(result)));
 	SetBitangent(result, TransformVector(scene_object.Transform, GetBitangent(result)));
@@ -551,7 +609,7 @@ public:
 		case MATERIAL_COMMON:
 		{
 			if (intersect.Object.MaterialOffset != 0) {
-				const MaterialCommon<FLOAT>* pMaterial = (const MaterialCommon<FLOAT>*)((const int*)&pScene + intersect.Object.MaterialOffset / 4);
+				const MaterialCommon<FLOAT>* pMaterial = (const MaterialCommon<FLOAT>*)FollowPointer(pScene, intersect.Object.MaterialOffset);
 				return pMaterial->Diffuse;
 			}
 		}
@@ -637,7 +695,7 @@ public:
 		case MATERIAL_COMMON:
 		{
 			if (intersect.Object.MaterialOffset != 0) {
-				const MaterialCommon<FLOAT>* pMaterial = (const MaterialCommon<FLOAT>*)((const int*)&pScene + intersect.Object.MaterialOffset / 4);
+				const MaterialCommon<FLOAT>* pMaterial = (const MaterialCommon<FLOAT>*)FollowPointer(pScene, intersect.Object.MaterialOffset);
 				color_diffuse = pMaterial->Diffuse;
 				color_specular = pMaterial->Specular;
 				scale_reflect = pMaterial->Reflect.w;

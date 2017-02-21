@@ -54,46 +54,62 @@ namespace RenderToy
                     Serialize(obj);
                 }
                 // Write all the outstanding queued object references and patch their reference sources.
-                foreach (var writeremaining in WriteObjects)
+                while (WriteNext.Count > 0)
                 {
+                    var writeremaining = WriteObjects[WriteNext.Dequeue()];
                     // Always pad additional objects to 8 bytes in double mode.
                     // We don't want to inherit alignment from any previous data.
                     while (UseF64 && m.Position % 8 != 0)
                     {
                         binarywriter.Write((byte)0xCC);
                     }
-                    if (writeremaining.Value.Target is Mesh)
+                    // Record our location and write this object.
+                    writeremaining.Offset = (int)m.Position;
+                    if (writeremaining.Target is Mesh)
                     {
-                        // Record our location and write this object.
-                        int offset_object = (int)m.Position;
-                        writeremaining.Value.Offset = offset_object;
-                        Serialize((Mesh)writeremaining.Value.Target);
-                        // Record the EOF offset then go and patch the references.
-                        int offset_eof = (int)m.Position;
-                        foreach (var reference in writeremaining.Value.References)
-                        {
-                            binarywriter.Seek(reference, SeekOrigin.Begin);
-                            binarywriter.Write((int)offset_object);
-                        }
-                        // Go back to the end of the file.
-                        binarywriter.Seek(offset_eof, SeekOrigin.Begin);
+                        Serialize((Mesh)writeremaining.Target);
                     }
-                    if (writeremaining.Value.Target is MaterialCommon)
+                    else if (writeremaining.Target is MeshBVH)
                     {
-                        // Record our location and write this object.
-                        int offset_object = (int)m.Position;
-                        writeremaining.Value.Offset = offset_object;
-                        Serialize((MaterialCommon)writeremaining.Value.Target);
-                        // Record the EOF offset then go and patch the references.
-                        int offset_eof = (int)m.Position;
-                        foreach (var reference in writeremaining.Value.References)
-                        {
-                            binarywriter.Seek(reference, SeekOrigin.Begin);
-                            binarywriter.Write((int)offset_object);
-                        }
-                        // Go back to the end of the file.
-                        binarywriter.Seek(offset_eof, SeekOrigin.Begin);
+                        Serialize((MeshBVH)writeremaining.Target);
                     }
+                    else if (writeremaining.Target is MeshBVH.Node)
+                    {
+                        Serialize((MeshBVH.Node)writeremaining.Target);
+                    }
+                    else if (writeremaining.Target is IReadOnlyList<MeshBVH.Node>)
+                    {
+                        Serialize((IReadOnlyList<MeshBVH.Node>)writeremaining.Target);
+                    }
+                    else if (writeremaining.Target is IReadOnlyList<TriIndex>)
+                    {
+                        Serialize((IReadOnlyList<TriIndex>)writeremaining.Target);
+                    }
+                    else if (writeremaining.Target is MaterialCommon)
+                    {
+                        Serialize((MaterialCommon)writeremaining.Target);
+                    }
+                    else if (writeremaining.Target is IReadOnlyList<Point3D>)
+                    {
+                        Serialize((IReadOnlyList<Point3D>)writeremaining.Target);
+                    }
+                    else
+                    {
+                        throw new InvalidCastException("Cannot serialize '" + writeremaining.Target.GetType().Name + "'.");
+                    }
+                        
+                }
+                // Go through all appended objects and patch up their references.
+                foreach (var writeremaining in WriteObjects)
+                {
+                    // Record the EOF offset then go and patch the references.
+                    foreach (var reference in writeremaining.Value.References)
+                    {
+                        binarywriter.Seek(reference, SeekOrigin.Begin);
+                        binarywriter.Write((int)writeremaining.Value.Offset);
+                    }
+                    // Go back to the end of the file.
+                    binarywriter.Seek(0, SeekOrigin.End);
                 }
                 // Go back and update the total file size.
                 int length = (int)m.Position;
@@ -131,6 +147,11 @@ namespace RenderToy
             else if (obj.Node.primitive is Mesh)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_TRIANGLELIST);
+                EmitAndQueue(obj.Node.primitive);
+            }
+            else if (obj.Node.primitive is MeshBVH)
+            {
+                binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
                 EmitAndQueue(obj.Node.primitive);
             }
             else
@@ -182,6 +203,46 @@ namespace RenderToy
                 Serialize(vtx, Serialize);
             }
         }
+        void Serialize(MeshBVH obj)
+        {
+            EmitAndQueue(obj.Vertices);
+            EmitAndQueue(obj.Root);
+        }
+        void Serialize(MeshBVH.Node obj)
+        {
+            Serialize(obj.Bound.Min, Serialize);
+            Serialize(obj.Bound.Max, Serialize);
+            EmitAndQueue(obj.Children);
+            EmitAndQueue(obj.Triangles);
+        }
+        void Serialize(IReadOnlyList<MeshBVH.Node> obj)
+        {
+            binarywriter.Write((int)obj.Count);
+            binarywriter.Write((int)0);
+            foreach (var item in obj)
+            {
+                Serialize(item);
+            }
+        }
+        void Serialize(IReadOnlyList<Point3D> obj)
+        {
+            binarywriter.Write((int)obj.Count);
+            binarywriter.Write((int)0);
+            foreach (var item in obj)
+            {
+                Serialize(item, Serialize);
+            }
+        }
+        void Serialize(IReadOnlyList<TriIndex> obj)
+        {
+            binarywriter.Write((int)obj.Count);
+            foreach (var item in obj)
+            {
+                binarywriter.Write(item.Index0);
+                binarywriter.Write(item.Index1);
+                binarywriter.Write(item.Index2);
+            }
+        }
         void Serialize(double obj)
         {
             if (UseF64)
@@ -207,15 +268,19 @@ namespace RenderToy
         #region - Section : Pointer Patchup -
         void EmitAndQueue(object obj)
         {
+            int offset = (int)m.Position;
+            // Write a placeholder pointer.
+            binarywriter.Write((int)0);
+            // If this pointer is null then it can't be written; leave it as zero.
+            if (obj == null) return;
             // Try to find a record of this object.
             if (!WriteObjects.ContainsKey(obj))
             {
                 WriteObjects[obj] = new PointerRecord { Target = obj };
+                WriteNext.Enqueue(obj);
             }
             // Flush the writer and make a note of this reference offset.
-            WriteObjects[obj].References.Add((int)m.Position);
-            // Write a placeholder pointer.
-            binarywriter.Write((int)0);
+            WriteObjects[obj].References.Add((int)offset);
         }
         class PointerRecord
         {
@@ -224,6 +289,7 @@ namespace RenderToy
             public List<int> References = new List<int>();
         }
         Dictionary<object, PointerRecord> WriteObjects = new Dictionary<object, PointerRecord>();
+        Queue<object> WriteNext = new Queue<object>();
         #endregion
         #region - Section : Serialization Primitives -
         enum Geometry
@@ -234,6 +300,7 @@ namespace RenderToy
             GEOMETRY_CUBE = 0x65627543,         // FOURCC "Cube"
             GEOMETRY_TRIANGLE = 0x61697254,     // FOURCC "Tria"
             GEOMETRY_TRIANGLELIST = 0x4c697254, // FOURCC "TriL"
+            GEOMETRY_MESHBVH = 0x4268734d,      // FOURCC "MshB"
         }
         enum Material
         {
