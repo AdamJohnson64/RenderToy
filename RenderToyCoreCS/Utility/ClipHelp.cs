@@ -90,28 +90,24 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Homogeneous Clip (Triangles) -
-        public struct Triangle
+        public static IEnumerable<Triangle4D> ClipTriangle4D(Triangle4D tri)
         {
-            public Vector4D p1, p2, p3;
+            return ClipTriangle4D(new Triangle4D[] { tri });
         }
-        public static IEnumerable<Triangle> ClipTriangle3D(Triangle tri)
-        {
-            return ClipTriangle3D(new Triangle[] { tri });
-        }
-        static IEnumerable<Triangle> ClipTriangle3D(IEnumerable<Triangle> triangles)
+        static IEnumerable<Triangle4D> ClipTriangle4D(IEnumerable<Triangle4D> triangles)
         {
             return triangles
-                .SelectMany(x => ClipTriangle3D(x, new Vector4D(0, 0, 1, 0)))
-                .SelectMany(x => ClipTriangle3D(x, new Vector4D(0, 0, -1, 1)))
-                .SelectMany(x => ClipTriangle3D(x, new Vector4D(-1, 0, 0, 1)))
-                .SelectMany(x => ClipTriangle3D(x, new Vector4D(1, 0, 0, 1)))
-                .SelectMany(x => ClipTriangle3D(x, new Vector4D(0, -1, 0, 1)))
-                .SelectMany(x => ClipTriangle3D(x, new Vector4D(0, 1, 0, 1)))
+                .SelectMany(x => ClipTriangle4D(x, new Vector4D(0, 0, 1, 0)))
+                .SelectMany(x => ClipTriangle4D(x, new Vector4D(0, 0, -1, 1)))
+                .SelectMany(x => ClipTriangle4D(x, new Vector4D(-1, 0, 0, 1)))
+                .SelectMany(x => ClipTriangle4D(x, new Vector4D(1, 0, 0, 1)))
+                .SelectMany(x => ClipTriangle4D(x, new Vector4D(0, -1, 0, 1)))
+                .SelectMany(x => ClipTriangle4D(x, new Vector4D(0, 1, 0, 1)))
                 .ToArray();
         }
-        static IEnumerable<Triangle> ClipTriangle3D(Triangle triangle, Vector4D plane)
+        static IEnumerable<Triangle4D> ClipTriangle4D(Triangle4D triangle, Vector4D plane)
         {
-            var p = new[] { triangle.p1, triangle.p2, triangle.p3 };
+            var p = new[] { triangle.P0, triangle.P1, triangle.P2 };
             var sides = p.Select(x => MathHelp.Dot(x, plane));
             // Get the side for all points (inside or outside).
             var outside = sides
@@ -136,7 +132,7 @@ namespace RenderToy
                 Vector4D p3 = p[inside[1].index];
                 Vector4D pi1 = CalculateIntersectionPointLine(p1, p2, plane);
                 Vector4D pi2 = CalculateIntersectionPointLine(p3, p1, plane);
-                yield return new Triangle { p1 = p1, p2 = pi1, p3 = pi2 };
+                yield return new Triangle4D(p1, pi1, pi2);
                 yield break;
             }
             // If two points are clipped then emit two triangles.
@@ -148,8 +144,8 @@ namespace RenderToy
                 Vector4D p3 = p[inside[0].index];
                 Vector4D p2i = CalculateIntersectionPointLine(p2, p3, plane);
                 Vector4D p3i = CalculateIntersectionPointLine(p3, p1, plane);
-                yield return new Triangle { p1 = p1, p2 = p2, p3 = p2i };
-                yield return new Triangle { p1 = p2i, p2 = p3i, p3 = p1 };
+                yield return new Triangle4D(p1, p2, p2i);
+                yield return new Triangle4D(p2i, p3i, p1);
                 yield break;
             }
             // All points are unclipped; trivially accept this triangle.
