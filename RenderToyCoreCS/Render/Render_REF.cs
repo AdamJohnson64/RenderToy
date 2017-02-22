@@ -48,19 +48,19 @@ namespace RenderToy
                     DrawHelp.DrawParametricUVW(drawpoint, uvw.GetPointUVW);
                     continue;
                 }
-                IMesh mesh = transformedobject.Node.Primitive as IMesh;
+                Mesh mesh = transformedobject.Node.Primitive as Mesh;
                 if (mesh != null)
                 {
-                    foreach (var p in mesh.GetMeshVertices())
+                    foreach (var p in mesh.Vertices)
                     {
                         drawpoint(p);
                     }
                     continue;
                 }
-                IPoints points = transformedobject.Node.Primitive as IPoints;
-                if (points != null)
+                MeshBVH meshbvh = transformedobject.Node.Primitive as MeshBVH;
+                if (meshbvh != null)
                 {
-                    foreach (var p in points.GetPoints())
+                    foreach (var p in meshbvh.Vertices)
                     {
                         drawpoint(p);
                     }
@@ -142,15 +142,15 @@ namespace RenderToy
                     DrawHelp.DrawParametricUVW(drawline3d, uvw.GetPointUVW);
                     continue;
                 }
-                IMesh mesh = transformedobject.Node.Primitive as IMesh;
+                Mesh mesh = transformedobject.Node.Primitive as Mesh;
                 if (mesh != null)
                 {
-                    var verts = mesh.GetMeshVertices();
-                    foreach (var t in mesh.GetMeshTriangles())
+                    var v = mesh.Vertices;
+                    foreach (var t in mesh.Triangles)
                     {
-                        drawline3d(verts[t.Index0], verts[t.Index1]);
-                        drawline3d(verts[t.Index1], verts[t.Index2]);
-                        drawline3d(verts[t.Index2], verts[t.Index0]);
+                        drawline3d(v[t.Index0], v[t.Index1]);
+                        drawline3d(v[t.Index1], v[t.Index2]);
+                        drawline3d(v[t.Index2], v[t.Index0]);
                     }
                     continue;
                 }
@@ -256,13 +256,13 @@ namespace RenderToy
                     }
                     continue;
                 }
-                IMesh mesh = transformedobject.Node.Primitive as IMesh;
+                Mesh mesh = transformedobject.Node.Primitive as Mesh;
                 if (mesh != null)
                 {
-                    var verts = mesh.GetMeshVertices();
-                    foreach (var t in mesh.GetMeshTriangles())
+                    var v = mesh.Vertices;
+                    foreach (var t in mesh.Triangles)
                     {
-                        filltri(verts[t.Index0], verts[t.Index1], verts[t.Index2]);
+                        filltri(v[t.Index0], v[t.Index1], v[t.Index2]);
                     }
                     continue;
                 }

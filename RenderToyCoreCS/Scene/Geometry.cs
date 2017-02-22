@@ -10,15 +10,6 @@ using System.Linq;
 
 namespace RenderToy
 {
-    public interface IPoints
-    {
-        IReadOnlyList<Point3D> GetPoints();
-    }
-    public interface IMesh
-    {
-        IReadOnlyList<Point3D> GetMeshVertices();
-        IReadOnlyList<TriIndex> GetMeshTriangles();
-    }
     public interface IParametricUV
     {
         /// <summary>
@@ -139,19 +130,17 @@ namespace RenderToy
     /// <summary>
     /// Triangle-only mesh.
     /// </summary>
-    public class Mesh : IMesh
+    public class Mesh
     {
         public Mesh(IEnumerable<Point3D> vertices, IEnumerable<TriIndex> triangles)
         {
             Vertices = vertices.ToArray();
             Triangles = triangles.ToArray();
         }
-        public IReadOnlyList<Point3D> GetMeshVertices() { return Vertices; }
-        public IReadOnlyList<TriIndex> GetMeshTriangles() { return Triangles; }
-        public Point3D[] Vertices;
-        public TriIndex[] Triangles;
+        public readonly Point3D[] Vertices;
+        public readonly TriIndex[] Triangles;
     }
-    public class MeshBVH : IPoints
+    public class MeshBVH
     {
         public MeshBVH(IEnumerable<Point3D> vertices, IEnumerable<TriIndex> triangles)
         {
@@ -175,7 +164,6 @@ namespace RenderToy
                 }
             }
         }
-        public IReadOnlyList<Point3D> GetPoints() { return Vertices; }
         public readonly Point3D[] Vertices;
         public readonly Node Root;
         #region - Section : Bounding Volume Hierarchy Node -
