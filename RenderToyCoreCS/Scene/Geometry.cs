@@ -156,13 +156,10 @@ namespace RenderToy
         public MeshBVH(IEnumerable<Point3D> vertices, IEnumerable<TriIndex> triangles)
         {
             Vertices = vertices.ToArray();
-            var node = new Node(ComputeBounds(Vertices, triangles), triangles.ToArray(), null);
-            node.Subdivide(Vertices, 0);
-            Root = node;
+            Root = CreateLooseOctree(Vertices, triangles.ToArray(), 6);
             var allnodes = EnumNodes(Root);
             int count_triangles_initial = triangles.Count();
             int count_triangles_final = EnumNodes(Root).Where(x => x.Triangles != null).SelectMany(x => x.Triangles).Count();
-            int test = 0;
         }
         static IEnumerable<Node> EnumNodes(Node from)
         {
@@ -179,54 +176,57 @@ namespace RenderToy
             }
         }
         public IReadOnlyList<Point3D> GetPoints() { return Vertices; }
-        public Point3D[] Vertices;
-        public Node Root;
+        public readonly Point3D[] Vertices;
+        public readonly Node Root;
         #region - Section : Bounding Volume Hierarchy Node -
         [DebuggerDisplay("[{Min.X}, {Min.Y}, {Min.Z}] -> [{Max.X}, {Max.Y}, {Max.Z}]")]
         public class Node
         {
-            public Node(Bound3D bound, IEnumerable<TriIndex> triangles, IEnumerable<Node> children)
+            public Node(Bound3D bound, TriIndex[] triangles, Node[] children)
             {
                 Bound = bound;
-                Triangles = triangles.ToArray();
-                Children = children == null ? null : children.ToArray();
+                Triangles = triangles;
+                Children = children;
             }
-            public void Subdivide(IReadOnlyList<Point3D> vertices, int level)
+            public readonly Bound3D Bound;
+            public readonly TriIndex[] Triangles;
+            public readonly Node[] Children;
+        }
+        #endregion
+        #region - Section : Hierarchy Construction -
+        public static Node CreateLooseOctree(Point3D[] vertices, TriIndex[] triangles, int level)
+        {
+            Bound3D bound = ComputeBounds(vertices, triangles);
+            // Stop at 8 levels.
+            if (level <= 0) goto EMITUNMODIFIED;
+            // Stop at 4 triangles
+            if (triangles.Length < 4) goto EMITUNMODIFIED;
+            // Slice this region into 8 subcubes (roughly octree).
+            List<Node> children = new List<Node>();
+            foreach (var subbox in EnumerateSplit222(bound))
             {
-                // Stop at 8 levels.
-                if (level == 8) return;
-                // Stop at 4 triangles
-                if (Triangles.Length < 4) return;
-                // Slice this region into 8 subcubes (roughly octree).
-                List<Node> children = new List<Node>();
-                foreach (var subbox in EnumerateSplit222(Bound))
-                {
-                    // Partition the triangles.
-                    var contained_triangles = Triangles
-                        .Where(t => ShapeIntersects(subbox, new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2])))
-                        .ToArray();
-                    // If there are no triangles in this child node then skip it entirely.
-                    if (contained_triangles.Length == 0) continue;
-                    // If all the triangles are still in the child then stop splitting this node.
-                    // This might mean we have a rats nest of triangles with no potential split planes.
-                    if (contained_triangles.Length == Triangles.Length) return;
-                    // Generate the new child node.
-                    // Also, recompute the extents of this bounding volume.
-                    // It's possible if the mesh has large amounts of space crossing the clip plane such that the bounds are now too big.
-                    var newnode = new Node(ComputeBounds(vertices, contained_triangles), contained_triangles, null);
-                    newnode.Subdivide(vertices, level + 1);
-                    children.Add(newnode);
-                }
-                Triangles = null;
-                Children = children.ToArray();
+                // Partition the triangles.
+                var contained_triangles = triangles
+                    .Where(t => ShapeIntersects(subbox, new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2])))
+                    .ToArray();
+                // If there are no triangles in this child node then skip it entirely.
+                if (contained_triangles.Length == 0) continue;
+                // If all the triangles are still in the child then stop splitting this node.
+                // This might mean we have a rats nest of triangles with no potential split planes.
+                if (contained_triangles.Length == triangles.Length) goto EMITUNMODIFIED;
+                // Generate the new child node.
+                // Also, recompute the extents of this bounding volume.
+                // It's possible if the mesh has large amounts of space crossing the clip plane such that the bounds are now too big.
+                var newnode = CreateLooseOctree(vertices, contained_triangles, level - 1);
+                children.Add(newnode);
             }
-            public Bound3D Bound;
-            public TriIndex[] Triangles;
-            public Node[] Children;
+            return new Node(bound, null, children.ToArray());
+        EMITUNMODIFIED:
+            return new Node(bound, triangles, null);
         }
         #endregion
         #region - Section : Intersection Test (Separating Axis Theorem) -
-        public static Bound3D ComputeBounds(IEnumerable<Point3D> vertices)
+        static Bound3D ComputeBounds(IEnumerable<Point3D> vertices)
         {
             return new Bound3D(
                 new Point3D(vertices.Min(p => p.X), vertices.Min(p => p.Y), vertices.Min(p => p.Z)),
