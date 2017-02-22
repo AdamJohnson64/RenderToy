@@ -384,6 +384,9 @@ struct IntersectMeshBVHNodeRecurse {
 	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node, const Vector3<FLOAT>* vertices) DEVICE_SUFFIX {
 		RAYQUERY result = { 0 };
 		SetLambda(result, FloatTraits<FLOAT>::Max);
+		// TODO: C++AMP doesn't like this code at all and CUDA has a hard time compiling it.
+		//       We're only going to build this for CPU and CUDA.
+		#ifndef _WINRT_DLL
 		// Make sure we're hitting this node first.
 		if (!IntersectBound(origin, direction, node.Min, node.Max)) return result;
 		// Descend into child nodes if we have them.
@@ -410,6 +413,7 @@ struct IntersectMeshBVHNodeRecurse {
 				}
 			}
 		}
+		#endif  //_WINRT_DLL
 		return result;
 	}
 };

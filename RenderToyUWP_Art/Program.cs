@@ -58,7 +58,7 @@ namespace RenderToy
             BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
             {
-                RenderToyCLI.AmbientOcclusionCPUF64(SceneFormatter.CreateFlatMemoryF64(DefaultScene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(DefaultMVP * CameraPerspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, 0, 256);
+                RenderToyCLI.AmbientOcclusionCPUF32(SceneFormatter.CreateFlatMemoryF32(DefaultScene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(DefaultMVP * CameraPerspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, 0, 256);
             }
             finally
             {
@@ -72,7 +72,7 @@ namespace RenderToy
             BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
             {
-                RenderToyCLI.RaytraceCPUF64AA(SceneFormatter.CreateFlatMemoryF64(DefaultScene), SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert(DefaultMVP * CameraPerspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, 4, 4);
+                RenderToyCLI.RaytraceCPUF32AA(SceneFormatter.CreateFlatMemoryF32(DefaultScene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(DefaultMVP * CameraPerspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, 4, 4);
             }
             finally
             {

@@ -152,6 +152,7 @@ extern "C" void RaycastBitangentsCUDAF32(const void* pScene, const void* pInvers
 	});
 }
 
+#ifdef USE_F64
 __global__ void cudaRaycastBitangentsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 	cudaFill<double, RaytraceCUDA::RenderModeRaycastBitangents<double>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
@@ -162,6 +163,7 @@ extern "C" void RaycastBitangentsCUDAF64(const void* pScene, const void* pInvers
 		cudaRaycastBitangentsKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
+#endif
 #pragma endregion
 
 #pragma region - Render Mode : Raycast Normals -
@@ -176,6 +178,7 @@ extern "C" void RaycastNormalsCUDAF32(const void* pScene, const void* pInverseMV
 	});
 }
 
+#ifdef USE_F64
 __global__ void cudaRaycastNormalsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 	cudaFill<double, RaytraceCUDA::RenderModeRaycastNormals<double>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
@@ -186,6 +189,7 @@ extern "C" void RaycastNormalsCUDAF64(const void* pScene, const void* pInverseMV
 		cudaRaycastNormalsKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
+#endif
 #pragma endregion
 
 #pragma region - Render Mode : Raycast Tangents -
@@ -200,6 +204,7 @@ extern "C" void RaycastTangentsCUDAF32(const void* pScene, const void* pInverseM
 	});
 }
 
+#ifdef USE_F64
 __global__ void cudaRaycastTangentsKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 	cudaFill<double, RaytraceCUDA::RenderModeRaycastTangents<double>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
@@ -210,6 +215,7 @@ extern "C" void RaycastTangentsCUDAF64(const void* pScene, const void* pInverseM
 		cudaRaycastTangentsKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
+#endif
 #pragma endregion
 
 #pragma region - Render Mode : Raytrace -
@@ -224,6 +230,7 @@ extern "C" void RaytraceCUDAF32(const void* pScene, const void* pInverseMVP, voi
 	});
 }
 
+#ifdef USE_F64
 __global__ void cudaRaytraceKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 	cudaFill<double, RaytraceCUDA::RenderModeRaytrace<double>, 2, 2>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
@@ -234,6 +241,7 @@ extern "C" void RaytraceCUDAF64(const void* pScene, const void* pInverseMVP, voi
 		cudaRaytraceKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
 	});
 }
+#endif
 #pragma endregion
 
 #pragma region - Render Mode : Ambient Occlusion -
@@ -261,10 +269,12 @@ extern "C" void AmbientOcclusionCUDAF32(const void* pScene, const void* pMVP, vo
 	AmbientOcclusionCUDA<float>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, sample_offset, sample_count);
 }
 
+#ifdef USE_F64
 extern "C" void AmbientOcclusionCUDAF64(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count)
 {
 	AmbientOcclusionCUDA<double>(pScene, pMVP, bitmap_ptr, render_width, render_height, bitmap_stride, sample_offset, sample_count);
 }
+#endif
 #pragma endregion
 
 #pragma region - Render Mode : Ambient Occlusion (ToneMap) -
