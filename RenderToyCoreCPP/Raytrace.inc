@@ -445,9 +445,9 @@ DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLO
 	case GEOMETRY_TRIANGLE:
 		return IntersectTriangle<FLOAT, RAYQUERY>(origin, direction, make_vector3<FLOAT>(0, 0, 0), make_vector3<FLOAT>(0, 1, 0), make_vector3<FLOAT>(1, 0, 0));
 	case GEOMETRY_TRIANGLELIST:
-		return IntersectTriangleList<FLOAT, RAYQUERY>(origin, direction, *(TriangleList<FLOAT>*)pObjectData);
+		return IntersectTriangleList<FLOAT, RAYQUERY>(origin, direction, *(const TriangleList<FLOAT>*)pObjectData);
 	case GEOMETRY_MESHBVH:
-		return IntersectMeshBVH<FLOAT, RAYQUERY>(origin, direction, pScene, *(MeshBVH<FLOAT>*)pObjectData);
+		return IntersectMeshBVH<FLOAT, RAYQUERY>(origin, direction, pScene, *(const MeshBVH<FLOAT>*)pObjectData);
 	default:
 		RAYQUERY result;
 		SetLambda(result, FloatTraits<FLOAT>::Max);

@@ -32,6 +32,8 @@ enum MaterialType {
 	MATERIAL_CHECKERBOARD_XZ = 0x5a586843,  // FOURCC "ChXZ"
 };
 
+#pragma warning(push)
+#pragma warning(disable:4200)
 template <typename FLOAT>
 struct TriangleList {
 	int TriangleCount;
@@ -40,6 +42,7 @@ struct TriangleList {
 	Vector3<FLOAT> BoundMax;
 	Vector3<FLOAT> Vertices[];
 };
+#pragma warning(pop)
 
 template <typename FLOAT>
 struct MeshBVH {
@@ -54,41 +57,53 @@ struct MeshBVHNode {
 	int TriangleOffset;
 };
 
+#pragma warning(push)
+#pragma warning(disable:4200)
 template <typename FLOAT>
 struct MeshBVHNodeList {
 	int Count;
 	int Padding0;
 	MeshBVHNode<FLOAT> Nodes[];
 };
+#pragma warning(pop)
 
 template <typename FLOAT>
 struct Triangle3D {
 	Vector3<FLOAT> P[3];
 };
 
+#pragma warning(push)
+#pragma warning(disable:4200)
 template <typename FLOAT>
 struct Triangle3DList {
 	int Count;
 	int Padding0;
 	Triangle3D<FLOAT> Triangles[];
 };
+#pragma warning(pop)
 
 struct TriIndex {
 	int Index[3];
 };
 
+#pragma warning(push)
+#pragma warning(disable:4200)
 struct TriIndexList {
 	int Count;
 	TriIndex Triangles[];
 };
+#pragma warning(pop)
 
+#pragma warning(push)
+#pragma warning(disable:4200)
 template <typename FLOAT>
 struct Vector3List
 {
 	int Count;
 	int Padding0;
-	Vector3<FLOAT> Data;
+	Vector3<FLOAT> Data[];
 };
+#pragma warning(pop)
 
 template <typename FLOAT>
 struct MaterialCommon {
