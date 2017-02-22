@@ -24,10 +24,9 @@ namespace RenderToy
     }
     public class MeshBVH
     {
-        public MeshBVH(IEnumerable<Vector3D> vertices, IEnumerable<TriIndex> triangles)
+        public MeshBVH(IEnumerable<Triangle3D> triangles)
         {
-            Vertices = vertices.ToArray();
-            Root = CreateLooseOctree(Vertices, triangles.ToArray(), 2);
+            Root = CreateLooseOctree(triangles.ToArray(), 2);
             var allnodes = EnumerateNodes(Root);
             int count_triangles_initial = triangles.Count();
             int count_triangles_final = EnumerateNodes(Root).Where(x => x.Triangles != null).SelectMany(x => x.Triangles).Count();
@@ -46,27 +45,26 @@ namespace RenderToy
                 }
             }
         }
-        public readonly Vector3D[] Vertices;
         public readonly Node Root;
         #region - Section : Bounding Volume Hierarchy Node -
         [DebuggerDisplay("[{Min.X}, {Min.Y}, {Min.Z}] -> [{Max.X}, {Max.Y}, {Max.Z}]")]
         public class Node
         {
-            public Node(Bound3D bound, TriIndex[] triangles, Node[] children)
+            public Node(Bound3D bound, Triangle3D[] triangles, Node[] children)
             {
                 Bound = bound;
                 Triangles = triangles;
                 Children = children;
             }
             public readonly Bound3D Bound;
-            public readonly TriIndex[] Triangles;
+            public readonly Triangle3D[] Triangles;
             public readonly Node[] Children;
         }
         #endregion
         #region - Section : Hierarchy Construction -
-        public static Node CreateLooseOctree(Vector3D[] vertices, TriIndex[] triangles, int level)
+        public static Node CreateLooseOctree(Triangle3D[] triangles, int level)
         {
-            Bound3D bound = ComputeBounds(vertices, triangles);
+            Bound3D bound = ComputeBounds(triangles);
             // Stop at 8 levels.
             if (level <= 0) goto EMITUNMODIFIED;
             // Stop at 4 triangles
@@ -77,7 +75,7 @@ namespace RenderToy
             {
                 // Partition the triangles.
                 var contained_triangles = triangles
-                    .Where(t => ShapeIntersects(subbox, new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2])))
+                    .Where(t => ShapeIntersects(subbox, new Triangle3D(t.P0, t.P1, t.P2)))
                     .ToArray();
                 // If there are no triangles in this child node then skip it entirely.
                 if (contained_triangles.Length == 0) continue;
@@ -87,7 +85,7 @@ namespace RenderToy
                 // Generate the new child node.
                 // Also, recompute the extents of this bounding volume.
                 // It's possible if the mesh has large amounts of space crossing the clip plane such that the bounds are now too big.
-                var newnode = CreateLooseOctree(vertices, contained_triangles, level - 1);
+                var newnode = CreateLooseOctree(contained_triangles, level - 1);
                 children.Add(newnode);
             }
             return new Node(bound, null, children.ToArray());
@@ -96,6 +94,13 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Intersection Test (Separating Axis Theorem) -
+        static Bound3D ComputeBounds(IEnumerable<Triangle3D> triangles)
+        {
+            var vertices = triangles.SelectMany(t => EnumeratePoints(t));
+            return new Bound3D(
+                new Vector3D(vertices.Min(p => p.X), vertices.Min(p => p.Y), vertices.Min(p => p.Z)),
+                new Vector3D(vertices.Max(p => p.X), vertices.Max(p => p.Y), vertices.Max(p => p.Z)));
+        }
         static Bound3D ComputeBounds(IEnumerable<Vector3D> vertices)
         {
             return new Bound3D(

@@ -43,7 +43,6 @@ struct TriangleList {
 
 template <typename FLOAT>
 struct MeshBVH {
-	int VertexOffset;
 	int RootOffset;
 };
 
@@ -60,6 +59,18 @@ struct MeshBVHNodeList {
 	int Count;
 	int Padding0;
 	MeshBVHNode<FLOAT> Nodes[];
+};
+
+template <typename FLOAT>
+struct Triangle3D {
+	Vector3<FLOAT> P[3];
+};
+
+template <typename FLOAT>
+struct Triangle3DList {
+	int Count;
+	int Padding0;
+	Triangle3D<FLOAT> Triangles[];
 };
 
 struct TriIndex {

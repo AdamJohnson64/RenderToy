@@ -381,7 +381,7 @@ DEVICE_PREFIX RAYQUERY IntersectTriangleList(const Vector3<FLOAT>& origin, const
 
 template <typename FLOAT, typename RAYQUERY, int RECURSION>
 struct IntersectMeshBVHNodeRecurse {
-	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node, const Vector3<FLOAT>* vertices) DEVICE_SUFFIX {
+	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node) DEVICE_SUFFIX {
 		RAYQUERY result = { 0 };
 		SetLambda(result, FloatTraits<FLOAT>::Max);
 		// TODO: C++AMP doesn't like this code at all and CUDA has a hard time compiling it.
@@ -394,7 +394,7 @@ struct IntersectMeshBVHNodeRecurse {
 			const MeshBVHNodeList<FLOAT>& children = *(const MeshBVHNodeList<FLOAT>*)FollowPointer(pScene, node.ChildrenOffset);
 			for (int i = 0; i < children.Count; ++i) {
 				const MeshBVHNode<FLOAT>& child = children.Nodes[i];
-				auto intersect = IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, RECURSION - 1>::Traverse(origin, direction, pScene, child, vertices);
+				auto intersect = IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, RECURSION - 1>::Traverse(origin, direction, pScene, child);
 				if (intersect.Lambda < result.Lambda) {
 					result = intersect;
 				}
@@ -402,11 +402,11 @@ struct IntersectMeshBVHNodeRecurse {
 		}
 		// Check the triangles if we have them.
 		if (node.TriangleOffset != 0) {
-			const TriIndexList& triangles = *(const TriIndexList*)FollowPointer(pScene, node.TriangleOffset);
+			const Triangle3DList<FLOAT>& triangles = *(const Triangle3DList<FLOAT>*)FollowPointer(pScene, node.TriangleOffset);
 			for (int i = 0; i < triangles.Count; ++i) {
-				const Vector3<FLOAT> p0 = vertices[triangles.Triangles[i].Index[0]];
-				const Vector3<FLOAT> p1 = vertices[triangles.Triangles[i].Index[1]];
-				const Vector3<FLOAT> p2 = vertices[triangles.Triangles[i].Index[2]];
+				const Vector3<FLOAT> p0 = triangles.Triangles[i].P[0];
+				const Vector3<FLOAT> p1 = triangles.Triangles[i].P[1];
+				const Vector3<FLOAT> p2 = triangles.Triangles[i].P[2];
 				auto intersect = IntersectTriangle<FLOAT, RAYQUERY>(origin, direction, p0, p1, p2);
 				if (intersect.Lambda < result.Lambda) {
 					result = intersect;
@@ -420,7 +420,7 @@ struct IntersectMeshBVHNodeRecurse {
 
 template <typename FLOAT, typename RAYQUERY>
 struct IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, -1> {
-	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node, const Vector3<FLOAT>* vertices) DEVICE_SUFFIX {
+	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node) DEVICE_SUFFIX {
 		RAYQUERY result = { 0 };
 		SetLambda(result, FloatTraits<FLOAT>::Max);
 		return result;
@@ -429,9 +429,8 @@ struct IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, -1> {
 
 template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX RAYQUERY IntersectMeshBVH(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVH<FLOAT>& mesh) DEVICE_SUFFIX {
-	const Vector3List<FLOAT>* vertices = (const Vector3List<FLOAT>*)FollowPointer(pScene, mesh.VertexOffset);
 	const MeshBVHNode<FLOAT>& root = *(const MeshBVHNode<FLOAT>*)FollowPointer(pScene, mesh.RootOffset);
-	return IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, 8>::Traverse(origin, direction, pScene, root, &vertices->Data);
+	return IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, 8>::Traverse(origin, direction, pScene, root);
 }
 
 template <typename FLOAT, typename RAYQUERY>

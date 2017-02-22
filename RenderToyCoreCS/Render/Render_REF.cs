@@ -57,6 +57,7 @@ namespace RenderToy
                     }
                     continue;
                 }
+                /*
                 MeshBVH meshbvh = transformedobject.Node.Primitive as MeshBVH;
                 if (meshbvh != null)
                 {
@@ -66,6 +67,7 @@ namespace RenderToy
                     }
                     continue;
                 }
+                */
             }
         }
         #endregion
@@ -157,7 +159,6 @@ namespace RenderToy
                 MeshBVH meshbvh = transformedobject.Node.Primitive as MeshBVH;
                 if (meshbvh != null)
                 {
-                    var v = meshbvh.Vertices;
                     var nodes_with_triangles = MeshBVH.EnumerateNodes(meshbvh.Root)
                         .Where(x => x.Triangles != null);
                     foreach (var node in nodes_with_triangles)
@@ -187,9 +188,9 @@ namespace RenderToy
                         }
                         foreach (var t in node.Triangles)
                         {
-                            drawline3d(v[t.Index0], v[t.Index1]);
-                            drawline3d(v[t.Index1], v[t.Index2]);
-                            drawline3d(v[t.Index2], v[t.Index0]);
+                            drawline3d(t.P0, t.P1);
+                            drawline3d(t.P1, t.P2);
+                            drawline3d(t.P2, t.P0);
                         }
                     }
                     continue;

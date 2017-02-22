@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace RenderToy
 {
@@ -59,7 +60,11 @@ namespace RenderToy
                 if (parts[0] != "3") throw new Exception("Expected '3'.");
                 triangles.Add(new TriIndex(int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3])));
             }
-            return new MeshBVH(vertices.ToArray(), triangles.ToArray());
+            return new MeshBVH(CollapseIndices(vertices.ToArray(), triangles.ToArray()));
+        }
+        static IEnumerable<Triangle3D> CollapseIndices(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> triangles)
+        {
+            return triangles.Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
         }
     }
 }
