@@ -10,6 +10,71 @@ namespace RenderToy
 {
     public static class ClipHelp
     {
+        #region - Section : World Clip (Triangles) -
+        public static IEnumerable<Triangle3D> ClipTriangle3D(Triangle3D triangle, Vector3D plane_normal, double plane_distance)
+        {
+            var p = new[] { triangle.P0, triangle.P1, triangle.P2 };
+            var sides = p.Select(x => MathHelp.Dot(x, plane_normal) - plane_distance);
+            // Get the side for all points (inside or outside).
+            var outside = sides
+                .Select((x, i) => new { index = i, side = x })
+                .Where(x => x.side > 0)
+                .ToArray();
+            // Get the side for all points (inside or outside).
+            var inside = sides
+                .Select((x, i) => new { index = i, side = x })
+                .Where(x => x.side <= 0)
+                .ToArray();
+            // All points are clipped; trivially reject the whole triangle.
+            if (outside.Length == 0 && inside.Length == 3)
+            {
+                yield break;
+            }
+            // If one point is clipped then emit the single remaining triangle.
+            if (outside.Length == 1 && inside.Length == 2)
+            {
+                var p1 = p[outside[0].index];
+                var p2 = p[inside[0].index];
+                var p3 = p[inside[1].index];
+                var pi1 = CalculateIntersectionPointLine(p1, p2, plane_normal, plane_distance);
+                var pi2 = CalculateIntersectionPointLine(p3, p1, plane_normal, plane_distance);
+                yield return new Triangle3D(p1, pi1, pi2);
+                yield break;
+            }
+            // If two points are clipped then emit two triangles.
+            if (outside.Length == 2 && inside.Length == 1)
+            {
+                int first = outside[0].index;
+                var p1 = p[outside[0].index];
+                var p2 = p[outside[1].index];
+                var p3 = p[inside[0].index];
+                var p2i = CalculateIntersectionPointLine(p2, p3, plane_normal, plane_distance);
+                var p3i = CalculateIntersectionPointLine(p3, p1, plane_normal, plane_distance);
+                yield return new Triangle3D(p1, p2, p2i);
+                yield return new Triangle3D(p2i, p3i, p1);
+                yield break;
+            }
+            // All points are unclipped; trivially accept this triangle.
+            if (outside.Length == 3 && inside.Length == 0)
+            {
+                yield return triangle;
+                yield break;
+            }
+        }
+        static double CalculateIntersectionDistanceLine(Vector3D p1, Vector3D p2, Vector3D plane_normal, double plane_distance)
+        {
+            return CalculateIntersectionDistanceRay(p1, p2 - p1, plane_normal, plane_distance);
+        }
+        static Vector3D CalculateIntersectionPointLine(Vector3D p1, Vector3D p2, Vector3D plane_normal, double plane_distance)
+        {
+            return p1 + MathHelp.Multiply(p2 - p1, CalculateIntersectionDistanceLine(p1, p2, plane_normal, plane_distance));
+        }
+        static double CalculateIntersectionDistanceRay(Vector3D origin, Vector3D direction, Vector3D plane_normal, double plane_distance)
+        {
+            // Compute the intersection with the clip plane.
+            return plane_distance - MathHelp.Dot(plane_normal, origin) / MathHelp.Dot(plane_normal, direction);
+        }
+        #endregion
         #region - Section : Homogeneous Clip (Common) -
         static double CalculateIntersectionDistanceLine(Vector4D p1, Vector4D p2, Vector4D plane)
         {
@@ -127,11 +192,11 @@ namespace RenderToy
             // If one point is clipped then emit the single remaining triangle.
             if (outside.Length == 1 && inside.Length == 2)
             {
-                Vector4D p1 = p[outside[0].index];
-                Vector4D p2 = p[inside[0].index];
-                Vector4D p3 = p[inside[1].index];
-                Vector4D pi1 = CalculateIntersectionPointLine(p1, p2, plane);
-                Vector4D pi2 = CalculateIntersectionPointLine(p3, p1, plane);
+                var p1 = p[outside[0].index];
+                var p2 = p[inside[0].index];
+                var p3 = p[inside[1].index];
+                var pi1 = CalculateIntersectionPointLine(p1, p2, plane);
+                var pi2 = CalculateIntersectionPointLine(p3, p1, plane);
                 yield return new Triangle4D(p1, pi1, pi2);
                 yield break;
             }
@@ -139,11 +204,11 @@ namespace RenderToy
             if (outside.Length == 2 && inside.Length == 1)
             {
                 int first = outside[0].index;
-                Vector4D p1 = p[outside[0].index];
-                Vector4D p2 = p[outside[1].index];
-                Vector4D p3 = p[inside[0].index];
-                Vector4D p2i = CalculateIntersectionPointLine(p2, p3, plane);
-                Vector4D p3i = CalculateIntersectionPointLine(p3, p1, plane);
+                var p1 = p[outside[0].index];
+                var p2 = p[outside[1].index];
+                var p3 = p[inside[0].index];
+                var p2i = CalculateIntersectionPointLine(p2, p3, plane);
+                var p3i = CalculateIntersectionPointLine(p3, p1, plane);
                 yield return new Triangle4D(p1, p2, p2i);
                 yield return new Triangle4D(p2i, p3i, p1);
                 yield break;
