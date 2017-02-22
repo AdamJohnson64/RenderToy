@@ -72,7 +72,7 @@ namespace RenderToy
         static double CalculateIntersectionDistanceRay(Vector3D origin, Vector3D direction, Vector3D plane_normal, double plane_distance)
         {
             // Compute the intersection with the clip plane.
-            return plane_distance - MathHelp.Dot(plane_normal, origin) / MathHelp.Dot(plane_normal, direction);
+            return (plane_distance - MathHelp.Dot(plane_normal, origin)) / MathHelp.Dot(plane_normal, direction);
         }
         #endregion
         #region - Section : Homogeneous Clip (Common) -
