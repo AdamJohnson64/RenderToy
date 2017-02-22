@@ -21,25 +21,36 @@ namespace RenderToy
         }
         static MeshBVH LoadFromStream(StreamReader streamreader)
         {
+            string line;
             // HACK: This isn't remotely generic but it's absolutely deliberate.
             // This format will read the Stanford Bunny (bunny_zipper_res4.ply) in the online scan library.
             if (streamreader.ReadLine() != "ply") throw new Exception("Expected 'ply'.");
             if (streamreader.ReadLine() != "format ascii 1.0") throw new Exception("Expected 'format ascii 1.0'.");
-            if (streamreader.ReadLine() != "comment zipper output") throw new Exception("Expected 'comment zipper output'.");
+            {
+                line = streamreader.ReadLine();
+                if (!line.StartsWith("comment ")) throw new Exception("Expected 'comment <txt>'.");
+            }
             int numvertex;
             {
-                string line = streamreader.ReadLine();
+                line = streamreader.ReadLine();
                 if (!line.StartsWith("element vertex ")) throw new Exception("Expected 'element vertex <n>'.");
                 numvertex = int.Parse(line.Substring(15));
             }
-            if (streamreader.ReadLine() != "property float x") throw new Exception("Expected 'property float x'.");
-            if (streamreader.ReadLine() != "property float y") throw new Exception("Expected 'property float y'.");
-            if (streamreader.ReadLine() != "property float z") throw new Exception("Expected 'property float z'.");
-            if (streamreader.ReadLine() != "property float confidence") throw new Exception("Expected 'property float confidence'.");
-            if (streamreader.ReadLine() != "property float intensity") throw new Exception("Expected 'property float intensity'.");
+            int indexx = -1, indexy = -1, indexz = -1;
+            {
+                line = streamreader.ReadLine();
+                int index = -1;
+                while (line.StartsWith("property "))
+                {
+                    ++index;
+                    if (line == "property float x") indexx = index;
+                    if (line == "property float y") indexy = index;
+                    if (line == "property float z") indexz = index;
+                    line = streamreader.ReadLine();
+                }
+            }
             int numface;
             {
-                string line = streamreader.ReadLine();
                 if (!line.StartsWith("element face ")) throw new Exception("Expected 'element face <n>'.");
                 numface = int.Parse(line.Substring(13));
             }
@@ -49,13 +60,13 @@ namespace RenderToy
             var triangles = new List<TriIndex>();
             for (int v = 0; v < numvertex; ++v)
             {
-                string line = streamreader.ReadLine();
+                line = streamreader.ReadLine();
                 string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                vertices.Add(new Vector3D(double.Parse(parts[0]), double.Parse(parts[1]), double.Parse(parts[2])));
+                vertices.Add(new Vector3D(double.Parse(parts[indexx]), double.Parse(parts[indexy]), double.Parse(parts[indexz])));
             }
             for (int t = 0; t < numface; ++t)
             {
-                string line = streamreader.ReadLine();
+                line = streamreader.ReadLine();
                 string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts[0] != "3") throw new Exception("Expected '3'.");
                 triangles.Add(new TriIndex(int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3])));

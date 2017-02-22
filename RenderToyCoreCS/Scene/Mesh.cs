@@ -26,7 +26,7 @@ namespace RenderToy
     {
         public MeshBVH(IEnumerable<Triangle3D> triangles)
         {
-            Root = CreateLooseOctree(triangles.ToArray(), 2);
+            Root = CreateLooseOctree(triangles.ToArray(), 6);
             var allnodes = EnumerateNodes(Root);
             int count_triangles_initial = triangles.Count();
             int count_triangles_final = EnumerateNodes(Root).Where(x => x.Triangles != null).SelectMany(x => x.Triangles).Count();
