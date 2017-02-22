@@ -145,19 +145,19 @@ namespace RenderToy
         public MeshBVH(IEnumerable<Vector3D> vertices, IEnumerable<TriIndex> triangles)
         {
             Vertices = vertices.ToArray();
-            Root = CreateLooseOctree(Vertices, triangles.ToArray(), 6);
-            var allnodes = EnumNodes(Root);
+            Root = CreateLooseOctree(Vertices, triangles.ToArray(), 2);
+            var allnodes = EnumerateNodes(Root);
             int count_triangles_initial = triangles.Count();
-            int count_triangles_final = EnumNodes(Root).Where(x => x.Triangles != null).SelectMany(x => x.Triangles).Count();
+            int count_triangles_final = EnumerateNodes(Root).Where(x => x.Triangles != null).SelectMany(x => x.Triangles).Count();
         }
-        static IEnumerable<Node> EnumNodes(Node from)
+        public static IEnumerable<Node> EnumerateNodes(Node from)
         {
             yield return from;
             if (from.Children != null)
             {
                 foreach (var child in from.Children)
                 {
-                    foreach (var childnode in EnumNodes(child))
+                    foreach (var childnode in EnumerateNodes(child))
                     {
                         yield return childnode;
                     }

@@ -154,6 +154,46 @@ namespace RenderToy
                     }
                     continue;
                 }
+                MeshBVH meshbvh = transformedobject.Node.Primitive as MeshBVH;
+                if (meshbvh != null)
+                {
+                    var v = meshbvh.Vertices;
+                    var nodes_with_triangles = MeshBVH.EnumerateNodes(meshbvh.Root)
+                        .Where(x => x.Triangles != null);
+                    foreach (var node in nodes_with_triangles)
+                    {
+                        var lines = new[]
+                        {
+                            new[] {0,0,0}, new[] {1,0,0},
+                            new[] {0,0,0}, new[] {0,1,0},
+                            new[] {0,0,0}, new[] {0,0,1},
+                            new[] {1,0,0}, new[] {1,1,0},
+                            new[] {1,0,0}, new[] {1,0,1},
+                            new[] {0,1,0}, new[] {1,1,0},
+                            new[] {0,1,0}, new[] {0,1,1},
+                            new[] {1,1,0}, new[] {1,1,1},
+                            new[] {0,0,1}, new[] {1,0,1},
+                            new[] {0,0,1}, new[] {0,1,1},
+                            new[] {1,0,1}, new[] {1,1,1},
+                            new[] {0,1,1}, new[] {1,1,1},
+                        };
+                        for (int line = 0; line < lines.Length; line += 2)
+                        {
+                            var i0 = lines[line + 0];
+                            var i1 = lines[line + 1];
+                            var p0 = new Vector3D(i0[0] == 0 ? node.Bound.Min.X : node.Bound.Max.X, i0[1] == 0 ? node.Bound.Min.Y : node.Bound.Max.Y, i0[2] == 0 ? node.Bound.Min.Z : node.Bound.Max.Z);
+                            var p1 = new Vector3D(i1[0] == 0 ? node.Bound.Min.X : node.Bound.Max.X, i1[1] == 0 ? node.Bound.Min.Y : node.Bound.Max.Y, i1[2] == 0 ? node.Bound.Min.Z : node.Bound.Max.Z);
+                            drawline3d(p0, p1);
+                        }
+                        foreach (var t in node.Triangles)
+                        {
+                            drawline3d(v[t.Index0], v[t.Index1]);
+                            drawline3d(v[t.Index1], v[t.Index2]);
+                            drawline3d(v[t.Index2], v[t.Index0]);
+                        }
+                    }
+                    continue;
+                }
             }
         }
         #endregion
