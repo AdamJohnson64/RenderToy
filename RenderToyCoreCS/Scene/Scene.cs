@@ -9,33 +9,21 @@ namespace RenderToy
 {
     public class Node
     {
-        public Node(ITransformed transform, object primitive, Vector4D wirecolor, IMaterial material)
+        public Node(ITransformed transform, IPrimitive primitive, Vector4D wirecolor, IMaterial material)
         {
-            this.transform = transform;
-            this.primitive = primitive;
-            this.wirecolor = wirecolor;
-            this.material = material;
-        }
-        public ITransformed Transform
-        {
-            get { return transform; }
-        }
-        public object Primitive
-        {
-            get { return primitive; }
-        }
-        public Vector4D WireColor
-        {
-            get { return wirecolor; }
+            this.Transform = transform;
+            this.Primitive = primitive;
+            this.WireColor = wirecolor;
+            this.Material = material;
         }
         public IReadOnlyList<Node> Children
         {
             get { return children; }
         }
-        public readonly ITransformed transform;
-        public readonly object primitive;
-        public readonly Vector4D wirecolor;
-        public readonly IMaterial material;
+        public readonly ITransformed Transform;
+        public readonly IPrimitive Primitive;
+        public readonly Vector4D WireColor;
+        public readonly IMaterial Material;
         List<Node> children = new List<Node>();
     }
     public class Scene

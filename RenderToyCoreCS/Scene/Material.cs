@@ -7,9 +7,11 @@ using System;
 
 namespace RenderToy
 {
+    /// <summary>
+    /// This empty IMaterial interface is only used to type-identify suitable material types.
+    /// </summary>
     public interface IMaterial
     {
-        Vector4D MaterialCompute(Vector3D origin, Vector3D direction, double lambda);
     }
     public static class Materials
     {
@@ -42,14 +44,6 @@ namespace RenderToy
             this.Color1 = color1;
             this.Color2 = color2;
         }
-        public Vector4D MaterialCompute(Vector3D origin, Vector3D direction, double lambda)
-        {
-            Vector3D space = origin + lambda * direction;
-            double mx = Math.Round(space.X - Math.Floor(space.X));
-            double mz = Math.Round(space.Z - Math.Floor(space.Z));
-            double mod = (mx + mz) % 2;
-            return mod < 0.5 ? Color1 : Color2;
-        }
         private Vector4D Color1;
         private Vector4D Color2;
     }
@@ -63,10 +57,6 @@ namespace RenderToy
             Reflect = reflect;
             Refract = refract;
             Ior = ior;
-        }
-        public Vector4D MaterialCompute(Vector3D origin, Vector3D direction, double lambda)
-        {
-            return Diffuse;
         }
         public readonly Vector4D Ambient;
         public readonly Vector4D Diffuse;

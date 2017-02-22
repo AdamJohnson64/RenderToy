@@ -128,35 +128,35 @@ namespace RenderToy
             // Write the inverse transform.
             Serialize(MathHelp.Invert(obj.Transform), Serialize);
             // Write the object type.
-            if (obj.Node.primitive is Plane)
+            if (obj.Node.Primitive is Plane)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_PLANE);
                 binarywriter.Write((int)0);
             }
-            else if (obj.Node.primitive is Sphere)
+            else if (obj.Node.Primitive is Sphere)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_SPHERE);
                 binarywriter.Write((int)0);
             }
-            else if (obj.Node.primitive is Cube)
+            else if (obj.Node.Primitive is Cube)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_CUBE);
                 binarywriter.Write((int)0);
             }
-            else if (obj.Node.primitive is Triangle)
+            else if (obj.Node.Primitive is Triangle)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_TRIANGLE);
                 binarywriter.Write((int)0);
             }
-            else if (obj.Node.primitive is Mesh)
+            else if (obj.Node.Primitive is Mesh)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_TRIANGLELIST);
-                EmitAndQueue(obj.Node.primitive);
+                EmitAndQueue(obj.Node.Primitive);
             }
-            else if (obj.Node.primitive is MeshBVH)
+            else if (obj.Node.Primitive is MeshBVH)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
-                EmitAndQueue(obj.Node.primitive);
+                EmitAndQueue(obj.Node.Primitive);
             }
             else
             {
@@ -164,12 +164,12 @@ namespace RenderToy
                 binarywriter.Write((int)0);
             }
             // Write the material type.
-            if (obj.Node.material is MaterialCommon)
+            if (obj.Node.Material is MaterialCommon)
             {
                 binarywriter.Write((int)Material.MATERIAL_COMMON);
-                EmitAndQueue(obj.Node.material);
+                EmitAndQueue(obj.Node.Material);
             }
-            else if (obj.Node.material is CheckerboardMaterial)
+            else if (obj.Node.Material is CheckerboardMaterial)
             {
                 binarywriter.Write((int)Material.MATERIAL_CHECKERBOARD_XZ);
                 binarywriter.Write((int)0);

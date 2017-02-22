@@ -12,7 +12,7 @@ namespace RenderToy
     /// <summary>
     /// Triangle-only mesh.
     /// </summary>
-    public class Mesh
+    public class Mesh : IPrimitive
     {
         public Mesh(IEnumerable<Vector3D> vertices, IEnumerable<TriIndex> triangles)
         {
@@ -22,7 +22,7 @@ namespace RenderToy
         public readonly Vector3D[] Vertices;
         public readonly TriIndex[] Triangles;
     }
-    public class MeshBVH
+    public class MeshBVH : IPrimitive
     {
         public MeshBVH(IEnumerable<Triangle3D> triangles)
         {

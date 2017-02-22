@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace RenderToy
@@ -91,7 +90,7 @@ namespace RenderToy
             {
                 bool again = PassRun();
                 GCHandle handle_accumulator = GCHandle.Alloc(accumulator, GCHandleType.Pinned);
-#if !WINDOWS_UWP
+                #if !WINDOWS_UWP
                 // TODO(fixme): AMP doesn't have a tonemapper yet.
                 RenderToyCLI.ToneMap(handle_accumulator.AddrOfPinnedObject(), sizeof(float) * 4 * width, bitmap_ptr, width, height, bitmap_stride, 1.0f / (pass * SAMPLES_PER_PASS));
                 #endif

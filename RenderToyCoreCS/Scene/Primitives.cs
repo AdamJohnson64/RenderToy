@@ -7,6 +7,12 @@ using System;
 
 namespace RenderToy
 {
+    /// <summary>
+    /// This empty IPrimitive interface is only used to type-identify suitable primitive types.
+    /// </summary>
+    public interface IPrimitive
+    {
+    }
     public interface IParametricUV
     {
         /// <summary>
@@ -30,7 +36,7 @@ namespace RenderToy
         /// <returns>A 3D point in object local space.</returns>
         Vector3D GetPointUVW(double u, double v, double w);
     }
-    public class BezierPatch : IParametricUV
+    public class BezierPatch : IPrimitive, IParametricUV
     {
         public BezierPatch()
         {
@@ -68,14 +74,14 @@ namespace RenderToy
         }
         Vector3D[] hull = null;
     }
-    public class Cube : IParametricUVW
+    public class Cube : IPrimitive, IParametricUVW
     {
         public Vector3D GetPointUVW(double u, double v, double w)
         {
             return new Vector3D(-1 + u * 2, -1 + v * 2, -1 + w * 2);
         }
     }
-    public class Cylinder : IParametricUV
+    public class Cylinder : IPrimitive, IParametricUV
     {
         public Vector3D GetPointUV(double u, double v)
         {
@@ -92,7 +98,7 @@ namespace RenderToy
     /// Note that for the purposes of parametric definitions this plane is bounded [-1,+1] in X and Z.
     /// The raytracer definition of this plane is infinite in the XZ plane.
     /// </summary>
-    public class Plane : IParametricUV
+    public class Plane : IPrimitive, IParametricUV
     {
         public Vector3D GetPointUV(double u, double v)
         {
@@ -104,7 +110,7 @@ namespace RenderToy
     /// The parametric definition of this sphere is oriented with the poles in Y.
     /// The "seam" of the sphere is deliberately behind the sphere in +Z.
     /// </summary>
-    public class Sphere : IParametricUV
+    public class Sphere : IPrimitive, IParametricUV
     {
         public Vector3D GetPointUV(double u, double v)
         {
@@ -121,7 +127,7 @@ namespace RenderToy
     /// <summary>
     /// Single triangle [0,0,0], [0,1,0], [1,0,0].
     /// </summary>
-    public class Triangle
+    public class Triangle : IPrimitive
     {
     }
 }
