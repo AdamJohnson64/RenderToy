@@ -21,13 +21,13 @@ namespace RenderToy
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv == null) continue;
                 d3dsurface.SetColor(DrawHelp.ColorToUInt32(transformedobject.Node.WireColor));
-                Action<Point4D, Point4D, Point4D> filltri_clipspace = (p1, p2, p3) =>
+                Action<Vector4D, Vector4D, Vector4D> filltri_clipspace = (p1, p2, p3) =>
                 {
                     foreach (var tri in ClipHelp.ClipTriangle3D(new ClipHelp.Triangle { p1 = p1, p2 = p2, p3 = p3 }))
                     {
-                        Point4D[] points = { tri.p1, tri.p2, tri.p3 };
+                        Vector4D[] points = { tri.p1, tri.p2, tri.p3 };
                         var t = points
-                            .Select(p => new Point4D(p.X / p.W, p.Y / p.W, p.Z / p.W, 1))
+                            .Select(p => new Vector4D(p.X / p.W, p.Y / p.W, p.Z / p.W, 1))
                             .ToArray();
                         d3dsurface.DrawTriangle(
                             (float)t[0].X, (float)t[0].Y, (float)t[0].Z, (float)t[0].W,
@@ -39,7 +39,7 @@ namespace RenderToy
                 {
                     for (int u = 0; u < 10; ++u)
                     {
-                        Point3D[] points =
+                        Vector3D[] points =
                         {
                             uv.GetPointUV((u + 0.0) / 10, (v + 0.0) / 10),
                             uv.GetPointUV((u + 1.0) / 10, (v + 0.0) / 10),
@@ -47,7 +47,7 @@ namespace RenderToy
                             uv.GetPointUV((u + 1.0) / 10, (v + 1.0) / 10),
                         };
                         var t = points
-                            .Select(x => new Point4D(x.X, x.Y, x.Z, 1))
+                            .Select(x => new Vector4D(x.X, x.Y, x.Z, 1))
                             .Select(x => model_mvp.Transform(x))
                             .ToArray();
                         filltri_clipspace(t[0], t[1], t[3]);

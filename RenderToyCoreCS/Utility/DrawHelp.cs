@@ -8,7 +8,7 @@ namespace RenderToy
     public static class DrawHelp
     {
         #region - Section : General -
-        public static uint ColorToUInt32(Point4D color)
+        public static uint ColorToUInt32(Vector4D color)
         {
             return
                 ((uint)(color.W * 255) << 24) |
@@ -18,15 +18,15 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Delegates for shape access -
-        public delegate Point3D GetPointUV(double u, double v);
-        public delegate Point3D GetPointUVW(double u, double v, double w);
+        public delegate Vector3D GetPointUV(double u, double v);
+        public delegate Vector3D GetPointUVW(double u, double v, double w);
         #endregion
         #region - Section : Higher Order Primitives (Points) -
         /// <summary>
         /// Generic point drawing function draws a point in 3D space.
         /// </summary>
         /// <param name="p">The world space point.</param>
-        public delegate void fnDrawPointWorld(Point3D p);
+        public delegate void fnDrawPointWorld(Vector3D p);
         /// <summary>
         /// Draw a uv parametric surface as a series of points.
         /// </summary>
@@ -90,7 +90,7 @@ namespace RenderToy
         /// </summary>
         /// <param name="p1">The world space starting position.</param>
         /// <param name="p2">The world space ending position.</param>
-        public delegate void fnDrawLineWorld(Point3D p1, Point3D p2);
+        public delegate void fnDrawLineWorld(Vector3D p1, Vector3D p2);
         /// <summary>
         /// Draw a wireframe representing a clip space.
         /// This specialized function will render a visualization of a clip space.
@@ -103,16 +103,16 @@ namespace RenderToy
         {
             {
                 // Transform the edges of homogeneous space into 3-space.
-                Point3D[] points = new Point3D[8];
+                Vector3D[] points = new Vector3D[8];
                 for (int z = 0; z < 2; ++z)
                 {
                     for (int y = 0; y < 2; ++y)
                     {
                         for (int x = 0; x < 2; ++x)
                         {
-                            Point4D p = clipspace.Transform(new Point4D(-1 + x * 2, -1 + y * 2, z, 1));
+                            Vector4D p = clipspace.Transform(new Vector4D(-1 + x * 2, -1 + y * 2, z, 1));
                             // Homogeneous divide puts us back in real space.
-                            points[x + y * 2 + z * 4] = new Point3D(p.X / p.W, p.Y / p.W, p.Z / p.W);
+                            points[x + y * 2 + z * 4] = new Vector3D(p.X / p.W, p.Y / p.W, p.Z / p.W);
                         }
                     }
                 }
@@ -126,14 +126,14 @@ namespace RenderToy
                 // Draw several depth viewport frames at constant z spacing.
                 for (int z = 0; z <= 10; ++z)
                 {
-                    Point3D[] frame = new Point3D[4];
+                    Vector3D[] frame = new Vector3D[4];
                     for (int y = 0; y < 2; ++y)
                     {
                         for (int x = 0; x < 2; ++x)
                         {
-                            Point4D p = clipspace.Transform(new Point4D(-1 + x * 2, -1 + y * 2, z / 10.0, 1));
+                            Vector4D p = clipspace.Transform(new Vector4D(-1 + x * 2, -1 + y * 2, z / 10.0, 1));
                             // Homogeneous divide puts us back in real space.
-                            frame[x + y * 2] = new Point3D(p.X / p.W, p.Y / p.W, p.Z / p.W);
+                            frame[x + y * 2] = new Vector3D(p.X / p.W, p.Y / p.W, p.Z / p.W);
                         }
                     }
                     line(frame[0], frame[1]);
@@ -158,14 +158,14 @@ namespace RenderToy
                 {
                     // Draw U Lines.
                     {
-                        Point3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
-                        Point3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
+                        Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
+                        Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
                         line(p3u1, p3u2);
                     }
                     // Draw V Lines.
                     {
-                        Point3D p3u1 = shape((l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
-                        Point3D p3u2 = shape((l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
+                        Vector3D p3u1 = shape((l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
+                        Vector3D p3u2 = shape((l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
                         line(p3u1, p3u2);
                     }
                 }
@@ -202,35 +202,35 @@ namespace RenderToy
                     {
                         // Draw UV Lines.
                         {
-                            Point3D p3u1 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
-                            Point3D p3u2 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
+                            Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
+                            Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
                             line(p3u1, p3u2);
                         }
                         {
-                            Point3D p3u1 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
-                            Point3D p3u2 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
+                            Vector3D p3u1 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
+                            Vector3D p3u2 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
                             line(p3u1, p3u2);
                         }
                         // Draw UW Lines.
                         {
-                            Point3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS, (v + 0.0) / USEGMENTS);
-                            Point3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS, (v + 0.0) / USEGMENTS);
+                            Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS, (v + 0.0) / USEGMENTS);
+                            Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS, (v + 0.0) / USEGMENTS);
                             line(p3u1, p3u2);
                         }
                         {
-                            Point3D p3u1 = shape((v + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
-                            Point3D p3u2 = shape((v + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
+                            Vector3D p3u1 = shape((v + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
+                            Vector3D p3u2 = shape((v + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
                             line(p3u1, p3u2);
                         }
                         // Draw VW Lines.
                         {
-                            Point3D p3u1 = shape((l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
-                            Point3D p3u2 = shape((l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
+                            Vector3D p3u1 = shape((l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
+                            Vector3D p3u2 = shape((l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
                             line(p3u1, p3u2);
                         }
                         {
-                            Point3D p3u1 = shape((l + 0.0) / LSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
-                            Point3D p3u2 = shape((l + 1.0) / LSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
+                            Vector3D p3u1 = shape((l + 0.0) / LSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
+                            Vector3D p3u2 = shape((l + 1.0) / LSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
                             line(p3u1, p3u2);
                         }
                     }
@@ -247,10 +247,10 @@ namespace RenderToy
             {
                 // Draw an X line.
                 float z = -10.0f + i;
-                line(new Point3D(-10, 0, z), new Point3D(10, 0, z));
+                line(new Vector3D(-10, 0, z), new Vector3D(10, 0, z));
                 // Draw a Z line.
                 float x = -10.0f + i;
-                line(new Point3D(x, 0, -10), new Point3D(x, 0, 10));
+                line(new Vector3D(x, 0, -10), new Vector3D(x, 0, 10));
             }
         }
         /// <summary>
@@ -259,66 +259,66 @@ namespace RenderToy
         /// <param name="line">he world space line rendering function</param>
         public static void DrawTeapot(fnDrawLineWorld line)
         {
-            Point3D[] vtx = new Point3D[] {
-                new Point3D(0.2000,  0.0000, 2.70000), new Point3D(0.2000, -0.1120, 2.70000),
-                new Point3D(1.3375,  0.0000, 2.53125), new Point3D(1.3375, -0.7490, 2.53125),
-                new Point3D(0.7490, -1.3375, 2.53125), new Point3D(0.0000, -1.3375, 2.53125),
-                new Point3D(1.4375,  0.0000, 2.53125), new Point3D(1.4375, -0.8050, 2.53125),
-                new Point3D(0.1120, -0.2000, 2.70000), new Point3D(0.0000, -0.2000, 2.70000),
-                new Point3D(0.8050, -1.4375, 2.53125), new Point3D(0.0000, -1.4375, 2.53125),
-                new Point3D(1.5000,  0.0000, 2.40000), new Point3D(1.5000, -0.8400, 2.40000),
-                new Point3D(0.8400, -1.5000, 2.40000), new Point3D(0.0000, -1.5000, 2.40000),
-                new Point3D(1.7500,  0.0000, 1.87500), new Point3D(1.7500, -0.9800, 1.87500),
-                new Point3D(0.9800, -1.7500, 1.87500), new Point3D(0.0000, -1.7500, 1.87500),
-                new Point3D(2.0000,  0.0000, 1.35000), new Point3D(2.0000, -1.1200, 1.35000),
-                new Point3D(1.1200, -2.0000, 1.35000), new Point3D(0.0000, -2.0000, 1.35000),
-                new Point3D(2.0000,  0.0000, 0.90000), new Point3D(2.0000, -1.1200, 0.90000),
-                new Point3D(1.1200, -2.0000, 0.90000), new Point3D(0.0000, -2.0000, 0.90000),
-                new Point3D(-2.0000,  0.0000, 0.90000), new Point3D(2.0000,  0.0000, 0.45000),
-                new Point3D(2.0000, -1.1200, 0.45000), new Point3D(1.1200, -2.0000, 0.45000),
-                new Point3D(0.0000, -2.0000, 0.45000), new Point3D(1.5000,  0.0000, 0.22500),
-                new Point3D(1.5000, -0.8400, 0.22500), new Point3D(0.8400, -1.5000, 0.22500),
-                new Point3D(0.0000, -1.5000, 0.22500), new Point3D(1.5000,  0.0000, 0.15000),
-                new Point3D(1.5000, -0.8400, 0.15000), new Point3D(0.8400, -1.5000, 0.15000),
-                new Point3D(0.0000, -1.5000, 0.15000), new Point3D(-1.6000,  0.0000, 2.02500),
-                new Point3D(-1.6000, -0.3000, 2.02500), new Point3D(-1.5000, -0.3000, 2.25000),
-                new Point3D(-1.5000,  0.0000, 2.25000), new Point3D(-2.3000,  0.0000, 2.02500),
-                new Point3D(-2.3000, -0.3000, 2.02500), new Point3D(-2.5000, -0.3000, 2.25000),
-                new Point3D(-2.5000,  0.0000, 2.25000), new Point3D(-2.7000,  0.0000, 2.02500),
-                new Point3D(-2.7000, -0.3000, 2.02500), new Point3D(-3.0000, -0.3000, 2.25000),
-                new Point3D(-3.0000,  0.0000, 2.25000), new Point3D(-2.7000,  0.0000, 1.80000),
-                new Point3D(-2.7000, -0.3000, 1.80000), new Point3D(-3.0000, -0.3000, 1.80000),
-                new Point3D(-3.0000,  0.0000, 1.80000), new Point3D(-2.7000,  0.0000, 1.57500),
-                new Point3D(-2.7000, -0.3000, 1.57500), new Point3D(-3.0000, -0.3000, 1.35000),
-                new Point3D(-3.0000,  0.0000, 1.35000), new Point3D(-2.5000,  0.0000, 1.12500),
-                new Point3D(-2.5000, -0.3000, 1.12500), new Point3D(-2.6500, -0.3000, 0.93750),
-                new Point3D(-2.6500,  0.0000, 0.93750), new Point3D(-2.0000, -0.3000, 0.90000),
-                new Point3D(-1.9000, -0.3000, 0.60000), new Point3D(-1.9000,  0.0000, 0.60000),
-                new Point3D(1.7000,  0.0000, 1.42500), new Point3D(1.7000, -0.6600, 1.42500),
-                new Point3D(1.7000, -0.6600, 0.60000), new Point3D(1.7000,  0.0000, 0.60000),
-                new Point3D(2.6000,  0.0000, 1.42500), new Point3D(2.6000, -0.6600, 1.42500),
-                new Point3D(3.1000, -0.6600, 0.82500), new Point3D(3.1000,  0.0000, 0.82500),
-                new Point3D(2.3000,  0.0000, 2.10000), new Point3D(2.3000, -0.2500, 2.10000),
-                new Point3D(2.4000, -0.2500, 2.02500), new Point3D(2.4000,  0.0000, 2.02500),
-                new Point3D(2.7000,  0.0000, 2.40000), new Point3D(2.7000, -0.2500, 2.40000),
-                new Point3D(3.3000, -0.2500, 2.40000), new Point3D(3.3000,  0.0000, 2.40000),
-                new Point3D(2.8000,  0.0000, 2.47500), new Point3D(2.8000, -0.2500, 2.47500),
-                new Point3D(3.5250, -0.2500, 2.49375), new Point3D(3.5250,  0.0000, 2.49375),
-                new Point3D(2.9000,  0.0000, 2.47500), new Point3D(2.9000, -0.1500, 2.47500),
-                new Point3D(3.4500, -0.1500, 2.51250), new Point3D(3.4500,  0.0000, 2.51250),
-                new Point3D(2.8000,  0.0000, 2.40000), new Point3D(2.8000, -0.1500, 2.40000),
-                new Point3D(3.2000, -0.1500, 2.40000), new Point3D(3.2000,  0.0000, 2.40000),
-                new Point3D(0.0000,  0.0000, 3.15000), new Point3D(0.8000,  0.0000, 3.15000),
-                new Point3D(0.8000, -0.4500, 3.15000), new Point3D(0.4500, -0.8000, 3.15000),
-                new Point3D(0.0000, -0.8000, 3.15000), new Point3D(0.0000,  0.0000, 2.85000),
-                new Point3D(1.4000,  0.0000, 2.40000), new Point3D(1.4000, -0.7840, 2.40000),
-                new Point3D(0.7840, -1.4000, 2.40000), new Point3D(0.0000, -1.4000, 2.40000),
-                new Point3D(0.4000,  0.0000, 2.55000), new Point3D(0.4000, -0.2240, 2.55000),
-                new Point3D(0.2240, -0.4000, 2.55000), new Point3D(0.0000, -0.4000, 2.55000),
-                new Point3D(1.3000,  0.0000, 2.55000), new Point3D(1.3000, -0.7280, 2.55000),
-                new Point3D(0.7280, -1.3000, 2.55000), new Point3D(0.0000, -1.3000, 2.55000),
-                new Point3D(1.3000,  0.0000, 2.40000), new Point3D(1.3000, -0.7280, 2.40000),
-                new Point3D(0.7280, -1.3000, 2.40000), new Point3D(0.0000, -1.3000, 2.40000) };
+            Vector3D[] vtx = new Vector3D[] {
+                new Vector3D(0.2000,  0.0000, 2.70000), new Vector3D(0.2000, -0.1120, 2.70000),
+                new Vector3D(1.3375,  0.0000, 2.53125), new Vector3D(1.3375, -0.7490, 2.53125),
+                new Vector3D(0.7490, -1.3375, 2.53125), new Vector3D(0.0000, -1.3375, 2.53125),
+                new Vector3D(1.4375,  0.0000, 2.53125), new Vector3D(1.4375, -0.8050, 2.53125),
+                new Vector3D(0.1120, -0.2000, 2.70000), new Vector3D(0.0000, -0.2000, 2.70000),
+                new Vector3D(0.8050, -1.4375, 2.53125), new Vector3D(0.0000, -1.4375, 2.53125),
+                new Vector3D(1.5000,  0.0000, 2.40000), new Vector3D(1.5000, -0.8400, 2.40000),
+                new Vector3D(0.8400, -1.5000, 2.40000), new Vector3D(0.0000, -1.5000, 2.40000),
+                new Vector3D(1.7500,  0.0000, 1.87500), new Vector3D(1.7500, -0.9800, 1.87500),
+                new Vector3D(0.9800, -1.7500, 1.87500), new Vector3D(0.0000, -1.7500, 1.87500),
+                new Vector3D(2.0000,  0.0000, 1.35000), new Vector3D(2.0000, -1.1200, 1.35000),
+                new Vector3D(1.1200, -2.0000, 1.35000), new Vector3D(0.0000, -2.0000, 1.35000),
+                new Vector3D(2.0000,  0.0000, 0.90000), new Vector3D(2.0000, -1.1200, 0.90000),
+                new Vector3D(1.1200, -2.0000, 0.90000), new Vector3D(0.0000, -2.0000, 0.90000),
+                new Vector3D(-2.0000,  0.0000, 0.90000), new Vector3D(2.0000,  0.0000, 0.45000),
+                new Vector3D(2.0000, -1.1200, 0.45000), new Vector3D(1.1200, -2.0000, 0.45000),
+                new Vector3D(0.0000, -2.0000, 0.45000), new Vector3D(1.5000,  0.0000, 0.22500),
+                new Vector3D(1.5000, -0.8400, 0.22500), new Vector3D(0.8400, -1.5000, 0.22500),
+                new Vector3D(0.0000, -1.5000, 0.22500), new Vector3D(1.5000,  0.0000, 0.15000),
+                new Vector3D(1.5000, -0.8400, 0.15000), new Vector3D(0.8400, -1.5000, 0.15000),
+                new Vector3D(0.0000, -1.5000, 0.15000), new Vector3D(-1.6000,  0.0000, 2.02500),
+                new Vector3D(-1.6000, -0.3000, 2.02500), new Vector3D(-1.5000, -0.3000, 2.25000),
+                new Vector3D(-1.5000,  0.0000, 2.25000), new Vector3D(-2.3000,  0.0000, 2.02500),
+                new Vector3D(-2.3000, -0.3000, 2.02500), new Vector3D(-2.5000, -0.3000, 2.25000),
+                new Vector3D(-2.5000,  0.0000, 2.25000), new Vector3D(-2.7000,  0.0000, 2.02500),
+                new Vector3D(-2.7000, -0.3000, 2.02500), new Vector3D(-3.0000, -0.3000, 2.25000),
+                new Vector3D(-3.0000,  0.0000, 2.25000), new Vector3D(-2.7000,  0.0000, 1.80000),
+                new Vector3D(-2.7000, -0.3000, 1.80000), new Vector3D(-3.0000, -0.3000, 1.80000),
+                new Vector3D(-3.0000,  0.0000, 1.80000), new Vector3D(-2.7000,  0.0000, 1.57500),
+                new Vector3D(-2.7000, -0.3000, 1.57500), new Vector3D(-3.0000, -0.3000, 1.35000),
+                new Vector3D(-3.0000,  0.0000, 1.35000), new Vector3D(-2.5000,  0.0000, 1.12500),
+                new Vector3D(-2.5000, -0.3000, 1.12500), new Vector3D(-2.6500, -0.3000, 0.93750),
+                new Vector3D(-2.6500,  0.0000, 0.93750), new Vector3D(-2.0000, -0.3000, 0.90000),
+                new Vector3D(-1.9000, -0.3000, 0.60000), new Vector3D(-1.9000,  0.0000, 0.60000),
+                new Vector3D(1.7000,  0.0000, 1.42500), new Vector3D(1.7000, -0.6600, 1.42500),
+                new Vector3D(1.7000, -0.6600, 0.60000), new Vector3D(1.7000,  0.0000, 0.60000),
+                new Vector3D(2.6000,  0.0000, 1.42500), new Vector3D(2.6000, -0.6600, 1.42500),
+                new Vector3D(3.1000, -0.6600, 0.82500), new Vector3D(3.1000,  0.0000, 0.82500),
+                new Vector3D(2.3000,  0.0000, 2.10000), new Vector3D(2.3000, -0.2500, 2.10000),
+                new Vector3D(2.4000, -0.2500, 2.02500), new Vector3D(2.4000,  0.0000, 2.02500),
+                new Vector3D(2.7000,  0.0000, 2.40000), new Vector3D(2.7000, -0.2500, 2.40000),
+                new Vector3D(3.3000, -0.2500, 2.40000), new Vector3D(3.3000,  0.0000, 2.40000),
+                new Vector3D(2.8000,  0.0000, 2.47500), new Vector3D(2.8000, -0.2500, 2.47500),
+                new Vector3D(3.5250, -0.2500, 2.49375), new Vector3D(3.5250,  0.0000, 2.49375),
+                new Vector3D(2.9000,  0.0000, 2.47500), new Vector3D(2.9000, -0.1500, 2.47500),
+                new Vector3D(3.4500, -0.1500, 2.51250), new Vector3D(3.4500,  0.0000, 2.51250),
+                new Vector3D(2.8000,  0.0000, 2.40000), new Vector3D(2.8000, -0.1500, 2.40000),
+                new Vector3D(3.2000, -0.1500, 2.40000), new Vector3D(3.2000,  0.0000, 2.40000),
+                new Vector3D(0.0000,  0.0000, 3.15000), new Vector3D(0.8000,  0.0000, 3.15000),
+                new Vector3D(0.8000, -0.4500, 3.15000), new Vector3D(0.4500, -0.8000, 3.15000),
+                new Vector3D(0.0000, -0.8000, 3.15000), new Vector3D(0.0000,  0.0000, 2.85000),
+                new Vector3D(1.4000,  0.0000, 2.40000), new Vector3D(1.4000, -0.7840, 2.40000),
+                new Vector3D(0.7840, -1.4000, 2.40000), new Vector3D(0.0000, -1.4000, 2.40000),
+                new Vector3D(0.4000,  0.0000, 2.55000), new Vector3D(0.4000, -0.2240, 2.55000),
+                new Vector3D(0.2240, -0.4000, 2.55000), new Vector3D(0.0000, -0.4000, 2.55000),
+                new Vector3D(1.3000,  0.0000, 2.55000), new Vector3D(1.3000, -0.7280, 2.55000),
+                new Vector3D(0.7280, -1.3000, 2.55000), new Vector3D(0.0000, -1.3000, 2.55000),
+                new Vector3D(1.3000,  0.0000, 2.40000), new Vector3D(1.3000, -0.7280, 2.40000),
+                new Vector3D(0.7280, -1.3000, 2.40000), new Vector3D(0.0000, -1.3000, 2.40000) };
             int[] idx = new int[] {
                 //Rim
                 //102, 103, 104, 105, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
@@ -338,7 +338,7 @@ namespace RenderToy
             int[] flips = new int[] { /*3, */3, 3, /*3, 3,*/ 2, 2, 2, 2 };
             for (int patch = 0; patch < idx.Length / 16; ++patch)
             {
-                Point3D[] hull = new Point3D[16];
+                Vector3D[] hull = new Vector3D[16];
                 for (int i = 0; i < 16; ++i)
                 {
                     hull[i] = vtx[idx[patch * 16 + i]];
@@ -352,7 +352,7 @@ namespace RenderToy
                 DrawHelp.DrawParametricUV(line, new BezierPatch(hull).GetPointUV);
                 if ((flips[patch] & 1) == 1) // Flip in X
                 {
-                    Point3D[] hull2 = new Point3D[16];
+                    Vector3D[] hull2 = new Vector3D[16];
                     for (int i = 0; i < 16; ++i)
                     {
                         hull2[i] = hull[i];
@@ -362,7 +362,7 @@ namespace RenderToy
                 }
                 if ((flips[patch] & 2) == 2) // Flip in Z
                 {
-                    Point3D[] hull2 = new Point3D[16];
+                    Vector3D[] hull2 = new Vector3D[16];
                     for (int i = 0; i < 16; ++i)
                     {
                         hull2[i] = hull[i];
@@ -372,7 +372,7 @@ namespace RenderToy
                 }
                 if ((flips[patch] & 3) == 3) // Flip in X and Z
                 {
-                    Point3D[] hull2 = new Point3D[16];
+                    Vector3D[] hull2 = new Vector3D[16];
                     for (int i = 0; i < 16; ++i)
                     {
                         hull2[i] = hull[i];

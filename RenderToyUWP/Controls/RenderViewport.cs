@@ -41,7 +41,7 @@ namespace RenderToy
         }
         Image control_image = new Image();
         #region - Section : Camera -
-        TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 2, -5) };
+        TransformPosQuat Camera = new TransformPosQuat { Position = new Vector3D(0, 2, -5) };
         #endregion
         #region - Section : Input Handling -
         protected override void OnPointerPressed(PointerRoutedEventArgs e)

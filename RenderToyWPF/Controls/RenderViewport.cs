@@ -62,7 +62,7 @@ namespace RenderToy
                 return View * Projection * CameraPerspective.AspectCorrectFit(ActualWidth, ActualHeight);
             }
         }
-        TransformPosQuat Camera = new TransformPosQuat { Position = new Point3D(0, 2, -5) };
+        TransformPosQuat Camera = new TransformPosQuat { Position = new Vector3D(0, 2, -5) };
         CameraPerspective CameraMat = new CameraPerspective();
         void InvalidateCamera()
         {

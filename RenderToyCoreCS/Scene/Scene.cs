@@ -9,7 +9,7 @@ namespace RenderToy
 {
     public class Node
     {
-        public Node(ITransformed transform, object primitive, Point4D wirecolor, IMaterial material)
+        public Node(ITransformed transform, object primitive, Vector4D wirecolor, IMaterial material)
         {
             this.transform = transform;
             this.primitive = primitive;
@@ -24,7 +24,7 @@ namespace RenderToy
         {
             get { return primitive; }
         }
-        public Point4D WireColor
+        public Vector4D WireColor
         {
             get { return wirecolor; }
         }
@@ -34,7 +34,7 @@ namespace RenderToy
         }
         public readonly ITransformed transform;
         public readonly object primitive;
-        public readonly Point4D wirecolor;
+        public readonly Vector4D wirecolor;
         public readonly IMaterial material;
         List<Node> children = new List<Node>();
     }

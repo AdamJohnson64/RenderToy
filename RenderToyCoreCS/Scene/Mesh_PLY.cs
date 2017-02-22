@@ -11,14 +11,14 @@ namespace RenderToy
 {
     public class MeshPLY
     {
-        public static Mesh LoadFromPath(string path)
+        public static MeshBVH LoadFromPath(string path)
         {
             using (StreamReader streamreader = File.OpenText(path))
             {
                 return LoadFromStream(streamreader);
             }
         }
-        static Mesh LoadFromStream(StreamReader streamreader)
+        static MeshBVH LoadFromStream(StreamReader streamreader)
         {
             // HACK: This isn't remotely generic but it's absolutely deliberate.
             // This format will read the Stanford Bunny (bunny_zipper_res4.ply) in the online scan library.
@@ -44,13 +44,13 @@ namespace RenderToy
             }
             if (streamreader.ReadLine() != "property list uchar int vertex_indices") throw new Exception("Expected 'property list uchar int vertex_indices'.");
             if (streamreader.ReadLine() != "end_header") throw new Exception("Expected 'end_header'.");
-            var vertices = new List<Point3D>();
+            var vertices = new List<Vector3D>();
             var triangles = new List<TriIndex>();
             for (int v = 0; v < numvertex; ++v)
             {
                 string line = streamreader.ReadLine();
                 string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                vertices.Add(new Point3D(double.Parse(parts[0]), double.Parse(parts[1]), double.Parse(parts[2])));
+                vertices.Add(new Vector3D(double.Parse(parts[0]), double.Parse(parts[1]), double.Parse(parts[2])));
             }
             for (int t = 0; t < numface; ++t)
             {
@@ -59,8 +59,7 @@ namespace RenderToy
                 if (parts[0] != "3") throw new Exception("Expected '3'.");
                 triangles.Add(new TriIndex(int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3])));
             }
-            //return new MeshBVH(vertices.ToArray(), triangles.ToArray());
-            return new Mesh(vertices.ToArray(), triangles.ToArray());
+            return new MeshBVH(vertices.ToArray(), triangles.ToArray());
         }
     }
 }

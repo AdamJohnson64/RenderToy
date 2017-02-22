@@ -89,9 +89,9 @@ namespace RenderToy
                     {
                         Serialize((MaterialCommon)writeremaining.Target);
                     }
-                    else if (writeremaining.Target is IReadOnlyList<Point3D>)
+                    else if (writeremaining.Target is IReadOnlyList<Vector3D>)
                     {
-                        Serialize((IReadOnlyList<Point3D>)writeremaining.Target);
+                        Serialize((IReadOnlyList<Vector3D>)writeremaining.Target);
                     }
                     else
                     {
@@ -191,8 +191,8 @@ namespace RenderToy
             binarywriter.Write((int)obj.Triangles.Length);
             binarywriter.Write((int)0);
             // Write the bounds.
-            Point3D min = new Point3D(obj.Vertices.Min(x => x.X), obj.Vertices.Min(x => x.Y), obj.Vertices.Min(x => x.Z));
-            Point3D max = new Point3D(obj.Vertices.Max(x => x.X), obj.Vertices.Max(x => x.Y), obj.Vertices.Max(x => x.Z));
+            Vector3D min = new Vector3D(obj.Vertices.Min(x => x.X), obj.Vertices.Min(x => x.Y), obj.Vertices.Min(x => x.Z));
+            Vector3D max = new Vector3D(obj.Vertices.Max(x => x.X), obj.Vertices.Max(x => x.Y), obj.Vertices.Max(x => x.Z));
             Serialize(min, Serialize);
             Serialize(max, Serialize);
             // Write all the triangles.
@@ -224,7 +224,7 @@ namespace RenderToy
                 Serialize(item);
             }
         }
-        void Serialize(IReadOnlyList<Point3D> obj)
+        void Serialize(IReadOnlyList<Vector3D> obj)
         {
             binarywriter.Write((int)obj.Count);
             binarywriter.Write((int)0);
@@ -315,17 +315,13 @@ namespace RenderToy
             write(obj.M31); write(obj.M32); write(obj.M33); write(obj.M34);
             write(obj.M41); write(obj.M42); write(obj.M43); write(obj.M44);
         }
-        static void Serialize(Point3D obj, Action<double> write)
-        {
-            write(obj.X); write(obj.Y); write(obj.Z);
-        }
-        static void Serialize(Point4D obj, Action<double> write)
-        {
-            write(obj.X); write(obj.Y); write(obj.Z); write(obj.W);
-        }
         static void Serialize(Vector3D obj, Action<double> write)
         {
             write(obj.X); write(obj.Y); write(obj.Z);
+        }
+        static void Serialize(Vector4D obj, Action<double> write)
+        {
+            write(obj.X); write(obj.Y); write(obj.Z); write(obj.W);
         }
         #endregion
     }

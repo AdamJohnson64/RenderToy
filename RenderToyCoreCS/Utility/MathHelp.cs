@@ -16,37 +16,26 @@ namespace RenderToy
         public static Matrix3D CreateMatrixScale(double x, double y, double z) { return new Matrix3D(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1); }
         public static Matrix3D CreateMatrixTranslate(double x, double y, double z) { return new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1); }
         public static Quaternion CreateQuaternionIdentity() { return new Quaternion(0, 0, 0, 1); }
-        public static Point3D Add(Point3D lhs, Point3D rhs) { return new Point3D(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z); }
-        public static Point3D Add(Point3D lhs, Vector3D rhs) { return new Point3D(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z); }
-        public static Point3D Add(Vector3D lhs, Point3D rhs) { return new Point3D(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z); }
-        public static Point4D Add(Point4D lhs, Point4D rhs) { return new Point4D(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z, lhs.W + rhs.W); }
         public static Vector3D Add(Vector3D lhs, Vector3D rhs) { return new Vector3D(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z); }
+        public static Vector4D Add(Vector4D lhs, Vector4D rhs) { return new Vector4D(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z, lhs.W + rhs.W); }
         public static Vector3D Cross(Vector3D lhs, Vector3D rhs) { return new Vector3D(lhs.Y * rhs.Z - lhs.Z * rhs.Y, lhs.Z * rhs.X - lhs.X * rhs.Z, lhs.X * rhs.Y - lhs.Y * rhs.X); }
-        public static double Dot(Point3D lhs, Point3D rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z; }
-        public static double Dot(Point3D lhs, Vector3D rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z; }
-        public static double Dot(Vector3D lhs, Point3D rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z; }
         public static double Dot(Vector3D lhs, Vector3D rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z; }
-        public static double Dot(Point4D lhs, Point4D rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z + lhs.W * rhs.W; }
-        public static double Length(Point3D val) { return Math.Sqrt(Dot(val, val)); }
-        public static double Length(Point4D val) { return Math.Sqrt(Dot(val, val)); }
+        public static double Dot(Vector4D lhs, Vector4D rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z + lhs.W * rhs.W; }
         public static double Length(Vector3D val) { return Math.Sqrt(Dot(val, val)); }
-        public static Point3D Multiply(Point3D lhs, double rhs) { return new Point3D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs); }
-        public static Point3D Multiply(double lhs, Point3D rhs) { return Multiply(rhs, lhs); }
-        public static Point4D Multiply(Point4D lhs, double rhs) { return new Point4D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs, lhs.W * rhs); }
-        public static Point4D Multiply(double lhs, Point4D rhs) { return Multiply(rhs, lhs); }
+        public static double Length(Vector4D val) { return Math.Sqrt(Dot(val, val)); }
         public static Vector3D Multiply(Vector3D lhs, double rhs) { return new Vector3D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs); }
         public static Vector3D Multiply(double lhs, Vector3D rhs) { return Multiply(rhs, lhs); }
-        public static Point3D Negate(Point3D val) { return new Point3D(-val.X, -val.Y, -val.Z); }
-        public static Point4D Negate(Point4D val) { return new Point4D(-val.X, -val.Y, -val.Z, -val.W); }
+        public static Vector4D Multiply(Vector4D lhs, double rhs) { return new Vector4D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs, lhs.W * rhs); }
+        public static Vector4D Multiply(double lhs, Vector4D rhs) { return Multiply(rhs, lhs); }
         public static Vector3D Negate(Vector3D val) { return new Vector3D(-val.X, -val.Y, -val.Z); }
-        public static Point3D Normalized(Point3D val) { return Multiply(val, 1 / Length(val)); }
-        public static Point4D Normalized(Point4D val) { return Multiply(val, 1 / Length(val)); }
+        public static Vector4D Negate(Vector4D val) { return new Vector4D(-val.X, -val.Y, -val.Z, -val.W); }
         public static Vector3D Normalized(Vector3D val) { return val * (1 / Length(val)); }
-        public static Vector3D Subtract(Point3D lhs, Point3D rhs) { return new Vector3D(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z); }
-        public static Point4D Subtract(Point4D lhs, Point4D b) { return new Point4D(lhs.X - b.X, lhs.Y - b.Y, lhs.Z - b.Z, lhs.W - b.W); }
+        public static Vector4D Normalized(Vector4D val) { return Multiply(val, 1 / Length(val)); }
+        public static Vector3D Subtract(Vector3D lhs, Vector3D rhs) { return new Vector3D(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z); }
+        public static Vector4D Subtract(Vector4D lhs, Vector4D rhs) { return new Vector4D(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z, lhs.W - rhs.W); }
         #endregion
         #region - Section : Non-Trivial Functions (Type-compatible with WPF) -
-        public static Matrix3D CreateMatrixLookAt(Point3D eye, Point3D at, Vector3D up)
+        public static Matrix3D CreateMatrixLookAt(Vector3D eye, Vector3D at, Vector3D up)
         {
             var lfz = MathHelp.Normalized(at - eye);
             var lfx = MathHelp.Normalized(MathHelp.Cross(up, lfz));
@@ -153,27 +142,27 @@ namespace RenderToy
             }
             */
         }
-        public static Point3D Transform(RenderToy.Matrix3D a, Point3D b)
+        public static Vector3D TransformPoint(RenderToy.Matrix3D a, Vector3D b)
         {
-            return new Point3D(
+            return new Vector3D(
                 a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z + a.M41,
                 a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z + a.M42,
                 a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z + a.M43);
         }
-        public static Point4D Transform(RenderToy.Matrix3D a, Point4D b)
-        {
-            return new Point4D(
-                a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z + a.M41 * b.W,
-                a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z + a.M42 * b.W,
-                a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z + a.M43 * b.W,
-                a.M14 * b.X + a.M24 * b.Y + a.M34 * b.Z + a.M44 * b.W);
-        }
-        public static Vector3D Transform(RenderToy.Matrix3D a, Vector3D b)
+        public static Vector3D TransformVector(RenderToy.Matrix3D a, Vector3D b)
         {
             return new Vector3D(
                 a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z,
                 a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z,
                 a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z);
+        }
+        public static Vector4D Transform(RenderToy.Matrix3D a, Vector4D b)
+        {
+            return new Vector4D(
+                a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z + a.M41 * b.W,
+                a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z + a.M42 * b.W,
+                a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z + a.M43 * b.W,
+                a.M14 * b.X + a.M24 * b.Y + a.M34 * b.Z + a.M44 * b.W);
         }
     }
     [DebuggerDisplay("[{X}, {Y}, {Z}]")]
@@ -182,29 +171,19 @@ namespace RenderToy
         public double X, Y, Z;
         public Vector3D(double x, double y, double z) { X = x; Y = y; Z = z; }
         public static Vector3D operator -(Vector3D a) { return MathHelp.Negate(a); }
+        public static Vector3D operator -(Vector3D a, Vector3D b) { return MathHelp.Subtract(a, b); }
         public static Vector3D operator +(Vector3D a, Vector3D b) { return MathHelp.Add(a, b); }
         public static Vector3D operator *(Vector3D a, double b) { return MathHelp.Multiply(a, b); }
         public static Vector3D operator *(double a, Vector3D b) { return MathHelp.Multiply(a, b); }
     }
-    [DebuggerDisplay("[{X}, {Y}, {Z}]")]
-    public struct Point3D
-    {
-        public double X, Y, Z;
-        public Point3D(double x, double y, double z) { X = x; Y = y; Z = z; }
-        public static Point3D operator -(Point3D a) { return MathHelp.Negate(a); }
-        public static Point3D operator +(Point3D a, Point3D b) { return MathHelp.Add(a,b); }
-        public static Point3D operator +(Point3D a, Vector3D b) { return MathHelp.Add(a, b); }
-        public static Point3D operator +(Vector3D a, Point3D b) { return MathHelp.Add(a, b); }
-        public static Vector3D operator -(Point3D a, Point3D b) { return MathHelp.Subtract(a, b); }
-    }
     [DebuggerDisplay("[{X}, {Y}, {Z}, {W}]")]
-    public struct Point4D
+    public struct Vector4D
     {
         public double X, Y, Z, W;
-        public Point4D(double x, double y, double z, double w) { X = x;  Y = y;  Z = z; W = w; }
-        public static Point4D operator -(Point4D a) { return MathHelp.Negate(a); }
-        public static Point4D operator +(Point4D a, Point4D b) { return MathHelp.Add(a, b); }
-        public static Point4D operator -(Point4D a, Point4D b) { return MathHelp.Subtract(a, b); }
+        public Vector4D(double x, double y, double z, double w) { X = x;  Y = y;  Z = z; W = w; }
+        public static Vector4D operator -(Vector4D a) { return MathHelp.Negate(a); }
+        public static Vector4D operator +(Vector4D a, Vector4D b) { return MathHelp.Add(a, b); }
+        public static Vector4D operator -(Vector4D a, Vector4D b) { return MathHelp.Subtract(a, b); }
     }
     public struct Matrix3D
     {
@@ -225,9 +204,7 @@ namespace RenderToy
         }
         public static readonly Matrix3D Identity = MathHelp.CreateMatrixIdentity();
         public static Matrix3D operator*(Matrix3D a, Matrix3D b) { return MathHelp.Multiply(a, b); }
-        public Point3D Transform(Point3D p) { return MathHelp.Transform(this, p); }
-        public Point4D Transform(Point4D p) { return MathHelp.Transform(this, p); }
-        public Vector3D Transform(Vector3D p) { return MathHelp.Transform(this, p); }
+        public Vector4D Transform(Vector4D p) { return MathHelp.Transform(this, p); }
         public static bool operator==(Matrix3D a, Matrix3D b)
         {
             return

@@ -19,7 +19,7 @@ namespace RenderToy
         /// <param name="u">The U location on the surface.</param>
         /// <param name="v">The V location on the surface.</param>
         /// <returns>A 3D point in object local space.</returns>
-        Point3D GetPointUV(double u, double v);
+        Vector3D GetPointUV(double u, double v);
     }
     public interface IParametricUVW
     {
@@ -31,7 +31,7 @@ namespace RenderToy
         /// <param name="v">The V location in the volume.</param>
         /// <param name="w">The W location in the volume.</param>
         /// <returns>A 3D point in object local space.</returns>
-        Point3D GetPointUVW(double u, double v, double w);
+        Vector3D GetPointUVW(double u, double v, double w);
     }
     public class BezierPatch : IParametricUV
     {
@@ -39,19 +39,19 @@ namespace RenderToy
         {
             // Define the hull for the patch.
             const double h = 0.5;
-            hull = new Point3D[16]
+            hull = new Vector3D[16]
             {
-                new Point3D(-1, 0, -1), new Point3D(-h, 0, -1), new Point3D(+h, 0, -1), new Point3D(+1, 0, -1),
-                new Point3D(-1, 0, -h), new Point3D(-h, 4, -h), new Point3D(+h, -4, -h), new Point3D(+1, 0, -h),
-                new Point3D(-1, 0, +h), new Point3D(-h, -4, +h), new Point3D(+h, 4, +h), new Point3D(+1, 0, +h),
-                new Point3D(-1, 0, +1), new Point3D(-h, 0, +1), new Point3D(+h, 0, +1), new Point3D(+1, 0, +1),
+                new Vector3D(-1, 0, -1), new Vector3D(-h, 0, -1), new Vector3D(+h, 0, -1), new Vector3D(+1, 0, -1),
+                new Vector3D(-1, 0, -h), new Vector3D(-h, 4, -h), new Vector3D(+h, -4, -h), new Vector3D(+1, 0, -h),
+                new Vector3D(-1, 0, +h), new Vector3D(-h, -4, +h), new Vector3D(+h, 4, +h), new Vector3D(+1, 0, +h),
+                new Vector3D(-1, 0, +1), new Vector3D(-h, 0, +1), new Vector3D(+h, 0, +1), new Vector3D(+1, 0, +1),
             };
         }
-        public BezierPatch(Point3D[] hull)
+        public BezierPatch(Vector3D[] hull)
         {
             this.hull = hull;
         }
-        public Point3D GetPointUV(double u, double v)
+        public Vector3D GetPointUV(double u, double v)
         {
             // The Bernstein polynomial factors.
             double nu = 1 - u;
@@ -59,7 +59,7 @@ namespace RenderToy
             double nv = 1 - v;
             double[] bv = new double[4] { nv * nv * nv, 3 * v * nv * nv, 3 * v * v * nv, v * v * v };
             // Compute the UV point.
-            Point3D acc = new Point3D(0, 0, 0);
+            Vector3D acc = new Vector3D(0, 0, 0);
             for (int j = 0; j < 4; ++j)
             {
                 for (int i = 0; i < 4; ++i)
@@ -69,25 +69,25 @@ namespace RenderToy
             }
             return acc;
         }
-        Point3D[] hull = null;
+        Vector3D[] hull = null;
     }
     public class Cube : IParametricUVW
     {
-        public Point3D GetPointUVW(double u, double v, double w)
+        public Vector3D GetPointUVW(double u, double v, double w)
         {
-            return new Point3D(-1 + u * 2, -1 + v * 2, -1 + w * 2);
+            return new Vector3D(-1 + u * 2, -1 + v * 2, -1 + w * 2);
         }
     }
     public class Cylinder : IParametricUV
     {
-        public Point3D GetPointUV(double u, double v)
+        public Vector3D GetPointUV(double u, double v)
         {
             // The central axis of the sphere points through world Y.
             // The U direction defines latitude and sweeps a full circle for 0 <= u <= 1.
             // The V direction defines linear distance along Y.
             double ucos = Math.Cos(u * Math.PI * 2);
             double usin = Math.Sin(u * Math.PI * 2);
-            return new Point3D(-usin, -1 + v * 2, ucos);
+            return new Vector3D(-usin, -1 + v * 2, ucos);
         }
     }
     /// <summary>
@@ -97,9 +97,9 @@ namespace RenderToy
     /// </summary>
     public class Plane : IParametricUV
     {
-        public Point3D GetPointUV(double u, double v)
+        public Vector3D GetPointUV(double u, double v)
         {
-            return new Point3D(-1 + u * 2, 0, -1 + v * 2);
+            return new Vector3D(-1 + u * 2, 0, -1 + v * 2);
         }
     }
     /// <summary>
@@ -109,7 +109,7 @@ namespace RenderToy
     /// </summary>
     public class Sphere : IParametricUV
     {
-        public Point3D GetPointUV(double u, double v)
+        public Vector3D GetPointUV(double u, double v)
         {
             // The central axis of the sphere points through world Y.
             // The U direction defines latitude and sweeps a full circle for 0 <= u <= 1.
@@ -118,7 +118,7 @@ namespace RenderToy
             double usin = Math.Sin(u * Math.PI * 2);
             double vcos = Math.Cos(v * Math.PI);
             double vsin = Math.Sin(v * Math.PI);
-            return new Point3D(-usin * vsin, vcos, ucos * vsin);
+            return new Vector3D(-usin * vsin, vcos, ucos * vsin);
         }
     }
     /// <summary>
@@ -132,17 +132,17 @@ namespace RenderToy
     /// </summary>
     public class Mesh
     {
-        public Mesh(IEnumerable<Point3D> vertices, IEnumerable<TriIndex> triangles)
+        public Mesh(IEnumerable<Vector3D> vertices, IEnumerable<TriIndex> triangles)
         {
             Vertices = vertices.ToArray();
             Triangles = triangles.ToArray();
         }
-        public readonly Point3D[] Vertices;
+        public readonly Vector3D[] Vertices;
         public readonly TriIndex[] Triangles;
     }
     public class MeshBVH
     {
-        public MeshBVH(IEnumerable<Point3D> vertices, IEnumerable<TriIndex> triangles)
+        public MeshBVH(IEnumerable<Vector3D> vertices, IEnumerable<TriIndex> triangles)
         {
             Vertices = vertices.ToArray();
             Root = CreateLooseOctree(Vertices, triangles.ToArray(), 6);
@@ -164,7 +164,7 @@ namespace RenderToy
                 }
             }
         }
-        public readonly Point3D[] Vertices;
+        public readonly Vector3D[] Vertices;
         public readonly Node Root;
         #region - Section : Bounding Volume Hierarchy Node -
         [DebuggerDisplay("[{Min.X}, {Min.Y}, {Min.Z}] -> [{Max.X}, {Max.Y}, {Max.Z}]")]
@@ -182,7 +182,7 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Hierarchy Construction -
-        public static Node CreateLooseOctree(Point3D[] vertices, TriIndex[] triangles, int level)
+        public static Node CreateLooseOctree(Vector3D[] vertices, TriIndex[] triangles, int level)
         {
             Bound3D bound = ComputeBounds(vertices, triangles);
             // Stop at 8 levels.
@@ -214,13 +214,13 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Intersection Test (Separating Axis Theorem) -
-        static Bound3D ComputeBounds(IEnumerable<Point3D> vertices)
+        static Bound3D ComputeBounds(IEnumerable<Vector3D> vertices)
         {
             return new Bound3D(
-                new Point3D(vertices.Min(p => p.X), vertices.Min(p => p.Y), vertices.Min(p => p.Z)),
-                new Point3D(vertices.Max(p => p.X), vertices.Max(p => p.Y), vertices.Max(p => p.Z)));
+                new Vector3D(vertices.Min(p => p.X), vertices.Min(p => p.Y), vertices.Min(p => p.Z)),
+                new Vector3D(vertices.Max(p => p.X), vertices.Max(p => p.Y), vertices.Max(p => p.Z)));
         }
-        static Bound3D ComputeBounds(IReadOnlyList<Point3D> vertices, IEnumerable<TriIndex> indices)
+        static Bound3D ComputeBounds(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> indices)
         {
             return ComputeBounds(
                 indices
@@ -228,7 +228,7 @@ namespace RenderToy
                 .Select(i => vertices[i])
                 .ToArray());
         }
-        static IEnumerable<Point3D> EnumeratePoints(Bound3D box)
+        static IEnumerable<Vector3D> EnumeratePoints(Bound3D box)
         {
             for (int z = 0; z < 2; ++z)
             {
@@ -236,7 +236,7 @@ namespace RenderToy
                 {
                     for (int x = 0; x < 2; ++x)
                     {
-                        yield return new Point3D(
+                        yield return new Vector3D(
                             x == 0 ? box.Min.X : box.Max.X,
                             y == 0 ? box.Min.Y : box.Max.Y,
                             z == 0 ? box.Min.Z : box.Max.Z);
@@ -244,7 +244,7 @@ namespace RenderToy
                 }
             }
         }
-        static IEnumerable<Point3D> EnumeratePoints(Triangle3D triangle)
+        static IEnumerable<Vector3D> EnumeratePoints(Triangle3D triangle)
         {
             yield return triangle.P0;
             yield return triangle.P1;
@@ -262,14 +262,14 @@ namespace RenderToy
                     for (int x = 0; x < 2; ++x)
                     {
                         // Compute the expected subcube extents.
-                        Point3D min = new Point3D(x == 0 ? box.Min.X : midx, y == 0 ? box.Min.Y : midy, z == 0 ? box.Min.Z : midz);
-                        Point3D max = new Point3D(x == 0 ? midx : box.Max.X, y == 0 ? midy : box.Max.Y, z == 0 ? midz : box.Max.Z);
+                        Vector3D min = new Vector3D(x == 0 ? box.Min.X : midx, y == 0 ? box.Min.Y : midy, z == 0 ? box.Min.Z : midz);
+                        Vector3D max = new Vector3D(x == 0 ? midx : box.Max.X, y == 0 ? midy : box.Max.Y, z == 0 ? midz : box.Max.Z);
                         yield return new Bound3D(min, max);
                     }
                 }
             }
         }
-        static bool ShapeContains(Bound3D box, Point3D point)
+        static bool ShapeContains(Bound3D box, Vector3D point)
         {
             return
                 point.X >= box.Min.X && point.X <= box.Max.X &&
@@ -299,7 +299,7 @@ namespace RenderToy
             return !axis_to_test
                 .Any(axis => !Bound1D.Intersect(ProjectPoints(EnumeratePoints(box), axis), ProjectPoints(EnumeratePoints(triangle), axis)));
         }
-        static Bound1D ProjectPoints(IEnumerable<Point3D> vertices, Vector3D project)
+        static Bound1D ProjectPoints(IEnumerable<Vector3D> vertices, Vector3D project)
         {
             return new Bound1D(vertices.Select(x => MathHelp.Dot(x, project)).Min(), vertices.Select(x => MathHelp.Dot(x, project)).Max());
         }
@@ -313,13 +313,13 @@ namespace RenderToy
     }
     public struct Bound3D
     {
-        public Bound3D(Point3D min, Point3D max) { Min = min; Max = max; }
-        public readonly Point3D Min, Max;
+        public Bound3D(Vector3D min, Vector3D max) { Min = min; Max = max; }
+        public readonly Vector3D Min, Max;
     }
     public struct Triangle3D
     {
-        public Triangle3D(Point3D p0, Point3D p1, Point3D p2) { P0 = p0; P1 = p1; P2 = p2; }
-        public readonly Point3D P0, P1, P2;
+        public Triangle3D(Vector3D p0, Vector3D p1, Vector3D p2) { P0 = p0; P1 = p1; P2 = p2; }
+        public readonly Vector3D P0, P1, P2;
     }
     public struct TriIndex
     {

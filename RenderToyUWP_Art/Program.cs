@@ -111,7 +111,7 @@ namespace RenderToy
         {
             get
             {
-                return MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Point3D(-1, 3, -4), new Point3D(0, 0, 0), new Vector3D(0, 1, 0)));
+                return MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(-1, 3, -4), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0)));
 
             }
         }

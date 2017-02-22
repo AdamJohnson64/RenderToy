@@ -31,7 +31,7 @@ namespace RenderToy
                 // Transform, clip and render a 3D point at P.
                 DrawHelp.fnDrawPointWorld drawpoint = (p) =>
                 {
-                    Point4D v4 = new Point4D(p.X, p.Y, p.Z, 1);
+                    Vector4D v4 = new Vector4D(p.X, p.Y, p.Z, 1);
                     v4 = model_mvp.Transform(v4);
                     if (v4.W <= 0) return;
                     drawpixel2d((int)((1 + v4.X / v4.W) * render_width / 2), (int)((1 - v4.Y / v4.W) * render_height / 2));
@@ -96,7 +96,7 @@ namespace RenderToy
                         // Scan in the X direction plotting Y points.
                         if (p1.X > p2.X)
                         {
-                            Point3D t = p1;
+                            Vector3D t = p1;
                             p1 = p2;
                             p2 = t;
                         }
@@ -111,7 +111,7 @@ namespace RenderToy
                         // Scan in the Y direction plotting X points.
                         if (p1.Y > p2.Y)
                         {
-                            Point3D t = p1;
+                            Vector3D t = p1;
                             p1 = p2;
                             p2 = t;
                         }
@@ -123,12 +123,12 @@ namespace RenderToy
                 };
                 // Transform, clip and render a 3D line between P1 and P2.
                 DrawHelp.fnDrawLineWorld drawline3d = (p1, p2) => {
-                    Point4D v41 = new Point4D(p1.X, p1.Y, p1.Z, 1);
-                    Point4D v42 = new Point4D(p2.X, p2.Y, p2.Z, 1);
+                    Vector4D v41 = new Vector4D(p1.X, p1.Y, p1.Z, 1);
+                    Vector4D v42 = new Vector4D(p2.X, p2.Y, p2.Z, 1);
                     if (!ClipHelp.TransformAndClipLine(ref v41, ref v42, model_mvp)) return;
                     drawline2d(
-                        new Point3D((1 + v41.X / v41.W) * render_width / 2, (1 - v41.Y / v41.W) * render_height / 2, v41.Z / v41.W),
-                        new Point3D((1 + v42.X / v42.W) * render_width / 2, (1 - v42.Y / v42.W) * render_height / 2, v42.Z / v42.W));
+                        new Vector3D((1 + v41.X / v41.W) * render_width / 2, (1 - v41.Y / v41.W) * render_height / 2, v41.Z / v41.W),
+                        new Vector3D((1 + v42.X / v42.W) * render_width / 2, (1 - v42.Y / v42.W) * render_height / 2, v42.Z / v42.W));
                 };
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv != null)
@@ -167,7 +167,7 @@ namespace RenderToy
                 Matrix3D model_mvp = transformedobject.Transform * mvp;
                 uint color = DrawHelp.ColorToUInt32(transformedobject.Node.WireColor);
                 // Fill one scanline.
-                Action<int, Point3D, Point3D> fillscan = (y, x1, x2) =>
+                Action<int, Vector3D, Vector3D> fillscan = (y, x1, x2) =>
                 {
                     if (y < 0 || y >= render_height) return;
                     int sx1 = (int)Math.Max(0, Math.Min(render_width, x1.X));
@@ -189,7 +189,7 @@ namespace RenderToy
                     }
                 };
                 // Fill a triangle defined by 3 points.
-                Action<Point3D, Point3D, Point3D> filltri_viewspace = (p1, p2, p3) =>
+                Action<Vector3D, Vector3D, Vector3D> filltri_viewspace = (p1, p2, p3) =>
                 {
                     double ymin = Math.Min(p1.Y, Math.Min(p2.Y, p3.Y));
                     double ymax = Math.Max(p1.Y, Math.Max(p2.Y, p3.Y));
@@ -200,7 +200,7 @@ namespace RenderToy
                     var e2 = new { O = p2, D = p3 - p2 };
                     var e3 = new { O = p3, D = p1 - p3 };
                     var edges = new[] { e1, e2, e3 };
-                    Point3D o1 = p1, o2 = p2, o3 = p3;
+                    Vector3D o1 = p1, o2 = p2, o3 = p3;
                     Vector3D d1 = p2 - p1, d2 = p3 - p2, d3 = p1 - p3;
                     // Scan in the range of the triangle.
                     for (int y = yscanmin; y <= yscanmax; ++y)
@@ -216,23 +216,23 @@ namespace RenderToy
                         fillscan(y, allx.First(), allx.Last());
                     }
                 };
-                Action<Point4D, Point4D, Point4D> filltri_clipspace = (p1, p2, p3) =>
+                Action<Vector4D, Vector4D, Vector4D> filltri_clipspace = (p1, p2, p3) =>
                 {
                     foreach (var tri in ClipHelp.ClipTriangle3D(new ClipHelp.Triangle { p1 = p1, p2 = p2, p3 = p3 }))
                     {
-                        Point4D[] v3 = { tri.p1, tri.p2, tri.p3 };
-                        Point3D[] v3t = v3
-                            .Select(p => new Point3D(p.X / p.W, p.Y / p.W, p.Z / p.W))
-                            .Select(p => new Point3D((1 + p.X) * render_width / 2, (1 - p.Y) * render_height / 2, p.Z))
+                        Vector4D[] v3 = { tri.p1, tri.p2, tri.p3 };
+                        Vector3D[] v3t = v3
+                            .Select(p => new Vector3D(p.X / p.W, p.Y / p.W, p.Z / p.W))
+                            .Select(p => new Vector3D((1 + p.X) * render_width / 2, (1 - p.Y) * render_height / 2, p.Z))
                             .ToArray();
                         filltri_viewspace(v3t[0], v3t[1], v3t[2]);
                     }
                 };
-                Func<Point3D, Point4D> TransformToClip = (p) =>
+                Func<Vector3D, Vector4D> TransformToClip = (p) =>
                 {
-                    return model_mvp.Transform(new Point4D(p.X, p.Y, p.Z, 1));
+                    return model_mvp.Transform(new Vector4D(p.X, p.Y, p.Z, 1));
                 };
-                Action<Point3D, Point3D, Point3D> filltri = (p1, p2, p3) =>
+                Action<Vector3D, Vector3D, Vector3D> filltri = (p1, p2, p3) =>
                 {
                     filltri_clipspace(TransformToClip(p1), TransformToClip(p2), TransformToClip(p3));
                 };
@@ -243,7 +243,7 @@ namespace RenderToy
                     {
                         for (int u = 0; u < 10; ++u)
                         {
-                            Point3D[] v3 =
+                            Vector3D[] v3 =
                             {
                                 uv.GetPointUV((u + 0.0) / 10, (v + 0.0) / 10),
                                 uv.GetPointUV((u + 1.0) / 10, (v + 0.0) / 10),

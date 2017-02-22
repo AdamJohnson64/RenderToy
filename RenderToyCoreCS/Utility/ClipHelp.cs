@@ -11,22 +11,22 @@ namespace RenderToy
     public static class ClipHelp
     {
         #region - Section : Homogeneous Clip (Common) -
-        static double CalculateIntersectionDistanceLine(Point4D p1, Point4D p2, Point4D plane)
+        static double CalculateIntersectionDistanceLine(Vector4D p1, Vector4D p2, Vector4D plane)
         {
             return CalculateIntersectionDistanceRay(p1, p2 - p1, plane);
         }
-        static Point4D CalculateIntersectionPointLine(Point4D p1, Point4D p2, Point4D plane)
+        static Vector4D CalculateIntersectionPointLine(Vector4D p1, Vector4D p2, Vector4D plane)
         {
             return p1 + MathHelp.Multiply(p2 - p1, CalculateIntersectionDistanceLine(p1, p2, plane));
         }
-        static double CalculateIntersectionDistanceRay(Point4D origin, Point4D direction, Point4D plane)
+        static double CalculateIntersectionDistanceRay(Vector4D origin, Vector4D direction, Vector4D plane)
         {
             // Compute the intersection with the clip plane.
             return -MathHelp.Dot(plane, origin) / MathHelp.Dot(plane, direction);
         }
         #endregion
         #region - Section : Homogeneous Clip (Lines) -
-        public static bool TransformAndClipLine(ref Point4D p1, ref Point4D p2, Matrix3D mvp)
+        public static bool TransformAndClipLine(ref Vector4D p1, ref Vector4D p2, Matrix3D mvp)
         {
             // Transform the supplied points into projection space.
             p1 = mvp.Transform(p1);
@@ -40,20 +40,20 @@ namespace RenderToy
         /// <param name="p1">The clip-space starting position.</param>
         /// <param name="p2">The clip-space ending position.</param>
         /// <returns>True if any part of the line remains, false if it was completely clipped away.</returns>
-        static bool ClipLine3D(ref Point4D p1, ref Point4D p2)
+        static bool ClipLine3D(ref Vector4D p1, ref Vector4D p2)
         {
             // Clip to clip-space near (z=0).
-            if (!ClipLine3D(ref p1, ref p2, new Point4D(0, 0, 1, 0))) return false;
+            if (!ClipLine3D(ref p1, ref p2, new Vector4D(0, 0, 1, 0))) return false;
             // Clip to clip-space far (z=w, z/w=1).
-            if (!ClipLine3D(ref p1, ref p2, new Point4D(0, 0, -1, 1))) return false;
+            if (!ClipLine3D(ref p1, ref p2, new Vector4D(0, 0, -1, 1))) return false;
             // Clip to clip-space right (-x+w=0, x/w=1).
-            if (!ClipLine3D(ref p1, ref p2, new Point4D(-1, 0, 0, 1))) return false;
+            if (!ClipLine3D(ref p1, ref p2, new Vector4D(-1, 0, 0, 1))) return false;
             // Clip to clip-space left (x+w=0, -x/w=1).
-            if (!ClipLine3D(ref p1, ref p2, new Point4D(1, 0, 0, 1))) return false;
+            if (!ClipLine3D(ref p1, ref p2, new Vector4D(1, 0, 0, 1))) return false;
             // Clip to clip-space top (-y+w=0, y/w=1).
-            if (!ClipLine3D(ref p1, ref p2, new Point4D(0, -1, 0, 1))) return false;
+            if (!ClipLine3D(ref p1, ref p2, new Vector4D(0, -1, 0, 1))) return false;
             // Clip to clip-space bottom (y+w=0, -y/w=1).
-            if (!ClipLine3D(ref p1, ref p2, new Point4D(0, 1, 0, 1))) return false;
+            if (!ClipLine3D(ref p1, ref p2, new Vector4D(0, 1, 0, 1))) return false;
             return true;
         }
         /// <summary>
@@ -63,7 +63,7 @@ namespace RenderToy
         /// <param name="p2">The clip-space ending position.</param>
         /// <param name="plane">The Ax+By+Cz+Dw=0 definition of the clip plane.</param>
         /// <returns>True if any part of the line remains, false if it was completely clipped away.</returns>
-        static bool ClipLine3D(ref Point4D p1, ref Point4D p2, Point4D plane)
+        static bool ClipLine3D(ref Vector4D p1, ref Vector4D p2, Vector4D plane)
         {
             // Determine which side of the plane these points reside.
             double side_p1 = MathHelp.Dot(p1, plane);
@@ -74,8 +74,8 @@ namespace RenderToy
             if (side_p1 >= 0 && side_p2 >= 0) return true;
             // Otherwise the line straddles the clip plane; clip as appropriate.
             // Construct a line segment to clip.
-            Point4D line_org = p1;
-            Point4D line_dir = p2 - p1;
+            Vector4D line_org = p1;
+            Vector4D line_dir = p2 - p1;
             // Compute the intersection with the clip plane.
             double lambda = CalculateIntersectionDistanceRay(line_org, line_dir, plane);
             // If the intersection lies in the line segment then clip.
@@ -92,7 +92,7 @@ namespace RenderToy
         #region - Section : Homogeneous Clip (Triangles) -
         public struct Triangle
         {
-            public Point4D p1, p2, p3;
+            public Vector4D p1, p2, p3;
         }
         public static IEnumerable<Triangle> ClipTriangle3D(Triangle tri)
         {
@@ -101,15 +101,15 @@ namespace RenderToy
         static IEnumerable<Triangle> ClipTriangle3D(IEnumerable<Triangle> triangles)
         {
             return triangles
-                .SelectMany(x => ClipTriangle3D(x, new Point4D(0, 0, 1, 0)))
-                .SelectMany(x => ClipTriangle3D(x, new Point4D(0, 0, -1, 1)))
-                .SelectMany(x => ClipTriangle3D(x, new Point4D(-1, 0, 0, 1)))
-                .SelectMany(x => ClipTriangle3D(x, new Point4D(1, 0, 0, 1)))
-                .SelectMany(x => ClipTriangle3D(x, new Point4D(0, -1, 0, 1)))
-                .SelectMany(x => ClipTriangle3D(x, new Point4D(0, 1, 0, 1)))
+                .SelectMany(x => ClipTriangle3D(x, new Vector4D(0, 0, 1, 0)))
+                .SelectMany(x => ClipTriangle3D(x, new Vector4D(0, 0, -1, 1)))
+                .SelectMany(x => ClipTriangle3D(x, new Vector4D(-1, 0, 0, 1)))
+                .SelectMany(x => ClipTriangle3D(x, new Vector4D(1, 0, 0, 1)))
+                .SelectMany(x => ClipTriangle3D(x, new Vector4D(0, -1, 0, 1)))
+                .SelectMany(x => ClipTriangle3D(x, new Vector4D(0, 1, 0, 1)))
                 .ToArray();
         }
-        static IEnumerable<Triangle> ClipTriangle3D(Triangle triangle, Point4D plane)
+        static IEnumerable<Triangle> ClipTriangle3D(Triangle triangle, Vector4D plane)
         {
             var p = new[] { triangle.p1, triangle.p2, triangle.p3 };
             var sides = p.Select(x => MathHelp.Dot(x, plane));
@@ -131,11 +131,11 @@ namespace RenderToy
             // If one point is clipped then emit the single remaining triangle.
             if (outside.Length == 1 && inside.Length == 2)
             {
-                Point4D p1 = p[outside[0].index];
-                Point4D p2 = p[inside[0].index];
-                Point4D p3 = p[inside[1].index];
-                Point4D pi1 = CalculateIntersectionPointLine(p1, p2, plane);
-                Point4D pi2 = CalculateIntersectionPointLine(p3, p1, plane);
+                Vector4D p1 = p[outside[0].index];
+                Vector4D p2 = p[inside[0].index];
+                Vector4D p3 = p[inside[1].index];
+                Vector4D pi1 = CalculateIntersectionPointLine(p1, p2, plane);
+                Vector4D pi2 = CalculateIntersectionPointLine(p3, p1, plane);
                 yield return new Triangle { p1 = p1, p2 = pi1, p3 = pi2 };
                 yield break;
             }
@@ -143,11 +143,11 @@ namespace RenderToy
             if (outside.Length == 2 && inside.Length == 1)
             {
                 int first = outside[0].index;
-                Point4D p1 = p[outside[0].index];
-                Point4D p2 = p[outside[1].index];
-                Point4D p3 = p[inside[0].index];
-                Point4D p2i = CalculateIntersectionPointLine(p2, p3, plane);
-                Point4D p3i = CalculateIntersectionPointLine(p3, p1, plane);
+                Vector4D p1 = p[outside[0].index];
+                Vector4D p2 = p[outside[1].index];
+                Vector4D p3 = p[inside[0].index];
+                Vector4D p2i = CalculateIntersectionPointLine(p2, p3, plane);
+                Vector4D p3i = CalculateIntersectionPointLine(p3, p1, plane);
                 yield return new Triangle { p1 = p1, p2 = p2, p3 = p2i };
                 yield return new Triangle { p1 = p2i, p2 = p3i, p3 = p1 };
                 yield break;
