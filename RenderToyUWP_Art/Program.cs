@@ -3,13 +3,19 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+// Use this if generating the art is taking too long or we don't want to waste build node time.
+#define RENDERSIMPLE
+
+#if DEBUG
+#define RENDERSIMPLE
+#endif
+
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
-using System.Linq;
 
 namespace RenderToy
 {
@@ -54,6 +60,9 @@ namespace RenderToy
         }
         static Bitmap BitmapAOC(int width, int height)
         {
+#if RENDERSIMPLE
+            return BitmapWireframe(width, height);
+#endif
             Bitmap bitmap = new System.Drawing.Bitmap(width, height, PixelFormat.Format32bppArgb);
             BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
@@ -68,6 +77,9 @@ namespace RenderToy
         }
         static Bitmap BitmapRaytrace(int width, int height)
         {
+#if RENDERSIMPLE
+            return BitmapWireframe(width, height);
+#endif
             Bitmap bitmap = new System.Drawing.Bitmap(width, height, PixelFormat.Format32bppArgb);
             BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
