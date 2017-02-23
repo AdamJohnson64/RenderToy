@@ -5,6 +5,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace RenderToy
@@ -56,6 +57,20 @@ namespace RenderToy
         static bool Vector3DEqual(Vector3D lhs, Vector3D rhs)
         {
             return lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z;
+        }
+    }
+    [TestClass]
+    public class MeshPLYTests
+    {
+        [TestMethod]
+        public void LoadAllPLYFilesTest()
+        {
+            string mydocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string[] all_ply_files = Directory.GetFiles(mydocuments, "*.ply");
+            var results = all_ply_files
+                .Select(filename => Path.Combine(mydocuments, filename))
+                .Select(pathname => MeshPLY.LoadMeshFromPath(pathname))
+                .ToArray();
         }
     }
 }

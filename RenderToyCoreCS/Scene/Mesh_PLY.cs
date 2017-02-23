@@ -12,14 +12,27 @@ namespace RenderToy
 {
     public class MeshPLY
     {
-        public static MeshBVH LoadFromPath(string path)
+        public static IPrimitive LoadMeshFromPath(string path)
+        {
+            return LoadFromPath(path, (v,i) => new Mesh(v, i));
+        }
+        public static IPrimitive LoadMeshBVHFromPath(string path)
+        {
+            return LoadFromPath(path, (v,i) => new MeshBVH(CollapseIndices(v.ToArray(), i.ToArray())));
+        }
+        static IEnumerable<Triangle3D> CollapseIndices(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> triangles)
+        {
+            return triangles.Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
+        }
+        delegate IPrimitive ConditionMesh(IReadOnlyList<Vector3D> vertices, IReadOnlyList<TriIndex> triangles);
+        static IPrimitive LoadFromPath(string path, ConditionMesh conditioner)
         {
             using (StreamReader streamreader = File.OpenText(path))
             {
-                return LoadFromStream(streamreader);
+                return LoadFromStream(streamreader, conditioner);
             }
         }
-        static MeshBVH LoadFromStream(StreamReader streamreader)
+        static IPrimitive LoadFromStream(StreamReader streamreader, ConditionMesh conditioner)
         {
             string line;
             // HACK: This isn't remotely generic but it's absolutely deliberate.
@@ -57,7 +70,7 @@ namespace RenderToy
             if (streamreader.ReadLine() != "property list uchar int vertex_indices") throw new Exception("Expected 'property list uchar int vertex_indices'.");
             if (streamreader.ReadLine() != "end_header") throw new Exception("Expected 'end_header'.");
             var vertices = new List<Vector3D>();
-            var triangles = new List<TriIndex>();
+            var indices = new List<TriIndex>();
             for (int v = 0; v < numvertex; ++v)
             {
                 line = streamreader.ReadLine();
@@ -69,13 +82,9 @@ namespace RenderToy
                 line = streamreader.ReadLine();
                 string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts[0] != "3") throw new Exception("Expected '3'.");
-                triangles.Add(new TriIndex(int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3])));
+                indices.Add(new TriIndex(int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3])));
             }
-            return new MeshBVH(CollapseIndices(vertices.ToArray(), triangles.ToArray()));
-        }
-        static IEnumerable<Triangle3D> CollapseIndices(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> triangles)
-        {
-            return triangles.Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
+            return conditioner(vertices, indices);
         }
     }
 }
