@@ -69,8 +69,10 @@ namespace RenderToy
             string[] all_ply_files = Directory.GetFiles(mydocuments, "*.ply");
             var results = all_ply_files
                 .Select(filename => Path.Combine(mydocuments, filename))
-                .Select(pathname => MeshPLY.LoadMeshFromPath(pathname))
-                .ToArray();
+                .Select(pathname => {
+                    Console.WriteLine("Loading mesh '" + pathname + "'.");
+                    return MeshPLY.LoadMeshFromPath(pathname);
+                }).ToArray();
         }
     }
 }
