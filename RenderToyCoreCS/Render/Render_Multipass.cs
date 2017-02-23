@@ -10,6 +10,44 @@ using System.Runtime.InteropServices;
 namespace RenderToy
 {
     /// <summary>
+    /// Contract for renderers which can accumulate output and deliver ARGB bitmaps on request.
+    /// </summary>
+    public interface IMultiPass
+    {
+        /// <summary>
+        /// Configure the camera for the render.
+        /// </summary>
+        /// <param name="mvp">The model-view-projection for the camera.</param>
+        void SetCamera(Matrix3D mvp);
+        /// <summary>
+        /// Configure the scene for the render.
+        /// </summary>
+        /// <param name="scene">The scene graph object.</param>
+        void SetScene(Scene scene);
+        /// <summary>
+        /// Configure the output target dimensions for the render.
+        /// </summary>
+        /// <param name="width">The pixel width of the target.</param>
+        /// <param name="height">The pixel height of the target.</param>
+        void SetTarget(int width, int height);
+        /// <summary>
+        /// This event fires when a new accumulation buffer is ready.
+        /// This should be used as a cue to request a new bitmap.
+        /// </summary>
+        event FrameReady OnBufferAccumulatorReady;
+        /// <summary>
+        /// Request a tonemapped ARGB bitmap.
+        /// The next available tonemapped frame will be delivered when ready.
+        /// </summary>
+        void RequestBitmap();
+        /// <summary>
+        /// This event fires when a new ARGB buffer is ready.
+        /// </summary>
+        event BitmapReady OnBufferARGBReady;
+    }
+    public delegate void FrameReady();
+    public delegate void BitmapReady();
+    /// <summary>
     /// Multipass interface for multipass render modes.
     /// </summary>
     abstract class MultiPass
@@ -28,7 +66,6 @@ namespace RenderToy
         public abstract void SetScene(Scene scene);
         public abstract void SetCamera(Matrix3D mvp);
         public abstract void SetTarget(int width, int height);
-        public abstract void Start();
         public abstract bool CopyTo(IntPtr buffer_ptr, int buffer_width, int buffer_height, int buffer_stride);
         /// <summary>
         /// Degenerate multipass handler that performs all work in a single pass.
@@ -42,7 +79,6 @@ namespace RenderToy
             public override void SetScene(Scene scene) { this.scene = scene; }
             public override void SetCamera(Matrix3D mvp) { this.mvp = mvp; }
             public override void SetTarget(int width, int height) { }
-            public override void Start() { }
             public override bool CopyTo(IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
             {
                 fillwith.Action(scene, mvp, bitmap_ptr, render_width, render_height, bitmap_stride, null);
@@ -85,7 +121,6 @@ namespace RenderToy
                     PassDirty();
                 };
             }
-            public override void Start() { }
             public override bool CopyTo(IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
             {
                 bool again = PassRun();
