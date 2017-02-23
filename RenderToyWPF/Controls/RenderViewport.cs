@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -167,7 +166,7 @@ namespace RenderToy
                 {
                     Scene scene = new Scene();
                     scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
-                    scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(100, 100, 100)), MeshPLY.LoadMeshBVHFromPath(ofd.FileName), Materials.LightGray, Materials.PlasticRed));
+                    scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(100, 100, 100)), FileFormat.LoadPLYBVHFromPath(ofd.FileName), Materials.LightGray, Materials.PlasticRed));
                     Scene = scene;
                 }
                 e.Handled = true;

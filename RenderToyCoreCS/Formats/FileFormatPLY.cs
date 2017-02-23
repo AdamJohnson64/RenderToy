@@ -10,29 +10,29 @@ using System.Linq;
 
 namespace RenderToy
 {
-    public class MeshPLY
+    public static partial class FileFormat
     {
-        public static IPrimitive LoadMeshFromPath(string path)
+        public static IPrimitive LoadPLYFromPath(string path)
         {
-            return LoadFromPath(path, (v,i) => new Mesh(v, i));
+            return LoadPLYFromPath(path, (v,i) => new Mesh(v, i));
         }
-        public static IPrimitive LoadMeshBVHFromPath(string path)
+        public static IPrimitive LoadPLYBVHFromPath(string path)
         {
-            return LoadFromPath(path, (v,i) => new MeshBVH(CollapseIndices(v.ToArray(), i.ToArray())));
+            return LoadPLYFromPath(path, (v,i) => new MeshBVH(CollapseIndices(v.ToArray(), i.ToArray())));
         }
         static IEnumerable<Triangle3D> CollapseIndices(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> triangles)
         {
             return triangles.Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
         }
         delegate IPrimitive ConditionMesh(IReadOnlyList<Vector3D> vertices, IReadOnlyList<TriIndex> triangles);
-        static IPrimitive LoadFromPath(string path, ConditionMesh conditioner)
+        static IPrimitive LoadPLYFromPath(string path, ConditionMesh conditioner)
         {
             using (StreamReader streamreader = File.OpenText(path))
             {
-                return LoadFromStream(streamreader, conditioner);
+                return LoadPLYFromStream(streamreader, conditioner);
             }
         }
-        static IPrimitive LoadFromStream(StreamReader streamreader, ConditionMesh conditioner)
+        static IPrimitive LoadPLYFromStream(StreamReader streamreader, ConditionMesh conditioner)
         {
             string line;
             // HACK: This isn't remotely generic but it's absolutely deliberate.

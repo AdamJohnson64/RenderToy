@@ -71,7 +71,7 @@ namespace RenderToy
                 .Select(filename => Path.Combine(mydocuments, filename))
                 .Select(pathname => {
                     Console.WriteLine("Loading mesh '" + pathname + "'.");
-                    return MeshPLY.LoadMeshFromPath(pathname);
+                    return FileFormat.LoadPLYFromPath(pathname);
                 }).ToArray();
         }
     }

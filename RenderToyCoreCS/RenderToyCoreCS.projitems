@@ -9,12 +9,14 @@
     <Import_RootNamespace>RenderToyCoreCS</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BVH\BVHCommon.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BVH\BVHOctree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Formats\FileFormatPLY.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Render\Render_Multipass.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Render\Render_REF.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Camera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Mesh.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Material.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Scene\Mesh_PLY.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Primitives.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Scene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Transformed.cs" />
