@@ -33,10 +33,19 @@ namespace RenderToy
                 // Generate the new child node.
                 // Also, recompute the extents of this bounding volume.
                 // It's possible if the mesh has large amounts of space crossing the clip plane such that the bounds are now too big.
-                var newnode = CreateLooseOctree(contained_triangles, level - 1);
-                children.Add(newnode);
+                children.Add(CreateLooseOctree(contained_triangles, level - 1));
             }
-            return new MeshBVH.Node(bound, null, children.ToArray());
+            // Form the new node.
+            var newnode = new MeshBVH.Node(bound, null, children.ToArray());
+            // If this split blows up the number of triangles significantly then reject it.
+            var numtriangles = MeshBVH
+                .EnumerateNodes(newnode)
+                .Where(n => n.Triangles != null)
+                .SelectMany(n => n.Triangles)
+                .Count();
+            if (numtriangles > triangles.Count() * 2) goto EMITUNMODIFIED;
+            // Otherwise return the new node.
+            return newnode;
         EMITUNMODIFIED:
             return new MeshBVH.Node(bound, triangles, null);
         }
