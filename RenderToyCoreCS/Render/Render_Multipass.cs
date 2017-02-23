@@ -123,7 +123,7 @@ namespace RenderToy
             int height;
             byte[] accumulator;
             int pass = 0;
-            const int SAMPLES_PER_PASS = 16;
+            const int SAMPLES_PER_PASS = 4;
         }
     }
 }
