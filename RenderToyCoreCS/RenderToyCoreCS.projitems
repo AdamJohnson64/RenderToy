@@ -12,7 +12,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)BVH\BVHCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BVH\BVHOctree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Formats\FileFormatPLY.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Render\Render_Multipass.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiPass\IMultiPass.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiPass\MultiPassAsync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiPass\SinglePassAsync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiPass\SinglePassSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Render\Render_REF.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Camera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Scene\Mesh.cs" />

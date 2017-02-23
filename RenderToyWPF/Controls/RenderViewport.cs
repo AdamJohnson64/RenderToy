@@ -150,6 +150,11 @@ namespace RenderToy
         static RoutedUICommand CommandSceneLoad = new RoutedUICommand("Load Scene (PLY)", "CommandSceneLoad", typeof(RenderViewport));
         public RenderViewport()
         {
+            SceneChanged += () =>
+            {
+                RenderMode.SetScene(Scene);
+            };
+            RenderCall = RenderCallCommands.Calls[0];
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             Focusable = true;
             CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { RenderPreviews = !RenderPreviews; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -177,7 +182,7 @@ namespace RenderToy
             // Generate commands for render modes.
             foreach (var call in RenderCallCommands.Calls)
             {
-                CommandBindings.Add(new CommandBinding(RenderCallCommands.Commands[call], (s, e) => { RenderMode = MultiPass.Create(call); e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+                CommandBindings.Add(new CommandBinding(RenderCallCommands.Commands[call], (s, e) => { RenderCall = call; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             }
             // Generate context menu.
             var menu = new ContextMenu();
@@ -211,26 +216,33 @@ namespace RenderToy
                 menu.Items.Add(menu_group);
             }
             this.ContextMenu = menu;
-            // HACK: This causes a repaint every 10ms for multipass renders.
-            multipassRedraw = new System.Windows.Forms.Timer();
-            multipassRedraw.Interval = 10;
-            multipassRedraw.Tick += (s, e) =>
-            {
-                if (renderAgain)
-                {
-                    InvalidateVisual();
-                }
-            };
-            multipassRedraw.Start();
         }
-        System.Windows.Forms.Timer multipassRedraw;
         #region - Section : RenderMode Option -
-        MultiPass RenderMode
+        RenderCall RenderCall
         {
-            get { return renderMode; }
-            set { renderMode = value; InvalidateVisual(); }
+            set
+            {
+                if (!value.IsMultipass)
+                {
+                    renderMode = new SinglePassAsyncAdaptor(value, () => Dispatcher.Invoke(InvalidateVisual));
+                }
+                else
+                {
+                    renderMode = new MultiPassAsyncAdaptor(value, () => Dispatcher.Invoke(InvalidateVisual));
+                }
+                renderMode.SetScene(Scene);
+                InvalidateVisual();
+            }
         }
-        MultiPass renderMode = MultiPass.Create(RenderCallCommands.Calls[0]);
+        RenderCall renderCall;
+        IMultiPass RenderMode
+        {
+            get
+            {
+                return renderMode;
+            }
+        }
+        IMultiPass renderMode;
         #endregion
         #region - Section : RenderResolution Option -
         int RenderResolution
@@ -263,12 +275,11 @@ namespace RenderToy
             {
                 int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / RenderResolution;
                 int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / RenderResolution;
-                RenderMode.SetScene(Scene);
                 RenderMode.SetCamera(MVP);
                 RenderMode.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
                 WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
                 bitmap.Lock();
-                renderAgain = RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
+                RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
                 bitmap.AddDirtyRect(new Int32Rect(0, 0, RENDER_WIDTH, RENDER_HEIGHT));
                 bitmap.Unlock();
                 drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
@@ -305,7 +316,6 @@ namespace RenderToy
                 drawingContext.DrawText(new FormattedText(RenderMode.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.DarkGray), new Point(8, 8));
             }
         }
-        bool renderAgain = false;
         #endregion
         #region - Overrides : UIElement -
         protected override void OnMouseDown(MouseButtonEventArgs e)

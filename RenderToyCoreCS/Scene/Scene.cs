@@ -61,6 +61,7 @@ namespace RenderToy
         public Node Node;
         public static IEnumerable<TransformedObject> Enumerate(Scene scene)
         {
+            if (scene == null) yield break;
             foreach (Node root in scene.Children)
             {
                 foreach (TransformedObject tobj in Enumerate(root, Matrix3D.Identity))
