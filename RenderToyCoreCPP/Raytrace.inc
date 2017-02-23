@@ -639,7 +639,7 @@ public:
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
-		Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, pScene, intersect.Object).Bitangent;
+		Vector3<FLOAT> n = Normalize(Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, pScene, intersect.Object).Bitangent);
 		return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
 	}
 };
@@ -654,7 +654,7 @@ public:
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
-		Vector3<FLOAT> n = Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, pScene, intersect.Object).Normal;
+		Vector3<FLOAT> n = Normalize(Intersect<FLOAT, IntersectNormal<FLOAT>>(origin, direction, pScene, intersect.Object).Normal);
 		return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
 	}
 };
@@ -669,7 +669,7 @@ public:
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
-		Vector3<FLOAT> n = Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, pScene, intersect.Object).Tangent;
+		Vector3<FLOAT> n = Normalize(Intersect<FLOAT, IntersectTBN<FLOAT>>(origin, direction, pScene, intersect.Object).Tangent);
 		return make_vector4<FLOAT>((n.x + 1) / 2, (n.y + 1) / 2, (n.z + 1) / 2, 1);
 	}
 };
