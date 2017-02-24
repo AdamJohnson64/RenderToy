@@ -6,5 +6,19 @@
         xmlns:local="clr-namespace:RenderToy"
         mc:Ignorable="d"
         Title="RenderToy Experiment" Height="600" Width="1024">
-    <local:RenderViewport/>
+    <UserControl>
+        <UserControl.Resources>
+            <local:Camera x:Key="Camera"/>
+        </UserControl.Resources>
+        <Grid>
+            <!-- Main Viewport Layer -->
+            <local:ViewUser x:Name="ViewMain" Camera="{StaticResource Camera}"/>
+            <!-- Wireframe Layer -->
+            <local:ViewWire x:Name="ViewWireframe" IsHitTestVisible="False" Camera="{StaticResource Camera}"/>
+            <!-- PIP Preview -->
+            <Border x:Name="ViewPreview" Background="White" HorizontalAlignment="Right" VerticalAlignment="Top" BorderBrush="Black" BorderThickness="1" CornerRadius="4" Margin="8" Padding="2">
+                <local:ViewUser Width="192" Height="128" Camera="{StaticResource Camera}"/>
+            </Border>
+        </Grid>
+    </UserControl>
 </Window>
