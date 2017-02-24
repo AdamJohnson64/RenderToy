@@ -16,14 +16,18 @@ namespace RenderToy
         public ViewBase()
         {
             SetBinding(CameraTransformProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.Self), Path = new PropertyPath("Camera.Transform") });
+            SetBinding(SceneProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.Self), Path = new PropertyPath(DataContextProperty) });
         }
         #endregion
         #region - Section : DependencyProperties -
-        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(Scene), typeof(ViewBase), new FrameworkPropertyMetadata(Scene.Default, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(Scene), typeof(ViewBase), new FrameworkPropertyMetadata(Scene.Default, FrameworkPropertyMetadataOptions.AffectsRender, (d, e) => { ((ViewBase)d).OnSceneChanged((Scene)e.NewValue); }));
         public Scene Scene
         {
             get { return (Scene)GetValue(SceneProperty); }
             set { SetValue(SceneProperty, value); }
+        }
+        protected virtual void OnSceneChanged(Scene scene)
+        {
         }
         public static DependencyProperty CameraProperty = DependencyProperty.Register("Camera", typeof(Camera), typeof(ViewBase));
         public Camera Camera

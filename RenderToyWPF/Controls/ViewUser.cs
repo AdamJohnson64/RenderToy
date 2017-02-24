@@ -25,12 +25,6 @@ namespace RenderToy
         static RoutedUICommand CommandResolution10 = new RoutedUICommand("10% Resolution", "CommandResolution10", typeof(ViewUser));
         public ViewUser()
         {
-            /*
-            SceneChanged += () =>
-            {
-                RenderMode.SetScene(Scene);
-            };
-            */
             RenderCall = RenderCallCommands.Calls[0];
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             Focusable = true;
@@ -100,6 +94,12 @@ namespace RenderToy
         int renderResolution = 2;
         #endregion
         #region - Overrides : RenderViewportBase -
+        protected override void OnSceneChanged(Scene scene)
+        {
+            base.OnSceneChanged(scene);
+            if (RenderMode == null) return;
+            RenderMode.SetScene(scene);
+        }
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
             if (RenderMode == null) return;

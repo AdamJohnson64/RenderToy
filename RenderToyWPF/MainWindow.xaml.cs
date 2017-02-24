@@ -28,7 +28,10 @@ namespace RenderToy
         public MainWindow()
         {
             InitializeComponent();
-            CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => { DataContext = Scene.Default; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => {
+                DataContext = Scene.Default;
+                e.Handled = true;
+            }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandSceneLoad, (s, e) => {
                 OpenFileDialog ofd = new OpenFileDialog();
                 ofd.Title = "Choose Model File";
@@ -47,6 +50,7 @@ namespace RenderToy
             InputBindings.Add(new KeyBinding(CommandSceneLoad, Key.O, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
+            DataContext = Scene.Default;
         }
     }
 }
