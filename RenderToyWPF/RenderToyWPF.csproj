@@ -66,7 +66,6 @@
     <Compile Include="Controls\ViewBase.cs" />
     <Compile Include="Controls\ViewWire.cs" />
     <Compile Include="Render\Render_D3D9.cs" />
-    <Compile Include="Utility\ImageHelp.cs" />
     <Compile Include="Controls\ViewUser.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
