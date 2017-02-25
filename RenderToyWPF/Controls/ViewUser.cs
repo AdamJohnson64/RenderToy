@@ -107,6 +107,7 @@ namespace RenderToy
             int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / RenderResolution;
             RenderMode.SetCamera(MVP);
             RenderMode.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
+            if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
             bitmap.Lock();
             RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);

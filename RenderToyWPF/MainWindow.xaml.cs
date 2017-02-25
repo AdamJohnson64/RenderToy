@@ -21,10 +21,10 @@ namespace RenderToy
     /// </summary>
     public partial class MainWindow : Window
     {
-        static RoutedUICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(ViewUser));
-        static RoutedUICommand CommandSceneLoad = new RoutedUICommand("Open Scene (PLY)", "CommandSceneLoad", typeof(ViewUser));
-        static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(ViewUser));
-        static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(ViewUser));
+        public static RoutedUICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(ViewUser));
+        public static RoutedUICommand CommandSceneOpen = new RoutedUICommand("Open Scene (PLY)", "CommandSceneLoad", typeof(ViewUser));
+        public static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(ViewUser));
+        public static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(ViewUser));
         public MainWindow()
         {
             InitializeComponent();
@@ -32,7 +32,7 @@ namespace RenderToy
                 DataContext = Scene.Default;
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandSceneLoad, (s, e) => {
+            CommandBindings.Add(new CommandBinding(CommandSceneOpen, (s, e) => {
                 OpenFileDialog ofd = new OpenFileDialog();
                 ofd.Title = "Choose Model File";
                 if (ofd.ShowDialog() == true)
@@ -47,7 +47,7 @@ namespace RenderToy
             CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { ViewPreview.Visibility = ViewPreview.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderWireframeToggle, (s, e) => { ViewWireframe.Visibility = ViewWireframe.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(CommandSceneLoad, Key.O, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
             DataContext = Scene.Default;

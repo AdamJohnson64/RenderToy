@@ -17,6 +17,7 @@ namespace RenderToy
         {
             int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
             int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
+            if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
             bitmap.Lock();
             RenderCS.WireframeCPUF64(Scene, MVP, bitmap.BackBuffer, RENDER_WIDTH, RENDER_HEIGHT, bitmap.BackBufferStride);
