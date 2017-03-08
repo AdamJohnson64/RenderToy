@@ -1,24 +1,19 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2017
+////////////////////////////////////////////////////////////////////////////////
+
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System;
+using System.Globalization;
+using System.IO;
 
 namespace RenderToy
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public static RoutedUICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(ViewUser));
@@ -38,8 +33,8 @@ namespace RenderToy
                 if (ofd.ShowDialog() == true)
                 {
                     Scene scene = new Scene();
-                    scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
-                    scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixScale(100, 100, 100)), FileFormat.LoadPLYBVHFromPath(ofd.FileName), Materials.LightGray, Materials.PlasticRed));
+                    scene.AddChild(new Node("Plane (Ground)", new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
+                    scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix3D(MathHelp.CreateMatrixScale(100, 100, 100)), FileFormat.LoadPLYBVHFromPath(ofd.FileName), Materials.LightGray, Materials.PlasticRed));
                     DataContext = scene;
                 }
                 e.Handled = true;

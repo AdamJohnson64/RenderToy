@@ -111,11 +111,11 @@ namespace RenderToy
             get
             {
                 Scene scene = new Scene();
-                scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixIdentity()), new Plane(), Materials.DarkGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
-                scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-2, 1, 0)), new Sphere(), Materials.Red, Materials.PlasticRed));
-                scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Materials.Green, Materials.PlasticGreen));
-                scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+2, 1, 0)), new Sphere(), Materials.Blue, Materials.PlasticBlue));
-                scene.AddChild(new Node(new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, -2)), new Sphere(), Materials.Black, Materials.Glass));
+                scene.AddChild(new Node("Plane (Ground)", new TransformMatrix3D(MathHelp.CreateMatrixIdentity()), new Plane(), Materials.DarkGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
+                scene.AddChild(new Node("Sphere (Red)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-2, 1, 0)), new Sphere(), Materials.Red, Materials.PlasticRed));
+                scene.AddChild(new Node("Sphere (Green)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Materials.Green, Materials.PlasticGreen));
+                scene.AddChild(new Node("Sphere (Blue)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+2, 1, 0)), new Sphere(), Materials.Blue, Materials.PlasticBlue));
+                scene.AddChild(new Node("Sphere (Glass)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, -2)), new Sphere(), Materials.Black, Materials.Glass));
                 return scene;
             }
         }
