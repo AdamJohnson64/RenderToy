@@ -54,9 +54,12 @@ namespace RenderToy
                     double y2 = (trackcount + 1) * ActualHeight / tracks.Count;
                     var rect = new Rect(x1, y1, x2 - x1, y2 - y1);
                     drawingContext.DrawRectangle(Brushes.LightGray, pen_black, rect);
-                    drawingContext.PushClip(new RectangleGeometry(new Rect(x1, y1, x2 - x1, y2 - y1)));
-                    drawingContext.DrawText(new FormattedText(block.Begin.Text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 10, Brushes.Black), new Point(x1, y1));
-                    drawingContext.Pop();
+                    if (x2 - x1 > 16)
+                    {
+                        drawingContext.PushClip(new RectangleGeometry(new Rect(x1, y1, x2 - x1, y2 - y1)));
+                        drawingContext.DrawText(new FormattedText(block.Begin.Text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 10, Brushes.Black), new Point(x1, y1));
+                        drawingContext.Pop();
+                    }
                 }
                 ++trackcount;
             }
