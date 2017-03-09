@@ -73,12 +73,12 @@ namespace RenderToy
                 .Select(pathname => {
                     try
                     {
-                        Console.WriteLine("Loading mesh '" + pathname + "'.");
+                        Performance.LogEvent("Loading mesh '" + pathname + "'.");
                         return FileFormat.LoadPLYFromPath(pathname);
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("Exception while loading '" + pathname + "': " + e.Message);
+                        Performance.LogEvent("Exception while loading '" + pathname + "': " + e.Message);
                         return null;
                     }
                 }).ToArray();
@@ -94,39 +94,45 @@ namespace RenderToy
         [TestMethod]
         public void WorkQueueSurge()
         {
+            Performance.LogBegin("WorkQueueSurge Test");
             var work = new WorkQueue();
             // Add lots of dummy work.
-            Console.WriteLine("Creating initial task load.");
-            for (int i = 0; i < 1000000; ++i)
+            Performance.LogEvent("Creating initial task load");
+            for (int i = 0; i < 1000; ++i)
             {
                 int j = i;
                 work.Queue(() =>
                 {
-                    for (int dummy = 0; dummy < 10000; ++dummy) ;
+                    Performance.LogBegin("Initial Task " + j);
+                    Wait(TimeSpan.FromMilliseconds(10));
                     // The last work item will wait a while and then throw a large amount of work into the queue.
                     // This ensures that workers are not prematurely exiting reducing late throughput.
-                    if (j == 999999)
+                    if (j == 999)
                     {
-                        Console.WriteLine("Initial task waiting.");
-                        Wait(TimeSpan.FromMilliseconds(5000));
-                        Console.WriteLine("Creating late task surge.");
-                        for (int surge = 0; surge < 10000; ++surge)
+                        Performance.LogEvent("Initial task waiting");
+                        Wait(TimeSpan.FromMilliseconds(1000));
+                        Performance.LogEvent("Creating late surge");
+                        for (int surge = 0; surge < 100; ++surge)
                         {
+                            int j2 = surge;
                             work.Queue(() =>
                             {
-                                for (int dummy = 0; dummy < 1000000; ++dummy) ;
+                                Performance.LogBegin("Surge Task " + j2);
+                                Wait(TimeSpan.FromMilliseconds(10));
+                                Performance.LogEnd("Surge Task " + j2);
                             });
                         }
                     }
+                    Performance.LogEnd("Initial Task " + j);
                 }
                 );
             }
             // Start running work.
             work.Start();
+            Performance.LogEnd("WorkQueueSurge Test");
         }
         public static void Wait(TimeSpan waitfor)
         {
-            Console.WriteLine("Start waiting for " + waitfor + ".");
             DateTime start = DateTime.Now;
         AGAIN:
             DateTime end = DateTime.Now;
@@ -135,7 +141,6 @@ namespace RenderToy
                 Thread.Sleep(1);
                 goto AGAIN;
             }
-            Console.WriteLine("End waiting for " + waitfor + ".");
         }
     }
 }

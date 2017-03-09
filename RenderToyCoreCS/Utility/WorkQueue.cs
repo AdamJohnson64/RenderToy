@@ -28,10 +28,13 @@ namespace RenderToy
         {
             // Create a set of workers.
             var workers = new List<Task>();
-            for (int i = 0; i < 32; ++i)
+            Performance.LogEvent("Starting work on " + Environment.ProcessorCount + " logical CPUs");
+            for (int i = 0; i < Environment.ProcessorCount; ++i)
             {
                 int j = i;
                 var task = Task.Run(async () => {
+                    Performance.LogBegin("WorkQueue Executor " + j);
+                    Performance.LogEvent("Remaining work: " + workqueued + " queued, " + workretire + " retired");
                 TRYAGAIN:
                     // Try to dequeue some work or spin for more work.
                     Action work;
@@ -51,8 +54,7 @@ namespace RenderToy
                     Interlocked.Increment(ref workretire);
                     goto TRYAGAIN;
                 DONE:
-                    int finished = 0;
-                    //Console.WriteLine("Worker " + j + " exiting (" + workqueued + " queued, " + workretire + " retired).");
+                    Performance.LogEnd("WorkQueue Executor " + j);
                 });
                 workers.Add(task);
             }

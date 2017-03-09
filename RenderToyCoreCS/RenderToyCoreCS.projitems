@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utility\DrawHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\Interop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\MathHelp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\Performance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\WorkQueue.cs" />
   </ItemGroup>
 </Project>
