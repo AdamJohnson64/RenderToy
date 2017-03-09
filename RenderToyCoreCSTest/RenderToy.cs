@@ -98,16 +98,16 @@ namespace RenderToy
             var work = new WorkQueue();
             // Add lots of dummy work.
             Performance.LogEvent("Creating initial task load");
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < 100; ++i)
             {
                 int j = i;
                 work.Queue(() =>
                 {
                     Performance.LogBegin("Initial Task " + j);
-                    Wait(TimeSpan.FromMilliseconds(10));
+                    Wait(TimeSpan.FromMilliseconds(100));
                     // The last work item will wait a while and then throw a large amount of work into the queue.
                     // This ensures that workers are not prematurely exiting reducing late throughput.
-                    if (j == 999)
+                    if (j == 99)
                     {
                         Performance.LogEvent("Initial task waiting");
                         Wait(TimeSpan.FromMilliseconds(1000));
@@ -118,7 +118,7 @@ namespace RenderToy
                             work.Queue(() =>
                             {
                                 Performance.LogBegin("Surge Task " + j2);
-                                Wait(TimeSpan.FromMilliseconds(10));
+                                Wait(TimeSpan.FromMilliseconds(100));
                                 Performance.LogEnd("Surge Task " + j2);
                             });
                         }

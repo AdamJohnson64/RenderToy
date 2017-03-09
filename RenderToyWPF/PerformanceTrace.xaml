@@ -14,11 +14,11 @@
         </Grid.ColumnDefinitions>
         <!-- Text entry for performance trace data. -->
         <GroupBox Header="Performance Trace Visual">
-            <TextBlock Grid.Column="0" Text="Stuff Here"/>
+            <local:PerformanceTrackControl Grid.Column="0" DataContext="{Binding ElementName=TraceText, Path=Text}"/>
         </GroupBox>
         <GridSplitter Grid.Column="1" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         <GroupBox Grid.Column="2" Header="Trace Data">
-            <TextBox TextChanged="TraceDataChanged" AcceptsReturn="True" AcceptsTab="True" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" FontFamily="Console" FontSize="8"/>
+            <TextBox Name="TraceText" AcceptsReturn="True" AcceptsTab="True" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" FontFamily="Console" FontSize="8"/>
         </GroupBox>
     </Grid>
 </UserControl>
