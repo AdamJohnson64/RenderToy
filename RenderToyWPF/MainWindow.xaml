@@ -26,6 +26,9 @@
                     <MenuItem Header="Preview" Command="{x:Static local:MainWindow.CommandRenderPreviewsToggle}"/>
                     <MenuItem Header="Wireframe" Command="{x:Static local:MainWindow.CommandRenderWireframeToggle}"/>
                 </MenuItem>
+                <MenuItem Header="Debug" BorderBrush="Black" BorderThickness="1" Margin="2">
+                    <MenuItem Header="Performance Trace" Command="{x:Static local:MainWindow.CommandDebugToolPerformanceTrace}"/>
+                </MenuItem>
             </Menu>
             <Grid>
                 <!-- Main Viewport Layer -->
