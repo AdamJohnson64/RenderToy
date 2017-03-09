@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace RenderToy
@@ -18,28 +19,16 @@ namespace RenderToy
             // Stop at 4 triangles
             if (triangles.Length < 4) goto EMITUNMODIFIED;
             // Slice this region into 8 subcubes (roughly octree).
-            var children = new List<MeshBVH.Node>();
-            foreach (var subbox in EnumerateSplit222(bound))
-            {
-                // Partition the triangles.
-                var contained_triangles = triangles
-                    .Where(t => ShapeIntersects(subbox, new Triangle3D(t.P0, t.P1, t.P2)))
-                    .ToArray();
-                // If there are no triangles in this child node then skip it entirely.
-                if (contained_triangles.Length == 0) continue;
-                // If all the triangles are still in the child then stop splitting this node.
-                // This might mean we have a rats nest of triangles with no potential split planes.
-                if (contained_triangles.Length == triangles.Length) goto EMITUNMODIFIED;
-                // Generate the new child node.
-                // Also, recompute the extents of this bounding volume.
-                // It's possible if the mesh has large amounts of space crossing the clip plane such that the bounds are now too big.
-                children.Add(CreateLooseOctree(contained_triangles, level - 1));
-            }
+            var children = EnumerateSplit222(bound)
+                .Select(box => CreateLooseOctreeChild(triangles, level, box))
+                .Where(node => node != null)
+                .ToArray();
             // Form the new node.
-            var newnode = new MeshBVH.Node(bound, null, children.ToArray());
+            var newnode = new MeshBVH.Node(bound, null, children);
             // If this split blows up the number of triangles significantly then reject it.
             var numtriangles = MeshBVH
                 .EnumerateNodes(newnode)
+                .AsParallel()
                 .Where(n => n.Triangles != null)
                 .SelectMany(n => n.Triangles)
                 .Count();
@@ -48,6 +37,30 @@ namespace RenderToy
             return newnode;
         EMITUNMODIFIED:
             return new MeshBVH.Node(bound, triangles, null);
+        }
+        static MeshBVH.Node CreateLooseOctreeChild(Triangle3D[] triangles, int level, Bound3D box)
+        {
+            // Partition the triangles.
+            Triangle3D[] contained_triangles = CreateTriangleList(triangles, box);
+            // If there are no triangles in this child node then skip it entirely.
+            if (contained_triangles.Length == 0) return null;
+            // If all the triangles are in this node then skip it.
+            if (contained_triangles.Length == triangles.Length) return null;
+            // Generate the new child node.
+            // Also, recompute the extents of this bounding volume.
+            // It's possible if the mesh has large amounts of space crossing the clip plane such that the bounds are now too big.
+            return CreateLooseOctree(contained_triangles, level - 1);
+        }
+        static Triangle3D[] CreateTriangleList(Triangle3D[] triangles, Bound3D box)
+        {
+            if (triangles.Length < 32)
+            {
+                return triangles.Where(t => ShapeIntersects(box, new Triangle3D(t.P0, t.P1, t.P2))).ToArray();
+            }
+            else
+            {
+                return triangles.AsParallel().Where(t => ShapeIntersects(box, new Triangle3D(t.P0, t.P1, t.P2))).ToArray();
+            }
         }
         static IEnumerable<Bound3D> EnumerateSplit222(Bound3D box)
         {
