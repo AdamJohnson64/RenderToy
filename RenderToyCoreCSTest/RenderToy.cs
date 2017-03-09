@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace RenderToy
 {
@@ -70,9 +71,71 @@ namespace RenderToy
             var results = all_ply_files
                 .Select(filename => Path.Combine(mydocuments, filename))
                 .Select(pathname => {
-                    Console.WriteLine("Loading mesh '" + pathname + "'.");
-                    return FileFormat.LoadPLYFromPath(pathname);
+                    try
+                    {
+                        Console.WriteLine("Loading mesh '" + pathname + "'.");
+                        return FileFormat.LoadPLYFromPath(pathname);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Exception while loading '" + pathname + "': " + e.Message);
+                        return null;
+                    }
                 }).ToArray();
+            if (results.Any(x => x == null))
+            {
+                throw new Exception("There were errors processing some files; refer to output for details.");
+            }
+        }
+    }
+    [TestClass]
+    public class WorkQueueTests
+    {
+        [TestMethod]
+        public void WorkQueueSurge()
+        {
+            var work = new WorkQueue();
+            // Add lots of dummy work.
+            Console.WriteLine("Creating initial task load.");
+            for (int i = 0; i < 1000000; ++i)
+            {
+                int j = i;
+                work.Queue(() =>
+                {
+                    for (int dummy = 0; dummy < 10000; ++dummy) ;
+                    // The last work item will wait a while and then throw a large amount of work into the queue.
+                    // This ensures that workers are not prematurely exiting reducing late throughput.
+                    if (j == 999999)
+                    {
+                        Console.WriteLine("Initial task waiting.");
+                        Wait(TimeSpan.FromMilliseconds(5000));
+                        Console.WriteLine("Creating late task surge.");
+                        for (int surge = 0; surge < 10000; ++surge)
+                        {
+                            work.Queue(() =>
+                            {
+                                for (int dummy = 0; dummy < 1000000; ++dummy) ;
+                            });
+                        }
+                    }
+                }
+                );
+            }
+            // Start running work.
+            work.Start();
+        }
+        public static void Wait(TimeSpan waitfor)
+        {
+            Console.WriteLine("Start waiting for " + waitfor + ".");
+            DateTime start = DateTime.Now;
+        AGAIN:
+            DateTime end = DateTime.Now;
+            if (end.Subtract(start).CompareTo(waitfor) < 0)
+            {
+                Thread.Sleep(1);
+                goto AGAIN;
+            }
+            Console.WriteLine("End waiting for " + waitfor + ".");
         }
     }
 }
