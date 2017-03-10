@@ -72,7 +72,6 @@ namespace RenderToy
                             host.Current = Next;
                             host.lock_desc.ReleaseMutex();
                             if (onbitmapready != null) onbitmapready();
-                            DONE:
                             // Clear the dirty indicator.
                             if (Next.Pass > 100)
                             {
@@ -82,7 +81,7 @@ namespace RenderToy
                         doupdate();
                     }
                 }
-                catch (TaskCanceledException e)
+                catch (TaskCanceledException)
                 {
                 }
             }, TaskCreationOptions.LongRunning);
