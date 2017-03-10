@@ -14,7 +14,15 @@ namespace RenderToy
     {
         public ViewWire()
         {
-            render = new SinglePassAsyncAdaptor(RenderCall.Generate(typeof(RenderCS).GetMethod("WireframeCPUF64")), () => Dispatcher.Invoke(InvalidateVisual));
+            IsVisibleChanged += (s, e) =>
+            {
+                if ((bool)e.NewValue) {
+                    render = new SinglePassAsyncAdaptor(RenderCall.Generate(typeof(RenderCS).GetMethod("WireframeCPUF64")), () => Dispatcher.Invoke(InvalidateVisual));
+                    render.SetScene(Scene);
+                } else {
+                    render = null;
+                }
+            };
         }
         SinglePassAsyncAdaptor render;
         #region - Overrides : RenderViewportBase -
@@ -26,6 +34,7 @@ namespace RenderToy
         }
         protected override void OnRenderToy(DrawingContext drawingContext)
         {
+            if (render == null) return;
             int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
             int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
             render.SetCamera(MVP);

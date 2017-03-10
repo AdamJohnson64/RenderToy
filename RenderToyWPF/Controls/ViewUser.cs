@@ -26,6 +26,10 @@ namespace RenderToy
         public ViewUser()
         {
             RenderCall = RenderCallCommands.Calls[0];
+            IsVisibleChanged += (s, e) =>
+            {
+                SetVisible((bool)e.NewValue);
+            };
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             Focusable = true;
             CommandBindings.Add(new CommandBinding(CommandResolution100, (s, e) => { RenderResolution = 1; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -63,15 +67,8 @@ namespace RenderToy
         {
             set
             {
-                if (!value.IsMultipass)
-                {
-                    renderMode = new SinglePassAsyncAdaptor(value, () => Dispatcher.Invoke(InvalidateVisual));
-                }
-                else
-                {
-                    renderMode = new MultiPassAsyncAdaptor(value, () => Dispatcher.Invoke(InvalidateVisual));
-                }
-                renderMode.SetScene(Scene);
+                renderCall = value;
+                SetVisible(IsVisible);
                 InvalidateVisual();
             }
         }
@@ -84,6 +81,24 @@ namespace RenderToy
             }
         }
         IMultiPass renderMode;
+        void SetVisible(bool visible)
+        {
+            if (visible) {
+                if (!renderCall.IsMultipass)
+                {
+                    renderMode = new SinglePassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
+                }
+                else
+                {
+                    renderMode = new MultiPassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
+                }
+                renderMode.SetScene(Scene);
+                InvalidateVisual();
+            }
+            else {
+                renderMode = null;
+            }
+        }
         #endregion
         #region - Section : RenderResolution Option -
         int RenderResolution
