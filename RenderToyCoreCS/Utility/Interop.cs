@@ -12,13 +12,21 @@ namespace RenderToy
 {
     public class SceneFormatter
     {
+        struct FlatSceneF32Token
+        {
+        }
+        struct FlatSceneF64Token
+        {
+        }
         public static byte[] CreateFlatMemoryF32(Scene scene)
         {
-            return new SceneFormatter(scene, false).m.ToArray();
+            Func<byte[]> build = () => new SceneFormatter(scene, false).m.ToArray();
+            return scene.Memento.Get(typeof(FlatSceneF32Token), build);
         }
         public static byte[] CreateFlatMemoryF64(Scene scene)
         {
-            return new SceneFormatter(scene, true).m.ToArray();
+            Func<byte[]> build = () => new SceneFormatter(scene, true).m.ToArray();
+            return scene.Memento.Get(typeof(FlatSceneF64Token), build);
         }
         public static byte[] CreateFlatMemoryF32(Matrix3D obj)
         {

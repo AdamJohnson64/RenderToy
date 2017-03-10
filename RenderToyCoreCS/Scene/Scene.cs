@@ -3,6 +3,8 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace RenderToy
@@ -56,6 +58,21 @@ namespace RenderToy
             children.Add(node);
         }
         List<Node> children = new List<Node>();
+        public readonly MementoServer Memento = new MementoServer();
+    } 
+    public class MementoServer
+    {
+        public T Get<T>(object token, Func<T> build)
+        {
+            return (T)GetBase(token, () => (T)build());
+        }
+        object GetBase(object token, Func<object> build)
+        {
+            object result;
+            if (Data.TryGetValue(token, out result)) return result;
+            return Data[token] = result = build();
+        }
+        public ConcurrentDictionary<object, object> Data = new ConcurrentDictionary<object, object>();
     }
     public class TransformedObject
     {
