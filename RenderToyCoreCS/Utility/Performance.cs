@@ -18,20 +18,21 @@ namespace RenderToy
     {
         public static void LogEvent(string text)
         {
-#if !WINDOWS_UWP
-            Console.WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " EVENT \"" + text + "\"");
-#endif
+            WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " EVENT \"" + text + "\"");
         }
         public static void LogBegin(string text)
         {
-#if !WINDOWS_UWP
-            Console.WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " BEGIN \"" + text + "\"");
-#endif
+            WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " BEGIN \"" + text + "\"");
         }
         public static void LogEnd(string text)
         {
+            WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " END \"" + text + "\"");
+        }
+        static void WriteLine(string text)
+        {
 #if !WINDOWS_UWP
-            Console.WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " END \"" + text + "\"");
+            Console.WriteLine(text);
+            Debug.WriteLine(text);
 #endif
         }
     }
