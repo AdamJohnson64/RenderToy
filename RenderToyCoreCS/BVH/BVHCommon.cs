@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,24 +14,28 @@ namespace RenderToy
         #region - Section : Bounds -
         static Bound3D ComputeBounds(IEnumerable<Triangle3D> triangles)
         {
-            var vertices = triangles.SelectMany(t => EnumeratePoints(t));
-            return new Bound3D(
-                new Vector3D(vertices.Min(p => p.X), vertices.Min(p => p.Y), vertices.Min(p => p.Z)),
-                new Vector3D(vertices.Max(p => p.X), vertices.Max(p => p.Y), vertices.Max(p => p.Z)));
+            return ComputeBounds(triangles.SelectMany(t => EnumeratePoints(t)));
         }
         static Bound3D ComputeBounds(IEnumerable<Vector3D> vertices)
         {
-            return new Bound3D(
-                new Vector3D(vertices.Min(p => p.X), vertices.Min(p => p.Y), vertices.Min(p => p.Z)),
-                new Vector3D(vertices.Max(p => p.X), vertices.Max(p => p.Y), vertices.Max(p => p.Z)));
+            Vector3D min = new Vector3D(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
+            Vector3D max = new Vector3D(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
+            foreach (var v in vertices)
+            {
+                min.X = Math.Min(min.X, v.X);
+                min.Y = Math.Min(min.Y, v.Y);
+                min.Z = Math.Min(min.Z, v.Z);
+                max.X = Math.Max(max.X, v.X);
+                max.Y = Math.Max(max.Y, v.Y);
+                max.Z = Math.Max(max.Z, v.Z);
+            }
+            return new Bound3D(min, max);
         }
         static Bound3D ComputeBounds(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> indices)
         {
             return ComputeBounds(
                 indices
-                .SelectMany(i => new[] { i.Index0, i.Index1, i.Index2 })
-                .Select(i => vertices[i])
-                .ToArray());
+                .SelectMany(i => new[] { vertices[i.Index0], vertices[i.Index1], vertices[i.Index2] }));
         }
         #endregion
         #region - Section : Intersection Test (Separating Axis Theorem) -
