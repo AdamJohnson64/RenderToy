@@ -38,12 +38,19 @@ namespace RenderToy
     }
     public static class PerformanceHelp
     {
+        public static IEnumerable<PerformanceEvent> ReadEvents(string text)
+        {
+            if (text == null) return new PerformanceEvent[0];
+            return ReadEvents(new StringReader(text));
+        }
         public static IEnumerable<PerformanceEvent> ReadEvents(TextReader textreader)
         {
             var line = textreader.ReadLine();
+            var regex = new Regex(@"@(?'timestamp'[0-9]*)\s*TASKID\s*(?'taskid'[0-9]*)\s*THREADID\s*(?'threadid'[0-9]*)\s*(?'eventtype'BEGIN|END|EVENT)\s*""(?'text'.*)""$");
             while (line != null)
             {
-                var match = Regex.Match(line, @"@(?'timestamp'[0-9]*)\s*TASKID\s*(?'taskid'[0-9]*)\s*THREADID\s*(?'threadid'[0-9]*)\s*(?'eventtype'BEGIN|END|EVENT)\s*""(?'text'.*)""$");
+                //var match = Regex.Match(line, @"@(?'timestamp'[0-9]*)\s*TASKID\s*(?'taskid'[0-9]*)\s*THREADID\s*(?'threadid'[0-9]*)\s*(?'eventtype'BEGIN|END|EVENT)\s*""(?'text'.*)""$");
+                var match = regex.Match(line);
                 if (match != null && match.Success)
                 {
                     long timestamp = long.Parse(match.Groups["timestamp"].Value);
