@@ -49,7 +49,6 @@ namespace RenderToy
             var regex = new Regex(@"@(?'timestamp'[0-9]*)\s*TASKID\s*(?'taskid'[0-9]*)\s*THREADID\s*(?'threadid'[0-9]*)\s*(?'eventtype'BEGIN|END|EVENT)\s*""(?'text'.*)""$");
             while (line != null)
             {
-                //var match = Regex.Match(line, @"@(?'timestamp'[0-9]*)\s*TASKID\s*(?'taskid'[0-9]*)\s*THREADID\s*(?'threadid'[0-9]*)\s*(?'eventtype'BEGIN|END|EVENT)\s*""(?'text'.*)""$");
                 var match = regex.Match(line);
                 if (match != null && match.Success)
                 {
