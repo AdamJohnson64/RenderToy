@@ -32,7 +32,9 @@ namespace RenderToy
         {
 #if !WINDOWS_UWP
             Console.WriteLine(text);
+#if DEGUG
             Debug.WriteLine(text);
+#endif
 #endif
         }
     }
