@@ -68,7 +68,7 @@ namespace RenderToy
                 {
                     double x1 = (block.Begin.Timestamp - timemin) * ActualWidth / (timemax - timemin);
                     double x2 = (block.End.Timestamp - timemin) * ActualWidth / (timemax - timemin);
-                    if (x2 - x1 < 64) continue;
+                    if (x2 - x1 < 1) continue;
                     double y1 = (trackcount + 0) * ActualHeight / tracks.Count;
                     double y2 = (trackcount + 1) * ActualHeight / tracks.Count;
                     var rect = new Rect(x1, y1, x2 - x1, y2 - y1);
