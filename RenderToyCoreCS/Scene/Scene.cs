@@ -39,7 +39,7 @@ namespace RenderToy
                 Scene scene = new Scene();
                 scene.children.Add(new Node("Plane Ground", new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
                 scene.children.Add(new Node("Sphere (Red)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-5, 1, 0)), new Sphere(), Materials.Red, Materials.PlasticRed));
-                scene.children.Add(new Node("Sphere (Green)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-3, 1, 0)), new Sphere(), Materials.Green, Materials.PlasticGreen));
+                scene.children.Add(new Node("Sphere (Green)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-3, 1, 0)), MeshHelp.CreateMesh(new Sphere(), 20, 20), Materials.Green, Materials.PlasticGreen));
                 scene.children.Add(new Node("Sphere (Blue)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-1, 1, 0)), new Sphere(), Materials.Blue, Materials.PlasticBlue));
                 scene.children.Add(new Node("Sphere (Yellow)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+1, 1, 0)), new Sphere(), Materials.Yellow, Materials.PlasticYellow));
                 scene.children.Add(new Node("Cube (Magenta)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+3, 1, 0)), new Cube(), Materials.Magenta, Materials.PlasticMagenta));
