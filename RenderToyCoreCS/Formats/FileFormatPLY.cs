@@ -18,11 +18,7 @@ namespace RenderToy
         }
         public static IPrimitive LoadPLYBVHFromPath(string path)
         {
-            return LoadPLYFromPath(path, (v,i) => new MeshBVH(CollapseIndices(v.ToArray(), i.ToArray())));
-        }
-        static IEnumerable<Triangle3D> CollapseIndices(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> triangles)
-        {
-            return triangles.Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
+            return LoadPLYFromPath(path, (v,i) => new MeshBVH(MeshHelp.CollapseIndices(v.ToArray(), i.ToArray())));
         }
         delegate IPrimitive ConditionMesh(IReadOnlyList<Vector3D> vertices, IReadOnlyList<TriIndex> triangles);
         static IPrimitive LoadPLYFromPath(string path, ConditionMesh conditioner)

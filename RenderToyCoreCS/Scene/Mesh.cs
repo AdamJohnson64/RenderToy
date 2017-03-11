@@ -89,5 +89,9 @@ namespace RenderToy
             }
             return new Mesh(vertices, indices);
         }
+        public static IEnumerable<Triangle3D> CollapseIndices(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> triangles)
+        {
+            return triangles.Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
+        }
     }
 }

@@ -12,6 +12,36 @@ using System.Threading;
 namespace RenderToy
 {
     [TestClass]
+    public class BVHTests
+    {
+        [TestMethod]
+        public void BVHTimingTest()
+        {
+            var mesh = MeshHelp.CreateMesh(new Sphere(), 100, 100);
+            var triangles = MeshHelp.CollapseIndices(mesh.Vertices, mesh.Triangles).ToArray();
+            Performance.LogBegin("BVH Baseline");
+            try
+            {
+                BVH.CreateLooseOctree(triangles, 6);
+            }
+            catch (Exception e)
+            {
+                Performance.LogEvent("Exception while calculating BVH: " + e.Message);
+            }
+            Performance.LogEnd("BVH Baseline");
+            Performance.LogBegin("BVH Single Threaded");
+            try
+            {
+                BVH.CreateLooseOctreeST(triangles, 6);
+            }
+            catch (Exception e)
+            {
+                Performance.LogEvent("Exception while calculating BVH: " + e.Message);
+            }
+            Performance.LogEnd("BVH Single Threaded");
+        }
+    }
+    [TestClass]
     public class ClipHelpTests
     {
         [TestMethod]
@@ -50,7 +80,6 @@ namespace RenderToy
                 if (clipped.Count() != 0) throw new Exception("Expected no triangles.");
             }
         }
-
         static bool Triangle3DEqual(Triangle3D lhs, Triangle3D rhs)
         {
             return Vector3DEqual(lhs.P0, rhs.P0) && Vector3DEqual(lhs.P1, rhs.P1) && Vector3DEqual(lhs.P2, rhs.P2);
