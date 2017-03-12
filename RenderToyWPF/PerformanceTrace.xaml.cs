@@ -181,10 +181,40 @@ namespace RenderToy
             double TRACE_OFFSET = RULER_HEIGHT;
             double TRACE_HEIGHT = ActualHeight - RULER_HEIGHT;
             Pen pen_black = new Pen(Brushes.Black, -1);
+            Pen pen_gray = new Pen(Brushes.LightGray, -1);
             // Draw a transparent background so hit-tests will always land in this control.
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             long timemin = TraceTimeMin;
             long timemax = TraceTimeMax;
+            ////////////////////////////////////////////////////////////////////////////////
+            // Draw a ruler.
+            {
+                drawingContext.DrawRectangle(Brushes.LightYellow, pen_black, new Rect(0, RULER_OFFSET, ActualWidth, RULER_HEIGHT));
+                // Get the ruler time at the left and right of the window.
+                double rulertimemin = (double)(timemin - TraceTimeBase) / TraceTimeFrequency;
+                double rulertimemax = (double)(timemax - TraceTimeBase) / TraceTimeFrequency;
+                // Determine an appropriate log10 timebase for a good number of ticks.
+                double rulertick_log10 = Math.Log10(rulertimemax - rulertimemin) - 1;
+                double rulertick_log10round = Math.Floor(rulertick_log10);
+                double rulertick_decimal = Math.Pow(10, rulertick_log10round);
+                // Round down rulermin and round up rulermax to the nearest division of timetick.
+                double rulerroundmin = Math.Floor(rulertimemin / rulertick_decimal) * rulertick_decimal;
+                double rulerroundmax = Math.Ceiling(rulertimemax / rulertick_decimal) * rulertick_decimal;
+                // Generate ticks in this range and plot them.
+                int maxticks = (int)Math.Ceiling((rulerroundmax - rulerroundmin) / rulertick_decimal);
+                for (int i = 0; i < maxticks; ++i)
+                {
+                    // Calculate a time that should be in scale.
+                    double rulertime = rulerroundmin + i * rulertick_decimal;
+                    // Map this back to tick time.
+                    double rulermap = (rulertime * TraceTimeFrequency) + TraceTimeBase;
+                    // Map this tick time to screen space.
+                    double rulerx = (rulermap - TraceTimeMin) / (TraceTimeMax - TraceTimeMin) * ActualWidth;
+                    drawingContext.DrawLine(pen_black, new Point(rulerx, RULER_OFFSET + 2), new Point(rulerx, RULER_OFFSET + RULER_HEIGHT - 2));
+                    drawingContext.DrawLine(pen_gray, new Point(rulerx, TRACE_OFFSET), new Point(rulerx, TRACE_OFFSET + TRACE_HEIGHT));
+                    drawingContext.DrawText(new FormattedText(rulertime.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 8, Brushes.Black), new Point(rulerx + 2, RULER_OFFSET + 2));
+                }
+            }
             ////////////////////////////////////////////////////////////////////////////////
             // Draw the trace data.
             var tracebins = TraceBins;
@@ -211,32 +241,6 @@ namespace RenderToy
                     }
                     ++trackcount;
                 }
-            }
-            ////////////////////////////////////////////////////////////////////////////////
-            // Draw a ruler.
-            drawingContext.DrawRectangle(Brushes.LightYellow, pen_black, new Rect(0, RULER_OFFSET, ActualWidth, RULER_HEIGHT));
-            // Get the ruler time at the left and right of the window.
-            double rulertimemin = (double)(timemin - TraceTimeBase) / TraceTimeFrequency;
-            double rulertimemax = (double)(timemax - TraceTimeBase) / TraceTimeFrequency;
-            // Determine an appropriate log10 timebase for a good number of ticks.
-            double rulertick_log10 = Math.Log10(rulertimemax - rulertimemin) - 1;
-            double rulertick_log10round = Math.Floor(rulertick_log10);
-            double rulertick_decimal = Math.Pow(10, rulertick_log10round);
-            // Round down rulermin and round up rulermax to the nearest division of timetick.
-            double rulerroundmin = Math.Floor(rulertimemin / rulertick_decimal) * rulertick_decimal;
-            double rulerroundmax = Math.Ceiling(rulertimemax / rulertick_decimal) * rulertick_decimal;
-            // Generate ticks in this range and plot them.
-            int maxticks = (int)Math.Ceiling((rulerroundmax - rulerroundmin) / rulertick_decimal);
-            for (int i = 0; i < maxticks; ++i)
-            {
-                // Calculate a time that should be in scale.
-                double rulertime = rulerroundmin + i * rulertick_decimal;
-                // Map this back to tick time.
-                double rulermap = (rulertime * TraceTimeFrequency) + TraceTimeBase;
-                // Map this tick time to screen space.
-                double rulerx = (rulermap - TraceTimeMin) / (TraceTimeMax - TraceTimeMin) * ActualWidth;
-                drawingContext.DrawLine(pen_black, new Point(rulerx, RULER_OFFSET + 2), new Point(rulerx, RULER_OFFSET + RULER_HEIGHT - 2));
-                drawingContext.DrawText(new FormattedText(rulertime.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 8, Brushes.Black), new Point(rulerx, RULER_OFFSET + 2));
             }
         }
         bool dragscrollenable = false;
