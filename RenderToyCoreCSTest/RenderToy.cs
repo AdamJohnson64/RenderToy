@@ -32,6 +32,17 @@ namespace RenderToy
                 Performance.LogEvent("Exception while calculating BVH: " + e.Message);
             }
             Performance.LogEnd("BVH Octree (Baseline)");
+            Performance.LogBegin("BVH Octree (MaskSplit)");
+            try
+            {
+                var node = BVH.CreateLooseOctree2(triangles);
+                VerifyMesh(triangles, node);
+            }
+            catch (Exception e)
+            {
+                Performance.LogEvent("Exception while calculating BVH: " + e.Message);
+            }
+            Performance.LogEnd("BVH Octree (MaskSplit)");
             Performance.LogBegin("BVH Octree (Single Threaded)");
             try
             {

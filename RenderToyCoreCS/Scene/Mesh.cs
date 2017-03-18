@@ -28,7 +28,7 @@ namespace RenderToy
         {
             Stopwatch perf = new Stopwatch();
             perf.Restart();
-            Root = BVH.CreateLooseOctree(triangles.ToArray());
+            Root = BVH.CreateLooseOctree2(triangles.ToArray());
             perf.Stop();
             Performance.LogEvent("MeshBVH build took " + perf.ElapsedMilliseconds + "ms.");
             var allnodes = EnumerateNodes(Root);
