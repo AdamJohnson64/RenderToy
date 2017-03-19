@@ -310,7 +310,7 @@ DEVICE_PREFIX RAYQUERY IntersectSphere(const Vector3<FLOAT>& origin, const Vecto
 }
 
 template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& p0, const Vector3<FLOAT>& p1, const Vector3<FLOAT>& p2) DEVICE_SUFFIX {
+DEVICE_PREFIX RAYQUERY IntersectTriangleREFIMPL(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& p0, const Vector3<FLOAT>& p1, const Vector3<FLOAT>& p2) DEVICE_SUFFIX {
 	RAYQUERY result = { 0 };
 	// Determine if we intersect the plane of the triangle in front of the eye.
 	Vector3<FLOAT> plane_normal = Cross(p1 - p0, p2 - p0); // Defer normalization
@@ -346,6 +346,39 @@ DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vec
 	result.Lambda = lambda;
 	SetNormal(result, plane_normal);
 	const Vector3<FLOAT> edge0n = Normalize(edge0);
+	SetTangent(result, edge0n);
+	SetBitangent(result, Cross(plane_normal, edge0n));
+	return result;
+}
+
+// This is the planeless intersection described in "Fast, Minimum Storage Ray/Triangle Intersection".
+// Credit to Tomas Möller and Ben Trumbore.
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& p0, const Vector3<FLOAT>& p1, const Vector3<FLOAT>& p2) DEVICE_SUFFIX {
+	RAYQUERY result = { 0 };
+	result.Lambda = FloatTraits<FLOAT>::Max;
+	Vector3<FLOAT> edge1 = p1 - p0;
+	Vector3<FLOAT> edge2 = p2 - p0;
+	Vector3<FLOAT> pvec = Cross(direction, edge2);
+	FLOAT det = Dot(edge1, pvec);
+	// the non-culling branch */
+	FLOAT inv_det = 1 / det;
+	/* calculate distance from vert0 to ray origin */
+	Vector3<FLOAT> tvec = origin - p0;
+	/* calculate U parameter and test bounds */
+	FLOAT u = Dot(tvec, pvec) * inv_det;
+	if (u < 0 || u > 1) return result;
+	/* prepare to test V parameter */
+	Vector3<FLOAT> qvec = Cross(tvec, edge1);
+	/* calculate V parameter and test bounds */
+	FLOAT v = Dot(direction, qvec) * inv_det;
+	if (v < 0 || u + v > 1) return result;
+	/* calculate t, ray intersects triangle */
+	result.Lambda = Dot(edge2, qvec) * inv_det;
+	// END, back to the reference implementation.
+	Vector3<FLOAT> plane_normal = Normalize(Cross(p1 - p0, p2 - p0));
+	SetNormal(result, plane_normal);
+	const Vector3<FLOAT> edge0n = Normalize(p1 - p0);
 	SetTangent(result, edge0n);
 	SetBitangent(result, Cross(plane_normal, edge0n));
 	return result;
