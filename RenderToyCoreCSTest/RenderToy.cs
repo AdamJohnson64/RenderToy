@@ -5,6 +5,8 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -19,26 +21,94 @@ namespace RenderToy
         {
             var mesh = MeshHelp.CreateMesh(new Sphere(), 100, 100);
             var triangles = MeshHelp.CollapseIndices(mesh.Vertices, mesh.Triangles).ToArray();
-            Performance.LogBegin("BVH Baseline");
+            Performance.LogBegin("BVH Octree (Baseline)");
             try
             {
-                BVH.CreateLooseOctree(triangles, 6);
+                var node = BVH.CreateLooseOctree(triangles);
+                VerifyMesh(triangles, node);
             }
             catch (Exception e)
             {
                 Performance.LogEvent("Exception while calculating BVH: " + e.Message);
             }
-            Performance.LogEnd("BVH Baseline");
-            Performance.LogBegin("BVH Single Threaded");
+            Performance.LogEnd("BVH Octree (Baseline)");
+            Performance.LogBegin("BVH Octree (Single Threaded)");
             try
             {
-                BVH.CreateLooseOctreeST(triangles, 6);
+                var node = BVH.CreateLooseOctreeST(triangles);
+                VerifyMesh(triangles, node);
             }
             catch (Exception e)
             {
                 Performance.LogEvent("Exception while calculating BVH: " + e.Message);
             }
-            Performance.LogEnd("BVH Single Threaded");
+            Performance.LogEnd("BVH Octree (Single Threaded)");
+            Performance.LogBegin("BVH KD (Baseline)");
+            try
+            {
+                var node = BVH.CreateKD(triangles);
+                VerifyMesh(triangles, node);
+            }
+            catch (Exception e)
+            {
+                Performance.LogEvent("Exception while calculating BVH: " + e.Message);
+            }
+            Performance.LogEnd("BVH KD (Baseline)");
+        }
+        static void VerifyMesh(Triangle3D[] triangles, MeshBVH.Node root)
+        {
+            // Run some sanity checks on the mesh.
+            // All subnode bounds should be completely contained by their parent.
+            var allnode = EnumerateNodes(root).ToArray();
+            if (!allnode
+                .Where(n => n.Parent != null)
+                .All(n => BVH.ShapeContains(n.Parent.Bound, n.Node.Bound)))
+            {
+                throw new InvalidDataException("A child node exists which is not contained by its parent.");
+            }
+            // All node bounds should at least contain all their triangles.
+            if (!allnode
+                .Where(n => n.Node.Triangles != null)
+                .All(n => BVH.ShapeContains(n.Node.Bound, BVH.ComputeBounds(n.Node.Triangles))))
+            {
+                throw new InvalidDataException("A node bound exists which does not contain its triangle extents.");
+            }
+            // Make sure we don't exceed the maximum depth for the BVH.
+            int maximum_bvh_depth = allnode.Max(x => x.Level);
+            if (maximum_bvh_depth > BVH.MAXIMUM_BVH_DEPTH)
+            {
+                throw new InvalidDataException("This BVH is " + maximum_bvh_depth + " levels deep; this exceeds the maximum depth and will fail on GPU.");
+            }
+        }
+        static IEnumerable<NodeParent> EnumerateNodes(MeshBVH.Node root)
+        {
+            return EnumerateNodes(root, null, 0);
+        }
+        static IEnumerable<NodeParent> EnumerateNodes(MeshBVH.Node node, MeshBVH.Node parent, int level)
+        {
+            yield return new NodeParent(node, parent, level);
+            if (node.Children != null)
+            {
+                foreach (var child in node.Children)
+                {
+                    foreach (var subnode in EnumerateNodes(child, node, level + 1))
+                    {
+                        yield return subnode;
+                    }
+                }
+            }
+        }
+        struct NodeParent
+        {
+            public NodeParent(MeshBVH.Node node, MeshBVH.Node parent, int level)
+            {
+                Node = node;
+                Parent = parent;
+                Level = level;
+            }
+            public readonly MeshBVH.Node Node;
+            public readonly MeshBVH.Node Parent;
+            public readonly int Level;
         }
     }
     [TestClass]

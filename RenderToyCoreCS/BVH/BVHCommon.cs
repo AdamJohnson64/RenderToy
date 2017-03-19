@@ -12,11 +12,11 @@ namespace RenderToy
     public static partial class BVH
     {
         #region - Section : Bounds -
-        static Bound3D ComputeBounds(IEnumerable<Triangle3D> triangles)
+        public static Bound3D ComputeBounds(IEnumerable<Triangle3D> triangles)
         {
             return ComputeBounds(triangles.SelectMany(t => EnumeratePoints(t)));
         }
-        static Bound3D ComputeBounds(IEnumerable<Vector3D> vertices)
+        public static Bound3D ComputeBounds(IEnumerable<Vector3D> vertices)
         {
             Vector3D min = new Vector3D(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity);
             Vector3D max = new Vector3D(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
@@ -31,7 +31,7 @@ namespace RenderToy
             }
             return new Bound3D(min, max);
         }
-        static Bound3D ComputeBounds(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> indices)
+        public static Bound3D ComputeBounds(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> indices)
         {
             return ComputeBounds(
                 indices
@@ -61,19 +61,42 @@ namespace RenderToy
             yield return triangle.P1;
             yield return triangle.P2;
         }
-        static bool ShapeContains(Bound3D box, Vector3D point)
+        public static bool ShapeContains(Bound3D box, Vector3D point)
         {
             return
                 point.X >= box.Min.X && point.X <= box.Max.X &&
                 point.Y >= box.Min.Y && point.Y <= box.Max.Y &&
                 point.Z >= box.Min.Z && point.Z <= box.Max.Z;
         }
-        static bool ShapeContains(Bound3D box, Triangle3D triangle)
+        /// <summary>
+        /// Determine if one range completely contains another.
+        /// </summary>
+        /// <param name="lhs">The containing range.</param>
+        /// <param name="rhs">The range to test for containment.</param>
+        /// <returns>True if rhs is completely contained by (and DOES NOT extend outside) lhs.</returns>
+        public static bool ShapeContains(Bound1D lhs, Bound1D rhs)
+        {
+            return rhs.Min >= lhs.Min && rhs.Max <= lhs.Max;
+        }
+        /// <summary>
+        /// Determine if one 3D AABB completely contains another.
+        /// </summary>
+        /// <param name="lhs">The containing AABB.</param>
+        /// <param name="rhs">The AABB to test for containment.</param>
+        /// <returns>True if rhs is completely contained by (and DOES NOT extend outside) lhs.</returns>
+        public static bool ShapeContains(Bound3D lhs, Bound3D rhs)
+        {
+            return
+                ShapeContains(new Bound1D(lhs.Min.X, lhs.Max.X), new Bound1D(rhs.Min.X, rhs.Max.X)) &&
+                ShapeContains(new Bound1D(lhs.Min.Y, lhs.Max.Y), new Bound1D(rhs.Min.Y, rhs.Max.Y)) &&
+                ShapeContains(new Bound1D(lhs.Min.Z, lhs.Max.Z), new Bound1D(rhs.Min.Z, rhs.Max.Z));
+        }
+        public static bool ShapeContains(Bound3D box, Triangle3D triangle)
         {
             return EnumeratePoints(triangle).All(p => ShapeContains(box, p));
         }
-        static bool ShapeIntersects(Bound1D lhs, Bound1D rhs) { return !(lhs.Max < rhs.Min || lhs.Min > rhs.Max); }
-        static bool ShapeIntersects(Bound3D box, Triangle3D triangle)
+        public static bool ShapeIntersects(Bound1D lhs, Bound1D rhs) { return !(lhs.Max < rhs.Min || lhs.Min > rhs.Max); }
+        public static bool ShapeIntersects(Bound3D box, Triangle3D triangle)
         {
             Vector3D aabb_x = new Vector3D(1, 0, 0);
             Vector3D aabb_y = new Vector3D(0, 1, 0);
@@ -97,6 +120,12 @@ namespace RenderToy
             return new Bound1D(vertices.Select(x => MathHelp.Dot(x, project)).Min(), vertices.Select(x => MathHelp.Dot(x, project)).Max());
         }
         #endregion
+        /// <summary>
+        /// Unfortunately we have to clamp the BVH depth quite aggressively.
+        /// In CUDA this is quite conservative.
+        /// In C++AMP setting this too high kills the compiler.
+        /// </summary>
+        public const int MAXIMUM_BVH_DEPTH = 6;
     }
     #region - Section : Data Types -
     public struct Bound1D

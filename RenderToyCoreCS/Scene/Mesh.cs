@@ -28,7 +28,7 @@ namespace RenderToy
         {
             Stopwatch perf = new Stopwatch();
             perf.Restart();
-            Root = BVH.CreateLooseOctree(triangles.ToArray(), 6);
+            Root = BVH.CreateLooseOctree(triangles.ToArray());
             perf.Stop();
             Performance.LogEvent("MeshBVH build took " + perf.ElapsedMilliseconds + "ms.");
             var allnodes = EnumerateNodes(Root);
@@ -51,7 +51,7 @@ namespace RenderToy
         }
         public readonly Node Root;
         #region - Section : Bounding Volume Hierarchy Node -
-        [DebuggerDisplay("[{Min.X}, {Min.Y}, {Min.Z}] -> [{Max.X}, {Max.Y}, {Max.Z}]")]
+        [DebuggerDisplay("[{Bound.Min.X}, {Bound.Min.Y}, {Bound.Min.Z}] -> [{Bound.Max.X}, {Bound.Max.Y}, {Bound.Max.Z}], {Triangles.Length} Triangles")]
         public class Node
         {
             public Node(Bound3D bound, Triangle3D[] triangles, Node[] children)

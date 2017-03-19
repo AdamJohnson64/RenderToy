@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)BVH\BVHCommon.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BVH\BVHKD.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BVH\BVHOctree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Formats\FileFormatPLY.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MultiPass\IMultiPass.cs" />

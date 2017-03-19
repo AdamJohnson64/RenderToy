@@ -19,13 +19,20 @@ namespace RenderToy
     /// </summary>
     public static partial class BVH
     {
+        public static MeshBVH.Node CreateLooseOctree(Triangle3D[] triangles)
+        {
+            return CreateLooseOctree(triangles, MAXIMUM_BVH_DEPTH);
+        }
         public static MeshBVH.Node CreateLooseOctree(Triangle3D[] triangles, int level)
         {
+            bool emitend = false;
             Bound3D bound = ComputeBounds(triangles);
             // Stop at 8 levels.
             if (level <= 0) goto EMITUNMODIFIED;
             // Stop at 4 triangles
             if (triangles.Length < 4) goto EMITUNMODIFIED;
+            emitend = true;
+            Performance.LogBegin("CreateLooseOctree() level " + level + ", " + triangles.Length + " triangles");
             // Slice this region into 8 subcubes (roughly octree).
             var children = EnumerateSplit222(bound)
                 .Select(box => CreateLooseOctreeChild(triangles, level, box))
@@ -36,14 +43,15 @@ namespace RenderToy
             // If this split blows up the number of triangles significantly then reject it.
             var numtriangles = MeshBVH
                 .EnumerateNodes(newnode)
-                .AsParallel()
                 .Where(n => n.Triangles != null)
                 .SelectMany(n => n.Triangles)
                 .Count();
             if (numtriangles > triangles.Count() * 2) goto EMITUNMODIFIED;
             // Otherwise return the new node.
+            if (emitend) Performance.LogEnd("CreateLooseOctree() level " + level + ", " + triangles.Length + " triangles");
             return newnode;
         EMITUNMODIFIED:
+            if (emitend) Performance.LogEnd("CreateLooseOctree() level " + level + ", " + triangles.Length + " triangles");
             return new MeshBVH.Node(bound, triangles, null);
         }
         static MeshBVH.Node CreateLooseOctreeChild(Triangle3D[] triangles, int level, Bound3D box)
@@ -134,7 +142,7 @@ namespace RenderToy
     /// </summary>
     public static partial class BVH
     {
-        public static MeshBVH.Node CreateLooseOctreeST(Triangle3D[] triangles, int level)
+        public static MeshBVH.Node CreateLooseOctreeST(Triangle3D[] triangles)
         {
             var openlist = new List<WorkingNode>();
             // Add the root node to the queue.
