@@ -22,20 +22,26 @@ namespace RenderToy
         public readonly Vector3D[] Vertices;
         public readonly TriIndex[] Triangles;
     }
+    #region - Section : Bounding Volume Hierarchy Node -
+    [DebuggerDisplay("[{Bound.Min.X}, {Bound.Min.Y}, {Bound.Min.Z}] -> [{Bound.Max.X}, {Bound.Max.Y}, {Bound.Max.Z}], {Triangles.Length} Triangles")]
     public class MeshBVH : IPrimitive
     {
-        public MeshBVH(IEnumerable<Triangle3D> triangles)
+        public MeshBVH(Bound3D bound, Triangle3D[] triangles, MeshBVH[] children)
+        {
+            Bound = bound;
+            Triangles = triangles;
+            Children = children;
+        }
+        public static MeshBVH Create(Triangle3D[] triangles)
         {
             Stopwatch perf = new Stopwatch();
             perf.Restart();
-            Root = BVH.CreateLooseOctree2(triangles.ToArray());
+            MeshBVH root = BVH.CreateLooseOctree2(triangles.ToArray());
             perf.Stop();
             Performance.LogEvent("MeshBVH build took " + perf.ElapsedMilliseconds + "ms.");
-            var allnodes = EnumerateNodes(Root);
-            int count_triangles_initial = triangles.Count();
-            int count_triangles_final = EnumerateNodes(Root).Where(x => x.Triangles != null).SelectMany(x => x.Triangles).Count();
+            return root;
         }
-        public static IEnumerable<Node> EnumerateNodes(Node from)
+        public static IEnumerable<MeshBVH> EnumerateNodes(MeshBVH from)
         {
             yield return from;
             if (from.Children != null)
@@ -49,23 +55,11 @@ namespace RenderToy
                 }
             }
         }
-        public readonly Node Root;
-        #region - Section : Bounding Volume Hierarchy Node -
-        [DebuggerDisplay("[{Bound.Min.X}, {Bound.Min.Y}, {Bound.Min.Z}] -> [{Bound.Max.X}, {Bound.Max.Y}, {Bound.Max.Z}], {Triangles.Length} Triangles")]
-        public class Node
-        {
-            public Node(Bound3D bound, Triangle3D[] triangles, Node[] children)
-            {
-                Bound = bound;
-                Triangles = triangles;
-                Children = children;
-            }
-            public readonly Bound3D Bound;
-            public readonly Triangle3D[] Triangles;
-            public readonly Node[] Children;
-        }
-        #endregion
+        public readonly Bound3D Bound;
+        public readonly Triangle3D[] Triangles;
+        public readonly MeshBVH[] Children;
     }
+    #endregion
     public static class MeshHelp
     {
         public static Mesh CreateMesh(IParametricUV shape, int usteps, int vsteps)

@@ -39,7 +39,7 @@ namespace RenderToy
             {
                 Scene scene = new Scene();
                 var mesh = MeshHelp.CreateMesh(new Sphere(), 18, 9);
-                var meshbvh = new MeshBVH(MeshHelp.CollapseIndices(mesh.Vertices, mesh.Triangles).ToArray());
+                var meshbvh = MeshBVH.Create(MeshHelp.CollapseIndices(mesh.Vertices, mesh.Triangles).ToArray());
                 scene.children.Add(new Node("Plane Ground", new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
                 scene.children.Add(new Node("Sphere (Red)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-5, 1, 0)), new Sphere(), Materials.Red, Materials.PlasticRed));
                 scene.children.Add(new Node("Sphere (Green)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-3, 1, 0)), meshbvh, Materials.Green, Materials.PlasticGreen));

@@ -6,11 +6,11 @@ namespace RenderToy
 {
     public static partial class BVH
     {
-        public static MeshBVH.Node CreateLooseOctree2(Triangle3D[] triangles)
+        public static MeshBVH CreateLooseOctree2(Triangle3D[] triangles)
         {
             return CreateLooseOctree2(triangles, MAXIMUM_BVH_DEPTH);
         }
-        public static MeshBVH.Node CreateLooseOctree2(Triangle3D[] triangles, int level)
+        public static MeshBVH CreateLooseOctree2(Triangle3D[] triangles, int level)
         {
             if (triangles == null || triangles.Length == 0) return null;
             Bound3D bound = ComputeBounds(triangles);
@@ -72,9 +72,9 @@ namespace RenderToy
                 if ((triangle_in_child_mask & 0x40) == 0x40) children_triangles[6].Add(triangle);
                 if ((triangle_in_child_mask & 0x80) == 0x80) children_triangles[7].Add(triangle);
             }
-            return new MeshBVH.Node(bound, null, children_triangles.Select(x => CreateKD(x.ToArray(), level - 1)).Where(x => x != null).ToArray());
+            return new MeshBVH(bound, null, children_triangles.Select(x => CreateKD(x.ToArray(), level - 1)).Where(x => x != null).ToArray());
             EMITUNMODIFIED:
-            return new MeshBVH.Node(bound, triangles, null);
+            return new MeshBVH(bound, triangles, null);
         }
     }
 }

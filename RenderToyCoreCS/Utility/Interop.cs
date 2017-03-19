@@ -77,13 +77,9 @@ namespace RenderToy
                     {
                         Serialize((MeshBVH)writeremaining.Target);
                     }
-                    else if (writeremaining.Target is MeshBVH.Node)
+                    else if (writeremaining.Target is IReadOnlyList<MeshBVH>)
                     {
-                        Serialize((MeshBVH.Node)writeremaining.Target);
-                    }
-                    else if (writeremaining.Target is IReadOnlyList<MeshBVH.Node>)
-                    {
-                        Serialize((IReadOnlyList<MeshBVH.Node>)writeremaining.Target);
+                        Serialize((IReadOnlyList<MeshBVH>)writeremaining.Target);
                     }
                     else if (writeremaining.Target is IReadOnlyList<Triangle3D>)
                     {
@@ -185,16 +181,12 @@ namespace RenderToy
         }
         void Serialize(MeshBVH obj)
         {
-            EmitAndQueue(obj.Root);
-        }
-        void Serialize(MeshBVH.Node obj)
-        {
             Serialize(obj.Bound.Min, Serialize);
             Serialize(obj.Bound.Max, Serialize);
             EmitAndQueue(obj.Children);
             EmitAndQueue(obj.Triangles);
         }
-        void Serialize(IReadOnlyList<MeshBVH.Node> obj)
+        void Serialize(IReadOnlyList<MeshBVH> obj)
         {
             binarywriter.Write((int)obj.Count);
             binarywriter.Write((int)0);

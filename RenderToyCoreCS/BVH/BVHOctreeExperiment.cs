@@ -19,30 +19,30 @@ namespace RenderToy
     /// </summary>
     public static partial class BVH
     {
-        public static MeshBVH.Node CreateLooseOctreeTASK(Triangle3D[] triangles)
+        public static MeshBVH CreateLooseOctreeTASK(Triangle3D[] triangles)
         {
             return CreateLooseOctreeTASK(triangles, MAXIMUM_BVH_DEPTH);
         }
-        public static MeshBVH.Node CreateLooseOctreeTASK(Triangle3D[] triangles, int level)
+        public static MeshBVH CreateLooseOctreeTASK(Triangle3D[] triangles, int level)
         {
             var result = CreateClippedNode(triangles).Result;
             return result;
         }
-        static async Task<MeshBVH.Node> CreateClippedNode(Triangle3D[] triangles)
+        static async Task<MeshBVH> CreateClippedNode(Triangle3D[] triangles)
         {
             Bound3D bound = ComputeBounds(triangles);
             var newchildren = await CreateChildren(triangles, bound);
             if (newchildren.Length != 0) triangles = null;
-            return new MeshBVH.Node(bound, triangles, newchildren);
+            return new MeshBVH(bound, triangles, newchildren);
         }
-        static async Task<MeshBVH.Node> CreateUnclippedNode(Triangle3D[] triangles, Bound3D bound)
+        static async Task<MeshBVH> CreateUnclippedNode(Triangle3D[] triangles, Bound3D bound)
         {
             if (triangles == null) return null;
             var newtriangles = triangles.Where(t => ShapeIntersects(bound, new Triangle3D(t.P0, t.P1, t.P2))).ToArray();
             if (newtriangles.Length == 0 || newtriangles.Length < 16 || triangles.Length == newtriangles.Length) return null;
             return await CreateClippedNode(newtriangles);
         }
-        static async Task<MeshBVH.Node[]> CreateChildren(Triangle3D[] triangles, Bound3D bound)
+        static async Task<MeshBVH[]> CreateChildren(Triangle3D[] triangles, Bound3D bound)
         {
             var children = EnumerateSplit222(bound)
                 .Select(newbound => CreateUnclippedNode(triangles, newbound))
@@ -60,11 +60,11 @@ namespace RenderToy
     /// </summary>
     public static partial class BVH
     {
-        public static MeshBVH.Node CreateLooseOctreeST(Triangle3D[] triangles)
+        public static MeshBVH CreateLooseOctreeST(Triangle3D[] triangles)
         {
             return CreateLooseOctreeST(triangles, MAXIMUM_BVH_DEPTH);
         }
-        public static MeshBVH.Node CreateLooseOctreeST(Triangle3D[] triangles, int level)
+        public static MeshBVH CreateLooseOctreeST(Triangle3D[] triangles, int level)
         {
             var openlist = new List<WorkingNode>();
             // Add the root node to the queue.
@@ -111,7 +111,7 @@ namespace RenderToy
     /// </summary>
     public static partial class BVH
     {
-        public static MeshBVH.Node CreateLooseOctreeMT(Triangle3D[] triangles, int level)
+        public static MeshBVH CreateLooseOctreeMT(Triangle3D[] triangles, int level)
         {
             var openlist = new ConcurrentQueue<WorkingNode>();
             var work = new WorkQueue();
@@ -150,7 +150,7 @@ namespace RenderToy
             public Triangle3D[] TrianglesPre { get; set; }
             public Triangle3D[] Triangles { get; set; }
         }
-        public static MeshBVH.Node CreateLooseOctreeMT2(Triangle3D[] triangles, int level)
+        public static MeshBVH CreateLooseOctreeMT2(Triangle3D[] triangles, int level)
         {
             var openlist = new ConcurrentQueue<WorkingNode2>();
             var work = new WorkQueue();

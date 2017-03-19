@@ -10,11 +10,11 @@ namespace RenderToy
 {
     public static partial class BVH
     {
-        public static MeshBVH.Node CreateKD(Triangle3D[] triangles)
+        public static MeshBVH CreateKD(Triangle3D[] triangles)
         {
             return CreateKD(triangles, MAXIMUM_BVH_DEPTH);
         }
-        public static MeshBVH.Node CreateKD(Triangle3D[] triangles, int level)
+        public static MeshBVH CreateKD(Triangle3D[] triangles, int level)
         {
             var bound = ComputeBounds(triangles);
             if (level <= 0) goto EMITUNMODIFIED;
@@ -75,9 +75,9 @@ namespace RenderToy
             // Otherwise we have a good node pair.
             var node_back = CreateKD(triangles_back.ToArray(), level - 1);
             var node_frnt = CreateKD(triangles_frnt.ToArray(), level - 1);
-            return new MeshBVH.Node(bound, null, new[] { node_back, node_frnt });
+            return new MeshBVH(bound, null, new[] { node_back, node_frnt });
         EMITUNMODIFIED:
-            return new MeshBVH.Node(bound, triangles, null);
+            return new MeshBVH(bound, triangles, null);
         }
     }
     enum CutAxis { X, Y, Z }

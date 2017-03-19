@@ -159,7 +159,7 @@ namespace RenderToy
                 MeshBVH meshbvh = transformedobject.Node.Primitive as MeshBVH;
                 if (meshbvh != null)
                 {
-                    var nodes_with_triangles = MeshBVH.EnumerateNodes(meshbvh.Root)
+                    var nodes_with_triangles = MeshBVH.EnumerateNodes(meshbvh)
                         .Where(x => x.Triangles != null);
                     foreach (var node in nodes_with_triangles)
                     {

@@ -66,7 +66,7 @@ namespace RenderToy
             }
             Performance.LogEnd("BVH KD (Baseline)");
         }
-        static void VerifyMesh(Triangle3D[] triangles, MeshBVH.Node root)
+        static void VerifyMesh(Triangle3D[] triangles, MeshBVH root)
         {
             // Run some sanity checks on the mesh.
             // All subnode bounds should be completely contained by their parent.
@@ -91,11 +91,11 @@ namespace RenderToy
                 throw new InvalidDataException("This BVH is " + maximum_bvh_depth + " levels deep; this exceeds the maximum depth and will fail on GPU.");
             }
         }
-        static IEnumerable<NodeParent> EnumerateNodes(MeshBVH.Node root)
+        static IEnumerable<NodeParent> EnumerateNodes(MeshBVH root)
         {
             return EnumerateNodes(root, null, 0);
         }
-        static IEnumerable<NodeParent> EnumerateNodes(MeshBVH.Node node, MeshBVH.Node parent, int level)
+        static IEnumerable<NodeParent> EnumerateNodes(MeshBVH node, MeshBVH parent, int level)
         {
             yield return new NodeParent(node, parent, level);
             if (node.Children != null)
@@ -111,14 +111,14 @@ namespace RenderToy
         }
         struct NodeParent
         {
-            public NodeParent(MeshBVH.Node node, MeshBVH.Node parent, int level)
+            public NodeParent(MeshBVH node, MeshBVH parent, int level)
             {
                 Node = node;
                 Parent = parent;
                 Level = level;
             }
-            public readonly MeshBVH.Node Node;
-            public readonly MeshBVH.Node Parent;
+            public readonly MeshBVH Node;
+            public readonly MeshBVH Parent;
             public readonly int Level;
         }
     }

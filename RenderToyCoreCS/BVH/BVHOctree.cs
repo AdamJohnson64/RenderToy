@@ -15,11 +15,11 @@ namespace RenderToy
     /// </summary>
     public static partial class BVH
     {
-        public static MeshBVH.Node CreateLooseOctree(Triangle3D[] triangles)
+        public static MeshBVH CreateLooseOctree(Triangle3D[] triangles)
         {
             return CreateLooseOctree(triangles, MAXIMUM_BVH_DEPTH);
         }
-        public static MeshBVH.Node CreateLooseOctree(Triangle3D[] triangles, int level)
+        public static MeshBVH CreateLooseOctree(Triangle3D[] triangles, int level)
         {
             bool emitend = false;
             Bound3D bound = ComputeBounds(triangles);
@@ -35,7 +35,7 @@ namespace RenderToy
                 .Where(node => node != null)
                 .ToArray();
             // Form the new node.
-            var newnode = new MeshBVH.Node(bound, null, children);
+            var newnode = new MeshBVH(bound, null, children);
             // If this split blows up the number of triangles significantly then reject it.
             var numtriangles = MeshBVH
                 .EnumerateNodes(newnode)
@@ -48,9 +48,9 @@ namespace RenderToy
             return newnode;
         EMITUNMODIFIED:
             if (emitend) Performance.LogEnd("CreateLooseOctree() level " + level + ", " + triangles.Length + " triangles");
-            return new MeshBVH.Node(bound, triangles, null);
+            return new MeshBVH(bound, triangles, null);
         }
-        static MeshBVH.Node CreateLooseOctreeChild(Triangle3D[] triangles, int level, Bound3D box)
+        static MeshBVH CreateLooseOctreeChild(Triangle3D[] triangles, int level, Bound3D box)
         {
             // Partition the triangles.
             Triangle3D[] contained_triangles = CreateTriangleList(triangles, box);

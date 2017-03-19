@@ -18,7 +18,7 @@ namespace RenderToy
         }
         public static IPrimitive LoadPLYBVHFromPath(string path)
         {
-            return LoadPLYFromPath(path, (v,i) => new MeshBVH(MeshHelp.CollapseIndices(v.ToArray(), i.ToArray())));
+            return LoadPLYFromPath(path, (v,i) => MeshBVH.Create(MeshHelp.CollapseIndices(v.ToArray(), i.ToArray()).ToArray()));
         }
         delegate IPrimitive ConditionMesh(IReadOnlyList<Vector3D> vertices, IReadOnlyList<TriIndex> triangles);
         static IPrimitive LoadPLYFromPath(string path, ConditionMesh conditioner)
