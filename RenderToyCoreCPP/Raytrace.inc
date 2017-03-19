@@ -232,24 +232,18 @@ template <typename FLOAT>
 DEVICE_PREFIX bool IntersectBound(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& min, const Vector3<FLOAT>& max) DEVICE_SUFFIX {
 	double tmin = -FloatTraits<FLOAT>::Max;
 	double tmax = FloatTraits<FLOAT>::Max;
-	if (direction.x != 0) {
-		double tx1 = (min.x - origin.x) / direction.x;
-		double tx2 = (max.x - origin.x) / direction.x;
-		tmin = Max(tmin, Min(tx1, tx2));
-		tmax = Min(tmax, Max(tx1, tx2));
-	}
-	if (direction.y != 0) {
-		double ty1 = (min.y - origin.y) / direction.y;
-		double ty2 = (max.y - origin.y) / direction.y;
-		tmin = Max(tmin, Min(ty1, ty2));
-		tmax = Min(tmax, Max(ty1, ty2));
-	}
-	if (direction.z != 0) {
-		double tz1 = (min.z - origin.z) / direction.z;
-		double tz2 = (max.z - origin.z) / direction.z;
-		tmin = Max(tmin, Min(tz1, tz2));
-		tmax = Min(tmax, Max(tz1, tz2));
-	}
+	double tx1 = (min.x - origin.x) / direction.x;
+	double tx2 = (max.x - origin.x) / direction.x;
+	tmin = Max(tmin, Min(tx1, tx2));
+	tmax = Min(tmax, Max(tx1, tx2));
+	double ty1 = (min.y - origin.y) / direction.y;
+	double ty2 = (max.y - origin.y) / direction.y;
+	tmin = Max(tmin, Min(ty1, ty2));
+	tmax = Min(tmax, Max(ty1, ty2));
+	double tz1 = (min.z - origin.z) / direction.z;
+	double tz2 = (max.z - origin.z) / direction.z;
+	tmin = Max(tmin, Min(tz1, tz2));
+	tmax = Min(tmax, Max(tz1, tz2));
 	return tmax >= tmin;
 }
 
