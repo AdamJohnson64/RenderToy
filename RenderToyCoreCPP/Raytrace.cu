@@ -244,6 +244,32 @@ extern "C" void RaytraceCUDAF64(const void* pScene, const void* pInverseMVP, voi
 #endif
 #pragma endregion
 
+#pragma region - Render Mode : Debug Mesh -
+__global__ void cudaDebugMeshKernelF32(const Scene<float>& pScene, Matrix44<float> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<float, RaytraceCUDA::RenderModeDebugMesh<float>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
+}
+
+extern "C" void DebugMeshCUDAF32(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+{
+	cudaRender<float>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<float>& device_scene, const Matrix44<float>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaDebugMeshKernelF32<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
+	});
+}
+
+#ifdef USE_F64
+__global__ void cudaDebugMeshKernelF64(const Scene<double>& pScene, Matrix44<double> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	cudaFill<double, RaytraceCUDA::RenderModeDebugMesh<double>>(pScene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
+}
+
+extern "C" void DebugMeshCUDAF64(const void* pScene, const void* pInverseMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+{
+	cudaRender<double>(pScene, pInverseMVP, bitmap_ptr, render_width, render_height, bitmap_stride, [](const Scene<double>& device_scene, const Matrix44<double>& InverseMVP, void* device_bitmap_ptr, int render_width, int render_height, const dim3& grid, const dim3& threads) {
+		cudaDebugMeshKernelF64<<<grid, threads>>>(device_scene, InverseMVP, device_bitmap_ptr, render_width, render_height, 4 * render_width);
+	});
+}
+#endif
+#pragma endregion
+
 #pragma region - Render Mode : Ambient Occlusion -
 template <typename FLOAT>
 __global__ void cudaAOC(const Scene<FLOAT>& pScene, Matrix44<FLOAT> inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count) {

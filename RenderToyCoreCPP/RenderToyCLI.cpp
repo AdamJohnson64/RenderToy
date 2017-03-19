@@ -44,6 +44,7 @@ namespace RenderToy
 			pin_ptr<unsigned char> pin_inverse_mvp = &inverse_mvp[0];
 			::RaytraceCPUF32AA(pin_scene, pin_inverse_mvp, (void*)bitmap_ptr, render_width, render_height, bitmap_stride, superx, supery);
 		}
+		EXPORTGENERATOR(DebugMeshCUDAF32)
 		static void AmbientOcclusionCPUF32(array<unsigned char>^ scene, array<unsigned char>^ inverse_mvp, System::IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count)
 		{
 			pin_ptr<unsigned char> pin_scene = &scene[0];
@@ -75,6 +76,7 @@ namespace RenderToy
 		EXPORTGENERATOR(RaycastTangentsCUDAF64)
 		EXPORTGENERATOR(RaycastBitangentsCUDAF64)
 		EXPORTGENERATOR(RaytraceCUDAF64)
+		EXPORTGENERATOR(DebugMeshCUDAF64)
 		static void AmbientOcclusionCPUF64(array<unsigned char>^ scene, array<unsigned char>^ inverse_mvp, System::IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count)
 		{
 			pin_ptr<unsigned char> pin_scene = &scene[0];

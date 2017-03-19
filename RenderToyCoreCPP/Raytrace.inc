@@ -134,99 +134,54 @@ DEVICE_PREFIX FLOAT IntersectPlane(const Vector3<FLOAT>& origin, const Vector3<F
 template <typename FLOAT> DEVICE_PREFIX void SetNormal(IntersectSimple<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX {}
 template <typename FLOAT> DEVICE_PREFIX void SetNormal(IntersectNormal<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX { result.Normal = value; }
 template <typename FLOAT> DEVICE_PREFIX void SetNormal(IntersectTBN<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX { result.Normal = value; }
+template <typename FLOAT> DEVICE_PREFIX void SetNormal(IntersectDebugMesh<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX {}
 template <typename FLOAT> DEVICE_PREFIX void SetTangent(IntersectSimple<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX {}
 template <typename FLOAT> DEVICE_PREFIX void SetTangent(IntersectNormal<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX {}
 template <typename FLOAT> DEVICE_PREFIX void SetTangent(IntersectTBN<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX { result.Tangent = value; }
+template <typename FLOAT> DEVICE_PREFIX void SetTangent(IntersectDebugMesh<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX {}
 template <typename FLOAT> DEVICE_PREFIX void SetBitangent(IntersectSimple<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX {}
 template <typename FLOAT> DEVICE_PREFIX void SetBitangent(IntersectNormal<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX {}
 template <typename FLOAT> DEVICE_PREFIX void SetBitangent(IntersectTBN<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX { result.Bitangent = value; }
+template <typename FLOAT> DEVICE_PREFIX void SetBitangent(IntersectDebugMesh<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX {}
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetNormal(const IntersectSimple<FLOAT>& result) DEVICE_SUFFIX { return make_vector3<FLOAT>(0, 0, 0); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetNormal(const IntersectNormal<FLOAT>& result) DEVICE_SUFFIX { return result.Normal; }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetNormal(const IntersectTBN<FLOAT>& result) DEVICE_SUFFIX { return result.Normal; }
+template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetNormal(const IntersectDebugMesh<FLOAT>& result) DEVICE_SUFFIX { return make_vector3<FLOAT>(0, 0, 0); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetTangent(const IntersectSimple<FLOAT>& result) DEVICE_SUFFIX { return make_vector3<FLOAT>(0, 0, 0); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetTangent(const IntersectNormal<FLOAT>& result) DEVICE_SUFFIX { return make_vector3<FLOAT>(0, 0, 0); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetTangent(const IntersectTBN<FLOAT>& result) DEVICE_SUFFIX { return result.Tangent; }
+template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetTangent(const IntersectDebugMesh<FLOAT>& result) DEVICE_SUFFIX { return make_vector3<FLOAT>(0, 0, 0); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const IntersectSimple<FLOAT>& result) DEVICE_SUFFIX { return make_vector3<FLOAT>(0, 0, 0); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const IntersectNormal<FLOAT>& result) DEVICE_SUFFIX { return make_vector3<FLOAT>(0, 0, 0); }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const IntersectTBN<FLOAT>& result) DEVICE_SUFFIX { return result.Bitangent; }
+template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const IntersectDebugMesh<FLOAT>& result) DEVICE_SUFFIX { return make_vector3<FLOAT>(0, 0, 0); }
 
-template <typename FLOAT>
-DEVICE_PREFIX bool IntersectBoundREFIMPL(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& min, const Vector3<FLOAT>& max) DEVICE_SUFFIX {
-	// This is the fast clipping or "slab method".
-	// Form a line P1->P2 and clip against the min max planes of each side of the box.
-	Vector3<FLOAT> p1 = origin;
-	Vector3<FLOAT> p2 = origin + direction;
-	// All the subsequent tests take the form of:
-	//
-	// if (p1.x < min.x) {
-	//     if (p2.x < min.x) return false;
-	//     p1 = p1 + (min.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
-	//               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ LAMBDA
-	// } else if (p2.x < min.x) {
-	//     if (p1.x < min.x) return false;
-	//     p2 = p1 + (min.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
-	// }
-	//
-	// Summarized:
-	// If P1 is outside AND P2 is outside then the whole line is outside = reject.
-	// Otherwise, P1 is outside and P2 is inside = clip P1 to the boundary.
-	// The else clause is the same condition with P1 and P2 reversed and moves P2 to the boundary instead.
-	// If we manage to find a clipped line segment that passes all these tests for all planes then the ray *MUST* intersect.
-	// BEGIN
-	// Test and clip against min.x
-	if (p1.x < min.x) {
-		if (p2.x < min.x) return false;
-		p1 = p1 + (min.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
-	} else if (p2.x < min.x) {
-		if (p1.x < min.x) return false;
-		p2 = p1 + (min.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
-	}
-	// Test and clip against max.x
-	if (p1.x > max.x) {
-		if (p2.x > max.x) return false;
-		p1 = p1 + (max.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
-	}
-	else if (p2.x > max.x) {
-		if (p1.x > max.x) return false;
-		p2 = p1 + (max.x - p1.x) / (p2.x - p1.x) * (p2 - p1);
-	}
-	// Test and clip against min.y
-	if (p1.y < min.y) {
-		if (p2.y < min.y) return false;
-		p1 = p1 + (min.y - p1.y) / (p2.y - p1.y) * (p2 - p1);
-	} else if (p2.y < min.y) {
-		if (p1.y < min.y) return false;
-		p2 = p1 + (min.y - p1.y) / (p2.y - p1.y) * (p2 - p1);
-    }
-	// Test and clip against max.y
-	if (p1.y > max.y) {
-		if (p2.y > max.y) return false;
-		p1 = p1 + (max.y - p1.y) / (p2.y - p1.y) * (p2 - p1);
-	}
-	else if (p2.y > max.y) {
-		if (p1.y > max.y) return false;
-		p2 = p1 + (max.y - p1.y) / (p2.y - p1.y) * (p2 - p1);
-	}
-	// Test and clip against min.z
-	if (p1.z < min.z) {
-		if (p2.z < min.z) return false;
-		p1 = p1 + (min.z - p1.z) / (p2.z - p1.z) * (p2 - p1);
-	} else if (p2.z < min.z) {
-		if (p1.z < min.z) return false;
-		p1 = p1 + (min.z - p1.z) / (p2.z - p1.z) * (p2 - p1);
-	}
-	// Test and clip against max.z
-	if (p1.z > max.z) {
-		if (p2.z > max.z) return false;
-		p1 = p1 + (max.z - p1.z) / (p2.z - p1.z) * (p2 - p1);
-	} else if (p2.z > max.z) {
-		if (p1.z > max.z) return false;
-		p1 = p1 + (max.z - p1.z) / (p2.z - p1.z) * (p2 - p1);
-	}
-	return true;
-}
+template <typename FLOAT> DEVICE_PREFIX void SetCountBoxTest(IntersectSimple<FLOAT>& result, int value) DEVICE_SUFFIX { }
+template <typename FLOAT> DEVICE_PREFIX void SetCountBoxTest(IntersectNormal<FLOAT>& result, int value) DEVICE_SUFFIX { }
+template <typename FLOAT> DEVICE_PREFIX void SetCountBoxTest(IntersectTBN<FLOAT>& result, int value) DEVICE_SUFFIX { }
+template <typename FLOAT> DEVICE_PREFIX void SetCountBoxTest(IntersectDebugMesh<FLOAT>& result, int value) DEVICE_SUFFIX { result.CountBoxTest = value; }
+template <typename FLOAT> DEVICE_PREFIX void SetCountTriangleTest(IntersectSimple<FLOAT>& result, int value) DEVICE_SUFFIX { }
+template <typename FLOAT> DEVICE_PREFIX void SetCountTriangleTest(IntersectNormal<FLOAT>& result, int value) DEVICE_SUFFIX { }
+template <typename FLOAT> DEVICE_PREFIX void SetCountTriangleTest(IntersectTBN<FLOAT>& result, int value) DEVICE_SUFFIX { }
+template <typename FLOAT> DEVICE_PREFIX void SetCountTriangleTest(IntersectDebugMesh<FLOAT>& result, int value) DEVICE_SUFFIX { result.CountTriangleTest = value; }
+template <typename FLOAT> DEVICE_PREFIX void SetCountTriangleHit(IntersectSimple<FLOAT>& result, int value) DEVICE_SUFFIX { }
+template <typename FLOAT> DEVICE_PREFIX void SetCountTriangleHit(IntersectNormal<FLOAT>& result, int value) DEVICE_SUFFIX { }
+template <typename FLOAT> DEVICE_PREFIX void SetCountTriangleHit(IntersectTBN<FLOAT>& result, int value) DEVICE_SUFFIX { }
+template <typename FLOAT> DEVICE_PREFIX void SetCountTriangleHit(IntersectDebugMesh<FLOAT>& result, int value) DEVICE_SUFFIX { result.CountTriangleHit = value; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountBoxTest(IntersectSimple<FLOAT>& result) DEVICE_SUFFIX { return 0; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountBoxTest(IntersectNormal<FLOAT>& result) DEVICE_SUFFIX { return 0; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountBoxTest(IntersectTBN<FLOAT>& result) DEVICE_SUFFIX { return 0; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountBoxTest(IntersectDebugMesh<FLOAT>& result) DEVICE_SUFFIX { return result.CountBoxTest; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountTriangleTest(IntersectSimple<FLOAT>& result) DEVICE_SUFFIX { return 0; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountTriangleTest(IntersectNormal<FLOAT>& result) DEVICE_SUFFIX { return 0; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountTriangleTest(IntersectTBN<FLOAT>& result) DEVICE_SUFFIX { return 0; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountTriangleTest(IntersectDebugMesh<FLOAT>& result) DEVICE_SUFFIX { return result.CountTriangleTest; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountTriangleHit(IntersectSimple<FLOAT>& result) DEVICE_SUFFIX { return 0; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountTriangleHit(IntersectNormal<FLOAT>& result) DEVICE_SUFFIX { return 0; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountTriangleHit(IntersectTBN<FLOAT>& result) DEVICE_SUFFIX { return 0; }
+template <typename FLOAT> DEVICE_PREFIX int GetCountTriangleHit(IntersectDebugMesh<FLOAT>& result) DEVICE_SUFFIX { return result.CountTriangleHit; }
 
-// This is the slab method describe in SIGGRAPH notes.
+// This is the slab method described in SIGGRAPH notes.
 // See http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
 template <typename FLOAT>
 DEVICE_PREFIX bool IntersectBound(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& min, const Vector3<FLOAT>& max) DEVICE_SUFFIX {
@@ -244,12 +199,11 @@ DEVICE_PREFIX bool IntersectBound(const Vector3<FLOAT>& origin, const Vector3<FL
 	double tz2 = (max.z - origin.z) / direction.z;
 	tmin = Max(tmin, Min(tz1, tz2));
 	tmax = Min(tmax, Max(tz1, tz2));
-	return tmax >= tmin;
+	return tmax >= tmin && (tmin >= 0 || tmax >= 0);
 }
 
 template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY IntersectCube(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-	RAYQUERY result;
+DEVICE_PREFIX bool IntersectCube(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
 	Vector3<FLOAT> face_normal[] = {
 		make_vector3<FLOAT>(-1,0,0), make_vector3<FLOAT>(+1,0,0),
 		make_vector3<FLOAT>(0,-1,0), make_vector3<FLOAT>(0,+1,0),
@@ -267,6 +221,9 @@ DEVICE_PREFIX RAYQUERY IntersectCube(const Vector3<FLOAT>& origin, const Vector3
 		make_vector3<FLOAT>(0,-1,0), make_vector3<FLOAT>(0,-1,0),
 	};
 	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
+	Vector3<FLOAT> best_normal;
+	Vector3<FLOAT> best_tangent;
+	Vector3<FLOAT> best_bitangent;
 	for (int face_index = 0; face_index < 6; ++face_index) {
 		FLOAT lambda = IntersectPlane<FLOAT>(origin, direction, face_normal[face_index], 1);
 		if (lambda < 0 || lambda > best_lambda) continue;
@@ -283,30 +240,34 @@ DEVICE_PREFIX RAYQUERY IntersectCube(const Vector3<FLOAT>& origin, const Vector3
 		}
 		if (use_face) {
 			best_lambda = lambda;
-			SetNormal(result, face_normal[face_index]);
-			SetTangent(result, face_tangent[face_index]);
-			SetBitangent(result, face_bitangent[face_index]);
+			best_normal = face_normal[face_index];
+			best_tangent = face_tangent[face_index];
+			best_bitangent = face_bitangent[face_index];
 		}
 	}
+	if (best_lambda < 0 || best_lambda > result.Lambda) return false;
 	result.Lambda = best_lambda;
-	return result;
+	SetNormal(result, best_normal);
+	SetTangent(result, best_tangent);
+	SetBitangent(result, best_bitangent);
+	return true;
 }
 
 template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY IntersectPlane(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-	RAYQUERY result;
+DEVICE_PREFIX bool IntersectPlane(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
 	const FLOAT PLANE_DISTANCE = 0;
 	const Vector3<FLOAT> PLANE_NORMAL = make_vector3<FLOAT>(0, 1, 0);
-	result.Lambda = (PLANE_DISTANCE - Dot(PLANE_NORMAL, origin)) / Dot(PLANE_NORMAL, direction);
+	FLOAT lambda = (PLANE_DISTANCE - Dot(PLANE_NORMAL, origin)) / Dot(PLANE_NORMAL, direction);
+	if (lambda < 0 || lambda > result.Lambda) return false;
+	result.Lambda = lambda;
 	SetNormal(result, PLANE_NORMAL);
 	SetTangent(result, make_vector3<FLOAT>(1, 0, 0));
 	SetBitangent(result, make_vector3<FLOAT>(0, 0, -1));
-	return result;
+	return true;
 }
 
 template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY IntersectSphere(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-	RAYQUERY result = { 0 };
+DEVICE_PREFIX bool IntersectSphere(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
 	const FLOAT SPHERE_RADIUS = 1;
 	FLOAT a = Dot(direction, direction);
 	FLOAT b = 2 * Dot(origin, direction);
@@ -320,66 +281,24 @@ DEVICE_PREFIX RAYQUERY IntersectSphere(const Vector3<FLOAT>& origin, const Vecto
 	FLOAT lambda_best = FloatTraits<FLOAT>::Max;
 	if (lambda1 >= 0 && lambda1 < lambda_best) lambda_best = lambda1;
 	if (lambda2 >= 0 && lambda2 < lambda_best) lambda_best = lambda2;
+	if (lambda_best < 0 || lambda_best > result.Lambda) return false;
 	// Construct a tangent basis at this point.
-	Vector3<FLOAT> vector_normal = Normalize(origin + lambda_best * direction);
+	Vector3<FLOAT> vector_normal = origin + lambda_best * direction;
 	Vector3<FLOAT> vector_bitangent = make_vector3<FLOAT>(0,-1,0);
-	Vector3<FLOAT> vector_tangent = Normalize(Cross(vector_bitangent, vector_normal));
+	Vector3<FLOAT> vector_tangent = Cross(vector_bitangent, vector_normal);
 	vector_bitangent = Cross(vector_normal, vector_tangent); // No normalization required.
 	result.Lambda = lambda_best;
 	SetNormal(result, vector_normal);
 	SetTangent(result, vector_tangent);
 	SetBitangent(result, vector_bitangent);
-	return result;
-}
-
-template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY IntersectTriangleREFIMPL(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& p0, const Vector3<FLOAT>& p1, const Vector3<FLOAT>& p2) DEVICE_SUFFIX {
-	RAYQUERY result = { 0 };
-	// Determine if we intersect the plane of the triangle in front of the eye.
-	Vector3<FLOAT> plane_normal = Cross(p1 - p0, p2 - p0); // Defer normalization
-	FLOAT plane_distance = Dot(plane_normal, p0);
-	FLOAT lambda = IntersectPlane<FLOAT>(origin, direction, plane_normal, plane_distance);
-	if (lambda < 0) {
-		result.Lambda = FloatTraits<FLOAT>::Max;
-		return result;
-	}
-	// Calculate the intersection point.
-	const Vector3<FLOAT> intersect = origin + lambda * direction;
-	// Determine if the point of intersection is within the triangle edges.
-	const Vector3<FLOAT> edge0 = Cross(p1 - p0, plane_normal);
-	FLOAT edge0_distance = Dot(edge0, p0);
-	if (Dot(intersect, edge0) - edge0_distance > 0) {
-		result.Lambda = FloatTraits<FLOAT>::Max;
-		return result;
-	}
-	const Vector3<FLOAT> edge1 = Cross(p2 - p1, plane_normal);
-	FLOAT edge1_distance = Dot(edge1, p1);
-	if (Dot(intersect, edge1) - edge1_distance > 0) {
-		result.Lambda = FloatTraits<FLOAT>::Max;
-		return result;
-	}
-	const Vector3<FLOAT> edge2 = Cross(p0 - p2, plane_normal);
-	FLOAT edge2_distance = Dot(edge2, p2);
-	if (Dot(intersect, edge2) - edge2_distance > 0) {
-		result.Lambda = FloatTraits<FLOAT>::Max;
-		return result;
-	}
-	// Complete hit; fill the intersection record.
-	plane_normal = Normalize(plane_normal);
-	result.Lambda = lambda;
-	SetNormal(result, plane_normal);
-	const Vector3<FLOAT> edge0n = Normalize(edge0);
-	SetTangent(result, edge0n);
-	SetBitangent(result, Cross(plane_normal, edge0n));
-	return result;
+	return true;
 }
 
 // This is the planeless intersection described in "Fast, Minimum Storage Ray/Triangle Intersection".
 // Credit to Tomas Möller and Ben Trumbore.
 template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& p0, const Vector3<FLOAT>& p1, const Vector3<FLOAT>& p2) DEVICE_SUFFIX {
-	RAYQUERY result = { 0 };
-	result.Lambda = FloatTraits<FLOAT>::Max;
+DEVICE_PREFIX bool IntersectTriangle(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& p0, const Vector3<FLOAT>& p1, const Vector3<FLOAT>& p2) DEVICE_SUFFIX {
+	SetCountTriangleTest(result, GetCountTriangleTest(result) + 1);
 	Vector3<FLOAT> edge1 = p1 - p0;
 	Vector3<FLOAT> edge2 = p2 - p0;
 	Vector3<FLOAT> pvec = Cross(direction, edge2);
@@ -390,69 +309,43 @@ DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vec
 	Vector3<FLOAT> tvec = origin - p0;
 	/* calculate U parameter and test bounds */
 	FLOAT u = Dot(tvec, pvec) * inv_det;
-	if (u < 0 || u > 1) return result;
+	if (u < 0 || u > 1) return false;
 	/* prepare to test V parameter */
 	Vector3<FLOAT> qvec = Cross(tvec, edge1);
 	/* calculate V parameter and test bounds */
 	FLOAT v = Dot(direction, qvec) * inv_det;
-	if (v < 0 || u + v > 1) return result;
+	if (v < 0 || u + v > 1) return false;
 	/* calculate t, ray intersects triangle */
-	result.Lambda = Dot(edge2, qvec) * inv_det;
+	FLOAT t = Dot(edge2, qvec) * inv_det;
+	if (t < 0 || t > result.Lambda) return false;
 	// END, back to the reference implementation.
-	Vector3<FLOAT> plane_normal = Normalize(Cross(p1 - p0, p2 - p0));
+	result.Lambda = t;
+	const Vector3<FLOAT> plane_normal = Cross(p1 - p0, p2 - p0);
+	const Vector3<FLOAT> edge0n = p1 - p0;
 	SetNormal(result, plane_normal);
-	const Vector3<FLOAT> edge0n = Normalize(p1 - p0);
 	SetTangent(result, edge0n);
 	SetBitangent(result, Cross(plane_normal, edge0n));
-	return result;
-}
-
-template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY IntersectTriangleList(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const TriangleList<FLOAT>& mesh) DEVICE_SUFFIX {
-	RAYQUERY result = { 0 };
-	result.Lambda = FloatTraits<FLOAT>::Max;
-	if (!IntersectBound<FLOAT>(origin, direction, *(const Vector3<FLOAT>*)&mesh.BoundMin, *(const Vector3<FLOAT>*)&mesh.BoundMax)) return result;
-	int best_index = -1;
-	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
-	for (int t = 0; t < mesh.TriangleCount; ++t) {
-		auto intersect = IntersectTriangle<FLOAT, IntersectSimple<FLOAT>>(origin, direction, mesh.Vertices[t * 3 + 0], mesh.Vertices[t * 3 + 1], mesh.Vertices[t * 3 + 2]);
-		if (intersect.Lambda > 0 && intersect.Lambda < best_lambda)
-		{
-			best_index = t;
-			best_lambda = intersect.Lambda;
-		}
-	}
-	if (best_index != -1)
-	{
-		int t = best_index;
-		auto intersect = IntersectTriangle<FLOAT, IntersectTBN<FLOAT>>(origin, direction, mesh.Vertices[t * 3 + 0], mesh.Vertices[t * 3 + 1], mesh.Vertices[t * 3 + 2]);
-		result.Lambda = best_lambda;
-		SetNormal(result, GetNormal(intersect));
-		SetTangent(result, GetTangent(intersect));
-		SetBitangent(result, GetBitangent(intersect));
-	}
-	return result;
+	SetCountTriangleHit(result, GetCountTriangleHit(result) + 1);
+	return true;
 }
 
 template <typename FLOAT, typename RAYQUERY, int RECURSION>
 struct IntersectMeshBVHNodeRecurse {
-	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node) DEVICE_SUFFIX {
-		RAYQUERY result = { 0 };
-		result.Lambda = FloatTraits<FLOAT>::Max;
+	static DEVICE_PREFIX bool Traverse(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node) DEVICE_SUFFIX {
+		// Keep tally of any hits.
+		bool foundhit = false;
 		// TODO: C++AMP doesn't like this code at all and CUDA has a hard time compiling it.
 		//       We're only going to build this for CPU and CUDA.
 		#ifndef _WINRT_DLL
 		// Make sure we're hitting this node first.
-		if (!IntersectBound(origin, direction, node.Min, node.Max)) return result;
+		SetCountBoxTest(result, GetCountBoxTest(result) + 1);
+		if (!IntersectBound(origin, direction, node.Min, node.Max)) return foundhit;
 		// Descend into child nodes if we have them.
 		if (node.ChildrenOffset != 0) {
 			const MeshBVHNodeList<FLOAT>& children = *(const MeshBVHNodeList<FLOAT>*)FollowPointer(pScene, node.ChildrenOffset);
 			for (int i = 0; i < children.Count; ++i) {
 				const MeshBVHNode<FLOAT>& child = children.Nodes[i];
-				auto intersect = IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, RECURSION - 1>::Traverse(origin, direction, pScene, child);
-				if (intersect.Lambda < result.Lambda) {
-					result = intersect;
-				}
+				foundhit |= IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, RECURSION - 1>::Traverse(result, origin, direction, pScene, child);
 			}
 		}
 		// Check the triangles if we have them.
@@ -462,67 +355,64 @@ struct IntersectMeshBVHNodeRecurse {
 				const Vector3<FLOAT> p0 = triangles.Triangles[i].P[0];
 				const Vector3<FLOAT> p1 = triangles.Triangles[i].P[1];
 				const Vector3<FLOAT> p2 = triangles.Triangles[i].P[2];
-				auto intersect = IntersectTriangle<FLOAT, RAYQUERY>(origin, direction, p0, p1, p2);
-				if (intersect.Lambda < result.Lambda) {
-					result = intersect;
-				}
+				foundhit |= IntersectTriangle<FLOAT, RAYQUERY>(result, origin, direction, p0, p1, p2);
 			}
 		}
 		#endif  //_WINRT_DLL
-		return result;
+		return foundhit;
 	}
 };
 
 template <typename FLOAT, typename RAYQUERY>
 struct IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, -1> {
-	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node) DEVICE_SUFFIX {
-		RAYQUERY result = { 0 };
-		result.Lambda = FloatTraits<FLOAT>::Max;
-		return result;
+	static DEVICE_PREFIX bool Traverse(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node) DEVICE_SUFFIX {
+		return false;
 	}
 };
 
 template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY IntersectMeshBVH(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVH<FLOAT>& mesh) DEVICE_SUFFIX {
+DEVICE_PREFIX bool IntersectMeshBVH(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVH<FLOAT>& mesh) DEVICE_SUFFIX {
 	const MeshBVHNode<FLOAT>& root = *(const MeshBVHNode<FLOAT>*)FollowPointer(pScene, mesh.RootOffset);
-	return IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, 8>::Traverse(origin, direction, pScene, root);
+	return IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, 8>::Traverse(result, origin, direction, pScene, root);
 }
 
 template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const SceneObject<FLOAT>& scene_object, const void* pObjectData) DEVICE_SUFFIX {
+DEVICE_PREFIX bool Intersect(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const SceneObject<FLOAT>& scene_object, const void* pObjectData) DEVICE_SUFFIX {
 	switch (scene_object.Geometry) {
 	case GEOMETRY_PLANE:
-		return IntersectPlane<FLOAT, RAYQUERY>(origin, direction);
+		return IntersectPlane<FLOAT, RAYQUERY>(result, origin, direction);
 	case GEOMETRY_SPHERE:
-		return IntersectSphere<FLOAT, RAYQUERY>(origin, direction);
+		return IntersectSphere<FLOAT, RAYQUERY>(result, origin, direction);
 	case GEOMETRY_CUBE:
-		return IntersectCube<FLOAT, RAYQUERY>(origin, direction);
-	case GEOMETRY_TRIANGLE:
-		return IntersectTriangle<FLOAT, RAYQUERY>(origin, direction, make_vector3<FLOAT>(0, 0, 0), make_vector3<FLOAT>(0, 1, 0), make_vector3<FLOAT>(1, 0, 0));
-	case GEOMETRY_TRIANGLELIST:
-		return IntersectTriangleList<FLOAT, RAYQUERY>(origin, direction, *(const TriangleList<FLOAT>*)pObjectData);
+		return IntersectCube<FLOAT, RAYQUERY>(result, origin, direction);
 	case GEOMETRY_MESHBVH:
-		return IntersectMeshBVH<FLOAT, RAYQUERY>(origin, direction, pScene, *(const MeshBVH<FLOAT>*)pObjectData);
+		return IntersectMeshBVH<FLOAT, RAYQUERY>(result, origin, direction, pScene, *(const MeshBVH<FLOAT>*)pObjectData);
 	default:
-		RAYQUERY result;
-		result.Lambda = FloatTraits<FLOAT>::Max;
-		return result;
+		return false;
 	}
 }
 
 template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const SceneObject<FLOAT>& scene_object) DEVICE_SUFFIX {
+DEVICE_PREFIX bool Intersect(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const SceneObject<FLOAT>& scene_object) DEVICE_SUFFIX {
 	Vector3<FLOAT> transformed_origin = TransformPoint(scene_object.TransformInverse, origin);
 	Vector3<FLOAT> transformed_direction = TransformVector(scene_object.TransformInverse, direction);
-	RAYQUERY result = Intersect<FLOAT, RAYQUERY>(transformed_origin, transformed_direction, pScene, scene_object, FollowPointer(pScene, scene_object.GeometryOffset));
-	SetNormal(result, TransformVector(scene_object.Transform, GetNormal(result)));
-	SetTangent(result, TransformVector(scene_object.Transform, GetTangent(result)));
-	SetBitangent(result, TransformVector(scene_object.Transform, GetBitangent(result)));
+	if (!Intersect<FLOAT, RAYQUERY>(result, transformed_origin, transformed_direction, pScene, scene_object, FollowPointer(pScene, scene_object.GeometryOffset))) return false;
+	SetNormal(result, Normalize(TransformVector(scene_object.Transform, GetNormal(result))));
+	SetTangent(result, Normalize(TransformVector(scene_object.Transform, GetTangent(result))));
+	SetBitangent(result, Normalize(TransformVector(scene_object.Transform, GetBitangent(result))));
+	return true;
+}
+
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const SceneObject<FLOAT>& scene_object) DEVICE_SUFFIX {
+	RAYQUERY result = { 0 };
+	result.Lambda = FloatTraits<FLOAT>::Max;
+	Intersect(result, origin, direction, pScene, scene_object);
 	return result;
 }
 
 template <typename FLOAT>
-DEVICE_PREFIX IntersectObject<FLOAT> Intersect(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+DEVICE_PREFIX IntersectObject<FLOAT> Intersect(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene) DEVICE_SUFFIX {
 	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
 	const SceneObject<FLOAT>* best_object = nullptr;
 	for (int i = 0; i < pScene.ObjectCount; ++i) {
@@ -537,6 +427,17 @@ DEVICE_PREFIX IntersectObject<FLOAT> Intersect(const Scene<FLOAT>& pScene, const
 	result.Lambda = best_lambda;
 	if (best_object != nullptr) {
 		result.Object = *best_object;
+	}
+	return result;
+}
+
+template <typename FLOAT>
+DEVICE_PREFIX IntersectDebugMesh<FLOAT> IntersectMeshingHeatmap(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+	IntersectDebugMesh<FLOAT> result = { 0 };
+	result.Lambda = FloatTraits<FLOAT>::Max;
+	for (int i = 0; i < pScene.ObjectCount; ++i) {
+		const SceneObject<FLOAT>& scene_object = pScene.Objects[i];
+		Intersect<FLOAT, IntersectDebugMesh<FLOAT>>(result, origin, direction, pScene, scene_object);
 	}
 	return result;
 }
@@ -658,7 +559,7 @@ template<typename FLOAT>
 struct RenderModeRaycast {
 public:
 	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		auto intersect = Intersect(pScene, origin, direction);
+		auto intersect = Intersect(origin, direction, pScene);
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
@@ -690,7 +591,7 @@ template<typename FLOAT>
 struct RenderModeRaycastBitangents {
 public:
 	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		auto intersect = Intersect(pScene, origin, direction);
+		auto intersect = Intersect(origin, direction, pScene);
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
@@ -705,7 +606,7 @@ template<typename FLOAT>
 struct RenderModeRaycastNormals {
 public:
 	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		auto intersect = Intersect(pScene, origin, direction);
+		auto intersect = Intersect(origin, direction, pScene);
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
@@ -720,7 +621,7 @@ template<typename FLOAT>
 struct RenderModeRaycastTangents {
 public:
 	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-		auto intersect = Intersect(pScene, origin, direction);
+		auto intersect = Intersect(origin, direction, pScene);
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
@@ -736,7 +637,7 @@ struct RenderModeRaytrace {
 public:
 	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
 		// Start intersecting objects.
-		auto intersect = Intersect(pScene, origin, direction);
+		auto intersect = Intersect(origin, direction, pScene);
 		if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 			return make_vector4<FLOAT>(0, 0, 0, 0);
 		}
@@ -809,6 +710,17 @@ struct RenderModeRaytrace<FLOAT, -1>
 };
 #pragma endregion
 
+#pragma region - Render Mode : Debug Mesh -
+template<typename FLOAT>
+struct RenderModeDebugMesh {
+public:
+	DEVICE_PREFIX static Vector4<FLOAT> CalculateColor(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
+		auto result = IntersectMeshingHeatmap<FLOAT>(pScene, origin, direction);
+		return make_vector4<FLOAT>(result.CountTriangleTest * FLOAT(0.01), result.CountBoxTest * FLOAT(0.01), result.CountTriangleHit * FLOAT(0.25), 1);
+	}
+};
+#pragma endregion
+
 #pragma region - Render Mode : Ambient Occlusion. -
 template <typename FLOAT>
 DEVICE_PREFIX Vector3<FLOAT> HemisphereCosineBias(FLOAT u, FLOAT v) DEVICE_SUFFIX {
@@ -846,7 +758,7 @@ struct HemisampleHalton {
 
 template <typename FLOAT, typename HEMISAMPLE>
 DEVICE_PREFIX Vector4<FLOAT> CalculateColorAOC(const Scene<FLOAT>& pScene, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, HEMISAMPLE& hemisamples) DEVICE_SUFFIX {
-	auto intersect = Intersect(pScene, origin, direction);
+	auto intersect = Intersect(origin, direction, pScene);
 	if (intersect.Lambda == FloatTraits<FLOAT>::Max) {
 		return make_vector4<FLOAT>(0, 0, 0, 0);
 	}

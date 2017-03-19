@@ -21,8 +21,6 @@ enum GeometryType {
 	GEOMETRY_PLANE = 0x6e616c50,		// FOURCC "Plan"
 	GEOMETRY_SPHERE = 0x72687053,		// FOURCC "Sphr"
 	GEOMETRY_CUBE = 0x65627543,			// FOURCC "Cube"
-	GEOMETRY_TRIANGLE = 0x61697254,		// FOURCC "Tria"
-	GEOMETRY_TRIANGLELIST = 0x4c697254, // FOURCC "TriL"
 	GEOMETRY_MESHBVH = 0x4268734d,      // FOURCC "MshB"
 };
 
@@ -79,18 +77,6 @@ struct Triangle3DList {
 	int Count;
 	int Padding0;
 	Triangle3D<FLOAT> Triangles[];
-};
-#pragma warning(pop)
-
-struct TriIndex {
-	int Index[3];
-};
-
-#pragma warning(push)
-#pragma warning(disable:4200)
-struct TriIndexList {
-	int Count;
-	TriIndex Triangles[];
 };
 #pragma warning(pop)
 
@@ -168,6 +154,15 @@ struct IntersectTBN {
 	Vector3<FLOAT> Normal;
 	Vector3<FLOAT> Tangent;
 	Vector3<FLOAT> Bitangent;
+};
+
+// IntersectDebugMesh - accumulate box and tri test counts.
+template <typename FLOAT>
+struct IntersectDebugMesh {
+	FLOAT Lambda;
+	int CountBoxTest;
+	int CountTriangleTest;
+	int CountTriangleHit;
 };
 
 #endif

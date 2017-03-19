@@ -125,7 +125,7 @@ namespace RenderToy
         /// In CUDA this is quite conservative.
         /// In C++AMP setting this too high kills the compiler.
         /// </summary>
-        public const int MAXIMUM_BVH_DEPTH = 6;
+        public const int MAXIMUM_BVH_DEPTH = 8;
     }
     #region - Section : Data Types -
     public struct Bound1D

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RenderToy
 {
@@ -37,15 +38,16 @@ namespace RenderToy
             get
             {
                 Scene scene = new Scene();
+                var mesh = MeshHelp.CreateMesh(new Sphere(), 18, 9);
+                var meshbvh = new MeshBVH(MeshHelp.CollapseIndices(mesh.Vertices, mesh.Triangles).ToArray());
                 scene.children.Add(new Node("Plane Ground", new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
                 scene.children.Add(new Node("Sphere (Red)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-5, 1, 0)), new Sphere(), Materials.Red, Materials.PlasticRed));
-                scene.children.Add(new Node("Sphere (Green)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-3, 1, 0)), MeshHelp.CreateMesh(new Sphere(), 20, 20), Materials.Green, Materials.PlasticGreen));
+                scene.children.Add(new Node("Sphere (Green)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-3, 1, 0)), meshbvh, Materials.Green, Materials.PlasticGreen));
                 scene.children.Add(new Node("Sphere (Blue)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-1, 1, 0)), new Sphere(), Materials.Blue, Materials.PlasticBlue));
                 scene.children.Add(new Node("Sphere (Yellow)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+1, 1, 0)), new Sphere(), Materials.Yellow, Materials.PlasticYellow));
                 scene.children.Add(new Node("Cube (Magenta)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+3, 1, 0)), new Cube(), Materials.Magenta, Materials.PlasticMagenta));
                 scene.children.Add(new Node("Sphere (Cyan)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+5, 1, 0)), new Sphere(), Materials.Cyan, Materials.PlasticCyan));
                 scene.children.Add(new Node("Sphere (Glass)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 3, 0)), new Sphere(), Materials.Black, Materials.Glass));
-                scene.children.Add(new Node("Triangle (Green)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(3, 2.1, 0)), new Triangle(), Materials.Green, Materials.PlasticGreen));
                 return scene;
             }
         }

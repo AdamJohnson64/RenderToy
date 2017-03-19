@@ -73,11 +73,7 @@ namespace RenderToy
                     }
                     // Record our location and write this object.
                     writeremaining.Offset = (int)m.Position;
-                    if (writeremaining.Target is Mesh)
-                    {
-                        Serialize((Mesh)writeremaining.Target);
-                    }
-                    else if (writeremaining.Target is MeshBVH)
+                    if (writeremaining.Target is MeshBVH)
                     {
                         Serialize((MeshBVH)writeremaining.Target);
                     }
@@ -151,16 +147,6 @@ namespace RenderToy
                 binarywriter.Write((int)Geometry.GEOMETRY_CUBE);
                 binarywriter.Write((int)0);
             }
-            else if (obj.Node.Primitive is Triangle)
-            {
-                binarywriter.Write((int)Geometry.GEOMETRY_TRIANGLE);
-                binarywriter.Write((int)0);
-            }
-            else if (obj.Node.Primitive is Mesh)
-            {
-                binarywriter.Write((int)Geometry.GEOMETRY_TRIANGLELIST);
-                EmitAndQueue(obj.Node.Primitive);
-            }
             else if (obj.Node.Primitive is MeshBVH)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
@@ -196,24 +182,6 @@ namespace RenderToy
             Serialize(obj.Reflect, Serialize);
             Serialize(obj.Refract, Serialize);
             Serialize((double)obj.Ior);
-        }
-        void Serialize(Mesh obj)
-        {
-            // Write the header.
-            binarywriter.Write((int)obj.Triangles.Length);
-            binarywriter.Write((int)0);
-            // Write the bounds.
-            Vector3D min = new Vector3D(obj.Vertices.Min(x => x.X), obj.Vertices.Min(x => x.Y), obj.Vertices.Min(x => x.Z));
-            Vector3D max = new Vector3D(obj.Vertices.Max(x => x.X), obj.Vertices.Max(x => x.Y), obj.Vertices.Max(x => x.Z));
-            Serialize(min, Serialize);
-            Serialize(max, Serialize);
-            // Write all the triangles.
-            foreach (var vtx in obj.Triangles
-                .SelectMany( t => new[] { t.Index0, t.Index1, t.Index2 })
-                .Select(v => obj.Vertices[v]))
-            {
-                Serialize(vtx, Serialize);
-            }
         }
         void Serialize(MeshBVH obj)
         {
@@ -320,8 +288,6 @@ namespace RenderToy
             GEOMETRY_PLANE = 0x6e616c50,        // FOURCC "Plan"
             GEOMETRY_SPHERE = 0x72687053,       // FOURCC "Sphr"
             GEOMETRY_CUBE = 0x65627543,         // FOURCC "Cube"
-            GEOMETRY_TRIANGLE = 0x61697254,     // FOURCC "Tria"
-            GEOMETRY_TRIANGLELIST = 0x4c697254, // FOURCC "TriL"
             GEOMETRY_MESHBVH = 0x4268734d,      // FOURCC "MshB"
         }
         enum Material
