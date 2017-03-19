@@ -67,6 +67,8 @@ template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> Cross(const Vector3<FLOAT
 template <typename FLOAT> DEVICE_PREFIX FLOAT Dot(const Vector3<FLOAT>& lhs, const Vector3<FLOAT>& rhs) DEVICE_SUFFIX { return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z; }
 template <typename FLOAT> DEVICE_PREFIX FLOAT Length(FLOAT x, FLOAT y, FLOAT z) DEVICE_SUFFIX { return SquareRoot(x * x + y * y + z * z); }
 template <typename FLOAT> DEVICE_PREFIX FLOAT Lerp(FLOAT y1, FLOAT y2, FLOAT x) DEVICE_SUFFIX { return y1 + (y2 - y1) * x; }
+template <typename FLOAT> DEVICE_PREFIX FLOAT Max(FLOAT lhs, FLOAT rhs) DEVICE_SUFFIX { return lhs > rhs ? lhs : rhs; }
+template <typename FLOAT> DEVICE_PREFIX FLOAT Min(FLOAT lhs, FLOAT rhs) DEVICE_SUFFIX { return lhs < rhs ? lhs : rhs; }
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> Normalize(const Vector3<FLOAT>& val) DEVICE_SUFFIX { return val / Length(val.x, val.y, val.z); }
 #pragma endregion
 
@@ -149,7 +151,7 @@ template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const Inters
 template <typename FLOAT> DEVICE_PREFIX Vector3<FLOAT> GetBitangent(const IntersectTBN<FLOAT>& result) DEVICE_SUFFIX { return result.Bitangent; }
 
 template <typename FLOAT>
-DEVICE_PREFIX bool IntersectBound(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& min, const Vector3<FLOAT>& max) DEVICE_SUFFIX {
+DEVICE_PREFIX bool IntersectBoundREFIMPL(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& min, const Vector3<FLOAT>& max) DEVICE_SUFFIX {
 	// This is the fast clipping or "slab method".
 	// Form a line P1->P2 and clip against the min max planes of each side of the box.
 	Vector3<FLOAT> p1 = origin;
@@ -222,6 +224,33 @@ DEVICE_PREFIX bool IntersectBound(const Vector3<FLOAT>& origin, const Vector3<FL
 		p1 = p1 + (max.z - p1.z) / (p2.z - p1.z) * (p2 - p1);
 	}
 	return true;
+}
+
+// This is the slab method describe in SIGGRAPH notes.
+// See http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
+template <typename FLOAT>
+DEVICE_PREFIX bool IntersectBound(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Vector3<FLOAT>& min, const Vector3<FLOAT>& max) DEVICE_SUFFIX {
+	double tmin = -FloatTraits<FLOAT>::Max;
+	double tmax = FloatTraits<FLOAT>::Max;
+	if (direction.x != 0) {
+		double tx1 = (min.x - origin.x) / direction.x;
+		double tx2 = (max.x - origin.x) / direction.x;
+		tmin = Max(tmin, Min(tx1, tx2));
+		tmax = Min(tmax, Max(tx1, tx2));
+	}
+	if (direction.y != 0) {
+		double ty1 = (min.y - origin.y) / direction.y;
+		double ty2 = (max.y - origin.y) / direction.y;
+		tmin = Max(tmin, Min(ty1, ty2));
+		tmax = Min(tmax, Max(ty1, ty2));
+	}
+	if (direction.z != 0) {
+		double tz1 = (min.z - origin.z) / direction.z;
+		double tz2 = (max.z - origin.z) / direction.z;
+		tmin = Max(tmin, Min(tz1, tz2));
+		tmax = Min(tmax, Max(tz1, tz2));
+	}
+	return tmax >= tmin;
 }
 
 template <typename FLOAT, typename RAYQUERY>
