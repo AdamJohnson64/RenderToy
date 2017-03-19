@@ -129,7 +129,6 @@ DEVICE_PREFIX FLOAT IntersectPlane(const Vector3<FLOAT>& origin, const Vector3<F
 	return (plane_distance - Dot(plane_normal, origin)) / Dot(plane_normal, direction);
 }
 
-template <typename FLOAT, typename RAYQUERY> DEVICE_PREFIX void SetLambda(RAYQUERY& result, FLOAT value) DEVICE_SUFFIX { result.Lambda = value; }
 template <typename FLOAT> DEVICE_PREFIX void SetNormal(IntersectSimple<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX {}
 template <typename FLOAT> DEVICE_PREFIX void SetNormal(IntersectNormal<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX { result.Normal = value; }
 template <typename FLOAT> DEVICE_PREFIX void SetNormal(IntersectTBN<FLOAT>& result, Vector3<FLOAT> value) DEVICE_SUFFIX { result.Normal = value; }
@@ -266,7 +265,7 @@ DEVICE_PREFIX RAYQUERY IntersectCube(const Vector3<FLOAT>& origin, const Vector3
 			SetBitangent(result, face_bitangent[face_index]);
 		}
 	}
-	SetLambda(result, best_lambda);
+	result.Lambda = best_lambda;
 	return result;
 }
 
@@ -275,7 +274,7 @@ DEVICE_PREFIX RAYQUERY IntersectPlane(const Vector3<FLOAT>& origin, const Vector
 	RAYQUERY result;
 	const FLOAT PLANE_DISTANCE = 0;
 	const Vector3<FLOAT> PLANE_NORMAL = make_vector3<FLOAT>(0, 1, 0);
-	SetLambda(result, (PLANE_DISTANCE - Dot(PLANE_NORMAL, origin)) / Dot(PLANE_NORMAL, direction));
+	result.Lambda = (PLANE_DISTANCE - Dot(PLANE_NORMAL, origin)) / Dot(PLANE_NORMAL, direction);
 	SetNormal(result, PLANE_NORMAL);
 	SetTangent(result, make_vector3<FLOAT>(1, 0, 0));
 	SetBitangent(result, make_vector3<FLOAT>(0, 0, -1));
@@ -284,7 +283,7 @@ DEVICE_PREFIX RAYQUERY IntersectPlane(const Vector3<FLOAT>& origin, const Vector
 
 template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX RAYQUERY IntersectSphere(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction) DEVICE_SUFFIX {
-	RAYQUERY result;
+	RAYQUERY result = { 0 };
 	const FLOAT SPHERE_RADIUS = 1;
 	FLOAT a = Dot(direction, direction);
 	FLOAT b = 2 * Dot(origin, direction);
@@ -303,7 +302,7 @@ DEVICE_PREFIX RAYQUERY IntersectSphere(const Vector3<FLOAT>& origin, const Vecto
 	Vector3<FLOAT> vector_bitangent = make_vector3<FLOAT>(0,-1,0);
 	Vector3<FLOAT> vector_tangent = Normalize(Cross(vector_bitangent, vector_normal));
 	vector_bitangent = Cross(vector_normal, vector_tangent); // No normalization required.
-	SetLambda(result, lambda_best);
+	result.Lambda = lambda_best;
 	SetNormal(result, vector_normal);
 	SetTangent(result, vector_tangent);
 	SetBitangent(result, vector_bitangent);
@@ -318,7 +317,7 @@ DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vec
 	FLOAT plane_distance = Dot(plane_normal, p0);
 	FLOAT lambda = IntersectPlane<FLOAT>(origin, direction, plane_normal, plane_distance);
 	if (lambda < 0) {
-		SetLambda(result, FloatTraits<FLOAT>::Max);
+		result.Lambda = FloatTraits<FLOAT>::Max;
 		return result;
 	}
 	// Calculate the intersection point.
@@ -327,24 +326,24 @@ DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vec
 	const Vector3<FLOAT> edge0 = Cross(p1 - p0, plane_normal);
 	FLOAT edge0_distance = Dot(edge0, p0);
 	if (Dot(intersect, edge0) - edge0_distance > 0) {
-		SetLambda(result, FloatTraits<FLOAT>::Max);
+		result.Lambda = FloatTraits<FLOAT>::Max;
 		return result;
 	}
 	const Vector3<FLOAT> edge1 = Cross(p2 - p1, plane_normal);
 	FLOAT edge1_distance = Dot(edge1, p1);
 	if (Dot(intersect, edge1) - edge1_distance > 0) {
-		SetLambda(result, FloatTraits<FLOAT>::Max);
+		result.Lambda = FloatTraits<FLOAT>::Max;
 		return result;
 	}
 	const Vector3<FLOAT> edge2 = Cross(p0 - p2, plane_normal);
 	FLOAT edge2_distance = Dot(edge2, p2);
 	if (Dot(intersect, edge2) - edge2_distance > 0) {
-		SetLambda(result, FloatTraits<FLOAT>::Max);
+		result.Lambda = FloatTraits<FLOAT>::Max;
 		return result;
 	}
 	// Complete hit; fill the intersection record.
 	plane_normal = Normalize(plane_normal);
-	SetLambda(result, lambda);
+	result.Lambda = lambda;
 	SetNormal(result, plane_normal);
 	const Vector3<FLOAT> edge0n = Normalize(edge0);
 	SetTangent(result, edge0n);
@@ -355,7 +354,7 @@ DEVICE_PREFIX RAYQUERY IntersectTriangle(const Vector3<FLOAT>& origin, const Vec
 template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX RAYQUERY IntersectTriangleList(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const TriangleList<FLOAT>& mesh) DEVICE_SUFFIX {
 	RAYQUERY result = { 0 };
-	SetLambda(result, FloatTraits<FLOAT>::Max);
+	result.Lambda = FloatTraits<FLOAT>::Max;
 	if (!IntersectBound<FLOAT>(origin, direction, *(const Vector3<FLOAT>*)&mesh.BoundMin, *(const Vector3<FLOAT>*)&mesh.BoundMax)) return result;
 	int best_index = -1;
 	FLOAT best_lambda = FloatTraits<FLOAT>::Max;
@@ -371,7 +370,7 @@ DEVICE_PREFIX RAYQUERY IntersectTriangleList(const Vector3<FLOAT>& origin, const
 	{
 		int t = best_index;
 		auto intersect = IntersectTriangle<FLOAT, IntersectTBN<FLOAT>>(origin, direction, mesh.Vertices[t * 3 + 0], mesh.Vertices[t * 3 + 1], mesh.Vertices[t * 3 + 2]);
-		SetLambda(result, best_lambda);
+		result.Lambda = best_lambda;
 		SetNormal(result, GetNormal(intersect));
 		SetTangent(result, GetTangent(intersect));
 		SetBitangent(result, GetBitangent(intersect));
@@ -383,7 +382,7 @@ template <typename FLOAT, typename RAYQUERY, int RECURSION>
 struct IntersectMeshBVHNodeRecurse {
 	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node) DEVICE_SUFFIX {
 		RAYQUERY result = { 0 };
-		SetLambda(result, FloatTraits<FLOAT>::Max);
+		result.Lambda = FloatTraits<FLOAT>::Max;
 		// TODO: C++AMP doesn't like this code at all and CUDA has a hard time compiling it.
 		//       We're only going to build this for CPU and CUDA.
 		#ifndef _WINRT_DLL
@@ -422,7 +421,7 @@ template <typename FLOAT, typename RAYQUERY>
 struct IntersectMeshBVHNodeRecurse<FLOAT, RAYQUERY, -1> {
 	static DEVICE_PREFIX RAYQUERY Traverse(const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVHNode<FLOAT>& node) DEVICE_SUFFIX {
 		RAYQUERY result = { 0 };
-		SetLambda(result, FloatTraits<FLOAT>::Max);
+		result.Lambda = FloatTraits<FLOAT>::Max;
 		return result;
 	}
 };
@@ -450,7 +449,7 @@ DEVICE_PREFIX RAYQUERY Intersect(const Vector3<FLOAT>& origin, const Vector3<FLO
 		return IntersectMeshBVH<FLOAT, RAYQUERY>(origin, direction, pScene, *(const MeshBVH<FLOAT>*)pObjectData);
 	default:
 		RAYQUERY result;
-		SetLambda(result, FloatTraits<FLOAT>::Max);
+		result.Lambda = FloatTraits<FLOAT>::Max;
 		return result;
 	}
 }
