@@ -3,19 +3,20 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.SceneGraph.Transforms;
 using System.Windows;
 
-namespace RenderToy
+namespace RenderToy.WPF
 {
     public class Camera : DependencyObject
     {
         public static DependencyProperty TransformProperty = DependencyProperty.Register("Transform", typeof(Matrix3D), typeof(Camera));
         public Camera()
         {
-            Object = new TransformPosQuat(new Vector3D(0, 2, -5));
+            Object = new TransformQuaternion(new Vector3D(0, 2, -5));
             SetValue(TransformProperty, Object.Transform);
             Object.OnTransformChanged += () => SetValue(TransformProperty, Object.Transform);
         }
-        public readonly TransformPosQuat Object;
+        public readonly TransformQuaternion Object;
     }
 }

@@ -4,8 +4,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RenderToy.BoundingVolumeHierarchy;
+using RenderToy.ModelFormat;
+using RenderToy.SceneGraph.Meshes;
+using RenderToy.SceneGraph.Primitives;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,12 +22,23 @@ namespace RenderToy
         [TestMethod]
         public void BVHTimingTest()
         {
-            var mesh = MeshHelp.CreateMesh(new Sphere(), 100, 100);
-            var triangles = MeshHelp.CollapseIndices(mesh.Vertices, mesh.Triangles).ToArray();
+            var mesh = Mesh.CreateMesh(new Sphere(), 100, 100);
+            var triangles = Mesh.FlattenIndices(mesh.Vertices, mesh.Triangles).ToArray();
+            Performance.LogBegin("BVH Octree (Reference)");
+            try
+            {
+                var node = BoundingVolumeHierarchy.OctreeREF.Create(triangles);
+                VerifyMesh(triangles, node);
+            }
+            catch (Exception e)
+            {
+                Performance.LogEvent("Exception while calculating BVH: " + e.Message);
+            }
+            Performance.LogEnd("BVH Octree (Reference)");
             Performance.LogBegin("BVH Octree (Baseline)");
             try
             {
-                var node = BVH.CreateLooseOctree(triangles);
+                var node = BoundingVolumeHierarchy.Octree.Create(triangles);
                 VerifyMesh(triangles, node);
             }
             catch (Exception e)
@@ -32,32 +46,10 @@ namespace RenderToy
                 Performance.LogEvent("Exception while calculating BVH: " + e.Message);
             }
             Performance.LogEnd("BVH Octree (Baseline)");
-            Performance.LogBegin("BVH Octree (MaskSplit)");
-            try
-            {
-                var node = BVH.CreateLooseOctree2(triangles);
-                VerifyMesh(triangles, node);
-            }
-            catch (Exception e)
-            {
-                Performance.LogEvent("Exception while calculating BVH: " + e.Message);
-            }
-            Performance.LogEnd("BVH Octree (MaskSplit)");
-            Performance.LogBegin("BVH Octree (Single Threaded)");
-            try
-            {
-                var node = BVH.CreateLooseOctreeST(triangles);
-                VerifyMesh(triangles, node);
-            }
-            catch (Exception e)
-            {
-                Performance.LogEvent("Exception while calculating BVH: " + e.Message);
-            }
-            Performance.LogEnd("BVH Octree (Single Threaded)");
             Performance.LogBegin("BVH KD (Baseline)");
             try
             {
-                var node = BVH.CreateKD(triangles);
+                var node = BoundingVolumeHierarchy.KDTree.Create(triangles);
                 VerifyMesh(triangles, node);
             }
             catch (Exception e)
@@ -73,20 +65,20 @@ namespace RenderToy
             var allnode = EnumerateNodes(root).ToArray();
             if (!allnode
                 .Where(n => n.Parent != null)
-                .All(n => BVH.ShapeContains(n.Parent.Bound, n.Node.Bound)))
+                .All(n => CommonBVH.ShapeContains(n.Parent.Bound, n.Node.Bound)))
             {
                 throw new InvalidDataException("A child node exists which is not contained by its parent.");
             }
             // All node bounds should at least contain all their triangles.
             if (!allnode
                 .Where(n => n.Node.Triangles != null)
-                .All(n => BVH.ShapeContains(n.Node.Bound, BVH.ComputeBounds(n.Node.Triangles))))
+                .All(n => CommonBVH.ShapeContains(n.Node.Bound, CommonBVH.ComputeBounds(n.Node.Triangles))))
             {
                 throw new InvalidDataException("A node bound exists which does not contain its triangle extents.");
             }
             // Make sure we don't exceed the maximum depth for the BVH.
             int maximum_bvh_depth = allnode.Max(x => x.Level);
-            if (maximum_bvh_depth > BVH.MAXIMUM_BVH_DEPTH)
+            if (maximum_bvh_depth > CommonBVH.MAXIMUM_BVH_DEPTH)
             {
                 throw new InvalidDataException("This BVH is " + maximum_bvh_depth + " levels deep; this exceeds the maximum depth and will fail on GPU.");
             }
@@ -184,7 +176,7 @@ namespace RenderToy
                     try
                     {
                         Performance.LogEvent("Loading mesh '" + pathname + "'.");
-                        return FileFormat.LoadPLYFromPath(pathname);
+                        return LoaderPLY.LoadFromPath(pathname);
                     }
                     catch (Exception e)
                     {

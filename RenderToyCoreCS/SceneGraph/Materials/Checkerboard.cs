@@ -3,15 +3,16 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using Windows.UI.Xaml.Controls;
-
-namespace RenderToy.UWP
+namespace RenderToy.SceneGraph.Materials
 {
-    public sealed partial class MainPage : Page
+    public class Checkerboard : IMaterial
     {
-        public MainPage()
+        public Checkerboard(Vector4D color1, Vector4D color2)
         {
-            this.InitializeComponent();
+            Color1 = color1;
+            Color2 = color2;
         }
+        private readonly Vector4D Color1;
+        private readonly Vector4D Color2;
     }
 }

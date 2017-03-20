@@ -3,12 +3,14 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.SceneGraph;
+using RenderToy.SceneGraph.Cameras;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace RenderToy
+namespace RenderToy.WPF
 {
     public abstract class ViewBase : FrameworkElement
     {
@@ -60,10 +62,10 @@ namespace RenderToy
         {
             get
             {
-                return View * Projection * CameraPerspective.AspectCorrectFit(ActualWidth, ActualHeight);
+                return View * Projection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             }
         }
-        CameraPerspective CameraMat = new CameraPerspective();
+        Perspective CameraMat = new Perspective();
         #endregion
         #region - Section : Rendering -
         protected override void OnRender(DrawingContext drawingContext)

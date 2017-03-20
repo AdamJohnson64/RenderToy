@@ -3,6 +3,8 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.SceneGraph.Primitives;
+
 namespace RenderToy
 {
     public static class DrawHelp

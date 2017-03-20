@@ -3,15 +3,12 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using Windows.UI.Xaml.Controls;
-
-namespace RenderToy.UWP
+namespace RenderToy.SceneGraph.Primitives
 {
-    public sealed partial class MainPage : Page
+    /// <summary>
+    /// This empty IPrimitive interface is only used to type-identify suitable primitive types.
+    /// </summary>
+    public interface IPrimitive
     {
-        public MainPage()
-        {
-            this.InitializeComponent();
-        }
     }
 }

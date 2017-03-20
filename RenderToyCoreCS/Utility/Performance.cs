@@ -18,23 +18,31 @@ namespace RenderToy
     {
         public static void LogEvent(string text)
         {
-            WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " EVENT \"" + text + "\"");
+            WriteEvent("EVENT", text);
         }
         public static void LogBegin(string text)
         {
-            WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " BEGIN \"" + text + "\"");
+            WriteEvent("BEGIN", text);
         }
         public static void LogEnd(string text)
         {
-            WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " END \"" + text + "\"");
+            WriteEvent("END", text);
+        }
+        static void WriteEvent(string eventtype, string text)
+        {
+#if WINDOWS_UWP
+            WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID 0 " + eventtype + " \"" + text + "\"");
+#else
+            WriteLine("@" + Stopwatch.GetTimestamp() + " TASKID " + (Task.CurrentId ?? 0) + " THREADID " + Thread.CurrentThread.ManagedThreadId + " " + eventtype + " \"" + text + "\"");
+#endif
         }
         static void WriteLine(string text)
         {
 #if !WINDOWS_UWP
             Console.WriteLine(text);
+#endif
 #if DEGUG
             Debug.WriteLine(text);
-#endif
 #endif
         }
     }

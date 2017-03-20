@@ -14,6 +14,7 @@
 // This helper will automatically collect and convert parameters to match the signature of a renderer.
 // Overridable defaults will be provided for arguments outside the normal FillFunction signature.
 
+using RenderToy.SceneGraph;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

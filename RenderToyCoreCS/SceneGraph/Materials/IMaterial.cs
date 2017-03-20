@@ -3,15 +3,12 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using Windows.UI.Xaml.Controls;
-
-namespace RenderToy.UWP
+namespace RenderToy.SceneGraph.Materials
 {
-    public sealed partial class MainPage : Page
+    /// <summary>
+    /// This empty IMaterial interface is only used to type-identify suitable material types.
+    /// </summary>
+    public interface IMaterial
     {
-        public MainPage()
-        {
-            this.InitializeComponent();
-        }
     }
 }

@@ -3,19 +3,18 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using Microsoft.Win32;
+using RenderToy.RenderControl;
+using RenderToy.SceneGraph;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace RenderToy
+namespace RenderToy.WPF
 {
     class ViewUser : ViewBase
     {
@@ -143,7 +142,7 @@ namespace RenderToy
     {
         static RenderCallCommands()
         {
-            Calls = RenderCall.Generate(new[] { typeof(RenderCS), typeof(RenderD3D), typeof(RenderToyCLI) }).ToArray();
+            Calls = RenderCall.Generate(new[] { typeof(RenderModeCS), typeof(RenderD3D), typeof(RenderToyCLI) }).ToArray();
             Commands = Calls.ToDictionary(x => x, y => new RoutedUICommand(RenderCall.GetDisplayNameFull(y.MethodInfo.Name), y.MethodInfo.Name, typeof(RenderCallCommands)));
         }
         public static readonly RenderCall[] Calls;

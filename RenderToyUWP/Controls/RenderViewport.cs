@@ -3,6 +3,9 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.SceneGraph;
+using RenderToy.SceneGraph.Cameras;
+using RenderToy.SceneGraph.Transforms;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,7 +18,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 
-namespace RenderToy
+namespace RenderToy.UWP
 {
     public sealed class RenderViewport : UserControl
     {
@@ -24,7 +27,7 @@ namespace RenderToy
             SizeChanged += (s, e) => { Repaint(); };
             Content = control_image;
             var flyout = new MenuFlyout();
-            var calls = RenderCall.Generate(new[] { typeof(RenderCS), typeof(RenderToyCX) }).ToArray();
+            var calls = RenderCall.Generate(new[] { typeof(RenderModeCS), typeof(RenderToyCX) }).ToArray();
             foreach (var group in calls.GroupBy(x => RenderCall.GetDisplayNameBare(x.MethodInfo.Name)))
             {
                 var flyout_group = new MenuFlyoutSubItem { Text = group.Key };
@@ -40,7 +43,7 @@ namespace RenderToy
         }
         Image control_image = new Image();
         #region - Section : Camera -
-        TransformPosQuat Camera = new TransformPosQuat(new Vector3D(0, 2, -5));
+        TransformQuaternion Camera = new TransformQuaternion(new Vector3D(0, 2, -5));
         #endregion
         #region - Section : Input Handling -
         protected override void OnPointerPressed(PointerRoutedEventArgs e)
@@ -108,7 +111,7 @@ namespace RenderToy
                 RENDER_HEIGHT /= 2;
             }
             if (RENDER_WIDTH < 8 || RENDER_HEIGHT < 8) return;
-            var mvp = MathHelp.Invert(Camera.Transform) * CameraPerspective.CreateProjection(0.01, 100.0, 45, 45) * CameraPerspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            var mvp = MathHelp.Invert(Camera.Transform) * Perspective.CreateProjection(0.01, 100.0, 45, 45) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             var inverse_mvp = MathHelp.Invert(mvp);
             var bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT);
             byte[] buffer_image = new byte[4 * RENDER_WIDTH * RENDER_HEIGHT];

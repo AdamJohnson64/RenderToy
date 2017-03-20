@@ -3,8 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
@@ -12,10 +14,8 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using RenderToy.Linq;
-using System.Diagnostics;
 
-namespace RenderToy
+namespace RenderToy.WPF
 {
     public class PerformanceTrackControl : FrameworkElement
     {

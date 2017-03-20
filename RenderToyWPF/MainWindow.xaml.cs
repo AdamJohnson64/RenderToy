@@ -4,15 +4,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using Microsoft.Win32;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
-using System;
-using System.Globalization;
+using RenderToy.ModelFormat;
+using RenderToy.SceneGraph;
+using RenderToy.SceneGraph.Materials;
+using RenderToy.SceneGraph.Primitives;
+using RenderToy.SceneGraph.Transforms;
 using System.IO;
+using System.Windows;
+using System.Windows.Input;
 
-namespace RenderToy
+namespace RenderToy.WPF
 {
     public partial class MainWindow : Window
     {
@@ -34,8 +35,8 @@ namespace RenderToy
                 if (ofd.ShowDialog() == true)
                 {
                     Scene scene = new Scene();
-                    scene.AddChild(new Node("Plane (Ground)", new TransformMatrix3D(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), Materials.LightGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
-                    scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix3D(MathHelp.CreateMatrixScale(100, 100, 100)), FileFormat.LoadPLYBVHFromPath(ofd.FileName), Materials.LightGray, Materials.PlasticRed));
+                    scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, new Checkerboard(StockMaterials.Black, StockMaterials.White)));
+                    scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadBVHFromPath(ofd.FileName), StockMaterials.LightGray, StockMaterials.PlasticRed));
                     DataContext = scene;
                 }
                 e.Handled = true;

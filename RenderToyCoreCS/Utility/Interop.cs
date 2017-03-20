@@ -3,6 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.SceneGraph;
+using RenderToy.SceneGraph.Materials;
+using RenderToy.SceneGraph.Meshes;
+using RenderToy.SceneGraph.Primitives;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -89,9 +93,9 @@ namespace RenderToy
                     {
                         Serialize((IReadOnlyList<TriIndex>)writeremaining.Target);
                     }
-                    else if (writeremaining.Target is MaterialCommon)
+                    else if (writeremaining.Target is GenericMaterial)
                     {
-                        Serialize((MaterialCommon)writeremaining.Target);
+                        Serialize((GenericMaterial)writeremaining.Target);
                     }
                     else if (writeremaining.Target is IReadOnlyList<Vector3D>)
                     {
@@ -154,12 +158,12 @@ namespace RenderToy
                 binarywriter.Write((int)0);
             }
             // Write the material type.
-            if (obj.Node.Material is MaterialCommon)
+            if (obj.Node.Material is GenericMaterial)
             {
                 binarywriter.Write((int)Material.MATERIAL_COMMON);
                 EmitAndQueue(obj.Node.Material);
             }
-            else if (obj.Node.Material is CheckerboardMaterial)
+            else if (obj.Node.Material is Checkerboard)
             {
                 binarywriter.Write((int)Material.MATERIAL_CHECKERBOARD_XZ);
                 binarywriter.Write((int)0);
@@ -170,7 +174,7 @@ namespace RenderToy
                 binarywriter.Write((int)0);
             }
         }
-        void Serialize(MaterialCommon obj)
+        void Serialize(GenericMaterial obj)
         {
             Serialize(obj.Ambient, Serialize);
             Serialize(obj.Diffuse, Serialize);

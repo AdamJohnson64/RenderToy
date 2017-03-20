@@ -3,12 +3,14 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.RenderControl;
+using RenderToy.SceneGraph;
 using System;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace RenderToy
+namespace RenderToy.WPF
 {
     class ViewWire : ViewBase
     {
@@ -17,7 +19,7 @@ namespace RenderToy
             IsVisibleChanged += (s, e) =>
             {
                 if ((bool)e.NewValue) {
-                    render = new SinglePassAsyncAdaptor(RenderCall.Generate(typeof(RenderCS).GetMethod("WireframeCPUF64")), () => Dispatcher.Invoke(InvalidateVisual));
+                    render = new SinglePassAsyncAdaptor(RenderCall.Generate(typeof(RenderModeCS).GetMethod("WireframeCPUF64")), () => Dispatcher.Invoke(InvalidateVisual));
                     render.SetScene(Scene);
                 } else {
                     render = null;

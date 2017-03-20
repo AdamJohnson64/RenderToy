@@ -3,10 +3,12 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.SceneGraph;
+using RenderToy.SceneGraph.Primitives;
 using System;
 using System.Linq;
 
-namespace RenderToy
+namespace RenderToy.WPF
 {
     public static class RenderD3D
     {

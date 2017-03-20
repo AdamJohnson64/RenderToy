@@ -3,15 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using Windows.UI.Xaml.Controls;
-
-namespace RenderToy.UWP
+namespace RenderToy.SceneGraph.Cameras
 {
-    public sealed partial class MainPage : Page
+    public interface IProjection
     {
-        public MainPage()
-        {
-            this.InitializeComponent();
-        }
+        Matrix3D Projection { get; }
     }
 }

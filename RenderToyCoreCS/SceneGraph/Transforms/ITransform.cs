@@ -3,15 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using Windows.UI.Xaml.Controls;
-
-namespace RenderToy.UWP
+namespace RenderToy.SceneGraph.Transforms
 {
-    public sealed partial class MainPage : Page
+    public interface ITransform
     {
-        public MainPage()
-        {
-            this.InitializeComponent();
-        }
+        Matrix3D Transform { get; }
     }
 }

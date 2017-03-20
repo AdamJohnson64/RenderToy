@@ -10,6 +10,11 @@
 #define RENDERSIMPLE
 #endif
 
+using RenderToy.SceneGraph;
+using RenderToy.SceneGraph.Cameras;
+using RenderToy.SceneGraph.Materials;
+using RenderToy.SceneGraph.Primitives;
+using RenderToy.SceneGraph.Transforms;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -67,7 +72,7 @@ namespace RenderToy
             BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
             {
-                RenderToyCLI.AmbientOcclusionCPUF32(SceneFormatter.CreateFlatMemoryF32(DefaultScene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(DefaultMVP * CameraPerspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, 0, 256);
+                RenderToyCLI.AmbientOcclusionCPUF32(SceneFormatter.CreateFlatMemoryF32(DefaultScene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(DefaultMVP * Perspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, 0, 256);
             }
             finally
             {
@@ -84,7 +89,7 @@ namespace RenderToy
             BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
             {
-                RenderToyCLI.RaytraceCPUF32AA(SceneFormatter.CreateFlatMemoryF32(DefaultScene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(DefaultMVP * CameraPerspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, 4, 4);
+                RenderToyCLI.RaytraceCPUF32AA(SceneFormatter.CreateFlatMemoryF32(DefaultScene), SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert(DefaultMVP * Perspective.AspectCorrectFit(width, height))), bitmapdata.Scan0, width, height, bitmapdata.Stride, 4, 4);
             }
             finally
             {
@@ -98,7 +103,7 @@ namespace RenderToy
             BitmapData bitmapdata = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             try
             {
-                RenderToy.RenderCS.WireframeCPUF64(DefaultScene, DefaultMVP * CameraPerspective.AspectCorrectFit(width, height), bitmapdata.Scan0, width, height, bitmapdata.Stride);
+                RenderToy.RenderModeCS.WireframeCPUF64(DefaultScene, DefaultMVP * Perspective.AspectCorrectFit(width, height), bitmapdata.Scan0, width, height, bitmapdata.Stride);
             }
             finally
             {
@@ -111,11 +116,11 @@ namespace RenderToy
             get
             {
                 Scene scene = new Scene();
-                scene.AddChild(new Node("Plane (Ground)", new TransformMatrix3D(MathHelp.CreateMatrixIdentity()), new Plane(), Materials.DarkGray, new CheckerboardMaterial(Materials.Black, Materials.White)));
-                scene.AddChild(new Node("Sphere (Red)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(-2, 1, 0)), new Sphere(), Materials.Red, Materials.PlasticRed));
-                scene.AddChild(new Node("Sphere (Green)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), Materials.Green, Materials.PlasticGreen));
-                scene.AddChild(new Node("Sphere (Blue)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(+2, 1, 0)), new Sphere(), Materials.Blue, Materials.PlasticBlue));
-                scene.AddChild(new Node("Sphere (Glass)", new TransformMatrix3D(MathHelp.CreateMatrixTranslate(0, 1, -2)), new Sphere(), Materials.Black, Materials.Glass));
+                scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), new Plane(), StockMaterials.DarkGray, new Checkerboard(StockMaterials.Black, StockMaterials.White)));
+                scene.AddChild(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-2, 1, 0)), new Sphere(), StockMaterials.Red, StockMaterials.PlasticRed));
+                scene.AddChild(new Node("Sphere (Green)", new TransformMatrix(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), StockMaterials.Green, StockMaterials.PlasticGreen));
+                scene.AddChild(new Node("Sphere (Blue)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+2, 1, 0)), new Sphere(), StockMaterials.Blue, StockMaterials.PlasticBlue));
+                scene.AddChild(new Node("Sphere (Glass)", new TransformMatrix(MathHelp.CreateMatrixTranslate(0, 1, -2)), new Sphere(), StockMaterials.Black, StockMaterials.Glass));
                 return scene;
             }
         }
@@ -131,7 +136,7 @@ namespace RenderToy
         {
             get
             {
-                return CameraPerspective.CreateProjection(0.001, 100.0, 45.0, 45.0);
+                return Perspective.CreateProjection(0.001, 100.0, 45.0, 45.0);
             }
         }
         static Matrix3D DefaultMVP
