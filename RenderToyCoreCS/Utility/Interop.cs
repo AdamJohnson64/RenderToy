@@ -206,6 +206,22 @@ namespace RenderToy
         }
         void Serialize(IReadOnlyList<Triangle3D> obj)
         {
+            if (!UseF64)
+            {
+                // There's a very definite risk we might emit degenerate triangles as a result of F32 conversion.
+                // Collapse these triangles in advance.
+                Func<Triangle3D, bool> IsDegenerate = (item) =>
+                {
+                    float x0 = (float)item.P0.X, y0 = (float)item.P0.Y, z0 = (float)item.P0.Z;
+                    float x1 = (float)item.P1.X, y1 = (float)item.P1.Y, z1 = (float)item.P1.Z;
+                    float x2 = (float)item.P2.X, y2 = (float)item.P2.Y, z2 = (float)item.P2.Z;
+                    if (x0 == x1 && y0 == y1 && z0 == z1) return true;
+                    if (x0 == x2 && y0 == y2 && z0 == z2) return true;
+                    if (x1 == x2 && y1 == y2 && z1 == z2) return true;
+                    return false;
+                };
+                obj = obj.Where(t => !IsDegenerate(t)).ToArray();
+            }
             binarywriter.Write((int)obj.Count);
             binarywriter.Write((int)0);
             foreach (var item in obj)
