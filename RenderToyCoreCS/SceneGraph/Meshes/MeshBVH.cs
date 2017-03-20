@@ -23,7 +23,7 @@ namespace RenderToy.SceneGraph.Meshes
         {
             Stopwatch perf = new Stopwatch();
             perf.Restart();
-            MeshBVH root = BoundingVolumeHierarchy.Octree.Create(triangles.ToArray());
+            MeshBVH root = BoundingVolumeHierarchy.KDTree.Create(triangles.ToArray());
             perf.Stop();
             Performance.LogEvent("MeshBVH build took " + perf.ElapsedMilliseconds + "ms.");
             return root;

@@ -77,8 +77,9 @@ namespace RenderToy.BoundingVolumeHierarchy
                 if ((triangle_in_child_mask & 0x40) == 0x40) children_triangles[6].Add(triangle);
                 if ((triangle_in_child_mask & 0x80) == 0x80) children_triangles[7].Add(triangle);
             }
-            //TODO: This is using the KDTree node builder for some reason.
-            return new MeshBVH(bound, null, children_triangles.Select(x => KDTree.Create(x.ToArray(), level - 1)).Where(x => x != null).ToArray());
+            // If all triangles ended up in one node then abort; it won't get any better.
+            if (children_triangles.Any(x => x.Count == triangles.Length)) goto EMITUNMODIFIED;
+            return new MeshBVH(bound, null, children_triangles.Select(x => Create(x.ToArray(), level - 1)).Where(x => x != null).ToArray());
             EMITUNMODIFIED:
             return new MeshBVH(bound, triangles, null);
         }
