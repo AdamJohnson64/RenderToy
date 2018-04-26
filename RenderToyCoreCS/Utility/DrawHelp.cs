@@ -153,21 +153,21 @@ namespace RenderToy
         public static void DrawParametricUV(fnDrawLineWorld line, GetPointUV shape)
         {
             int USEGMENTS = 10;
-            int LSEGMENTS = 20;
+            int VSEGMENTS = 20;
             for (int u = 0; u <= USEGMENTS; ++u)
             {
-                for (int l = 0; l < LSEGMENTS; ++l)
+                for (int l = 0; l < VSEGMENTS; ++l)
                 {
                     // Draw U Lines.
                     {
-                        Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
-                        Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
+                        Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS);
+                        Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS);
                         line(p3u1, p3u2);
                     }
                     // Draw V Lines.
                     {
-                        Vector3D p3u1 = shape((l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
-                        Vector3D p3u2 = shape((l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
+                        Vector3D p3u1 = shape((l + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
+                        Vector3D p3u2 = shape((l + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
                         line(p3u1, p3u2);
                     }
                 }
@@ -195,44 +195,44 @@ namespace RenderToy
         public static void DrawParametricVolumeUVW(fnDrawLineWorld line, GetPointUVW shape)
         {
             int USEGMENTS = 10;
-            int LSEGMENTS = 20;
+            int VSEGMENTS = 20;
             for (int u = 0; u <= USEGMENTS; ++u)
             {
                 for (int v = 0; v <= USEGMENTS; ++v)
                 {
-                    for (int l = 0; l < LSEGMENTS; ++l)
+                    for (int l = 0; l < VSEGMENTS; ++l)
                     {
                         // Draw UV Lines.
                         {
-                            Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
-                            Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
+                            Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS);
+                            Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS);
                             line(p3u1, p3u2);
                         }
                         {
-                            Vector3D p3u1 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS);
-                            Vector3D p3u2 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS);
+                            Vector3D p3u1 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS);
+                            Vector3D p3u2 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS);
                             line(p3u1, p3u2);
                         }
                         // Draw UW Lines.
                         {
-                            Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS, (v + 0.0) / USEGMENTS);
-                            Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS, (v + 0.0) / USEGMENTS);
+                            Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS, (v + 0.0) / USEGMENTS);
+                            Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS, (v + 0.0) / USEGMENTS);
                             line(p3u1, p3u2);
                         }
                         {
-                            Vector3D p3u1 = shape((v + 0.0) / USEGMENTS, (l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
-                            Vector3D p3u2 = shape((v + 0.0) / USEGMENTS, (l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS);
+                            Vector3D p3u1 = shape((v + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
+                            Vector3D p3u2 = shape((v + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
                             line(p3u1, p3u2);
                         }
                         // Draw VW Lines.
                         {
-                            Vector3D p3u1 = shape((l + 0.0) / LSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
-                            Vector3D p3u2 = shape((l + 1.0) / LSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
+                            Vector3D p3u1 = shape((l + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
+                            Vector3D p3u2 = shape((l + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
                             line(p3u1, p3u2);
                         }
                         {
-                            Vector3D p3u1 = shape((l + 0.0) / LSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
-                            Vector3D p3u2 = shape((l + 1.0) / LSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
+                            Vector3D p3u1 = shape((l + 0.0) / VSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
+                            Vector3D p3u2 = shape((l + 1.0) / VSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
                             line(p3u1, p3u2);
                         }
                     }
