@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2037
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyWPF", "RenderToyWPF\RenderToyWPF.csproj", "{D98DB157-6492-4FDF-926C-684EF1AFE84A}"
 EndProject
@@ -90,5 +90,8 @@ Global
 		{95D65CDC-0B6B-4D8C-8930-C6E4845829E1} = {F6C625C0-AF0F-4C98-9861-2766422B7B98}
 		{00E78119-D5D7-4F74-8E0B-E97850ECFFCA} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 		{0AFAED8E-B5AB-4693-8698-6686481C0784} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B8307FCD-BF35-462A-A7E7-62A533E764D5}
 	EndGlobalSection
 EndGlobal

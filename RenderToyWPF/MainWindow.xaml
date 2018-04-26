@@ -10,53 +10,62 @@
         <UserControl.Resources>
             <local:Camera x:Key="Camera"/>
         </UserControl.Resources>
-        <DockPanel>
-            <!-- Menu -->
-            <Menu DockPanel.Dock="Left">
-                <Menu.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel/>
-                    </ItemsPanelTemplate>
-                </Menu.ItemsPanel>
-                <MenuItem Header="File" BorderBrush="Black" BorderThickness="1" Margin="2">
-                    <MenuItem Header="New" Command="{x:Static local:MainWindow.CommandSceneNew}"/>
-                    <MenuItem Header="Open" Command="{x:Static local:MainWindow.CommandSceneOpen}"/>
-                </MenuItem>
-                <MenuItem Header="View" BorderBrush="Black" BorderThickness="1" Margin="2">
-                    <MenuItem Header="Preview" Command="{x:Static local:MainWindow.CommandRenderPreviewsToggle}"/>
-                    <MenuItem Header="Wireframe" Command="{x:Static local:MainWindow.CommandRenderWireframeToggle}"/>
-                </MenuItem>
-                <MenuItem Header="Debug" BorderBrush="Black" BorderThickness="1" Margin="2">
-                    <MenuItem Header="Performance Trace" Command="{x:Static local:MainWindow.CommandDebugToolPerformanceTrace}"/>
-                </MenuItem>
-            </Menu>
-            <Grid>
-                <!-- Main Viewport Layer -->
-                <local:ViewUser x:Name="ViewMain" Camera="{StaticResource Camera}"/>
-                <!-- Wireframe Layer -->
-                <local:ViewWire x:Name="ViewWireframe" IsHitTestVisible="False" Camera="{StaticResource Camera}" Opacity="0.5"/>
-                <!-- PIP Preview -->
-                <Border x:Name="ViewPreview" HorizontalAlignment="Right" VerticalAlignment="Top" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="8" Margin="8" Padding="4">
-                    <Border.Background>
-                        <LinearGradientBrush>
-                            <LinearGradientBrush.Transform>
-                                <RotateTransform Angle="45"/>
-                            </LinearGradientBrush.Transform>
-                            <GradientStop Color="LightGray" Offset="0"/>
-                            <GradientStop Color="DarkGray" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Border.Effect>
-                        <DropShadowEffect Opacity="0.5" ShadowDepth="4"/>
-                    </Border.Effect>
-                    <StackPanel>
-                        <TextBlock HorizontalAlignment="Left" Foreground="DarkGray" Text="Preview"/>
-                        <Border Background="White" BorderBrush="DarkGray" BorderThickness="1" CornerRadius="4" Padding="2">
-                            <local:ViewUser Width="192" Height="128" Camera="{StaticResource Camera}"/>
+        <TabControl>
+            <TabItem Header="Interactive View">
+                <DockPanel>
+                    <!-- Menu -->
+                    <Menu DockPanel.Dock="Left">
+                        <Menu.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel/>
+                            </ItemsPanelTemplate>
+                        </Menu.ItemsPanel>
+                        <MenuItem Header="File" BorderBrush="Black" BorderThickness="1" Margin="2">
+                            <MenuItem Header="New" Command="{x:Static local:MainWindow.CommandSceneNew}"/>
+                            <MenuItem Header="Open" Command="{x:Static local:MainWindow.CommandSceneOpen}"/>
+                        </MenuItem>
+                        <MenuItem Header="View" BorderBrush="Black" BorderThickness="1" Margin="2">
+                            <MenuItem Header="Preview" Command="{x:Static local:MainWindow.CommandRenderPreviewsToggle}"/>
+                            <MenuItem Header="Wireframe" Command="{x:Static local:MainWindow.CommandRenderWireframeToggle}"/>
+                        </MenuItem>
+                        <MenuItem Header="Debug" BorderBrush="Black" BorderThickness="1" Margin="2">
+                            <MenuItem Header="Performance Trace" Command="{x:Static local:MainWindow.CommandDebugToolPerformanceTrace}"/>
+                        </MenuItem>
+                    </Menu>
+                    <Grid>
+                        <!-- Main Viewport Layer -->
+                        <local:ViewUser x:Name="ViewMain" Camera="{StaticResource Camera}"/>
+                        <!-- Wireframe Layer -->
+                        <local:ViewWire x:Name="ViewWireframe" IsHitTestVisible="False" Camera="{StaticResource Camera}" Opacity="0.5"/>
+                        <!-- PIP Preview -->
+                        <Border x:Name="ViewPreview" HorizontalAlignment="Right" VerticalAlignment="Top" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="8" Margin="8" Padding="4">
+                            <Border.Background>
+                                <LinearGradientBrush>
+                                    <LinearGradientBrush.Transform>
+                                        <RotateTransform Angle="45"/>
+                                    </LinearGradientBrush.Transform>
+                                    <GradientStop Color="LightGray" Offset="0"/>
+                                    <GradientStop Color="DarkGray" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect Opacity="0.5" ShadowDepth="4"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <TextBlock HorizontalAlignment="Left" Foreground="DarkGray" Text="Preview"/>
+                                <Border Background="White" BorderBrush="DarkGray" BorderThickness="1" CornerRadius="4" Padding="2">
+                                    <local:ViewUser Width="192" Height="128" Camera="{StaticResource Camera}"/>
+                                </Border>
+                            </StackPanel>
                         </Border>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </DockPanel>
+                    </Grid>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="Interactive Document">
+                <FlowDocumentReader ViewingMode="Page">
+                    <StaticResource ResourceKey="RenderToyDocument"/>
+                </FlowDocumentReader>
+            </TabItem>
+        </TabControl>
     </UserControl>
 </Window>

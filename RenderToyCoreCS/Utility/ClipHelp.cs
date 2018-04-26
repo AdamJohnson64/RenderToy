@@ -105,7 +105,7 @@ namespace RenderToy
         /// <param name="p1">The clip-space starting position.</param>
         /// <param name="p2">The clip-space ending position.</param>
         /// <returns>True if any part of the line remains, false if it was completely clipped away.</returns>
-        static bool ClipLine3D(ref Vector4D p1, ref Vector4D p2)
+        public static bool ClipLine3D(ref Vector4D p1, ref Vector4D p2)
         {
             // Clip to clip-space near (z=0).
             if (!ClipLine3D(ref p1, ref p2, new Vector4D(0, 0, 1, 0))) return false;

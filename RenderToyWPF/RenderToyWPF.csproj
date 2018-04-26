@@ -65,6 +65,7 @@
     </ApplicationDefinition>
     <Compile Include="Controls\Camera.cs" />
     <Compile Include="Controls\ViewBase.cs" />
+    <Compile Include="Controls\ViewPipeline.cs" />
     <Compile Include="Controls\ViewWire.cs" />
     <Compile Include="PerformanceTrace.xaml.cs">
       <DependentUpon>PerformanceTrace.xaml</DependentUpon>
@@ -84,6 +85,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="PerformanceTrace.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="RenderToyDocument.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

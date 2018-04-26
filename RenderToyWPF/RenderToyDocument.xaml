@@ -1,0 +1,714 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:RenderToy.WPF.Figures">
+<FlowDocument x:Key="RenderToyDocument"  ColumnWidth="400" FontSize="14" FontFamily="Georgia">
+
+<!-- ====================================================================== -->
+<!-- MAJOR SECTION : Title, Introduction and Inspiration -->
+<!-- ====================================================================== -->
+<Paragraph>
+<Run FontSize="56">RenderToy</Run><LineBreak/>
+<Run FontSize="18">A bit of history that's now a bit of silicon...</Run>
+</Paragraph>
+
+<Paragraph><Italic>
+This document is transcribed from the original into live XPS format. The images in this document are generated via code for demonstration purposes.
+</Italic></Paragraph>
+
+<Paragraph>
+3D Graphics is a <Italic>huge</Italic> topic. Back when I started studying this in the 90s some of the concepts were as immature as my view of them. My first rasterizer was in screen space and interpolated incorrectly (without the homogeneous divide) and I didn't even know what linear algebra was at that point. I’d screengrab the code but it’s in Turbo Pascal and it won’t run anymore...
+</Paragraph>
+<Paragraph>
+...So I'm going to do a refresh and try to build this sample project, mostly as a teaching aid for people that want to learn about 3D and how it works under the hood. A key feature is that everything I touch on will have a software reference implementation so you can see the math behind the hardware renderer. I also want to look at non-realtime rendering by taking a walk through Raytrace Lane.
+</Paragraph>
+<Paragraph>
+We will cover several approaches to rendering in a demo style:
+</Paragraph>
+<List>
+<ListItem><Paragraph><Bold>Point Rendering</Bold> - Fast rendering but poor visual quality (for demos only).</Paragraph></ListItem>
+<ListItem><Paragraph><Bold>Line Rendering (Wireframe)</Bold> - Fast rendering and acceptable working quality.</Paragraph></ListItem>
+<ListItem><Paragraph><Bold>Triangle Rasterization</Bold> - Slow rendering but good working quality.</Paragraph></ListItem>
+<ListItem><Paragraph><Bold>Whitted Raytracing</Bold> - Very slow rendering but good quality.</Paragraph></ListItem>
+<ListItem><Paragraph><Bold>Path Tracing</Bold> - Incredible slow rendering but very good quality.</Paragraph></ListItem>
+</List>
+<Paragraph>
+We’ll start from point rendering because it insulates us from the complexities of rendering enough that we can work on the 3D aspects of the problem. Bear in mind that no-one renders like this normally because the results are pretty poor. There’s going to be lots of empty space on the screen.
+</Paragraph>
+<Paragraph FontSize="24">Software Goals</Paragraph>
+<Paragraph><Italic>Modern.</Italic></Paragraph>
+<List>
+<ListItem><Paragraph>Modern Operating System (Windows 10).</Paragraph></ListItem>
+<ListItem><Paragraph>Modern Language (C#).</Paragraph></ListItem>
+<ListItem><Paragraph>Modern User Interface (WDDM WPF).</Paragraph></ListItem>
+<ListItem><Paragraph>Use just enough language features to make things obvious.</Paragraph></ListItem>
+<ListItem><Paragraph>Don’t get wrapped up in memory management and junk.</Paragraph></ListItem>
+</List>
+<Paragraph><Italic>Simple.</Italic></Paragraph>
+<List>
+<ListItem><Paragraph>I'm not building an OpenGL state machine.</Paragraph></ListItem>
+<ListItem><Paragraph>Everything simple, brief and self-explanatory.</Paragraph></ListItem>
+<ListItem><Paragraph>Performance is always good but it's not our concern here.</Paragraph></ListItem>
+<ListItem><Paragraph>Deal with each concept in isolation so we can demonstrate it.</Paragraph></ListItem>
+</List>
+<Paragraph><Italic>Flexible and Reusable.</Italic></Paragraph>
+<List>
+<ListItem><Paragraph>Parts of this can be a tooling platform for trying other things.</Paragraph></ListItem>
+<ListItem><Paragraph>Split out controls (etc) for the express purpose of simple reuse.</Paragraph></ListItem>
+</List>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">UV Parametric Surfaces</Paragraph>
+<Paragraph>
+Before we start drawing anything we have to choose something to draw. For our purposes we’ll choose a class of surfaces called <Bold>uv parametric surfaces</Bold>. There’s nothing special about these beyond the fact that they take a pair of values to define their surface in 3 dimensional space.
+</Paragraph>
+<Paragraph FontFamily="Times New Roman" FontStyle="Italic" TextAlignment="Center">f(u,v)=[x,y,z]</Paragraph>
+<Paragraph>
+Many types of surfaces can be expressed this way:
+</Paragraph>
+<List>
+<ListItem><Paragraph>Bezier Patches (later…)</Paragraph></ListItem>
+<ListItem><Paragraph>Cylinders (Uncapped)</Paragraph></ListItem>
+<ListItem><Paragraph><Bold>Planes</Bold></Paragraph></ListItem>
+<ListItem><Paragraph>Spheres</Paragraph></ListItem>
+<ListItem><Paragraph>Torii</Paragraph></ListItem>
+</List>
+<Paragraph>
+Most shapes cannot be described this way (e.g. cubes and arbitrary meshes) but we’ll cover how to deal with that later.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="18">Creating a UV Parametric Plane</Paragraph>
+<Paragraph>
+Consider the formula <Run FontFamily="Times New Roman" FontStyle="Italic">f(u,v)=[u,0,v]</Run>.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigurePointIntro Width="256" Height="256"/></Border></BlockUIContainer>
+<Paragraph>
+Remember that this surface is only defined where <Run FontFamily="Times New Roman" FontStyle="Italic">0≤u≤1</Run> and <Run FontFamily="Times New Roman" FontStyle="Italic">0≤v≤1</Run> so it will expand from the origin at <Run FontFamily="Times New Roman" FontStyle="Italic">[0,0,0]</Run> to <Run FontFamily="Times New Roman" FontStyle="Italic">[1,0,1]</Run>.<LineBreak/>
+<LineBreak/>
+Looking from the front this moves left to right (X) with increasing <Run FontFamily="Times New Roman" FontStyle="Italic">u</Run> and front to back (Z) with increasing <Run FontFamily="Times New Roman" FontStyle="Italic">v</Run>.<LineBreak/>
+<LineBreak/>
+The Y coordinate is constant at zero so this object sits flat on X and Z.<LineBreak/>
+<LineBreak/>
+This is the <Run FontFamily="Times New Roman" FontStyle="Italic">y=0</Run> plane, and this is going to be your home for a while. We’ve drawn it on the right but replaced the points with small crosses so it’s easier to see.<LineBreak/>
+<LineBreak/>
+We will actually use a slightly modified formula <Run FontFamily="Times New Roman" FontStyle="Italic">f(u,v)=[-1+2u, 0, -1+2v]</Run> so our plane segment stretches from -1 to +1 and passes through the origin. This is only to make it look a bit more interesting.<LineBreak/>
+<LineBreak/>
+Whoa, wait, back up a bit. We’ve skipped over several steps while we created that image. It’s drawn in perspective and viewed from a specific angle. How did we do that?
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<!-- ====================================================================== -->
+<!-- MAJOR SECTION : Point Rendering -->
+<!-- ====================================================================== -->
+<Paragraph BreakPageBefore="True" FontSize="24">Level One - Points</Paragraph>
+
+<Paragraph>
+We introduce two physical concepts to allow us to describe how the view is made - informally we’ll call them the <Italic>camera</Italic> and the <Italic>lens</Italic>. Armed with both of these we can describe both where the camera is in space and how perspective happens (informally, perspective is a quality of the lens). Let’s set these terms aside for now and focus on the maths.<LineBreak/>
+<LineBreak/>
+As we talk about points in space we talk about the space that they’re in. These spaces are coordinate spaces relative to something.<LineBreak/>
+<LineBreak/>
+We can talk about:
+</Paragraph>
+<List>
+<ListItem>
+<Paragraph>
+<Bold>World Space</Bold><LineBreak/>
+The absolute position of something in the universe irrespective of who or what is looking at it. Everything starts out life in world space.
+</Paragraph>
+</ListItem>
+<ListItem>
+<Paragraph>
+<Bold>View Space</Bold><LineBreak/>
+The position of something relative to where the camera is.
+</Paragraph>
+</ListItem>
+</List>
+<Paragraph>
+We know that we can use matrix math to move from space to space so we can apply our first transform. Instead of moving the camera we will move the world to the camera. <Italic>Consider: If our camera is 2 meters to the right then it’s the same as if the camera hadn’t moved and the world moved 2 meters to the left.</Italic> If we’re performing this as an abstract rotation and translation in the universe then we express it as the inverse of the camera transformation (<Run FontFamily="Times New Roman" FontStyle="Italic">C</Run>). We call this part of the transformation the view transform (<Run FontFamily="Times New Roman" FontStyle="Italic">V</Run>), where:
+</Paragraph>
+<Paragraph FontFamily="Times New Roman" FontStyle="Italic" TextAlignment="Center">V=C<Run BaselineAlignment="Superscript">-1</Run></Paragraph>
+<Paragraph>
+If we start with points in world space and transform them by <Run FontFamily="Times New Roman" FontStyle="Italic">V</Run> they move into view space - the space of the camera.<LineBreak/>
+<LineBreak/>
+The next space:
+</Paragraph>
+<List>
+<ListItem>
+<Paragraph><Bold>Homogeneous Clip Space</Bold><LineBreak/>
+The position of something within the viewing window.
+</Paragraph>
+</ListItem>
+</List>
+<Paragraph>
+Homogeneous Clip Space is a little special because it contains that magic word “homogeneous”. To understand what it means we need to understand how perspective happens.<LineBreak/>
+<LineBreak/>
+<Bold>Recall:</Bold> Non-singular matrix transformations define affine transformations:
+</Paragraph>
+<Paragraph FontStyle="Italic" Margin="32,0,0,0">
+“In geometry, an affine transformation, affine map or an affinity (from the Latin, affinis, "connected with") is a function between affine spaces which preserves points, straight lines and planes. Also, sets of parallel lines remain parallel after an affine transformation.” - <Hyperlink>https://en.wikipedia.org/wiki/Affine_transformation</Hyperlink>
+</Paragraph>
+<Paragraph>
+In particular note that parallel lines remain parallel after transformation. <Italic><Underline>This is not true of perspective</Underline></Italic>.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Understanding w</Paragraph>
+<Paragraph>
+I lied. When GPUs deal with coordinates in space they’re actually built up from four components <Run FontFamily="Times New Roman" FontStyle="Italic">[x,y,z,w]</Run>.
+</Paragraph>
+<Paragraph TextAlignment="Center">
+We know what x, y and z are but what the heck is w?<LineBreak/>
+<Bold>Over-broad statement: w is how we get perspective.</Bold>
+</Paragraph>
+<Paragraph>
+Before any point is represented on screen it is always divided by <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run>. Up to here we can just pretend that <Run FontFamily="Times New Roman" FontStyle="Italic">w=1</Run> for all points that we’re giving to the GPU. Dividing by unity does nothing so perspective divide isn’t doing anything interesting - <Italic>yet</Italic>.<LineBreak/>
+<LineBreak/>
+Imagine 4 points on the screen, and we’ll just pretend all their <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> components are unity for now. These four points are actually quite significant - we call this box the <Italic>clip frame</Italic>. For now you can just ignore this fact.<LineBreak/>
+</Paragraph>
+<!-- Placeholder -->
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><Rectangle HorizontalAlignment="Center" Width="256" Height="256" Fill="Red"/></Border></BlockUIContainer>
+<Paragraph>
+Now: Imagine if we divide all these components by a value increasing from 1 to infinity. They will apparently <Italic>pinch</Italic> toward the center point at <Run FontFamily="Times New Roman" FontStyle="Italic">[0,0]</Run> but they will not do so in a linear fashion.
+</Paragraph>
+<!-- Placeholder -->
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><Rectangle HorizontalAlignment="Center" Width="256" Height="256" Fill="Red"/></Border></BlockUIContainer>
+<Paragraph TextAlignment="Center">
+Looks fairly <Italic>perspectivey</Italic> doesn’t it?
+</Paragraph>
+<Paragraph>
+The points will actually converge toward the center of the screen without ever reaching it (unless w is infinity). This is actually how your GPU is fooling you into perceiving depth.<LineBreak/>
+<LineBreak/>
+Notice how most transformation matrices (rotations, scales and translations) are of the form:
+</Paragraph>
+<Paragraph FontFamily="Consolas" FontStyle="Italic" TextAlignment="Center">
+[a b c 0]<LineBreak/>
+[d e f 0]<LineBreak/>
+[g h i 0]<LineBreak/>
+[j k l 1]<LineBreak/>
+</Paragraph>
+<Paragraph>
+<Bold>Note:</Bold> Transforms of this form cannot change <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run>.<LineBreak/>
+<LineBreak/>
+Now we know enough to talk about the <Italic>perspective projection transformation</Italic>.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">The Projection Matrix</Paragraph>
+<Paragraph>
+The projection matrix <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run> can be thought of as your lens - it defines the angular extent of your view. It’s the only matrix in our system that can change the <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> component of a vector and typically looks like this:
+</Paragraph>
+<!-- Placeholder -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="256" Fill="Red"/></BlockUIContainer>
+<Paragraph TextAlignment="Center">
+Notice how it violates our signature transformation matrix format.<LineBreak/>
+The final column is <Underline>NOT</Underline> <Run FontFamily="Times New Roman" FontStyle="Italic">[0,0,0,1]</Run>.<LineBreak/>
+This matrix will change <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run>.
+</Paragraph>
+<Paragraph>
+To make things a little easier let’s pretend we have a 90 degree field of view horizontally and vertically and our viewing screen is a square. Since <Run FontFamily="Times New Roman" FontStyle="Italic">cot(45)=1</Run> we can put ones where those <Run FontFamily="Times New Roman" FontStyle="Italic">cot(fov)</Run> parts are and focus on the other parts.
+</Paragraph>
+<Paragraph>
+The other components <Run FontFamily="Times New Roman" FontStyle="Italic">z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">n</Run> and <Run FontFamily="Times New Roman" FontStyle="Italic">z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">f</Run> are called the near plane and far plane. GPUs have limited precision to deal with z-buffers (more on this later) so our z values are typically scaled between zero and one. The near plane represents the nearest z point that has a depth of zero. The far plane represents the furthest z point that has a depth of one. For our purposes it really doesn’t matter what we choose here as long as <Run FontFamily="Times New Roman" FontStyle="Italic">z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">n</Run> is small enough and <Run FontFamily="Times New Roman" FontStyle="Italic">z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">f</Run> is large enough that our model sits comfortably between them. We’re not using z-buffers yet anyway.
+</Paragraph>
+<Paragraph>
+Note some other features:
+</Paragraph>
+<List>
+<ListItem><Paragraph><Run FontFamily="Times New Roman" FontStyle="Italic">z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">n</Run> <Underline>must not</Underline> be zero, no matter how tempting it might seem.</Paragraph></ListItem>
+</List>
+<Paragraph>
+If the near plane is set at zero then the bottom row of the perspective transform becomes completely zero and the matrix becomes singular. Maths will rebel rather quickly - don’t do this.
+</Paragraph>
+<Paragraph>
+Note the result of transforming some <Run FontFamily="Times New Roman" FontStyle="Italic">[x,y,z,1]</Run> vectors by this matrix:
+</Paragraph>
+<List>
+<ListItem><Paragraph><Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> always assumes exactly the value of <Run FontFamily="Times New Roman" FontStyle="Italic">z</Run>.</Paragraph></ListItem>
+<ListItem><Paragraph>For points at the near plane <Run FontFamily="Times New Roman" FontStyle="Italic">z=0</Run>.</Paragraph></ListItem>
+<ListItem><Paragraph>For points at the far plane <Run FontFamily="Times New Roman" FontStyle="Italic">z=w=z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">f</Run></Paragraph></ListItem>
+<ListItem><Paragraph>...and because <Run FontFamily="Times New Roman" FontStyle="Italic">z</Run> is also divided by <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> they will have <Run FontFamily="Times New Roman" FontStyle="Italic">z=1</Run> after divide.</Paragraph></ListItem>
+</List>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Going Clip Space To Viewport</Paragraph>
+<Paragraph>
+The projection space is the final transform before we start sending geometry to be drawn. All we have to do is transform our previous view space into the projection space.
+</Paragraph>
+<Paragraph FontFamily="Times New Roman" FontStyle="Italic" TextAlignment="Center">M=C<Run BaselineAlignment="Superscript">-1</Run>P=VP</Paragraph>
+<Paragraph>
+Transforming any <Run FontFamily="Times New Roman" FontStyle="Italic">[x,y,z,1]</Run> point by this matrix will move the point into view space and then into clip space. All that remains is to perform the <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> divide on this vector any you now have a viewport coordinate...almost.<LineBreak/>
+<LineBreak/>
+Recall clip space looks like this:
+</Paragraph>
+<!-- Placeholder -->
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><Rectangle HorizontalAlignment="Center" Width="256" Height="256" Fill="Red"/></Border></BlockUIContainer>
+<Paragraph>
+Your vertices will be in the space [-1,-1] to [1,1] so we just need to adjust this for our screen. Let W be the pixel width of the screen and H be the height, therefore:<LineBreak/>
+<LineBreak/>
+</Paragraph>
+<Paragraph FontFamily="Times New Roman" FontStyle="Italic" TextAlignment="Center">
+Xscreen=1+Xclip2W<LineBreak/>
+Yscreen=1+Yclip2H<LineBreak/>
+</Paragraph>
+<Paragraph>
+We’re done. Draw this pixel to the screen and call it a day.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Oops - Geometry Behind The Camera</Paragraph>
+<Paragraph>
+If you’ve followed the instructions thus far you should have a nice perspective projected plane of points. If you’ve moved the camera around you might even have noticed something strange happens. When points pass behind our view they appear upside down!
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigurePointNegativeW Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+What’s happening here is <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> became negative. In this case we’ll divide x and y by a negative number and they’ll flip sign. Worse, before we got to this the points probably had <Run FontFamily="Times New Roman" FontStyle="Italic">w=0</Run> and were physically in the plane of the eye! This is weird. This doesn’t make sense.<LineBreak/>
+<LineBreak/>
+For now don’t draw points with <Run FontFamily="Times New Roman" FontStyle="Italic">w≤0</Run>. This will become much harder later but we can cheat because we’re only drawing points.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Recap - What We Know</Paragraph>
+<Paragraph>
+This is the bulk of what we need to know to get things into 3D space:
+</Paragraph>
+<List>
+<ListItem><Paragraph>View &amp; Projection Transforms</Paragraph></ListItem>
+<ListItem><Paragraph>Homogeneous Divide &amp; Perspective</Paragraph></ListItem>
+<ListItem><Paragraph>Viewport Point Plotting</Paragraph></ListItem>
+</List>
+
+<!-- ====================================================================== -->
+<!-- MAJOR SECTION : Wireframes -->
+<!-- ====================================================================== -->
+<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Wireframes</Paragraph>
+<Paragraph>
+It’s not much harder to go from points to lines. If we do this we end up with a <Italic>wireframe view</Italic> which is the mainstay of many 3D tools.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureWireframeIntro Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+Working with lines is a great way for artists to visualize how dense/complex their models are and gain an understanding of its surface. We can do all this while maintaining the ability to easily select and manipulate individual points. In short, it’s good to know how to make this kind of view for any kind of 3D modeling tool.<LineBreak/>
+<LineBreak/>
+Assuming you tried it already you might have encountered a problem...
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureWireframeNegativeW Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+Remember previously we suggested not drawing points if they are behind the eye (<Run FontFamily="Times New Roman" FontStyle="Italic">w≤0</Run>). This solution works fine for points because they have no physical extent. This will not work for lines!<LineBreak/>
+<LineBreak/>
+We have some options:<LineBreak/>
+<LineBreak/>
+<Bold>Don’t draw lines if either point is behind the eye.</Bold><LineBreak/>
+This isn’t a great solution if the lines are particularly large and they may flash annoyingly.<LineBreak/>
+<LineBreak/>
+<Bold>Slice the lines up into smaller lines.</Bold><LineBreak/>
+This can work but involves some overhead and more line drawing.<LineBreak/>
+<LineBreak/>
+<Bold><Italic>Clip</Italic> the lines so they fit entirely in front of the eye.</Bold><LineBreak/>
+This is the best solution, but it’s implemented a little strangely because of our <Run FontFamily="Times New Roman" FontStyle="Italic">[x,y,z,w]</Run> coordinates...
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Line Clipping In 2D - Brief History &amp; Primer</Paragraph>
+<Paragraph>
+If you’ve ever tried to draw lines in 2D yourself you may be familiar with <Italic>Line Clipping</Italic>. When we draw lines that extend beyond the range of the screen we can end up drawing points that are out of range for the frame buffer. With modern graphics APIs this generally hasn’t been a problem for a long time (because they implement clipping) but at the time of the humble frame buffer it was a serious problem.<LineBreak/>
+<LineBreak/>
+When you’re drawing pixels directly into the frame buffer you must be conscious of the memory surrounding the buffer. Failure to do so will result in overwriting whatever is in that memory. This will rapidly cause a <Italic>bad day</Italic>.<LineBreak/>
+<LineBreak/>
+Note that we could simply implement a line drawing algorithm as a sequence of pixel plotting operations and then test each pixel to make sure it fits within the frame buffer. This will certainly work but it involves computing a lot of pixels which may be rejected. If we have particularly long lines outside the buffer then the rate of pixel rejection is too high we end up wasting a lot of effort.<LineBreak/>
+<LineBreak/>
+...and machines in this day were not particularly fast.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Cohen-Sutherland 2D Line Clipping - Recap</Paragraph>
+<Paragraph>
+This form of clipping is fortunately very simple to describe and we can even throw away some of the details to highlight the major part of it that we need. In the traditional form of the algorithm we use a bitcode (termed an outcode) to indicate which edges of the screen a line crosses.<LineBreak/>
+<LineBreak/>
+Both points describing the line are classified and assigned an outcode based on if they are to the left, right, top or bottom of the screen.<LineBreak/>
+<LineBreak/>
+We can trivially state that if the two points share any bit (<Run FontFamily="Consolas">code1 &amp; code2 != 0</Run>) then the line must be completely outside the screen. Discard these lines trivially.<LineBreak/>
+<LineBreak/>
+If both codes are zero (<Run FontFamily="Consolas">code1 | code2 == 0</Run>) then the line is completely within the screen and does not require any clipping. Pass these lines to the line rasterizer trivially.<LineBreak/>
+<LineBreak/>
+In all other cases the line has crossed an edge and we must clip it. Compute the intersection with the edge and move the point to this location. We won’t cover the math for this here but you’ll see it soon.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Line Clipping In 3D</Paragraph>
+<Paragraph>
+Now that we understand outcodes we will proceed to ignore them completely (sorry). We can still take home some of the other parts of the algorithm though.<LineBreak/>
+<LineBreak/>
+When we move the clipping algorithm to 3D we have to change some of the concepts. Lines remain lines although they acquire a new component in their point definition. The edges of the screen now become planes. It wouldn’t make any sense to clip a line against a line.<LineBreak/>
+<LineBreak/>
+Recall we mentioned clip space previously - we can now start to understand why it takes that name.<LineBreak/>
+<LineBreak/>
+Clip space is named as such because this is the space in which the hardware performs all clipping. Remember that the clip space is defined in the region <Run FontFamily="Times New Roman" FontStyle="Italic">-1≤x≤1</Run> and <Run FontFamily="Times New Roman" FontStyle="Italic">-1≤y≤1</Run>. Well, this isn’t entirely true because the magic divide by w will occur first. In fact we need to use <Run FontFamily="Times New Roman" FontStyle="Italic">-1≤x/w≤1</Run> and <Run FontFamily="Times New Roman" FontStyle="Italic">-1≤y/w≤1</Run>. These are the homogeneous clip planes for the edges of the clip space and this is also why we sometimes call this homogeneous clip space.<LineBreak/>
+<LineBreak/>
+We’re not thinking in 3D yet though because we’re missing two more planes: front and back. Add in <Run FontFamily="Times New Roman" FontStyle="Italic">0≤z/w≤1</Run> for this case.<LineBreak/>
+<LineBreak/>
+The problem is that we don’t want to perform the divide while we’re checking for intersections. If <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> is already zero then this will cause divide by zero and everything will go weird. The solution is to not perform this division - multiply your inequalities by <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> to remove the division. This results in:
+</Paragraph>
+<Paragraph FontFamily="Times New Roman" FontStyle="Italic" TextAlignment="Center">
+-w≤x≤w<LineBreak/>
+w≤y≤w<LineBreak/>
+0≤w≤z<LineBreak/>
+</Paragraph>
+<Paragraph>
+So how do we actually “clip” in this strange space? Fairly easily in fact.<LineBreak/>
+<LineBreak/>
+Take the two points of your line and transform them by your view and projection matrices (<Run FontFamily="Times New Roman" FontStyle="Italic">C</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Superscript">-1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">P=VP</Run>) to move them into clip space. We now have a 4D line spanning <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">=[x</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,y</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,w</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">]</Run> and <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">=[x</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,y</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,w</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">]</Run>. Since we never performed the perspective divide and this is an affine space we can interpolate in this space and pick points along the line in the same manner as any 3D line.
+</Paragraph>
+<Paragraph TextAlignment="Center">
+Recall the definition of a bounded line segment:<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">line</Run><Run FontFamily="Times New Roman" FontStyle="Italic">=P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">origin</Run><Run FontFamily="Times New Roman" FontStyle="Italic">+λP</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">direction</Run><Run FontFamily="Times New Roman" FontStyle="Italic">, 0≤λ≤1</Run><LineBreak/>
+<LineBreak/>
+Alternatively, for our two points in space:<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">line</Run><Run FontFamily="Times New Roman" FontStyle="Italic">=P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">+λ(P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">-P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">), 0≤λ≤1</Run>
+</Paragraph>
+<Paragraph>
+This is all known to us. Now we need to intersect this 4D line with our homogeneous clip planes but let’s start by recapping how to do this in 3D first.
+</Paragraph>
+<Paragraph TextAlignment="Center">
+Recall the implicit definition of a 3D plane:<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">P.N=d</Run>
+</Paragraph>
+<Paragraph>
+Where <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run> is any point in 3D space, <Run FontFamily="Times New Roman" FontStyle="Italic">N</Run> is the normal of the plane and d is the offset distance of the plane in the direction of the normal. This definition is sufficient to describe any plane in 3D space.<LineBreak/>
+<LineBreak/>
+One useful property of the plane equation is that it divides space into two half-spaces and we can determine easily which side of the plane a point lies. Imagine our XZ plane with the normal pointing up (<Run FontFamily="Times New Roman" FontStyle="Italic">N=[0,1,0]</Run>). Traditionally we say the positive side of the plane is above or outside the plane and the negative side is below or inside the plane.<LineBreak/>
+<LineBreak/>
+Form the plane equation into a classic implicit surface and substitute points to test this.<LineBreak/>
+We trivially know <Run FontFamily="Times New Roman" FontStyle="Italic">[0,-2,0]</Run> is below the XZ plane so we can check the maths to confirm this thinking:
+</Paragraph>
+<Paragraph FontFamily="Times New Roman" FontStyle="Italic" TextAlignment="Center">
+P.N-d=0<LineBreak/>
+[0,-2,0].[0,1,0]-0=-2, [0,-2,0] is inside plane<LineBreak/>
+[0,2,0].[0,1,0]-0=2, [0,2,0] is outside plane<LineBreak/>
+</Paragraph>
+<Paragraph>
+If we are clipping against this plane we should define a region that is the valid space for the clipping. For arguments sake we’ll define the inside space as being clipped away. This means we can substitute both points of the line into the equation above. If both points are negative then the whole line is inside the plane and we trivially clip it away. If both points are positive then the whole line is outside the plane and we trivially accept it unclipped.<LineBreak/>
+<LineBreak/>
+Assume the points have opposing signs; this obviously means we intersect the plane somewhere. To find the intersection of a line with this plane we are looking for a common <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run> which can be expressed by some parameter <Run FontFamily="Times New Roman" FontStyle="Italic">λ</Run> on the line.
+</Paragraph>
+<Paragraph TextAlignment="Center">
+Rewrite our line formulation in terms of <Bold>O</Bold>rigin and <Bold>D</Bold>irection for brevity:<LineBreak/>
+<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">P=O+λD</Run><LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">P.N=d</Run><LineBreak/>
+<LineBreak/>
+Substitute our line as the definition for <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run> in the plane:<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">(O+λD).N=d</Run><LineBreak/>
+<LineBreak/>
+Then solve for λ:<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">λ=(d-O.N)/(D.N)</Run>
+</Paragraph>
+<Paragraph>
+Note the obvious features here. If <Run FontFamily="Times New Roman" FontStyle="Italic">D.N=0</Run> then we have a divide-by-zero and a degenerate solution. This corresponds to the case where the line is running parallel to the plane and will never intersect it. If <Run FontFamily="Times New Roman" FontStyle="Italic">0&gt;λ&gt;1</Run> then the intersection point is outside the extent of our bounded line segment.<LineBreak/>
+<LineBreak/>
+In our case <Run FontFamily="Times New Roman" FontStyle="Italic">0≤λ≤1</Run> must be true and we can calculate <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">intersect</Run><Run FontFamily="Times New Roman" FontStyle="Italic">=O+λD</Run> to get the point of intersection. Choose <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">intersect</Run> and whichever other point was outside the plane, either <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run> or <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run>. These two points are our clipped line. We are done.<LineBreak/>
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Intersecting Lines &amp; Planes in 4D</Paragraph>
+<Paragraph>
+Performing this clipping in 4D homogeneous space is practically identical with only a few basic modifications.
+</Paragraph>
+<Paragraph TextAlignment="Center">
+Recall our two points:<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">=[x</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,y</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,w</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">]</Run><LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">=[x</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,y</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,z</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">,w</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">]</Run><LineBreak/>
+<LineBreak/>
+And one of our homogeneous clip planes:<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">x≤w, the right edge of clip space</Run><LineBreak/>
+<LineBreak/>
+It helps to expand the definition of the 4D plane into components so we can build a plane for this inequality:<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">Ax+By+Cz+Dw=0</Run><LineBreak/>
+<LineBreak/>
+So if <Run FontFamily="Times New Roman" FontStyle="Italic">x≤w</Run> then <Run FontFamily="Times New Roman" FontStyle="Italic">x-w≤0</Run> and we can express these in the plane equation with <Run FontFamily="Times New Roman" FontStyle="Italic">[A,B,C,D]=[1,0,0,-1]</Run>:<LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">Ax+By+Cz+Dw=0</Run><LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">where A=1, B=0, C=0, D=-1</Run><LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">(1)x+(0)y+(0)z+(-1)w=0</Run><LineBreak/>
+<Run FontFamily="Times New Roman" FontStyle="Italic">x-w=0</Run><LineBreak/>
+<LineBreak/>
+In this case <Run FontFamily="Times New Roman" FontStyle="Italic">N=[1,0,0,-1]</Run> is the normal of a hyperplane in 4D space and <Run FontFamily="Times New Roman" FontStyle="Italic">d=0</Run>.
+</Paragraph>
+<Paragraph>
+All the math following this is completely identical to the 3D case and computing <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run><Run FontFamily="Times New Roman" FontStyle="Italic">.N-0</Run> and <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run><Run FontFamily="Times New Roman" FontStyle="Italic">.N-0</Run> will tell us which side of the hyperplane (inside or outside) our homogeneous coordinate sits. Computing  and interpolating a suitable <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">intersect</Run> is similarly identical.<LineBreak/>
+<LineBreak/>
+Do this for all 6 hyperplanes in sequence taking the resulting clipped line segment and clipping with the next plane. If at any time both <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">1</Run> and <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run><Run FontFamily="Times New Roman" FontStyle="Italic" BaselineAlignment="Subscript">2</Run> are inside any plane then trivially reject and early-out. The final line segment will be completely inside clip space.<LineBreak/>
+<LineBreak/>
+Take your pair of points, divide by <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run>, transform them into screen space the same way as we did for points and draw a line between them. Lines will now never pass behind the eye and our problem is solved.
+</Paragraph>
+<Paragraph TextAlignment="Center">
+Exercise: Convince yourself.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureWireframeClipped Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph TextAlignment="Center">
+Fly over the plane and completely beyond it.<LineBreak/>
+Nothing will ever be rendered behind the eye.<LineBreak/>
+<LineBreak/>
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Recap - What We Know</Paragraph>
+<Paragraph>
+Here's what we now know for wireframes:
+</Paragraph>
+<List>
+<ListItem><Paragraph>Homogeneous Clip Space</Paragraph></ListItem>
+<ListItem><Paragraph>3D Line/Plane Clipping</Paragraph></ListItem>
+<ListItem><Paragraph>4D Homogeneous Clipping</Paragraph></ListItem>
+</List>
+
+<!-- ====================================================================== -->
+<!-- MAJOR SECTION : Triangles -->
+<!-- ====================================================================== -->
+<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Unfilled Triangles</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTriangleIntro Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+<Italic>Note: In this section we're starting to talk about filled shapes but we'll keep going with wireframes because this shows the next steps more clearly. Triangles will be depicted as a sequence of three lines.</Italic><LineBreak/>
+<LineBreak/>
+Things start to get much more difficult now. We can’t draw lines anymore since we can’t fill them so we’ll have to choose something else to draw. How about triangles?
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Why Triangles?</Paragraph>
+<Paragraph>
+Triangles have very desirable properties. It is impossible to define a polygon of 3 points for which the points are not coplanar. It is impossible to define a polygon of 3 points for which any edge pair is concave. Triangles are always planar and convex. Neither of these properties is necessarily true for any other polygon with more than 3 sides.<LineBreak/>
+<LineBreak/>
+It isn’t difficult to visualize this in your head.<LineBreak/>
+<LineBreak/>
+Take the 4 points of a square and move one of the corners inward toward the opposite corner. Eventually it will invert and become concave.<LineBreak/>
+<LineBreak/>
+As another thought experiment take those 4 points in 3D space and move one of the corners downward.<LineBreak/>
+<LineBreak/>
+What is the plane of our resulting shape?? We can’t bend it so there isn’t even a planar shape that will represent this.<LineBreak/>
+<LineBreak/>
+You can’t create these problems with triangles.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Clipping Triangles</Paragraph>
+<Paragraph>
+Triangles don’t get a free pass, they can also pass behind the eye. When this happens you’re going to get some amusing effects:
+</Paragraph>
+<List>
+<ListItem><Paragraph>If one of the points is in the plane of the eye it shoots off to infinity.</Paragraph></ListItem>
+<ListItem><Paragraph>If one point is a long way outside the screen you get a huge triangle.</Paragraph></ListItem>
+<ListItem><Paragraph>If one point moves behind the eye then it will flip upside-down in the same manner as point rendering.</Paragraph></ListItem>
+<ListItem><Paragraph>All points can similarly be behind the eye.</Paragraph></ListItem>
+</List>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTriangleNegativeW Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+The answer to all of these is exactly the same as line clipping but accounting for the inner filled triangular geometry. We can walk through the edges of the triangle and clip the edge lines in the same way as line clipping.<LineBreak/>
+<LineBreak/>
+Before we start this we should understand <Italic>winding order</Italic>.<LineBreak/>
+<LineBreak/>
+The winding order is the direction we move around the triangle on the screen. It can be clockwise, or counter-clockwise. Typically we refer to these as forward facing or backward facing triangles and most rendering engines will cull backward facing triangles because they can never be seen. What we call a backward facing triangle can be clockwise or counter-clockwise; we get to choose and most renderers will let you set this. We also can choose neither and draw the triangle whichever way it faces.<LineBreak/>
+<LineBreak/>
+Since the screen has 6 clip planes we need to treat each of them in sequence. At each plane clip the triangle can be split into 0, 1 or 2 triangles:<LineBreak/>
+<LineBreak/>
+<Bold>Important:</Bold> I'll note this again below but whether we get 1 or 2 triangles at each clip step we <Underline>must</Underline> generate them <Italic>with the same winding order as the original triangle</Italic>.<LineBreak/>
+<LineBreak/>
+The clipping process is performed by taking the first point of the triangle and determining whether it is inside or outside clip space.<LineBreak/>
+<LineBreak/>
+Let's start with the simple cases. Pick the first point of the triangle and check it against our homogeneous clip plane. Let's say this point is outside the clip space so this first point cannot be part of a valid display triangle and we ignore it. Now move to the second point and also find that this point is outside the clip space so we ignore this point also. Now move to the third and let's assume that is <Italic>also</Italic> outside the clip space. In this case the triangle is completely outside of clip space and we can discard the whole triangle.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTriangleClipping0 Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+Let's do that again but say the first point is inside clip space. If the point is inside then it's part of a valid triangle and we check the second point. Let's assume the second point is also inside clip space so this point is also on the triangle. Now move to the third and assume that is also inside clip space. All three points are inside clip space so this is a valid triangle and requires no clipping. Emit this triangle unchanged.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTriangleClippingNone Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+Now consider a more elaborate case. Let's say the first point is inside the clip space but the second and third are not. In this case when we check the second point we see that it moved from <Italic>inside</Italic> clip space to <Italic>outside</Italic> clip space. At this point we now need to perform a clip operation. Create a homogeneous line from the first point to the second point and intersect this with the homogeneous plane. There will be one guaranteed point of intersection with this plane and we emit the intersection point instead of the second point. Now move to the third point and check if it is inside or outside. Since the third point is also outside we ignore this point. Now move from the third point back to the first and check the first point. Note we now cross from outside to inside clip space so we now need to perform a clip operation again. Calculate this second intersection point and emit it into our list of candidate points. We now have three points; one original point and two intersection points. Emit these in the same winding sequence we discovered them to produce one clipped triangle.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTriangleClipping1 Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+Now consider an even more elaborate case. Let's say the first and second points are inside clip space but the third point is outside. Perform the same mechanical process as before but in this case we determine that the second point is inside clip space and emit that point unchanged. When we get to the third point we note that we cross from inside to outside and emit an intersection point. We now have three points; two original points and one intersection point. Emit this triangle in the same winding sequence but note that <Italic>we are not done</Italic>. Remove the <Italic>second</Italic> point from the emitted point list and now test the edge from the third to the first point. You'll find another intersection so compute that point and collect it into our list. We now have three points again so emit this second triangle.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTriangleClipping2 Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+<Bold>Note:</Bold> Each of these cases can be in a different order such that (e.g.) only the second or only the third point is outside. We also need to handle all these rotations of the above cases.<LineBreak/>
+<LineBreak/>
+At each step we take this new set of 0, 1 or 2 triangles and feed it back in to clip against the next clip space plane. Each split can result in yet another set of 0, 1 or 2 triangles per original clipped triangle. You might get a lot of triangles by the time you’re finished but they’re all guaranteed to be completely within the clip space. Render all of them as if they were separate triangles.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTriangleClippingMany Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+With the clipper in place we're ready to try drawing the image again. Notice how triangles at the left, right, and bottom of the view have been sliced creating extra triangles and edges that didn't exist before.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTriangleClipped Width="320" Height="240"/></Border></BlockUIContainer>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Recap - What We Know</Paragraph>
+<Paragraph>
+Here's what we know for triangles:
+</Paragraph>
+<List>
+<ListItem><Paragraph>4D Homogeneous Triangle Clipping</Paragraph></ListItem>
+</List>
+
+<!-- ====================================================================== -->
+<!-- MAJOR SECTION : Rasterizing -->
+<!-- ====================================================================== -->
+<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Rasterizing</Paragraph>
+<Paragraph>
+Up to now we've been cheating quite a lot since we're using our native graphics API to draw all these diagrams. Often you'll find yourself in a position where you can't do this, for example:
+</Paragraph>
+<List>
+<ListItem><Paragraph>You have a framebuffer only, and no native graphics API.</Paragraph></ListItem>
+<ListItem><Paragraph>The native graphics API has poor performance.</Paragraph></ListItem>
+<ListItem><Paragraph>You need a specific rendering behavior.</Paragraph></ListItem>
+<ListItem><Paragraph>You need pixel-level information (See <Italic>Z-Buffers</Italic> later).</Paragraph></ListItem>
+</List>
+<Paragraph>
+Rasterizing is simply the process that converts a geometric definition of a shape into pixels to draw onto the display. There are lots of ways to rasterize triangles and GPU hardware has a very particular way of doing it. Since 3D shapes are defined with floating point values our shapes will rarely ever line up with a pixel and every API also has specific instructions for how it treats the centers of pixels because of this. These concepts typically fall under the heading of <Italic>sampling</Italic> and we'll go through those details shortly.<LineBreak/>
+<LineBreak/>
+<Bold>Note:</Bold> We're going to deliberately use very low resolution sampling in this section to highlight the effects of these approaches in practice.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Rasterizing Points</Paragraph>
+<Paragraph>
+Rasterizing points is trivial if we don't care about sampling. Take the floating point viewpoint coordinate and truncate it to an integer x and y point. Plot that point in whatever color is desired. You're done. Easy.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureRasterPoints Width="320" Height="240"/></Border></BlockUIContainer>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Rasterizing Lines</Paragraph>
+<Paragraph>
+Rasterizing lines is fairly straightforward. First we take a box around the two pixel points that form the extent of the line. From here we find the longest edge of the box (either its width or height) and iterate across this dimension. As we move across the extent we use the slope equation of the line to find the corresponding x or y point for that line or column. Plot that pixel. You're done.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureRasterLines Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
+In case you're wondering why we scan across the longest extent of the box you can picture this in your head quite easily. Consider a line that spans 100 horizontal pixels but only 5 vertical pixels - if we scan vertically we can only draw 5 pixels and there will be huge holes in our line.<LineBreak/>
+<LineBreak/>
+Also note that there are faster ways of doing this if you're prepared to implement a <Italic>digital differential analyzer</Italic> with integer arithmetic.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Rasterizing Triangles</Paragraph>
+<Paragraph>
+Triangles are considerably more involved than points or lines. For our purposes we’ll define a naive rasterization via the <Italic>scanline method</Italic>. To fill a triangle with scanlines we define three points on the screen and sort them into ascending Y order. At the same time we split the triangle into two halves through the mid-Y point. You can then imagine a moving 1-pixel wide bar from the lowest Y (top of screen) to the midpoint, and then from the midpoint to the highest Y (bottom of screen). Within both these regions there will only ever be two active edges to the left and right. As we move through the triangle we compute the intersection with the edges of the triangle to obtain a minimum X and maximum X using the slope of the edges. With these two values and the scanline Y position we can fill a complete horizontal line that is part of the rasterized triangle.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureRasterTriangles Width="320" Height="240"/></Border></BlockUIContainer>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Sample Points &amp; Pixel Centers</Paragraph>
+<Paragraph>
+When we rasterize shapes we follow a convention that <Italic>if the center of a pixel is within the shape then the pixel is in the shape</Italic>. This is just our informal design and doesn't really follow any standard. In other APIs these rules are rigorously defined such that rendering any closed mesh should never show holes or missing pixels, and should never draw any pixel more than once if triangles abut. In more complex cases we may perform <Italic>supersampling</Italic> which takes many samples of the shape simultaneously and averages the results for a smoother edge. We'll come back to this topic when we start to talk about textures.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Rasterizing The Scene</Paragraph>
+<Paragraph>
+Once all of these rasterization functions are implemented it should be a simple task to iterate all the pixels and fill a bitmap.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureRasterScene Width="320" Height="240"/></Border></BlockUIContainer>
+
+<Paragraph FontSize="24">Recap - What We Know</Paragraph>
+<Paragraph>
+Here's what we now know for wireframes:
+</Paragraph>
+<List>
+<ListItem><Paragraph>Rasterization Concept</Paragraph></ListItem>
+<ListItem><Paragraph>Rasterizing Points</Paragraph></ListItem>
+<ListItem><Paragraph>Rasterizing Lines</Paragraph></ListItem>
+<ListItem><Paragraph>Rasterizing Triangles</Paragraph></ListItem>
+</List>
+
+<!-- ====================================================================== -->
+<!-- MAJOR SECTION : Interpolating -->
+<!-- ====================================================================== -->
+<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Interpolating</Paragraph>
+<Paragraph>
+So far we've been filling triangles with solid colors but this is a bit boring. It'd be nice if we could define three colors for the vertices of a triangle and gradiate the colors across the triangle as we render. The process of deriving these interior blended values for the triangle is called <Italic>interpolation</Italic> and this method is used for everything from coloring to texturing and phong lighting. We'll come back to these other parts later but let's concentrate on blending colors for now.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Barycentric Coordinates</Paragraph>
+<Paragraph>
+When talking about where a point is within a triangle we need some sort of coordinate system. We use the <Italic>barycentric coordinate system</Italic> to achieve this. There's nothing really fancy about this, a barycentric coordinate is a triple of scalar values (normally identified as ɑ, β, and ɣ) that defines a linear combination of vectors to locate any point in a triangle. The three vectors normally used are the unnormalized vectors from the center of mass of the triangle to each of the vertices.<LineBreak/>
+<LineBreak/>
+The rules for ɑ, β, and ɣ are as follows:
+</Paragraph>
+<List>
+<ListItem><Paragraph>All of ɑ, β, and ɣ should be between 0 and 1 (inclusive).</Paragraph></ListItem>
+<ListItem><Paragraph>If ɑ+β+ɣ&gt;1 then the point is outside the triangle.</Paragraph></ListItem>
+<ListItem><Paragraph>If ɑ+β+ɣ≤1 then we have a point inside the triangle.</Paragraph></ListItem>
+<ListItem><Paragraph>If ɑ, β, and ɣ are 1/3 then we have the center of mass.</Paragraph></ListItem>
+<ListItem><Paragraph>If only one component is unity then we are describing a vertex point.</Paragraph></ListItem>
+<ListItem><Paragraph>If only one component is zero then we are describing an edge point.</Paragraph></ListItem>
+</List>
+<Paragraph>
+In realtime graphics we generally don’t use this pure mathematical form of barycentric coordinates because it encodes redundant data. In reality you can achieve the same with two scalars (just ɑ and β) by moving the center of mass to the first point of the triangle. Then define the two vectors as the edges from the first point to the other two points. This is less mathematically elegant but it is equivalent and more performant.<LineBreak/>
+<LineBreak/>
+The rules are only slightly different:
+</Paragraph>
+<List>
+<ListItem><Paragraph>If ɑ and β are zero then we have point 1.</Paragraph></ListItem>
+<ListItem><Paragraph>If ɑ+β&gt;1 then we are outside the triangle.</Paragraph></ListItem>
+<ListItem><Paragraph>If ɑ=1 and β=0 then we are describing point 2</Paragraph></ListItem>
+<ListItem><Paragraph>If ɑ=0 and β=1 then we are describing point 3.</Paragraph></ListItem>
+</List>
+<Paragraph>Describing edges is a little bit trickier but we don't actually require this property for what we're doing.<LineBreak/>
+<LineBreak/>
+The only puzzle remaining is to get from a pixel of the rasterized triangle to a pair of alpha and beta values. With these in hand we know exactly where we are within the triangle and we can calculate our interpolated color.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Barycentrics In The Rasterizer</Paragraph>
+<Paragraph>
+Note that there are two concepts of barycentric coordinate and we need the correct one. The triangle on the screen has a barycentric coordinate system defined by its 2D edges as it was rasterized, but we <Italic>should not use these coordinates</Italic>. We cannot interpolate in screen space because perspective effects will be lost (barycentrics are non-linear when projected out of homogeneous space). Let's just ignore this for now though so we can see barycentric coordinates in action.<LineBreak/>
+<LineBreak/>
+Instead of the screen barycentric coordinate we need the 3D barycentric coordinate in world space. This will be correct for any perspective but requires a bit of fancy footwork to get it.<LineBreak/>
+<LineBreak/>
+</Paragraph>
+
+</FlowDocument>
+</ResourceDictionary>
