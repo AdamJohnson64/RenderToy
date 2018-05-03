@@ -73,6 +73,14 @@ namespace RenderToy
             Vector3D normalized_axis = MathHelp.Normalized(axis);
             return new Quaternion(normalized_axis.X * sin, normalized_axis.Y * sin, normalized_axis.Z * sin, Math.Cos(radians_over_2));
         }
+        public static Quaternion CreateQuaternionRotation(Matrix3D orthonormal)
+        {
+            double w = Math.Sqrt(1 + orthonormal.M11 + orthonormal.M22 + orthonormal.M33) / 2;
+            double x = (orthonormal.M23 - orthonormal.M32) / (4 * w);
+            double y = (orthonormal.M31 - orthonormal.M13) / (4 * w);
+            double z = (orthonormal.M12 - orthonormal.M21) / (4 * w);
+            return new Quaternion(x, y, z, w);
+        }
         public static Quaternion Multiply(Quaternion a, Quaternion b)
         {
             double t0 = b.W * a.W - b.X * a.X - b.Y * a.Y - b.Z * a.Z;
