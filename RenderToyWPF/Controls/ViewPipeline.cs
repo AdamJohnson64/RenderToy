@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using RenderToy.PipelineModel;
@@ -14,10 +15,103 @@ namespace RenderToy.WPF.Figures
 {
     abstract class FigureBase : FrameworkElement
     {
+        #region - Section : Properties -
+        public Matrix3D MVP
+        {
+            get
+            {
+                var mvp = MathHelp.Invert(Camera.Object.Transform);
+                mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
+                mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+                return mvp;
+            }
+        }
+        public Scene Scene
+        {
+            get
+            {
+                var scene = new Scene();
+                scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Black, StockMaterials.PlasticRed));
+                return scene;
+            }
+        }
+        #endregion
+        #region - Section : Dependency Properties -
+        public static DependencyProperty CameraProperty = DependencyProperty.Register("Camera", typeof(Camera), typeof(FigureBase));
+        public Camera Camera
+        {
+            get { return (Camera)GetValue(CameraProperty); }
+            set { SetValue(CameraProperty, value); }
+        }
+        #endregion
+        #region - Section : Construction -
         public FigureBase()
         {
+            Camera = new Camera();
             ClipToBounds = true;
         }
+        #endregion
+        #region - Overrides : UIElement -
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+            Focus();
+            CaptureMouse();
+            Mouse.OverrideCursor = Cursors.None;
+            isDragging = true;
+            dragFrom = System.Windows.Forms.Cursor.Position;
+            e.Handled = true;
+        }
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonUp(e);
+            Mouse.OverrideCursor = null;
+            ReleaseMouseCapture();
+            isDragging = false;
+            e.Handled = true;
+        }
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            if (!isDragging) return;
+            System.Drawing.Point dragTo = System.Windows.Forms.Cursor.Position;
+            double dx = dragTo.X - dragFrom.X;
+            double dy = dragTo.Y - dragFrom.Y;
+            System.Windows.Forms.Cursor.Position = dragFrom;
+            // If there's no camera then there's nothing to update from here.
+            if (Camera == null) return;
+            // Detect modifier keys.
+            bool isPressedLeftControl = Keyboard.IsKeyDown(Key.LeftCtrl);
+            bool isPressedLeftShift = Keyboard.IsKeyDown(Key.LeftShift);
+            // Process camera motion with modifier keys.
+            if (isPressedLeftShift && isPressedLeftControl)
+            {
+                // Truck Mode (CTRL + SHIFT).
+                Camera.Object.TranslatePost(new Vector3D(0, 0, dy * -0.05));
+            }
+            else if (!isPressedLeftShift && isPressedLeftControl)
+            {
+                // Rotate Mode (CTRL Only)
+                Camera.Object.RotatePre(new Quaternion(new Vector3D(0, 1, 0), dx * 0.05));
+                Camera.Object.RotatePost(new Quaternion(new Vector3D(1, 0, 0), dy * 0.05));
+            }
+            else if (!isPressedLeftShift && !isPressedLeftControl)
+            {
+                // Translation Mode (no modifier keys).
+                Camera.Object.TranslatePost(new Vector3D(dx * -0.05, dy * 0.05, 0));
+            }
+            InvalidateVisual();
+            e.Handled = true;
+        }
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+            Camera.Object.TranslatePost(new Vector3D(0, 0, e.Delta * 0.01));
+        }
+        bool isDragging = false;
+        System.Drawing.Point dragFrom;
+        #endregion
+        #region - Section : Static Helpers -
         public static void DrawPoints(DrawingContext drawingContext, IEnumerable<PipelineModel.Vertex<Vector4D>> points)
         {
             var pen = new Pen(Brushes.Black, 1);
@@ -87,134 +181,131 @@ namespace RenderToy.WPF.Figures
                 drawingContext.DrawLine(pen, new Point(0, y * actualHeight / divisionsY), new Point(actualWidth, y * actualHeight / divisionsY));
             }
         }
+        #endregion
     }
     class FigurePointIntro : FigureBase
     {
+        public FigurePointIntro()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            var scene = new Scene();
-            scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Black, StockMaterials.PlasticRed));
-            var mvp = Matrix3D.Identity;
-            mvp = MathHelp.Multiply(mvp, MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0))));
-            mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
-            mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            var vertexsource3 = Pipeline.SceneToVertices(scene);
+            var vertexsource3 = Pipeline.SceneToVertices(Scene);
             var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, mvp);
+            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
             var vertexclipped = Pipeline.Clip(vertexclipspace);
             var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
             var points = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             FigureBase.DrawPoints(drawingContext, points);
         }
     }
     class FigurePointNegativeW : FigureBase
     {
+        public FigurePointNegativeW()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            var scene = new Scene();
-            scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Black, StockMaterials.PlasticRed));
-            var mvp = Matrix3D.Identity;
-            mvp = MathHelp.Multiply(mvp, MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0))));
-            mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
-            mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            var vertexsource3 = Pipeline.SceneToVertices(scene);
+            var vertexsource3 = Pipeline.SceneToVertices(Scene);
             var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, mvp);
+            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
             var vertexh = Pipeline.HomogeneousDivide(vertexclipspace);
             var points = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             FigureBase.DrawPoints(drawingContext, points);
         }
     }
     class FigureWireframeIntro : FigureBase
     {
+        public FigureWireframeIntro()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            var scene = new Scene();
-            scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Black, StockMaterials.PlasticRed));
-            var mvp = Matrix3D.Identity;
-            mvp = MathHelp.Multiply(mvp, MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0))));
-            mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
-            mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            var vertexsource3 = Pipeline.SceneToLines(scene);
+            var vertexsource3 = Pipeline.SceneToLines(Scene);
             var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, mvp);
+            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
             var vertexclipped = Pipeline.Clip(vertexclipspace);
             var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
             var lines = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             FigureBase.DrawWireframe(drawingContext, lines);
         }
     }
     class FigureWireframeNegativeW : FigureBase
     {
+        public FigureWireframeNegativeW()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            var scene = new Scene();
-            scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Black, StockMaterials.PlasticRed));
-            var mvp = Matrix3D.Identity;
-            mvp = MathHelp.Multiply(mvp, MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0))));
-            mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
-            mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            var vertexsource3 = Pipeline.SceneToLines(scene);
+            var vertexsource3 = Pipeline.SceneToLines(Scene);
             var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, mvp);
+            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
             var vertexh = Pipeline.HomogeneousDivide(vertexclipspace);
             var lines = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             FigureBase.DrawWireframe(drawingContext, lines);
         }
     }
     class FigureWireframeClipped : FigureBase
     {
+        public FigureWireframeClipped()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            var scene = new Scene();
-            scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Black, StockMaterials.PlasticRed));
-            var mvp = Matrix3D.Identity;
-            mvp = MathHelp.Multiply(mvp, MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0))));
+            var mvp = MathHelp.Invert(Camera.Object.Transform);
             mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
             mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            var vertexsource3 = Pipeline.SceneToLines(scene);
+            var vertexsource3 = Pipeline.SceneToLines(Scene);
             var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
             var vertexclipspace = Pipeline.Transform(vertexsource4, mvp);
             var vertexclipped = Pipeline.Clip(vertexclipspace);
             var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
             var lines = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             FigureBase.DrawWireframe(drawingContext, lines);
         }
     }
     class FigureTriangleIntro : FigureBase
     {
+        public FigureTriangleIntro()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            var scene = new Scene();
-            scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Black, StockMaterials.PlasticRed));
-            var mvp = Matrix3D.Identity;
-            mvp = MathHelp.Multiply(mvp, MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0))));
-            mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
-            mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            var vertexsource3 = Pipeline.SceneToTriangles(scene);
+            var vertexsource3 = Pipeline.SceneToTriangles(Scene);
             var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, mvp);
+            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
             var vertexclipped = Pipeline.Clip(vertexclipspace);
             var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
             var triangles = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             FigureBase.DrawTriangles(drawingContext, triangles);
         }
     }
     class FigureTriangleNegativeW : FigureBase
     {
+        public FigureTriangleNegativeW()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            var scene = new Scene();
-            scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Black, StockMaterials.PlasticRed));
-            var mvp = Matrix3D.Identity;
-            mvp = MathHelp.Multiply(mvp, MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0))));
-            mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
-            mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            var vertexsource3 = Pipeline.SceneToTriangles(scene);
+            var vertexsource3 = Pipeline.SceneToTriangles(Scene);
             var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, mvp);
+            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
             var vertexh = Pipeline.HomogeneousDivide(vertexclipspace);
             var triangles = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             FigureBase.DrawTriangles(drawingContext, triangles);
         }
     }
@@ -289,20 +380,19 @@ namespace RenderToy.WPF.Figures
     }
     class FigureTriangleClipped : FigureBase
     {
+        public FigureTriangleClipped()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            var scene = new Scene();
-            scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Black, StockMaterials.PlasticRed));
-            var mvp = Matrix3D.Identity;
-            mvp = MathHelp.Multiply(mvp, MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0))));
-            mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
-            mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            var vertexsource3 = Pipeline.SceneToTriangles(scene);
+            var vertexsource3 = Pipeline.SceneToTriangles(Scene);
             var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, mvp);
+            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
             var vertexclipped = Pipeline.Clip(vertexclipspace);
             var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
             var triangles = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             FigureBase.DrawTriangles(drawingContext, triangles);
         }
     }

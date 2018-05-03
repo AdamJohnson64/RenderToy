@@ -25,6 +25,11 @@ namespace RenderToy.SceneGraph.Transforms
                 Matrix3D result = rotate * translate;
                 return result;
             }
+            set
+            {
+                this.Rotation = MathHelp.CreateQuaternionRotation(value);
+                this.Position = new Vector3D(value.M41, value.M42, value.M43);
+            }
         }
         public void TranslatePost(Vector3D offset)
         {
