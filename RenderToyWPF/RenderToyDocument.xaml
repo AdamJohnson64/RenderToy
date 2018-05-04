@@ -685,6 +685,7 @@ The rules for ɑ, β, and ɣ are as follows:
 <ListItem><Paragraph>If only one component is unity then we are describing a vertex point.</Paragraph></ListItem>
 <ListItem><Paragraph>If only one component is zero then we are describing an edge point.</Paragraph></ListItem>
 </List>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureBarycentric Width="320" Height="240"/></Border></BlockUIContainer>
 <Paragraph>
 In realtime graphics we generally don’t use this pure mathematical form of barycentric coordinates because it encodes redundant data. In reality you can achieve the same with two scalars (just ɑ and β) by moving the center of mass to the first point of the triangle. Then define the two vectors as the edges from the first point to the other two points. This is less mathematically elegant but it is equivalent and more performant.<LineBreak/>
 <LineBreak/>

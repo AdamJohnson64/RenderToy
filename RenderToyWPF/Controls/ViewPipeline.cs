@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -612,6 +613,71 @@ namespace RenderToy.WPF.Figures
                 var triangles = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
                 Figure3DBase.DrawTriangles(drawingContext, triangles);
             }
+        }
+    }
+    #endregion
+    #region - Section : Barycentric Figures -
+    class FigureBarycentric : FigureDragShapeBase
+    {
+        public FigureBarycentric()
+        {
+            FigurePoints = new Vector4D[]
+            {
+                new Vector4D(0.5, 0, 0.5, 1.0),
+                new Vector4D(1.0, 1, 0.5, 1.0),
+                new Vector4D(0.0, 1, 0.5, 1.0),
+                new Vector4D(0.5, 0.5, 0.5, 1.0),
+            };
+        }
+        protected override void RenderFigure(DrawingContext drawingContext)
+        {
+            var penEdge = new Pen(Brushes.Black, 2);
+            var penSpoke = new Pen(Brushes.LightGray, 1);
+            var P0 = FigurePoints[0];
+            var P1 = FigurePoints[1];
+            var P2 = FigurePoints[2];
+            // Draw Triangle Edges
+            drawingContext.DrawLine(penEdge, new Point(P0.X * ActualWidth, P0.Y * ActualHeight), new Point(P1.X * ActualWidth, P1.Y * ActualHeight));
+            drawingContext.DrawLine(penEdge, new Point(P1.X * ActualWidth, P1.Y * ActualHeight), new Point(P2.X * ActualWidth, P2.Y * ActualHeight));
+            drawingContext.DrawLine(penEdge, new Point(P2.X * ActualWidth, P2.Y * ActualHeight), new Point(P0.X * ActualWidth, P0.Y * ActualHeight));
+            // Draw Barycentric "Spokes"
+            var bary = FigurePoints[3];
+            drawingContext.DrawLine(penSpoke, new Point(bary.X * ActualWidth, bary.Y * ActualHeight), new Point(P0.X * ActualWidth, P0.Y * ActualHeight));
+            drawingContext.DrawLine(penSpoke, new Point(bary.X * ActualWidth, bary.Y * ActualHeight), new Point(P1.X * ActualWidth, P1.Y * ActualHeight));
+            drawingContext.DrawLine(penSpoke, new Point(bary.X * ActualWidth, bary.Y * ActualHeight), new Point(P2.X * ActualWidth, P2.Y * ActualHeight));
+            var typeface = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+            // Compute all values.
+            Func<double, double> SIGN = v => v < 0 ? -1 : (v > 0 ? 1 : 0);
+            var edge1 = new Vector3D(P1.X - P0.X, P1.Y - P0.Y, 0);
+            var edge2 = new Vector3D(P2.X - P1.X, P2.Y - P1.Y, 0);
+            var area = MathHelp.Length(MathHelp.Cross(edge1, edge2)) / 2;
+            edge1 = new Vector3D(P1.X - bary.X, P1.Y - bary.Y, 0);
+            edge2 = new Vector3D(P2.X - P1.X, P2.Y - P1.Y, 0);
+            var alphanorm = MathHelp.Cross(edge1, edge2);
+            var alphaarea = SIGN(alphanorm.Z) * MathHelp.Length(alphanorm) / 2;
+            var alpha = alphaarea / area;
+            edge1 = new Vector3D(P2.X - bary.X, P2.Y - bary.Y, 0);
+            edge2 = new Vector3D(P0.X - P2.X, P0.Y - P2.Y, 0);
+            var betanorm = MathHelp.Cross(edge1, edge2);
+            var betaarea = SIGN(betanorm.Z) * MathHelp.Length(betanorm) / 2;
+            var beta = betaarea / area;
+            edge1 = new Vector3D(P0.X - bary.X, P0.Y - bary.Y, 0);
+            edge2 = new Vector3D(P1.X - P0.X, P1.Y - P0.Y, 0);
+            var gammanorm = MathHelp.Cross(edge1, edge2);
+            var gammaarea = SIGN(gammanorm.Z) * MathHelp.Length(gammanorm) / 2;
+            var gamma = gammaarea / area;
+            // Print total triangle area.
+            var formattedtext = new FormattedText("Total Area = " + area.ToString("N3") + "\nɑ = " + alpha.ToString("N3") + "\nβ = " + beta.ToString("N3") + "\nɣ = " + gamma.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black);
+            drawingContext.DrawText(formattedtext, new Point(0, 0));
+            // Print ɣ area.
+            formattedtext = new FormattedText("Area = " + gammaarea.ToString("N3") + "\nɣ = " + gamma.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black);
+            drawingContext.DrawText(formattedtext, new Point((bary.X + P0.X + P1.X) * ActualWidth / 3 - formattedtext.Width / 2, (bary.Y + P0.Y + P1.Y) * ActualHeight / 3 - formattedtext.Height / 2));
+            // Print ɑ area.
+            formattedtext = new FormattedText("Area = " + alphaarea.ToString("N3") + "\nɑ = " + alpha.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black);
+            drawingContext.DrawText(formattedtext, new Point((bary.X + P1.X + P2.X) * ActualWidth / 3 - formattedtext.Width / 2, (bary.Y + P1.Y + P2.Y) * ActualHeight / 3 - formattedtext.Height / 2));
+            // Print β area.
+            formattedtext = new FormattedText("Area = " + betaarea.ToString("N3") + "\nβ = " + beta.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black);
+            drawingContext.DrawText(formattedtext, new Point((bary.X + P2.X + P0.X) * ActualWidth / 3 - formattedtext.Width / 2, (bary.Y + P2.Y + P0.Y) * ActualHeight / 3 - formattedtext.Height / 2));
         }
     }
     #endregion
