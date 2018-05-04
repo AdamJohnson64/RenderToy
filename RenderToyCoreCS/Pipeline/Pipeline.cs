@@ -435,22 +435,22 @@ namespace RenderToy.PipelineModel
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv != null)
                 {
-                    int USEGMENTS = 10;
-                    int VSEGMENTS = 20;
+                    int USEGMENTS = 5;
+                    int VSEGMENTS = 5;
                     for (int u = 0; u <= USEGMENTS; ++u)
                     {
-                        for (int l = 0; l < VSEGMENTS; ++l)
+                        for (int v = 0; v < VSEGMENTS; ++v)
                         {
                             // Draw U Lines.
                             {
-                                Vector3D p3u1 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS));
-                                Vector3D p3u2 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS));
+                                Vector3D p3u1 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 0.0) / VSEGMENTS));
+                                Vector3D p3u2 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
                                 yield return new Line<Vector3D> { P0 = p3u1, P1 = p3u2, Color = color };
                             }
                             // Draw V Lines.
                             {
-                                Vector3D p3u1 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((l + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
-                                Vector3D p3u2 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((l + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
+                                Vector3D p3u1 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((v + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
+                                Vector3D p3u2 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((v + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
                                 yield return new Line<Vector3D> { P0 = p3u1, P1 = p3u2, Color = color };
                             }
                         }
@@ -497,16 +497,16 @@ namespace RenderToy.PipelineModel
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv != null)
                 {
-                    int USEGMENTS = 10;
-                    int VSEGMENTS = 20;
+                    int USEGMENTS = 5;
+                    int VSEGMENTS = 5;
                     for (int u = 0; u <= USEGMENTS; ++u)
                     {
-                        for (int l = 0; l < VSEGMENTS; ++l)
+                        for (int v = 0; v < VSEGMENTS; ++v)
                         {
-                            Vector3D p300 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS));
-                            Vector3D p310 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 1.0) / USEGMENTS, (l + 0.0) / VSEGMENTS));
-                            Vector3D p301 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS));
-                            Vector3D p311 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 1.0) / USEGMENTS, (l + 1.0) / VSEGMENTS));
+                            Vector3D p300 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 0.0) / VSEGMENTS));
+                            Vector3D p310 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 1.0) / USEGMENTS, (v + 0.0) / VSEGMENTS));
+                            Vector3D p301 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
+                            Vector3D p311 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 1.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
                             yield return new Triangle<Vector3D> { P0 = p300, P1 = p310, P2 = p311, Color = color };
                             yield return new Triangle<Vector3D> { P0 = p311, P1 = p301, P2 = p300, Color = color };
                         }

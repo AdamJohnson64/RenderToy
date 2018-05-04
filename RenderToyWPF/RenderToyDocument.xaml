@@ -314,8 +314,10 @@ Remember previously we suggested not drawing points if they are behind the eye (
 We have some options:<LineBreak/>
 <LineBreak/>
 <Bold>Don’t draw lines if either point is behind the eye.</Bold><LineBreak/>
-This isn’t a great solution if the lines are particularly large and they may flash annoyingly.<LineBreak/>
-<LineBreak/>
+This isn’t a great solution if the lines are particularly large and they may flash annoyingly.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureWireframeRemoveNegativeW Width="320" Height="240"/></Border></BlockUIContainer>
+<Paragraph>
 <Bold>Slice the lines up into smaller lines.</Bold><LineBreak/>
 This can work but involves some overhead and more line drawing.<LineBreak/>
 <LineBreak/>

@@ -267,6 +267,23 @@ namespace RenderToy.WPF.Figures
             Figure3DBase.DrawWireframe(drawingContext, lines);
         }
     }
+    class FigureWireframeRemoveNegativeW : Figure3DBase
+    {
+        public FigureWireframeRemoveNegativeW()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(-0.1, 0.5, 0.1), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+        }
+        protected override void RenderFigure(DrawingContext drawingContext)
+        {
+            var vertexsource3 = Pipeline.SceneToLines(Scene);
+            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
+            var removenegw = vertexclipspace.Where(x => x.P0.W > 0 && x.P1.W > 0);
+            var vertexh = Pipeline.HomogeneousDivide(removenegw);
+            var lines = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            Figure3DBase.DrawWireframe(drawingContext, lines);
+        }
+    }
     class FigureWireframeClipped : Figure3DBase
     {
         public FigureWireframeClipped()
