@@ -631,7 +631,7 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var penEdge = new Pen(Brushes.Black, 2);
+            var penEdge = new Pen(Brushes.DarkGray, 2);
             var penSpoke = new Pen(Brushes.LightGray, 1);
             var P0 = FigurePoints[0];
             var P1 = FigurePoints[1];
