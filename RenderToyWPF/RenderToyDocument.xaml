@@ -673,14 +673,13 @@ So far we've been filling triangles with solid colors but this is a bit boring. 
 
 <Paragraph FontSize="24">Barycentric Coordinates</Paragraph>
 <Paragraph>
-When talking about where a point is within a triangle we need some sort of coordinate system. We use the <Italic>barycentric coordinate system</Italic> to achieve this. There's nothing really fancy about this, a barycentric coordinate is a triple of scalar values (normally identified as ɑ, β, and ɣ) that defines a linear combination of vectors to locate any point in a triangle. The three vectors normally used are the unnormalized vectors from the center of mass of the triangle to each of the vertices.<LineBreak/>
+When talking about where a point is within a triangle we need some sort of coordinate system. We use the <Italic>barycentric coordinate system</Italic> to achieve this. There's nothing really fancy about this, a barycentric coordinate is a triple of scalar values (normally identified as ɑ, β, and ɣ) that defines a linear combination of vectors to locate any point in a triangle. A linear combination of the three scalars that sums to one can describe any point within the triangle.<LineBreak/>
 <LineBreak/>
 The rules for ɑ, β, and ɣ are as follows:
 </Paragraph>
 <List>
+<ListItem><Paragraph>ɑ+β+ɣ=1.</Paragraph></ListItem>
 <ListItem><Paragraph>All of ɑ, β, and ɣ should be between 0 and 1 (inclusive).</Paragraph></ListItem>
-<ListItem><Paragraph>If ɑ+β+ɣ&gt;1 then the point is outside the triangle.</Paragraph></ListItem>
-<ListItem><Paragraph>If ɑ+β+ɣ≤1 then we have a point inside the triangle.</Paragraph></ListItem>
 <ListItem><Paragraph>If ɑ, β, and ɣ are 1/3 then we have the center of mass.</Paragraph></ListItem>
 <ListItem><Paragraph>If only one component is unity then we are describing a vertex point.</Paragraph></ListItem>
 <ListItem><Paragraph>If only one component is zero then we are describing an edge point.</Paragraph></ListItem>
@@ -693,10 +692,10 @@ The rules are only slightly different:
 </Paragraph>
 <List>
 <ListItem><Paragraph>If ɑ and β are zero then we have point 1.</Paragraph></ListItem>
-<ListItem><Paragraph>If ɑ+β&gt;1 then we are outside the triangle.</Paragraph></ListItem>
 <ListItem><Paragraph>If ɑ=1 and β=0 then we are describing point 2</Paragraph></ListItem>
 <ListItem><Paragraph>If ɑ=0 and β=1 then we are describing point 3.</Paragraph></ListItem>
 </List>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureBarycentric2Coeff Width="320" Height="240"/></Border></BlockUIContainer>
 <Paragraph>Describing edges is a little bit trickier but we don't actually require this property for what we're doing.<LineBreak/>
 <LineBreak/>
 The only puzzle remaining is to get from a pixel of the rasterized triangle to a pair of alpha and beta values. With these in hand we know exactly where we are within the triangle and we can calculate our interpolated color.
