@@ -803,8 +803,8 @@ namespace RenderToy.WPF.Figures
                         var betaArea = MathHelp.Length(betaNormal);
                         var betaValue = betaArea / triangleArea;
                         double r = 1 - alphaValue - betaValue;
-                        double g = betaValue;
-                        double b = alphaValue;
+                        double g = alphaValue;
+                        double b = betaValue;
                         uint color = ((uint)(r * 255) << 16) | ((uint)(g * 255) << 8) | ((uint)(b * 255) << 0) | 0xFF000000;
                         yield return new PipelineModel.PixelBgra32 { X = x, Y = y, Color = color };
                     }
@@ -813,6 +813,7 @@ namespace RenderToy.WPF.Figures
         }
     }
     #endregion
+    #region - Section : Homogeneous Rasterization Figures -
     class FigureHomogeneousRasterization : FigureDragShapeBase
     {
         const int pixelWidth = 64;
@@ -903,4 +904,5 @@ namespace RenderToy.WPF.Figures
             }
         }
     }
+    #endregion
 }
