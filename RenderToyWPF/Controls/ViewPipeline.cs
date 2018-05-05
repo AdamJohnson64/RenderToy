@@ -739,5 +739,78 @@ namespace RenderToy.WPF.Figures
             drawingContext.DrawText(formattedtext, new Point((B.X + C.X) * ActualWidth / 2, (B.Y + C.Y) * ActualHeight / 2));
         }
     }
+    class FigureBarycentricInterpolation : FigureDragShapeBase
+    {
+        const int pixelWidth = 32;
+        const int pixelHeight = 32;
+        public FigureBarycentricInterpolation()
+        {
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
+            FigurePoints = new Vector4D[]
+            {
+                new Vector4D(0.5, 0, 0.5, 1.0),
+                new Vector4D(1.0, 1, 0.5, 1.0),
+                new Vector4D(0.0, 1, 0.5, 1.0)
+            };
+        }
+        protected override void RenderFigure(DrawingContext drawingContext)
+        {
+            var P0v4 = FigurePoints[0];
+            var P1v4 = FigurePoints[1];
+            var P2v4 = FigurePoints[2];
+            var P0 = new Vector3D(P0v4.X, P0v4.Y, P0v4.Z);
+            var P1 = new Vector3D(P1v4.X, P1v4.Y, P1v4.Z);
+            var P2 = new Vector3D(P2v4.X, P2v4.Y, P2v4.Z);
+            Figure3DBase.DrawBitmap(drawingContext, Rasterize(), ActualWidth, ActualHeight, pixelWidth, pixelHeight);
+            var penEdge = new Pen(Brushes.DarkGray, 2);
+            drawingContext.DrawLine(penEdge, new Point(P0.X * ActualWidth, P0.Y * ActualHeight), new Point(P1.X * ActualWidth, P1.Y * ActualHeight));
+            drawingContext.DrawLine(penEdge, new Point(P1.X * ActualWidth, P1.Y * ActualHeight), new Point(P2.X * ActualWidth, P2.Y * ActualHeight));
+            drawingContext.DrawLine(penEdge, new Point(P2.X * ActualWidth, P2.Y * ActualHeight), new Point(P0.X * ActualWidth, P0.Y * ActualHeight));
+        }
+        IEnumerable<PipelineModel.PixelBgra32> Rasterize()
+        {
+            var P0v4 = FigurePoints[0];
+            var P1v4 = FigurePoints[1];
+            var P2v4 = FigurePoints[2];
+            var P0 = new Vector3D(P0v4.X, P0v4.Y, 0);
+            var P1 = new Vector3D(P1v4.X, P1v4.Y, 0);
+            var P2 = new Vector3D(P2v4.X, P2v4.Y, 0);
+            var edgeAlpha = P1 - P0;
+            var edgeBeta = P2 - P0;
+            var triangleNormal = MathHelp.Cross(edgeAlpha, edgeBeta);
+            var triangleArea = MathHelp.Length(triangleNormal);
+            var N0 = MathHelp.Cross(triangleNormal, P1 - P0);
+            var N1 = MathHelp.Cross(triangleNormal, P2 - P1);
+            var N2 = MathHelp.Cross(triangleNormal, P0 - P2);
+            var D0 = MathHelp.Dot(P0, N0);
+            var D1 = MathHelp.Dot(P1, N1);
+            var D2 = MathHelp.Dot(P2, N2);
+            for (ushort y = 0; y < pixelHeight; ++y)
+            {
+                for (ushort x = 0; x < pixelWidth; ++x)
+                {
+                    var Ba = new Vector3D((x + 0.5) / pixelWidth, (y + 0.5) / pixelHeight, 0);
+                    var Dist0 = MathHelp.Dot(Ba, N0) - D0;
+                    var Dist1 = MathHelp.Dot(Ba, N1) - D1;
+                    var Dist2 = MathHelp.Dot(Ba, N2) - D2;
+                    if (Dist0 >= 0 && Dist1 >= 0 && Dist2 >= 0)
+                    {
+                        var edgeSpoke = Ba - P0;
+                        var alphaNormal = MathHelp.Cross(edgeSpoke, edgeBeta);
+                        var alphaArea = MathHelp.Length(alphaNormal);
+                        var alphaValue = alphaArea / triangleArea;
+                        var betaNormal = MathHelp.Cross(edgeAlpha, edgeSpoke);
+                        var betaArea = MathHelp.Length(betaNormal);
+                        var betaValue = betaArea / triangleArea;
+                        double r = alphaValue;
+                        double g = betaValue;
+                        double b = 1 - alphaValue - betaValue;
+                        uint color = ((uint)(r * 255) << 0) | ((uint)(g * 255) << 8) | ((uint)(b * 255) << 16) | 0xFF000000;
+                        yield return new PipelineModel.PixelBgra32 { X = x, Y = y, Color = color };
+                    }
+                }
+            }
+        }
+    }
     #endregion
 }

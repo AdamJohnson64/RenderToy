@@ -684,9 +684,16 @@ The rules for ɑ, β, and ɣ are as follows:
 <ListItem><Paragraph>If only one component is unity then we are describing a vertex point.</Paragraph></ListItem>
 <ListItem><Paragraph>If only one component is zero then we are describing an edge point.</Paragraph></ListItem>
 </List>
+<Paragraph>
+Another name for these coordinates is <Italic>areal coordinates</Italic> which hints at how we calculate them. If we choose a point within the triangle we can divide the triangle into three interior triangles sharing this new point. Our ɑ, β, and ɣ values correspond to the ratio of these inner triangle areas to the total outer triangle area. Given that the magnitude of the cross product of two vectors is the area of the parallelogram we simply take that magnitude and divide it by two to get the area of a triangle formed by any two vector edges.<LineBreak/>
+<LineBreak/>
+Also note that we don't have to calculate all three coefficients due to our first axiom, ɑ+β+ɣ=1. Calculate any two coefficients and then subtract them both from one to get the third.<LineBreak/>
+<LineBreak/>
+We can see that in action here:
+</Paragraph>
 <BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureBarycentric Width="320" Height="240"/></Border></BlockUIContainer>
 <Paragraph>
-In realtime graphics we generally don’t use this pure mathematical form of barycentric coordinates because it encodes redundant data. In reality you can achieve the same with two scalars (just ɑ and β) by moving the center of mass to the first point of the triangle. Then define the two vectors as the edges from the first point to the other two points. This is less mathematically elegant but it is equivalent and more performant.<LineBreak/>
+In realtime graphics we generally don’t use this pure mathematical form of barycentric coordinates because it encodes redundant data. In reality you can achieve the same with two scalars (just ɑ and β) by moving the center of mass to the first point of the triangle. We then define two vectors as the edges from the first point to the other two points. This is less mathematically elegant but it is equivalent and more performant.<LineBreak/>
 <LineBreak/>
 The rules are only slightly different:
 </Paragraph>
@@ -700,6 +707,7 @@ The rules are only slightly different:
 <LineBreak/>
 The only puzzle remaining is to get from a pixel of the rasterized triangle to a pair of alpha and beta values. With these in hand we know exactly where we are within the triangle and we can calculate our interpolated color.
 </Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureBarycentricInterpolation Width="320" Height="240"/></Border></BlockUIContainer>
 
 <!-- Section Break -->
 <BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
