@@ -65,7 +65,7 @@
     </ApplicationDefinition>
     <Compile Include="Controls\Camera.cs" />
     <Compile Include="Controls\ViewBase.cs" />
-    <Compile Include="Controls\ViewPipeline.cs" />
+    <Compile Include="Controls\Figures.cs" />
     <Compile Include="Controls\ViewWire.cs" />
     <Compile Include="PerformanceTrace.xaml.cs">
       <DependentUpon>PerformanceTrace.xaml</DependentUpon>
