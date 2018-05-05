@@ -741,8 +741,8 @@ namespace RenderToy.WPF.Figures
     }
     class FigureBarycentricInterpolation : FigureDragShapeBase
     {
-        const int pixelWidth = 32;
-        const int pixelHeight = 32;
+        const int pixelWidth = 64;
+        const int pixelHeight = 64;
         public FigureBarycentricInterpolation()
         {
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
@@ -802,10 +802,10 @@ namespace RenderToy.WPF.Figures
                         var betaNormal = MathHelp.Cross(edgeAlpha, edgeSpoke);
                         var betaArea = MathHelp.Length(betaNormal);
                         var betaValue = betaArea / triangleArea;
-                        double r = alphaValue;
+                        double r = 1 - alphaValue - betaValue;
                         double g = betaValue;
-                        double b = 1 - alphaValue - betaValue;
-                        uint color = ((uint)(r * 255) << 0) | ((uint)(g * 255) << 8) | ((uint)(b * 255) << 16) | 0xFF000000;
+                        double b = alphaValue;
+                        uint color = ((uint)(r * 255) << 16) | ((uint)(g * 255) << 8) | ((uint)(b * 255) << 0) | 0xFF000000;
                         yield return new PipelineModel.PixelBgra32 { X = x, Y = y, Color = color };
                     }
                 }
@@ -813,4 +813,94 @@ namespace RenderToy.WPF.Figures
         }
     }
     #endregion
+    class FigureHomogeneousRasterization : FigureDragShapeBase
+    {
+        const int pixelWidth = 64;
+        const int pixelHeight = 64;
+        public FigureHomogeneousRasterization()
+        {
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
+            FigurePoints = new Vector4D[]
+            {
+                new Vector4D(0.5, 0, 0.5, 1.0),
+                new Vector4D(1.0, 1, 0.5, 1.0),
+                new Vector4D(0.0, 1, 0.5, 1.0)
+            };
+        }
+        protected override void RenderFigure(DrawingContext drawingContext)
+        {
+            var P0v4 = FigurePoints[0];
+            var P1v4 = FigurePoints[1];
+            var P2v4 = FigurePoints[2];
+            var P0 = new Vector3D(P0v4.X, P0v4.Y, P0v4.Z);
+            var P1 = new Vector3D(P1v4.X, P1v4.Y, P1v4.Z);
+            var P2 = new Vector3D(P2v4.X, P2v4.Y, P2v4.Z);
+            Figure3DBase.DrawBitmap(drawingContext, Rasterize(), ActualWidth, ActualHeight, pixelWidth, pixelHeight);
+            var penEdge = new Pen(Brushes.DarkGray, 2);
+            drawingContext.DrawLine(penEdge, new Point(P0.X * ActualWidth, P0.Y * ActualHeight), new Point(P1.X * ActualWidth, P1.Y * ActualHeight));
+            drawingContext.DrawLine(penEdge, new Point(P1.X * ActualWidth, P1.Y * ActualHeight), new Point(P2.X * ActualWidth, P2.Y * ActualHeight));
+            drawingContext.DrawLine(penEdge, new Point(P2.X * ActualWidth, P2.Y * ActualHeight), new Point(P0.X * ActualWidth, P0.Y * ActualHeight));
+        }
+        IEnumerable<PipelineModel.PixelBgra32> Rasterize()
+        {
+            /*
+            var triangles = new Triangle<Vector4D>[]
+            {
+                new Triangle<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1], P2 = FigurePoints[2], Color = 0xFF00FFFF }
+            };
+            return PipelineModel.Pipeline.RasterizeHomogeneous(triangles, pixelWidth, pixelHeight);
+            */
+            var P0v4 = FigurePoints[0];
+            var P1v4 = FigurePoints[1];
+            var P2v4 = FigurePoints[2];
+            Matrix3D Minv = MathHelp.Invert(new Matrix3D(P0v4.X, P1v4.X, P2v4.X, 0, P0v4.Y, P1v4.Y, P2v4.Y, 0, P0v4.W, P1v4.W, P2v4.W, 0, 0, 0, 0, 1));
+            Vector3D interp = MathHelp.TransformVector(Minv, new Vector3D(1, 1, 1));
+            for (ushort y = 0; y < pixelHeight; ++y)
+            {
+                for (ushort x = 0; x < pixelWidth; ++x)
+                {
+                    double px = (x + 0.5) / pixelWidth;
+                    double py = (y + 0.5) / pixelHeight;
+                    double w = interp.X * px + interp.Y * py + interp.Z;
+                    double a = Minv.M11 * px + Minv.M12 * py + Minv.M13;
+                    double b = Minv.M21 * px + Minv.M22 * py + Minv.M23;
+                    double c = Minv.M31 * px + Minv.M32 * py + Minv.M33;
+                    if (a > 0 && b > 0 && c > 0)
+                    {
+                        uint color = ((uint)(a * 255) << 16) | ((uint)(b * 255) << 8) | ((uint)(c * 255) << 0) | 0xFF000000;
+                        yield return new PipelineModel.PixelBgra32 { X = x, Y = y, Color = color };
+                    }
+                }
+            }
+        }
+    }
+    class FigureRasterSceneHomogeneous : Figure3DBase
+    {
+        public FigureRasterSceneHomogeneous()
+        {
+            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
+        }
+        protected override void RenderFigure(DrawingContext drawingContext)
+        {
+            const int pixelWidth = 64;
+            const int pixelHeight = 64;
+            {
+                var A = Pipeline.SceneToTriangles(Scene);
+                var B = Pipeline.Vector3ToVector4(A);
+                var C = Pipeline.Transform(B, MVP);
+                var D = Pipeline.RasterizeHomogeneous(C, pixelWidth, pixelHeight);
+                Figure3DBase.DrawBitmap(drawingContext, D, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
+            }
+            {
+                var A = Pipeline.SceneToLines(Scene);
+                var B = Pipeline.Vector3ToVector4(A);
+                var C = Pipeline.Transform(B, MVP);
+                var D = Pipeline.Clip(C);
+                var E = Pipeline.HomogeneousDivide(D);
+                var F = Pipeline.TransformToScreen(E, ActualWidth, ActualHeight);
+                Figure3DBase.DrawWireframe(drawingContext, F);
+            }
+        }
+    }
 }

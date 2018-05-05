@@ -362,6 +362,40 @@ namespace RenderToy.PipelineModel
         {
             return triangles.SelectMany(t => Rasterize(t));
         }
+        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(Triangle<Vector4D> triangle, ushort pixelWidth, ushort pixelHeight)
+        {
+            Matrix3D Minv = MathHelp.Invert(
+                new Matrix3D(
+                    triangle.P0.X, triangle.P1.X, triangle.P2.X, 0,
+                    triangle.P0.Y, triangle.P1.Y, triangle.P2.Y, 0,
+                    triangle.P0.W, triangle.P1.W, triangle.P2.W, 0,
+                    0, 0, 0, 1));
+            Vector3D interp = MathHelp.TransformVector(Minv, new Vector3D(1, 1, 1));
+            for (ushort y = 0; y < pixelHeight; ++y)
+            {
+                for (ushort x = 0; x < pixelWidth; ++x)
+                {
+                    double px = (x + 0.5) / pixelWidth * 2 - 1;
+                    double py = 1 - (y + 0.5) / pixelHeight * 2;
+                    double w = interp.X * px + interp.Y * py + interp.Z;
+                    double a = Minv.M11 * px + Minv.M12 * py + Minv.M13;
+                    double b = Minv.M21 * px + Minv.M22 * py + Minv.M23;
+                    double c = Minv.M31 * px + Minv.M32 * py + Minv.M33;
+                    if (a > 0 && b > 0 && c > 0)
+                    {
+                        double R = a / w;
+                        double G = b / w;
+                        double B = c / w;
+                        uint color = ((uint)(R * 255) << 16) | ((uint)(G * 255) << 8) | ((uint)(B * 255) << 0) | 0xFF000000;
+                        yield return new PipelineModel.PixelBgra32 { X = x, Y = y, Color = color };
+                    }
+                }
+            }
+        }
+        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(IEnumerable<Triangle<Vector4D>> triangles, ushort pixelWidth, ushort pixelHeight)
+        {
+            return triangles.SelectMany(t => RasterizeHomogeneous(t, pixelWidth, pixelHeight));
+        }
         /// <summary>
         /// Convert an input scene into a point list.
         /// </summary>

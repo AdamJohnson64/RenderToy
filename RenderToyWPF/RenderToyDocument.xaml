@@ -720,5 +720,20 @@ Instead of the screen barycentric coordinate we need the 3D barycentric coordina
 <LineBreak/>
 </Paragraph>
 
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Homogeneous Rasterization</Paragraph>
+<Paragraph>
+If you're rasterizing your own triangles (which we are at this point) then you'll be pleased to know there's actually a way to rasterize triangles without projecting them into 3D space with a homogeneous divide. This technique is unsurprisingly called <Italic>homogeneous rasterization</Italic>. One huge advantage of this method of rasterization is that perspective-correct barycentric interpolation can be folded into the math very easily. Even better than this is that <Italic>we don't need to clip!</Italic> If you were following along in the clipping section you'll immediately see that this saves an <Italic>enormous</Italic> amount of effort.<LineBreak/>
+<LineBreak/>
+Here's the same triangle again rendered with the homogeneous method:
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureHomogeneousRasterization Width="256" Height="256"/></Border></BlockUIContainer>
+<Paragraph>
+Note it's completely identical in function. We can just as easily throw the entire scene into the rasterizer and obtain perspective-correct color interpolation with no clipping required.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureRasterSceneHomogeneous Width="256" Height="256"/></Border></BlockUIContainer>
+
 </FlowDocument>
 </ResourceDictionary>
