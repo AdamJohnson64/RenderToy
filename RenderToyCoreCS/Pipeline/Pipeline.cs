@@ -364,6 +364,41 @@ namespace RenderToy.PipelineModel
         }
         public static IEnumerable<PixelBgra32> RasterizeHomogeneous(Triangle<Vector4D> triangle, ushort pixelWidth, ushort pixelHeight)
         {
+            // Early out if everything is behind the camera.
+            if (triangle.P0.W <= 0 && triangle.P1.W <= 0 && triangle.P2.W <= 0)
+            {
+                yield break;
+            }
+            // Compute a conservative bounding box.
+            int minx = int.MaxValue;
+            int maxx = int.MinValue;
+            int miny = int.MaxValue;
+            int maxy = int.MinValue;
+            foreach (Vector4D v in new Vector4D[] { triangle.P0, triangle.P1, triangle.P2 })
+            {
+                if (v.W > 0)
+                {
+                    Vector4D project = v * (1 / v.W);
+                    double px = (project.X + 1) / 2 * pixelWidth;
+                    double py = (1 - project.Y) / 2 * pixelHeight;
+                    minx = Math.Min(minx, (int)px - 1);
+                    maxx = Math.Max(maxx, (int)px + 1);
+                    miny = Math.Min(miny, (int)py - 1);
+                    maxy = Math.Max(maxy, (int)py + 1);
+                }
+                else
+                {
+                    if (v.X < 0) minx = int.MinValue;
+                    if (v.X > 0) maxx = int.MaxValue;
+                    if (v.Y > 0) miny = int.MinValue;
+                    if (v.Y < 0) maxy = int.MaxValue;
+                }
+            }
+            minx = Math.Max(minx, 0);
+            maxx = Math.Min(maxx, pixelWidth);
+            miny = Math.Max(miny, 0);
+            maxy = Math.Min(maxy, pixelHeight);
+            // Perform the rasterization within these bounds.
             Matrix3D Minv = MathHelp.Invert(
                 new Matrix3D(
                     triangle.P0.X, triangle.P1.X, triangle.P2.X, 0,
@@ -371,9 +406,9 @@ namespace RenderToy.PipelineModel
                     triangle.P0.W, triangle.P1.W, triangle.P2.W, 0,
                     0, 0, 0, 1));
             Vector3D interp = MathHelp.TransformVector(Minv, new Vector3D(1, 1, 1));
-            for (ushort y = 0; y < pixelHeight; ++y)
+            for (int y = miny; y < maxy; ++y)
             {
-                for (ushort x = 0; x < pixelWidth; ++x)
+                for (int x = minx; x < maxx; ++x)
                 {
                     double px = (x + 0.5) / pixelWidth * 2 - 1;
                     double py = 1 - (y + 0.5) / pixelHeight * 2;
@@ -387,7 +422,7 @@ namespace RenderToy.PipelineModel
                         double G = b / w;
                         double B = c / w;
                         uint color = ((uint)(R * 255) << 16) | ((uint)(G * 255) << 8) | ((uint)(B * 255) << 0) | 0xFF000000;
-                        yield return new PipelineModel.PixelBgra32 { X = x, Y = y, Color = color };
+                        yield return new PipelineModel.PixelBgra32 { X = (ushort)x, Y = (ushort)y, Color = color };
                     }
                 }
             }
