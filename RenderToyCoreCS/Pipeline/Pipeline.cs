@@ -533,7 +533,7 @@ namespace RenderToy.PipelineModel
                 {
                     int USEGMENTS = 5;
                     int VSEGMENTS = 5;
-                    for (int u = 0; u <= USEGMENTS; ++u)
+                    for (int u = 0; u < USEGMENTS; ++u)
                     {
                         for (int v = 0; v < VSEGMENTS; ++v)
                         {
