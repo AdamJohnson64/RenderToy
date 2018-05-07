@@ -75,7 +75,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="vertices">The vertex source to be clipped.</param>
         /// <returns>A filtered list of vertices for which no vertex has w≤0.</returns>
-        public static IEnumerable<Vertex<Vector4D>> Clip(IEnumerable<Vertex<Vector4D>> vertices)
+        public static IEnumerable<Vertex<Vector4D>> ClipPoint(IEnumerable<Vertex<Vector4D>> vertices)
         {
             return vertices.Where(v => v.Position.W > 0);
         }
@@ -84,7 +84,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="lines">The line source to be clipped.</param>
         /// <returns>A stream of line segments completely clipped by and contained in clip space.</returns>
-        public static IEnumerable<Line<Vector4D>> Clip(IEnumerable<Line<Vector4D>> lines)
+        public static IEnumerable<Line<Vector4D>> ClipLine(IEnumerable<Line<Vector4D>> lines)
         {
             foreach (var line in lines)
             {
@@ -101,7 +101,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="triangles">The triangle source to be clipped.</param>
         /// <returns>A stream of triangles completely clipped by and contained in clip space.</returns>
-        public static IEnumerable<Triangle<Vector4D>> Clip(IEnumerable<Triangle<Vector4D>> triangles)
+        public static IEnumerable<Triangle<Vector4D>> ClipTriangle(IEnumerable<Triangle<Vector4D>> triangles)
         {
             foreach (var triangle in triangles)
             {
@@ -229,7 +229,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="point">The point to be rasterized.</param>
         /// <returns>A stream of pixels to write to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> Rasterize(Vertex<Vector4D> point)
+        public static IEnumerable<PixelBgra32> RasterizePoint(Vertex<Vector4D> point)
         {
            yield return new PixelBgra32 { X = (ushort)point.Position.X, Y = (ushort)point.Position.Y, Color = 0xFF808080 };
         }
@@ -238,9 +238,9 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="vertices">The vertex source to be transformed.</param>
         /// <returns>A stream of screen transformed pixels.</returns>
-        public static IEnumerable<PixelBgra32> Rasterize(IEnumerable<Vertex<Vector4D>> vertices)
+        public static IEnumerable<PixelBgra32> RasterizePoint(IEnumerable<Vertex<Vector4D>> vertices)
         {
-            return vertices.SelectMany(p => Rasterize(p));
+            return vertices.SelectMany(p => RasterizePoint(p));
         }
         /// <summary>
         /// Rasterize a stream of clip-space points and emit pixels.
@@ -249,7 +249,7 @@ namespace RenderToy.PipelineModel
         /// <param name="width">The width of the screen in pixels.</param>
         /// <param name="height">The height of the screen in pixels.</param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> Rasterize(IEnumerable<Vertex<Vector4D>> vertices, ushort width, ushort height)
+        public static IEnumerable<PixelBgra32> RasterizePoint(IEnumerable<Vertex<Vector4D>> vertices, ushort width, ushort height)
         {
             return vertices.Select(v => new PixelBgra32 { X = (ushort)((v.Position.X + 1) * width / 2), Y = (ushort)((1 - v.Position.Y) * height / 2), Color = 0xFF808080 });
         }
@@ -258,7 +258,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="line"></param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> Rasterize(Line<Vector4D> line)
+        public static IEnumerable<PixelBgra32> RasterizeLine(Line<Vector4D> line)
         {
             if (Math.Abs(line.P1.X - line.P0.X) > Math.Abs(line.P1.Y - line.P0.Y))
             {
@@ -308,16 +308,16 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="lines">The lines to be rasterized.</param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> Rasterize(IEnumerable<Line<Vector4D>> lines)
+        public static IEnumerable<PixelBgra32> RasterizeLine(IEnumerable<Line<Vector4D>> lines)
         {
-            return lines.SelectMany(l => Rasterize(l));
+            return lines.SelectMany(l => RasterizeLine(l));
         }
         /// <summary>
         /// Rasterize a triangle in screen-space and emit pixels.
         /// </summary>
         /// <param name="triangle">The triangle to be rasterized.</param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> Rasterize(Triangle<Vector4D> triangle)
+        public static IEnumerable<PixelBgra32> RasterizeTriangle(Triangle<Vector4D> triangle)
         {
             // Calculate edge lines.
             var edges = new[]
@@ -355,9 +355,9 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="triangles">The triangles to be rasterized.</param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> Rasterize(IEnumerable<Triangle<Vector4D>> triangles)
+        public static IEnumerable<PixelBgra32> RasterizeTriangle(IEnumerable<Triangle<Vector4D>> triangles)
         {
-            return triangles.SelectMany(t => Rasterize(t));
+            return triangles.SelectMany(t => RasterizeTriangle(t));
         }
         public static IEnumerable<PixelBgra32> RasterizeHomogeneous(Triangle<Vector4D> triangle, ushort pixelWidth, ushort pixelHeight)
         {
@@ -433,7 +433,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="scene">The source scene.</param>
         /// <returns>A stream of colorer vertices.</returns>
-        public static IEnumerable<Vertex<Vector3D>> SceneToVertices(Scene scene)
+        public static IEnumerable<Vertex<Vector3D>> SceneToPoints(Scene scene)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
