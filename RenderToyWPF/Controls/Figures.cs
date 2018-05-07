@@ -518,8 +518,8 @@ namespace RenderToy.WPF.Figures
         {
             var points = new PipelineModel.Vertex<Vector4D>[]
             {
-                new Vertex<Vector4D> { Position = FigurePoints[0], Color = 0xFF00FFFF },
-                new Vertex<Vector4D> { Position = FigurePoints[1], Color = 0xFF0000FF }
+                new Vertex<Vector4D> { Position = FigurePoints[0] },
+                new Vertex<Vector4D> { Position = FigurePoints[1] }
             };
             var scaled = PipelineModel.Pipeline.Transform(points, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
             var pixels = PipelineModel.Pipeline.Rasterize(scaled);
@@ -543,8 +543,8 @@ namespace RenderToy.WPF.Figures
         {
             var lines = new PipelineModel.Line<Vector4D>[]
             {
-                new Line<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1], Color = 0xFF00FFFF },
-                new Line<Vector4D> { P0 = FigurePoints[2], P1 = FigurePoints[3], Color = 0xFF0000FF }
+                new Line<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1] },
+                new Line<Vector4D> { P0 = FigurePoints[2], P1 = FigurePoints[3] }
             };
             var scaled = PipelineModel.Pipeline.Transform(lines, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
             var pixels = PipelineModel.Pipeline.Rasterize(scaled);
@@ -572,7 +572,7 @@ namespace RenderToy.WPF.Figures
         {
             var triangles = new Triangle<Vector4D>[]
             {
-                new Triangle<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1], P2 = FigurePoints[2], Color = 0xFF00FFFF }
+                new Triangle<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1], P2 = FigurePoints[2] }
             };
             var scaled = PipelineModel.Pipeline.Transform(triangles, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
             var pixels = PipelineModel.Pipeline.Rasterize(scaled);

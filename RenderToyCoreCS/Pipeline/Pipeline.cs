@@ -42,7 +42,6 @@ namespace RenderToy.PipelineModel
     public struct Vertex<VERTEX>
     {
         public VERTEX Position;
-        public uint Color;
     }
     /// <summary>
     /// Representation of a colored line with a given vector representation.
@@ -51,7 +50,6 @@ namespace RenderToy.PipelineModel
     public struct Line<VERTEX>
     {
         public VERTEX P0, P1;
-        public uint Color;
     }
     /// <summary>
     /// Representation of a colored triangle with a given vector representation.
@@ -60,7 +58,6 @@ namespace RenderToy.PipelineModel
     public struct Triangle<VERTEX>
     {
         public VERTEX P0, P1, P2;
-        public uint Color;
     }
     /// <summary>
     /// Pipeline functions for assembling render pipelines.
@@ -95,7 +92,7 @@ namespace RenderToy.PipelineModel
                 Vector4D p1 = line.P1;
                 if (ClipHelp.ClipLine3D(ref p0, ref p1))
                 {
-                    yield return new Line<Vector4D> { P0 = p0, P1 = p1, Color = line.Color };
+                    yield return new Line<Vector4D> { P0 = p0, P1 = p1 };
                 }
             }
         }
@@ -111,7 +108,7 @@ namespace RenderToy.PipelineModel
                 Triangle4D triangle4 = new Triangle4D(triangle.P0, triangle.P1, triangle.P2);
                 foreach (var clipped in ClipHelp.ClipTriangle4D(triangle4))
                 {
-                    yield return new Triangle<Vector4D> { P0 = clipped.P0, P1 = clipped.P1, P2 = clipped.P2, Color = triangle.Color };
+                    yield return new Triangle<Vector4D> { P0 = clipped.P0, P1 = clipped.P1, P2 = clipped.P2 };
                 }
             }
         }
@@ -133,7 +130,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of post-homogeneous-divide vertices.</returns>
         public static IEnumerable<Vertex<Vector4D>> HomogeneousDivide(IEnumerable<Vertex<Vector4D>> vertices)
         {
-            return vertices.Select(v => new Vertex<Vector4D> { Position = HomogeneousDivide(v.Position), Color = v.Color });
+            return vertices.Select(v => new Vertex<Vector4D> { Position = HomogeneousDivide(v.Position) });
         }
         /// <summary>
         /// Perform a homogeneous divide on a line list.
@@ -142,7 +139,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of clipped lines guaranteed to be contained completely in clip space.</returns>
         public static IEnumerable<Line<Vector4D>> HomogeneousDivide(IEnumerable<Line<Vector4D>> lines)
         {
-            return lines.Select(v => new Line<Vector4D> { P0 = HomogeneousDivide(v.P0), P1 = HomogeneousDivide(v.P1), Color = v.Color });
+            return lines.Select(v => new Line<Vector4D> { P0 = HomogeneousDivide(v.P0), P1 = HomogeneousDivide(v.P1) });
         }
         /// <summary>
         /// Perform a homogeneous divide on a triangle list.
@@ -151,7 +148,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of clipped triangles guaranteed to be contained completely in clip space.</returns>
         public static IEnumerable<Triangle<Vector4D>> HomogeneousDivide(IEnumerable<Triangle<Vector4D>> lines)
         {
-            return lines.Select(v => new Triangle<Vector4D> { P0 = HomogeneousDivide(v.P0), P1 = HomogeneousDivide(v.P1), P2 = HomogeneousDivide(v.P2), Color = v.Color });
+            return lines.Select(v => new Triangle<Vector4D> { P0 = HomogeneousDivide(v.P0), P1 = HomogeneousDivide(v.P1), P2 = HomogeneousDivide(v.P2) });
         }
         /// <summary>
         /// Transform a stream of vertices by an arbitrary 4D matrix.
@@ -161,7 +158,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of transformed vertices.</returns>
         public static IEnumerable<Vertex<Vector4D>> Transform(IEnumerable<Vertex<Vector4D>> vertices, Matrix3D transform)
         {
-            return vertices.Select(v => new Vertex<Vector4D> { Position = MathHelp.Transform(transform, v.Position), Color = v.Color });
+            return vertices.Select(v => new Vertex<Vector4D> { Position = MathHelp.Transform(transform, v.Position) });
         }
         /// <summary>
         /// Transform a stream of line segments by an arbitrary 4D matrix.
@@ -171,7 +168,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of line segments transformed by the supplied matrix.</returns>
         public static IEnumerable<Line<Vector4D>> Transform(IEnumerable<Line<Vector4D>> lines, Matrix3D transform)
         {
-            return lines.Select(v => new Line<Vector4D> { P0 = MathHelp.Transform(transform, v.P0), P1 = MathHelp.Transform(transform, v.P1), Color = v.Color });
+            return lines.Select(v => new Line<Vector4D> { P0 = MathHelp.Transform(transform, v.P0), P1 = MathHelp.Transform(transform, v.P1) });
         }
         /// <summary>
         /// Transform a stream of triangles by an arbitrary 4D matrix.
@@ -181,7 +178,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of triangles transformed by the supplied matrix.</returns>
         public static IEnumerable<Triangle<Vector4D>> Transform(IEnumerable<Triangle<Vector4D>> triangles, Matrix3D transform)
         {
-            return triangles.Select(v => new Triangle<Vector4D> { P0 = MathHelp.Transform(transform, v.P0), P1 = MathHelp.Transform(transform, v.P1), P2 = MathHelp.Transform(transform, v.P2), Color = v.Color });
+            return triangles.Select(v => new Triangle<Vector4D> { P0 = MathHelp.Transform(transform, v.P0), P1 = MathHelp.Transform(transform, v.P1), P2 = MathHelp.Transform(transform, v.P2) });
         }
         /// <summary>
         /// Transform a homogeneous vertex into screen space with the supplied dimensions.
@@ -203,7 +200,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of screen-space transformed vertices.</returns>
         public static IEnumerable<Vertex<Vector4D>> TransformToScreen(IEnumerable<Vertex<Vector4D>> vertices, double width, double height)
         {
-            return vertices.Select(v => new Vertex<Vector4D> { Position = TransformToScreen(v.Position, width, height), Color = v.Color });
+            return vertices.Select(v => new Vertex<Vector4D> { Position = TransformToScreen(v.Position, width, height) });
         }
         /// <summary>
         /// Transform a list of lines into screen space.
@@ -214,7 +211,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of screen-space transformed lines.</returns>
         public static IEnumerable<Line<Vector4D>> TransformToScreen(IEnumerable<Line<Vector4D>> lines, double width, double height)
         {
-            return lines.Select(v => new Line<Vector4D> { P0 = TransformToScreen(v.P0, width, height), P1 = TransformToScreen(v.P1, width, height), Color = v.Color });
+            return lines.Select(v => new Line<Vector4D> { P0 = TransformToScreen(v.P0, width, height), P1 = TransformToScreen(v.P1, width, height) });
         }
         /// <summary>
         /// Transform a list of triangles into screen space.
@@ -225,7 +222,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of screen-space transformed triangles.</returns>
         public static IEnumerable<Triangle<Vector4D>> TransformToScreen(IEnumerable<Triangle<Vector4D>> triangles, double width, double height)
         {
-            return triangles.Select(v => new Triangle<Vector4D> { P0 = TransformToScreen(v.P0, width, height), P1 = TransformToScreen(v.P1, width, height), P2 = TransformToScreen(v.P2, width, height), Color = v.Color });
+            return triangles.Select(v => new Triangle<Vector4D> { P0 = TransformToScreen(v.P0, width, height), P1 = TransformToScreen(v.P1, width, height), P2 = TransformToScreen(v.P2, width, height) });
         }
         /// <summary>
         /// Rasterize a single screen-space points into colored pixels.
@@ -234,7 +231,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of pixels to write to the framebuffer.</returns>
         public static IEnumerable<PixelBgra32> Rasterize(Vertex<Vector4D> point)
         {
-           yield return new PixelBgra32 { X = (ushort)point.Position.X, Y = (ushort)point.Position.Y, Color = point.Color };
+           yield return new PixelBgra32 { X = (ushort)point.Position.X, Y = (ushort)point.Position.Y, Color = 0xFF808080 };
         }
         /// <summary>
         /// Rasterize a stream of screen-space points and emit pixels for all.
@@ -254,7 +251,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
         public static IEnumerable<PixelBgra32> Rasterize(IEnumerable<Vertex<Vector4D>> vertices, ushort width, ushort height)
         {
-            return vertices.Select(v => new PixelBgra32 { X = (ushort)((v.Position.X + 1) * width / 2), Y = (ushort)((1 - v.Position.Y) * height / 2), Color = v.Color });
+            return vertices.Select(v => new PixelBgra32 { X = (ushort)((v.Position.X + 1) * width / 2), Y = (ushort)((1 - v.Position.Y) * height / 2), Color = 0xFF808080 });
         }
         /// <summary>
         /// Rasterize a line in sceen space and emit pixels.
@@ -281,7 +278,7 @@ namespace RenderToy.PipelineModel
                 }
                 for (int x = 0; x <= p1.X - p0.X; ++x)
                 {
-                    yield return new PixelBgra32 { X = (ushort)(p0.X + x), Y = (ushort)(p0.Y + (p1.Y - p0.Y) * x / (p1.X - p0.X)), Color = line.Color };
+                    yield return new PixelBgra32 { X = (ushort)(p0.X + x), Y = (ushort)(p0.Y + (p1.Y - p0.Y) * x / (p1.X - p0.X)), Color = 0xFF808080 };
                 }
             }
             else
@@ -302,7 +299,7 @@ namespace RenderToy.PipelineModel
                 }
                 for (int y = 0; y <= p1.Y - p0.Y; ++y)
                 {
-                    yield return new PixelBgra32 { X = (ushort)(p0.X + (p1.X - p0.X) * y / (p1.Y - p0.Y)), Y = (ushort)(p0.Y + y), Color = line.Color };
+                    yield return new PixelBgra32 { X = (ushort)(p0.X + (p1.X - p0.X) * y / (p1.Y - p0.Y)), Y = (ushort)(p0.Y + y), Color = 0xFF808080 };
                 }
             }
         }
@@ -349,7 +346,7 @@ namespace RenderToy.PipelineModel
                     double xline = x + 0.5;
                     double alpha = MathHelp.Dot(new Vector2D(xline - triangle.P0.X, yline - triangle.P0.Y), new Vector2D(triangle.P1.X - triangle.P0.X, triangle.P1.Y - triangle.P0.Y));
                     double beta = MathHelp.Dot(new Vector2D(xline - triangle.P0.X, yline - triangle.P0.Y), new Vector2D(triangle.P2.X - triangle.P0.X, triangle.P2.Y - triangle.P0.Y));
-                    yield return new PixelBgra32 { X = (ushort)x, Y = (ushort)y, Color = triangle.Color };
+                    yield return new PixelBgra32 { X = (ushort)x, Y = (ushort)y, Color = 0xFF808080 };
                 }
             }
         }
@@ -441,7 +438,6 @@ namespace RenderToy.PipelineModel
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 Matrix3D model_mvp = transformedobject.Transform;
-                uint color = DrawHelp.ColorToUInt32(transformedobject.Node.WireColor);
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv != null)
                 {
@@ -454,7 +450,7 @@ namespace RenderToy.PipelineModel
                         {
                             // Determine the point and draw it; easy.
                             Vector3D p = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((double)u / USEGMENTS, (double)v / VSEGMENTS));
-                            yield return new Vertex<Vector3D> { Position = p, Color = color };
+                            yield return new Vertex<Vector3D> { Position = p };
                         }
                     }
                     continue;
@@ -474,7 +470,7 @@ namespace RenderToy.PipelineModel
                             {
                                 // Determine the point and draw it; easy.
                                 Vector3D p = MathHelp.TransformPoint(model_mvp, uvw.GetPointUVW((double)u / USEGMENTS, (double)v / VSEGMENTS, (double)w / WSEGMENTS));
-                                yield return new Vertex<Vector3D> { Position = p, Color = color };
+                                yield return new Vertex<Vector3D> { Position = p };
                             }
                         }
                     }
@@ -484,7 +480,7 @@ namespace RenderToy.PipelineModel
                 {
                     foreach (var p in mesh.Vertices)
                     {
-                        yield return new Vertex<Vector3D> { Position = p, Color = color };
+                        yield return new Vertex<Vector3D> { Position = p };
                     }
                     continue;
                 }
@@ -514,13 +510,13 @@ namespace RenderToy.PipelineModel
                             {
                                 Vector3D p3u1 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 0.0) / VSEGMENTS));
                                 Vector3D p3u2 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
-                                yield return new Line<Vector3D> { P0 = p3u1, P1 = p3u2, Color = color };
+                                yield return new Line<Vector3D> { P0 = p3u1, P1 = p3u2 };
                             }
                             // Draw V Lines.
                             {
                                 Vector3D p3u1 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((v + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
                                 Vector3D p3u2 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((v + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
-                                yield return new Line<Vector3D> { P0 = p3u1, P1 = p3u2, Color = color };
+                                yield return new Line<Vector3D> { P0 = p3u1, P1 = p3u2 };
                             }
                         }
                     }
@@ -576,8 +572,8 @@ namespace RenderToy.PipelineModel
                             Vector3D p310 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 1.0) / USEGMENTS, (v + 0.0) / VSEGMENTS));
                             Vector3D p301 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
                             Vector3D p311 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 1.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
-                            yield return new Triangle<Vector3D> { P0 = p300, P1 = p310, P2 = p311, Color = color };
-                            yield return new Triangle<Vector3D> { P0 = p311, P1 = p301, P2 = p300, Color = color };
+                            yield return new Triangle<Vector3D> { P0 = p300, P1 = p310, P2 = p311 };
+                            yield return new Triangle<Vector3D> { P0 = p311, P1 = p301, P2 = p300 };
                         }
                     }
                     continue;
@@ -600,7 +596,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of homogeneous vertices expanded as [x,y,z,1].</returns>
         public static IEnumerable<Vertex<Vector4D>> Vector3ToVector4(IEnumerable<Vertex<Vector3D>> vertices)
         {
-            return vertices.Select(v => new Vertex<Vector4D> { Position = Vector3ToVector4(v.Position), Color = v.Color });
+            return vertices.Select(v => new Vertex<Vector4D> { Position = Vector3ToVector4(v.Position) });
         }
         /// <summary>
         /// Cast a sequence of Vector3 lines to their homogeneous representation [x,y,z,1].
@@ -609,7 +605,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of homoegeneous lines expanded as [x,y,z,1].</returns>
         public static IEnumerable<Line<Vector4D>> Vector3ToVector4(IEnumerable<Line<Vector3D>> lines)
         {
-            return lines.Select(v => new Line<Vector4D> { P0 = Vector3ToVector4(v.P0), P1 = Vector3ToVector4(v.P1), Color = v.Color });
+            return lines.Select(v => new Line<Vector4D> { P0 = Vector3ToVector4(v.P0), P1 = Vector3ToVector4(v.P1) });
         }
         /// <summary>
         /// Cast a sequence of Vector3 triangles to their homogeneous representation [x,y,z,1].
@@ -618,23 +614,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of homogeneous triangles expanded as [x,y,z,1].</returns>
         public static IEnumerable<Triangle<Vector4D>> Vector3ToVector4(IEnumerable<Triangle<Vector3D>> triangles)
         {
-            return triangles.Select(v => new Triangle<Vector4D> { P0 = Vector3ToVector4(v.P0), P1 = Vector3ToVector4(v.P1), P2 = Vector3ToVector4(v.P2), Color = v.Color });
-        }
-        /// <summary>
-        /// TEST FUNCTION: Generate a pixel for every pixel in a screen area.
-        /// </summary>
-        /// <param name="width">The width of the screen.</param>
-        /// <param name="height">The height of the screen.</param>
-        /// <returns>A stream of magenta pixels as big as the screen.</returns>
-        public static IEnumerable<PixelBgra32> TestFillScreen(ushort width, ushort height)
-        {
-            for (ushort y = 0; y < height; ++y)
-            {
-                for (ushort x = 0; x < width; ++x)
-                {
-                    yield return new PixelBgra32 { X = x, Y = y, Color = 0xFF00FFFF };
-                }
-            }
+            return triangles.Select(v => new Triangle<Vector4D> { P0 = Vector3ToVector4(v.P0), P1 = Vector3ToVector4(v.P1), P2 = Vector3ToVector4(v.P2) });
         }
     }
 }
