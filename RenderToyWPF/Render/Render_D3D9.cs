@@ -25,9 +25,22 @@ namespace RenderToy.WPF
                 d3dsurface.SetColor(DrawHelp.ColorToUInt32(transformedobject.Node.WireColor));
                 Action<Vector4D, Vector4D, Vector4D> filltri_clipspace = (p1, p2, p3) =>
                 {
-                    foreach (var tri in ClipHelp.ClipTriangle4D(new Triangle4D(p1, p2, p3)))
+                    var iter = ClipHelp.ClipTriangle4D(new Vector4D[] { p1, p2, p3 }).GetEnumerator();
+                    while (iter.MoveNext())
                     {
-                        Vector4D[] points = { tri.P0, tri.P1, tri.P2 };
+                        var P0 = iter.Current;
+                        if (!iter.MoveNext())
+                        {
+                            break;
+                        }
+                        var P1 = iter.Current;
+                        if (!iter.MoveNext())
+                        {
+                            break;
+                        }
+                        var P2 = iter.Current;
+                        Vector4D[] v3 = { P0, P1, P2 };
+                        Vector4D[] points = { P0, P1, P2 };
                         var t = points
                             .Select(p => new Vector4D(p.X / p.W, p.Y / p.W, p.Z / p.W, 1))
                             .ToArray();

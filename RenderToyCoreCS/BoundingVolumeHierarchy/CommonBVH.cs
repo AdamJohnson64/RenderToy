@@ -147,11 +147,6 @@ namespace RenderToy
         public Triangle3D(Vector3D p0, Vector3D p1, Vector3D p2) { P0 = p0; P1 = p1; P2 = p2; }
         public readonly Vector3D P0, P1, P2;
     }
-    public struct Triangle4D
-    {
-        public Triangle4D(Vector4D p0, Vector4D p1, Vector4D p2) { P0 = p0; P1 = p1; P2 = p2; }
-        public readonly Vector4D P0, P1, P2;
-    }
     public struct TriIndex
     {
         public TriIndex(int i0, int i1, int i2) { Index0 = i0; Index1 = i1; Index2 = i2; }

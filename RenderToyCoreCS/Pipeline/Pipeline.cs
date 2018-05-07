@@ -85,28 +85,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of triangles completely clipped by and contained in clip space.</returns>
         public static IEnumerable<Vector4D> ClipTriangle(IEnumerable<Vector4D> triangles)
         {
-            var iter = triangles.GetEnumerator();
-            while (iter.MoveNext())
-            {
-                var P0 = iter.Current;
-                if (!iter.MoveNext())
-                {
-                    yield break;
-                }
-                var P1 = iter.Current;
-                if (!iter.MoveNext())
-                {
-                    yield break;
-                }
-                var P2 = iter.Current;
-                Triangle4D triangle4 = new Triangle4D(P0, P1, P2);
-                foreach (var clipped in ClipHelp.ClipTriangle4D(triangle4))
-                {
-                    yield return clipped.P0;
-                    yield return clipped.P1;
-                    yield return clipped.P2;
-                }
-            }
+            return ClipHelp.ClipTriangle4D(triangles);
         }
         /// <summary>
         /// Perform a homogeneous divide on a 4D vector (for readability only).
