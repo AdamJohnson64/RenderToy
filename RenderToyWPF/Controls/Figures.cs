@@ -131,13 +131,13 @@ namespace RenderToy.WPF.Figures
         System.Drawing.Point dragFrom;
         #endregion
         #region - Section : Static Helpers -
-        public static void DrawPoints(DrawingContext drawingContext, IEnumerable<PipelineModel.Vertex<Vector4D>> points)
+        public static void DrawPoints(DrawingContext drawingContext, IEnumerable<Vector4D> points)
         {
             var pen = new Pen(Brushes.Black, 1);
             foreach (var p in points)
             {
-                drawingContext.DrawLine(pen, new Point(p.Position.X - 2, p.Position.Y - 2), new Point(p.Position.X + 2, p.Position.Y + 2));
-                drawingContext.DrawLine(pen, new Point(p.Position.X + 2, p.Position.Y - 2), new Point(p.Position.X - 2, p.Position.Y + 2));
+                drawingContext.DrawLine(pen, new Point(p.X - 2, p.Y - 2), new Point(p.X + 2, p.Y + 2));
+                drawingContext.DrawLine(pen, new Point(p.X + 2, p.Y - 2), new Point(p.X - 2, p.Y + 2));
             }
         }
         public static void DrawWireframe(DrawingContext drawingContext, IEnumerable<PipelineModel.Line<Vector4D>> lines)
@@ -516,13 +516,9 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var points = new PipelineModel.Vertex<Vector4D>[]
-            {
-                new Vertex<Vector4D> { Position = FigurePoints[0] },
-                new Vertex<Vector4D> { Position = FigurePoints[1] }
-            };
-            var scaled = PipelineModel.Pipeline.Transform(points, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
-            var pixels = PipelineModel.Pipeline.RasterizePoint(scaled);
+            var points = new Vector4D[] { FigurePoints[0], FigurePoints[1] };
+            var scaled = Pipeline.Transform(points, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
+            var pixels = Pipeline.RasterizePoint(scaled);
             Figure3DBase.DrawBitmap(drawingContext, pixels, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             Figure3DBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
         }
@@ -546,8 +542,8 @@ namespace RenderToy.WPF.Figures
                 new Line<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1] },
                 new Line<Vector4D> { P0 = FigurePoints[2], P1 = FigurePoints[3] }
             };
-            var scaled = PipelineModel.Pipeline.Transform(lines, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
-            var pixels = PipelineModel.Pipeline.RasterizeLine(scaled);
+            var scaled = Pipeline.Transform(lines, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
+            var pixels = Pipeline.RasterizeLine(scaled);
             Figure3DBase.DrawBitmap(drawingContext, pixels, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             Figure3DBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
             var pen = new Pen(Brushes.Black, 2);

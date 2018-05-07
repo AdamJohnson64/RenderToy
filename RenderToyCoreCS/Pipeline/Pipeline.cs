@@ -36,14 +36,6 @@ namespace RenderToy.PipelineModel
         public uint Color;
     }
     /// <summary>
-    /// Representation of a colored vertex with a given vector representation.
-    /// </summary>
-    /// <typeparam name="VERTEX">The underlying vector storage type.</typeparam>
-    public struct Vertex<VERTEX>
-    {
-        public VERTEX Position;
-    }
-    /// <summary>
     /// Representation of a colored line with a given vector representation.
     /// </summary>
     /// <typeparam name="VERTEX">The underlying vector storage type.</typeparam>
@@ -75,9 +67,9 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="vertices">The vertex source to be clipped.</param>
         /// <returns>A filtered list of vertices for which no vertex has w≤0.</returns>
-        public static IEnumerable<Vertex<Vector4D>> ClipPoint(IEnumerable<Vertex<Vector4D>> vertices)
+        public static IEnumerable<Vector4D> ClipPoint(IEnumerable<Vector4D> vertices)
         {
-            return vertices.Where(v => v.Position.W > 0);
+            return vertices.Where(v => v.W > 0);
         }
         /// <summary>
         /// Clip a list of lines.
@@ -128,9 +120,9 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="vertices">The vertex source to be transformed</param>
         /// <returns>A stream of post-homogeneous-divide vertices.</returns>
-        public static IEnumerable<Vertex<Vector4D>> HomogeneousDivide(IEnumerable<Vertex<Vector4D>> vertices)
+        public static IEnumerable<Vector4D> HomogeneousDivide(IEnumerable<Vector4D> vertices)
         {
-            return vertices.Select(v => new Vertex<Vector4D> { Position = HomogeneousDivide(v.Position) });
+            return vertices.Select(v => HomogeneousDivide(v));
         }
         /// <summary>
         /// Perform a homogeneous divide on a line list.
@@ -156,9 +148,9 @@ namespace RenderToy.PipelineModel
         /// <param name="vertices">The vertex source to be transformed.</param>
         /// <param name="transform">The transform to apply to each vertex.</param>
         /// <returns>A stream of transformed vertices.</returns>
-        public static IEnumerable<Vertex<Vector4D>> Transform(IEnumerable<Vertex<Vector4D>> vertices, Matrix3D transform)
+        public static IEnumerable<Vector4D> Transform(IEnumerable<Vector4D> vertices, Matrix3D transform)
         {
-            return vertices.Select(v => new Vertex<Vector4D> { Position = MathHelp.Transform(transform, v.Position) });
+            return vertices.Select(v => MathHelp.Transform(transform, v));
         }
         /// <summary>
         /// Transform a stream of line segments by an arbitrary 4D matrix.
@@ -198,9 +190,9 @@ namespace RenderToy.PipelineModel
         /// <param name="width">The width of the screen area in pixels.</param>
         /// <param name="height">The height of the screen area in pixels.</param>
         /// <returns>A stream of screen-space transformed vertices.</returns>
-        public static IEnumerable<Vertex<Vector4D>> TransformToScreen(IEnumerable<Vertex<Vector4D>> vertices, double width, double height)
+        public static IEnumerable<Vector4D> TransformToScreen(IEnumerable<Vector4D> vertices, double width, double height)
         {
-            return vertices.Select(v => new Vertex<Vector4D> { Position = TransformToScreen(v.Position, width, height) });
+            return vertices.Select(v => TransformToScreen(v, width, height));
         }
         /// <summary>
         /// Transform a list of lines into screen space.
@@ -229,16 +221,16 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="point">The point to be rasterized.</param>
         /// <returns>A stream of pixels to write to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> RasterizePoint(Vertex<Vector4D> point)
+        public static IEnumerable<PixelBgra32> RasterizePoint(Vector4D point)
         {
-           yield return new PixelBgra32 { X = (ushort)point.Position.X, Y = (ushort)point.Position.Y, Color = 0xFF808080 };
+           yield return new PixelBgra32 { X = (ushort)point.X, Y = (ushort)point.Y, Color = 0xFF808080 };
         }
         /// <summary>
         /// Rasterize a stream of screen-space points and emit pixels for all.
         /// </summary>
         /// <param name="vertices">The vertex source to be transformed.</param>
         /// <returns>A stream of screen transformed pixels.</returns>
-        public static IEnumerable<PixelBgra32> RasterizePoint(IEnumerable<Vertex<Vector4D>> vertices)
+        public static IEnumerable<PixelBgra32> RasterizePoint(IEnumerable<Vector4D> vertices)
         {
             return vertices.SelectMany(p => RasterizePoint(p));
         }
@@ -249,9 +241,9 @@ namespace RenderToy.PipelineModel
         /// <param name="width">The width of the screen in pixels.</param>
         /// <param name="height">The height of the screen in pixels.</param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> RasterizePoint(IEnumerable<Vertex<Vector4D>> vertices, ushort width, ushort height)
+        public static IEnumerable<PixelBgra32> RasterizePoint(IEnumerable<Vector4D> vertices, ushort width, ushort height)
         {
-            return vertices.Select(v => new PixelBgra32 { X = (ushort)((v.Position.X + 1) * width / 2), Y = (ushort)((1 - v.Position.Y) * height / 2), Color = 0xFF808080 });
+            return vertices.Select(v => new PixelBgra32 { X = (ushort)((v.X + 1) * width / 2), Y = (ushort)((1 - v.Y) * height / 2), Color = 0xFF808080 });
         }
         /// <summary>
         /// Rasterize a line in sceen space and emit pixels.
@@ -433,7 +425,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="scene">The source scene.</param>
         /// <returns>A stream of colorer vertices.</returns>
-        public static IEnumerable<Vertex<Vector3D>> SceneToPoints(Scene scene)
+        public static IEnumerable<Vector3D> SceneToPoints(Scene scene)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
@@ -449,8 +441,7 @@ namespace RenderToy.PipelineModel
                         for (int v = 0; v <= VSEGMENTS; ++v)
                         {
                             // Determine the point and draw it; easy.
-                            Vector3D p = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((double)u / USEGMENTS, (double)v / VSEGMENTS));
-                            yield return new Vertex<Vector3D> { Position = p };
+                            yield return MathHelp.TransformPoint(model_mvp, uv.GetPointUV((double)u / USEGMENTS, (double)v / VSEGMENTS));
                         }
                     }
                     continue;
@@ -469,8 +460,7 @@ namespace RenderToy.PipelineModel
                             for (int w = 0; w <= VSEGMENTS; ++w)
                             {
                                 // Determine the point and draw it; easy.
-                                Vector3D p = MathHelp.TransformPoint(model_mvp, uvw.GetPointUVW((double)u / USEGMENTS, (double)v / VSEGMENTS, (double)w / WSEGMENTS));
-                                yield return new Vertex<Vector3D> { Position = p };
+                                yield return MathHelp.TransformPoint(model_mvp, uvw.GetPointUVW((double)u / USEGMENTS, (double)v / VSEGMENTS, (double)w / WSEGMENTS));
                             }
                         }
                     }
@@ -480,7 +470,7 @@ namespace RenderToy.PipelineModel
                 {
                     foreach (var p in mesh.Vertices)
                     {
-                        yield return new Vertex<Vector3D> { Position = p };
+                        yield return p;
                     }
                     continue;
                 }
@@ -594,9 +584,9 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="vertices">The vertices to cast.</param>
         /// <returns>A stream of homogeneous vertices expanded as [x,y,z,1].</returns>
-        public static IEnumerable<Vertex<Vector4D>> Vector3ToVector4(IEnumerable<Vertex<Vector3D>> vertices)
+        public static IEnumerable<Vector4D> Vector3ToVector4(IEnumerable<Vector3D> vertices)
         {
-            return vertices.Select(v => new Vertex<Vector4D> { Position = Vector3ToVector4(v.Position) });
+            return vertices.Select(v => Vector3ToVector4(v));
         }
         /// <summary>
         /// Cast a sequence of Vector3 lines to their homogeneous representation [x,y,z,1].
