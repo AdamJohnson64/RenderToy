@@ -36,14 +36,6 @@ namespace RenderToy.PipelineModel
         public uint Color;
     }
     /// <summary>
-    /// Representation of a colored triangle with a given vector representation.
-    /// </summary>
-    /// <typeparam name="VERTEX">The underlying vector storage type.</typeparam>
-    public struct Triangle<VERTEX>
-    {
-        public VERTEX P0, P1, P2;
-    }
-    /// <summary>
     /// Pipeline functions for assembling render pipelines.
     /// 
     /// These functions can be chained arbitrarily to assemble complete or
@@ -91,14 +83,28 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="triangles">The triangle source to be clipped.</param>
         /// <returns>A stream of triangles completely clipped by and contained in clip space.</returns>
-        public static IEnumerable<Triangle<Vector4D>> ClipTriangle(IEnumerable<Triangle<Vector4D>> triangles)
+        public static IEnumerable<Vector4D> ClipTriangle(IEnumerable<Vector4D> triangles)
         {
-            foreach (var triangle in triangles)
+            var iter = triangles.GetEnumerator();
+            while (iter.MoveNext())
             {
-                Triangle4D triangle4 = new Triangle4D(triangle.P0, triangle.P1, triangle.P2);
+                var P0 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    yield break;
+                }
+                var P1 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    yield break;
+                }
+                var P2 = iter.Current;
+                Triangle4D triangle4 = new Triangle4D(P0, P1, P2);
                 foreach (var clipped in ClipHelp.ClipTriangle4D(triangle4))
                 {
-                    yield return new Triangle<Vector4D> { P0 = clipped.P0, P1 = clipped.P1, P2 = clipped.P2 };
+                    yield return clipped.P0;
+                    yield return clipped.P1;
+                    yield return clipped.P2;
                 }
             }
         }
@@ -123,15 +129,6 @@ namespace RenderToy.PipelineModel
             return vertices.Select(v => HomogeneousDivide(v));
         }
         /// <summary>
-        /// Perform a homogeneous divide on a triangle list.
-        /// </summary>
-        /// <param name="lines">The stream of triangles to be clipped.</param>
-        /// <returns>A stream of clipped triangles guaranteed to be contained completely in clip space.</returns>
-        public static IEnumerable<Triangle<Vector4D>> HomogeneousDivide(IEnumerable<Triangle<Vector4D>> lines)
-        {
-            return lines.Select(v => new Triangle<Vector4D> { P0 = HomogeneousDivide(v.P0), P1 = HomogeneousDivide(v.P1), P2 = HomogeneousDivide(v.P2) });
-        }
-        /// <summary>
         /// Transform a stream of vertices by an arbitrary 4D matrix.
         /// </summary>
         /// <param name="vertices">The vertex source to be transformed.</param>
@@ -140,16 +137,6 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector4D> Transform(IEnumerable<Vector4D> vertices, Matrix3D transform)
         {
             return vertices.Select(v => MathHelp.Transform(transform, v));
-        }
-        /// <summary>
-        /// Transform a stream of triangles by an arbitrary 4D matrix.
-        /// </summary>
-        /// <param name="triangles">The triangles to be transformed.</param>
-        /// <param name="transform">The transformation to be applied.</param>
-        /// <returns>A stream of triangles transformed by the supplied matrix.</returns>
-        public static IEnumerable<Triangle<Vector4D>> Transform(IEnumerable<Triangle<Vector4D>> triangles, Matrix3D transform)
-        {
-            return triangles.Select(v => new Triangle<Vector4D> { P0 = MathHelp.Transform(transform, v.P0), P1 = MathHelp.Transform(transform, v.P1), P2 = MathHelp.Transform(transform, v.P2) });
         }
         /// <summary>
         /// Transform a homogeneous vertex into screen space with the supplied dimensions.
@@ -172,17 +159,6 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector4D> TransformToScreen(IEnumerable<Vector4D> vertices, double width, double height)
         {
             return vertices.Select(v => TransformToScreen(v, width, height));
-        }
-        /// <summary>
-        /// Transform a list of triangles into screen space.
-        /// </summary>
-        /// <param name="triangles">The triangles to be transformed.</param>
-        /// <param name="width">The width of the screen area in pixels.</param>
-        /// <param name="height">The height of the screen area in pixels.</param>
-        /// <returns>A stream of screen-space transformed triangles.</returns>
-        public static IEnumerable<Triangle<Vector4D>> TransformToScreen(IEnumerable<Triangle<Vector4D>> triangles, double width, double height)
-        {
-            return triangles.Select(v => new Triangle<Vector4D> { P0 = TransformToScreen(v.P0, width, height), P1 = TransformToScreen(v.P1, width, height), P2 = TransformToScreen(v.P2, width, height) });
         }
         /// <summary>
         /// Rasterize a single screen-space points into colored pixels.
@@ -287,14 +263,14 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="triangle">The triangle to be rasterized.</param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeTriangle(Triangle<Vector4D> triangle)
+        public static IEnumerable<PixelBgra32> RasterizeTriangle(Vector4D P0, Vector4D P1, Vector4D P2)
         {
             // Calculate edge lines.
             var edges = new[]
             {
-                new { Org = triangle.P0, Dir = triangle.P1 - triangle.P0 },
-                new { Org = triangle.P1, Dir = triangle.P2 - triangle.P1 },
-                new { Org = triangle.P2, Dir = triangle.P0 - triangle.P2 }
+                new { Org = P0, Dir = P1 - P0 },
+                new { Org = P1, Dir = P2 - P1 },
+                new { Org = P2, Dir = P0 - P2 }
             };
             // Scan in the range of the triangle.
             int yscanmin = (int)Math.Floor(edges.Min(p => p.Org.Y));
@@ -314,8 +290,8 @@ namespace RenderToy.PipelineModel
                 for (int x = xmin; x < xmax; ++x)
                 {
                     double xline = x + 0.5;
-                    double alpha = MathHelp.Dot(new Vector2D(xline - triangle.P0.X, yline - triangle.P0.Y), new Vector2D(triangle.P1.X - triangle.P0.X, triangle.P1.Y - triangle.P0.Y));
-                    double beta = MathHelp.Dot(new Vector2D(xline - triangle.P0.X, yline - triangle.P0.Y), new Vector2D(triangle.P2.X - triangle.P0.X, triangle.P2.Y - triangle.P0.Y));
+                    double alpha = MathHelp.Dot(new Vector2D(xline - P0.X, yline - P0.Y), new Vector2D(P1.X - P0.X, P1.Y - P0.Y));
+                    double beta = MathHelp.Dot(new Vector2D(xline - P0.X, yline - P0.Y), new Vector2D(P2.X - P0.X, P2.Y - P0.Y));
                     yield return new PixelBgra32 { X = (ushort)x, Y = (ushort)y, Color = 0xFF808080 };
                 }
             }
@@ -325,14 +301,32 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="triangles">The triangles to be rasterized.</param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeTriangle(IEnumerable<Triangle<Vector4D>> triangles)
+        public static IEnumerable<PixelBgra32> RasterizeTriangle(IEnumerable<Vector4D> triangles)
         {
-            return triangles.SelectMany(t => RasterizeTriangle(t));
+            var iter = triangles.GetEnumerator();
+            while (iter.MoveNext())
+            {
+                var P0 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    yield break;
+                }
+                var P1 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    yield break;
+                }
+                var P2 = iter.Current;
+                foreach (var pixel in RasterizeTriangle(P0, P1, P2))
+                {
+                    yield return pixel;
+                }
+            }
         }
-        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(Triangle<Vector4D> triangle, ushort pixelWidth, ushort pixelHeight)
+        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(Vector4D P0, Vector4D P1, Vector4D P2, ushort pixelWidth, ushort pixelHeight)
         {
             // Early out if everything is behind the camera.
-            if (triangle.P0.W <= 0 && triangle.P1.W <= 0 && triangle.P2.W <= 0)
+            if (P0.W <= 0 && P1.W <= 0 && P2.W <= 0)
             {
                 yield break;
             }
@@ -341,7 +335,7 @@ namespace RenderToy.PipelineModel
             int maxx = int.MinValue;
             int miny = int.MaxValue;
             int maxy = int.MinValue;
-            foreach (Vector4D v in new Vector4D[] { triangle.P0, triangle.P1, triangle.P2 })
+            foreach (Vector4D v in new Vector4D[] { P0, P1, P2 })
             {
                 if (v.W > 0)
                 {
@@ -368,9 +362,9 @@ namespace RenderToy.PipelineModel
             // Perform the rasterization within these bounds.
             Matrix3D Minv = MathHelp.Invert(
                 new Matrix3D(
-                    triangle.P0.X, triangle.P1.X, triangle.P2.X, 0,
-                    triangle.P0.Y, triangle.P1.Y, triangle.P2.Y, 0,
-                    triangle.P0.W, triangle.P1.W, triangle.P2.W, 0,
+                    P0.X, P1.X, P2.X, 0,
+                    P0.Y, P1.Y, P2.Y, 0,
+                    P0.W, P1.W, P2.W, 0,
                     0, 0, 0, 1));
             Vector3D interp = MathHelp.TransformVector(Minv, new Vector3D(1, 1, 1));
             for (int y = miny; y < maxy; ++y)
@@ -389,14 +383,32 @@ namespace RenderToy.PipelineModel
                         double G = b / w;
                         double B = c / w;
                         uint color = ((uint)(R * 255) << 16) | ((uint)(G * 255) << 8) | ((uint)(B * 255) << 0) | 0xFF000000;
-                        yield return new PipelineModel.PixelBgra32 { X = (ushort)x, Y = (ushort)y, Color = color };
+                        yield return new PixelBgra32 { X = (ushort)x, Y = (ushort)y, Color = color };
                     }
                 }
             }
         }
-        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(IEnumerable<Triangle<Vector4D>> triangles, ushort pixelWidth, ushort pixelHeight)
+        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(IEnumerable<Vector4D> triangles, ushort pixelWidth, ushort pixelHeight)
         {
-            return triangles.SelectMany(t => RasterizeHomogeneous(t, pixelWidth, pixelHeight));
+            var iter = triangles.GetEnumerator();
+            while (iter.MoveNext())
+            {
+                var P0 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    yield break;
+                }
+                var P1 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    yield break;
+                }
+                var P2 = iter.Current;
+                foreach (var pixel in RasterizeHomogeneous(P0, P1, P2, pixelWidth, pixelHeight))
+                {
+                    yield return pixel;
+                }
+            }
         }
         /// <summary>
         /// Convert an input scene into a point list.
@@ -519,7 +531,7 @@ namespace RenderToy.PipelineModel
                 }
             }
         }
-        public static IEnumerable<Triangle<Vector3D>> SceneToTriangles(Scene scene)
+        public static IEnumerable<Vector3D> SceneToTriangles(Scene scene)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
@@ -538,8 +550,8 @@ namespace RenderToy.PipelineModel
                             Vector3D p310 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 1.0) / USEGMENTS, (v + 0.0) / VSEGMENTS));
                             Vector3D p301 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
                             Vector3D p311 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 1.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
-                            yield return new Triangle<Vector3D> { P0 = p300, P1 = p310, P2 = p311 };
-                            yield return new Triangle<Vector3D> { P0 = p311, P1 = p301, P2 = p300 };
+                            yield return p300; yield return p310; yield return p311;
+                            yield return p311; yield return p301; yield return p300;
                         }
                     }
                     continue;
@@ -563,15 +575,6 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector4D> Vector3ToVector4(IEnumerable<Vector3D> vertices)
         {
             return vertices.Select(v => Vector3ToVector4(v));
-        }
-        /// <summary>
-        /// Cast a sequence of Vector3 triangles to their homogeneous representation [x,y,z,1].
-        /// </summary>
-        /// <param name="triangles">The triangles to be cast.</param>
-        /// <returns>A stream of homogeneous triangles expanded as [x,y,z,1].</returns>
-        public static IEnumerable<Triangle<Vector4D>> Vector3ToVector4(IEnumerable<Triangle<Vector3D>> triangles)
-        {
-            return triangles.Select(v => new Triangle<Vector4D> { P0 = Vector3ToVector4(v.P0), P1 = Vector3ToVector4(v.P1), P2 = Vector3ToVector4(v.P2) });
         }
     }
 }

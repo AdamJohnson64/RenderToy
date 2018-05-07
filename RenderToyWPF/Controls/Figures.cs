@@ -158,20 +158,32 @@ namespace RenderToy.WPF.Figures
                 drawingContext.DrawLine(pen, new Point(P0.X, P0.Y), new Point(P1.X, P1.Y));
             }
         }
-        public static void DrawTriangles(DrawingContext drawingContext, IEnumerable<PipelineModel.Triangle<Vector4D>> triangles)
+        public static void DrawTriangles(DrawingContext drawingContext, IEnumerable<Vector4D> triangles)
         {
             DrawTriangles(drawingContext, triangles, new Pen(Brushes.Black, 1));
         }
-        public static void DrawTriangles(DrawingContext drawingContext, IEnumerable<PipelineModel.Triangle<Vector4D>> triangles, Pen pen)
+        public static void DrawTriangles(DrawingContext drawingContext, IEnumerable<Vector4D> triangles, Pen pen)
         {
-            foreach (var t in triangles)
+            var iter = triangles.GetEnumerator();
+            while (iter.MoveNext())
             {
-                drawingContext.DrawLine(pen, new Point(t.P0.X, t.P0.Y), new Point(t.P1.X, t.P1.Y));
-                drawingContext.DrawLine(pen, new Point(t.P1.X, t.P1.Y), new Point(t.P2.X, t.P2.Y));
-                drawingContext.DrawLine(pen, new Point(t.P2.X, t.P2.Y), new Point(t.P0.X, t.P0.Y));
+                var P0 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    break;
+                }
+                var P1 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    break;
+                }
+                var P2 = iter.Current;
+                drawingContext.DrawLine(pen, new Point(P0.X, P0.Y), new Point(P1.X, P1.Y));
+                drawingContext.DrawLine(pen, new Point(P1.X, P1.Y), new Point(P2.X, P2.Y));
+                drawingContext.DrawLine(pen, new Point(P2.X, P2.Y), new Point(P0.X, P0.Y));
             }
         }
-        public static void DrawBitmap(DrawingContext drawingContext, IEnumerable<PipelineModel.PixelBgra32> pixels, double actualWidth, double actualHeight, int pixelWidth, int pixelHeight)
+        public static void DrawBitmap(DrawingContext drawingContext, IEnumerable<PixelBgra32> pixels, double actualWidth, double actualHeight, int pixelWidth, int pixelHeight)
         {
             if (pixelWidth <= 0 || pixelHeight <= 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(pixelWidth, pixelHeight, 0, 0, PixelFormats.Bgra32, null);
@@ -418,7 +430,7 @@ namespace RenderToy.WPF.Figures
     {
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var unclipped = new Triangle<Vector4D>[] { GetTriangle() };
+            var unclipped = GetTriangle();
             var mvp = Matrix3D.Identity;
             mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             mvp = MathHelp.Multiply(mvp, MathHelp.CreateMatrixScale(0.5, 0.5, 0.5));
@@ -446,41 +458,41 @@ namespace RenderToy.WPF.Figures
                 Figure3DBase.DrawTriangles(drawingContext, primitives, new Pen(Brushes.Black, 1));
             }
         }
-        protected abstract Triangle<Vector4D> GetTriangle();
+        protected abstract Vector4D[] GetTriangle();
     }
     class FigureTriangleClippingNone : FigureTriangleClipping
     {
-        protected override Triangle<Vector4D> GetTriangle()
+        protected override Vector4D[] GetTriangle()
         {
-            return new Triangle<Vector4D> { P0 = new Vector4D(0, 0.9, 0.5, 1), P1 = new Vector4D(-0.9, -0.9, 0.5, 1), P2 = new Vector4D(0.9, -0.9, 0.5, 1) };
+            return new Vector4D[] { new Vector4D(0, 0.9, 0.5, 1), new Vector4D(-0.9, -0.9, 0.5, 1), new Vector4D(0.9, -0.9, 0.5, 1) };
         }
     }
     class FigureTriangleClipping0 : FigureTriangleClipping
     {
-        protected override Triangle<Vector4D> GetTriangle()
+        protected override Vector4D[] GetTriangle()
         {
-            return new Triangle<Vector4D> { P0 = new Vector4D(1.5, 0.9, 0.5, 1), P1 = new Vector4D(1.75, -0.9, 0.5, 1), P2 = new Vector4D(1.5, -0.9, 0.5, 1) };
+            return new Vector4D[] { new Vector4D(1.5, 0.9, 0.5, 1), new Vector4D(1.75, -0.9, 0.5, 1), new Vector4D(1.5, -0.9, 0.5, 1) };
         }
     }
     class FigureTriangleClipping1 : FigureTriangleClipping
     {
-        protected override Triangle<Vector4D> GetTriangle()
+        protected override Vector4D[] GetTriangle()
         {
-            return new Triangle<Vector4D> { P0 = new Vector4D(0, 0.9, 0.5, 1), P1 = new Vector4D(-0.9, -1.25, 0.5, 1), P2 = new Vector4D(0.9, -1.5, 0.5, 1) };
+            return new Vector4D[] { new Vector4D(0, 0.9, 0.5, 1), new Vector4D(-0.9, -1.25, 0.5, 1), new Vector4D(0.9, -1.5, 0.5, 1) };
         }
     }
     class FigureTriangleClipping2 : FigureTriangleClipping
     {
-        protected override Triangle<Vector4D> GetTriangle()
+        protected override Vector4D[] GetTriangle()
         {
-            return new Triangle<Vector4D> { P0 = new Vector4D(-0.9, 0.25, 0.5, 1), P1 = new Vector4D(0.9, 0.5, 0.5, 1), P2 = new Vector4D(0, -1.5, 0.5, 1) };
+            return new Vector4D[] { new Vector4D(-0.9, 0.25, 0.5, 1), new Vector4D(0.9, 0.5, 0.5, 1), new Vector4D(0, -1.5, 0.5, 1) };
         }
     }
     class FigureTriangleClippingMany : FigureTriangleClipping
     {
-        protected override Triangle<Vector4D> GetTriangle()
+        protected override Vector4D[] GetTriangle()
         {
-            return new Triangle<Vector4D> { P0 = new Vector4D(0, 0.9, 0.5, 1), P1 = new Vector4D(1.5, -1.25, 0.5, 1), P2 = new Vector4D(-1.5, -0.5, 0.5, 1) };
+            return new Vector4D[] { new Vector4D(0, 0.9, 0.5, 1), new Vector4D(1.5, -1.25, 0.5, 1), new Vector4D(-1.5, -0.5, 0.5, 1) };
         }
     }
     #endregion
@@ -559,20 +571,29 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var triangles = new Triangle<Vector4D>[]
-            {
-                new Triangle<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1], P2 = FigurePoints[2] }
-            };
-            var scaled = PipelineModel.Pipeline.Transform(triangles, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
-            var pixels = PipelineModel.Pipeline.RasterizeTriangle(scaled);
+            var triangles = FigurePoints;
+            var scaled = Pipeline.Transform(triangles, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
+            var pixels = Pipeline.RasterizeTriangle(scaled);
             Figure3DBase.DrawBitmap(drawingContext, pixels, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             Figure3DBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
             var pen = new Pen(Brushes.Black, 2);
-            foreach (var t in triangles)
+            var iter = Array.AsReadOnly<Vector4D>(triangles).GetEnumerator();
+            while (iter.MoveNext())
             {
-                drawingContext.DrawLine(pen, new Point(t.P0.X * ActualWidth, t.P0.Y * ActualHeight), new Point(t.P1.X * ActualWidth, t.P1.Y * ActualHeight));
-                drawingContext.DrawLine(pen, new Point(t.P1.X * ActualWidth, t.P1.Y * ActualHeight), new Point(t.P2.X * ActualWidth, t.P2.Y * ActualHeight));
-                drawingContext.DrawLine(pen, new Point(t.P2.X * ActualWidth, t.P2.Y * ActualHeight), new Point(t.P0.X * ActualWidth, t.P0.Y * ActualHeight));
+                var P0 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    break;
+                }
+                var P1 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    break;
+                }
+                var P2 = iter.Current;
+                drawingContext.DrawLine(pen, new Point(P0.X * ActualWidth, P0.Y * ActualHeight), new Point(P1.X * ActualWidth, P1.Y * ActualHeight));
+                drawingContext.DrawLine(pen, new Point(P1.X * ActualWidth, P1.Y * ActualHeight), new Point(P2.X * ActualWidth, P2.Y * ActualHeight));
+                drawingContext.DrawLine(pen, new Point(P2.X * ActualWidth, P2.Y * ActualHeight), new Point(P0.X * ActualWidth, P0.Y * ActualHeight));
             }
         }
     }
@@ -756,7 +777,7 @@ namespace RenderToy.WPF.Figures
             drawingContext.DrawLine(penEdge, new Point(P1.X * ActualWidth, P1.Y * ActualHeight), new Point(P2.X * ActualWidth, P2.Y * ActualHeight));
             drawingContext.DrawLine(penEdge, new Point(P2.X * ActualWidth, P2.Y * ActualHeight), new Point(P0.X * ActualWidth, P0.Y * ActualHeight));
         }
-        IEnumerable<PipelineModel.PixelBgra32> Rasterize()
+        IEnumerable<PixelBgra32> Rasterize()
         {
             var P0v4 = FigurePoints[0];
             var P1v4 = FigurePoints[1];
@@ -795,7 +816,7 @@ namespace RenderToy.WPF.Figures
                         double g = alphaValue;
                         double b = betaValue;
                         uint color = ((uint)(r * 255) << 16) | ((uint)(g * 255) << 8) | ((uint)(b * 255) << 0) | 0xFF000000;
-                        yield return new PipelineModel.PixelBgra32 { X = x, Y = y, Color = color };
+                        yield return new PixelBgra32 { X = x, Y = y, Color = color };
                     }
                 }
             }
@@ -831,14 +852,14 @@ namespace RenderToy.WPF.Figures
             drawingContext.DrawLine(penEdge, new Point(P1.X * ActualWidth, P1.Y * ActualHeight), new Point(P2.X * ActualWidth, P2.Y * ActualHeight));
             drawingContext.DrawLine(penEdge, new Point(P2.X * ActualWidth, P2.Y * ActualHeight), new Point(P0.X * ActualWidth, P0.Y * ActualHeight));
         }
-        IEnumerable<PipelineModel.PixelBgra32> Rasterize()
+        IEnumerable<PixelBgra32> Rasterize()
         {
             /*
             var triangles = new Triangle<Vector4D>[]
             {
                 new Triangle<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1], P2 = FigurePoints[2], Color = 0xFF00FFFF }
             };
-            return PipelineModel.Pipeline.RasterizeHomogeneous(triangles, pixelWidth, pixelHeight);
+            return Pipeline.RasterizeHomogeneous(triangles, pixelWidth, pixelHeight);
             */
             var P0v4 = FigurePoints[0];
             var P1v4 = FigurePoints[1];
@@ -858,7 +879,7 @@ namespace RenderToy.WPF.Figures
                     if (a > 0 && b > 0 && c > 0)
                     {
                         uint color = ((uint)(a * 255) << 16) | ((uint)(b * 255) << 8) | ((uint)(c * 255) << 0) | 0xFF000000;
-                        yield return new PipelineModel.PixelBgra32 { X = x, Y = y, Color = color };
+                        yield return new PixelBgra32 { X = x, Y = y, Color = color };
                     }
                 }
             }
