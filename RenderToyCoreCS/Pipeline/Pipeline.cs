@@ -36,14 +36,6 @@ namespace RenderToy.PipelineModel
         public uint Color;
     }
     /// <summary>
-    /// Representation of a colored line with a given vector representation.
-    /// </summary>
-    /// <typeparam name="VERTEX">The underlying vector storage type.</typeparam>
-    public struct Line<VERTEX>
-    {
-        public VERTEX P0, P1;
-    }
-    /// <summary>
     /// Representation of a colored triangle with a given vector representation.
     /// </summary>
     /// <typeparam name="VERTEX">The underlying vector storage type.</typeparam>
@@ -76,15 +68,21 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="lines">The line source to be clipped.</param>
         /// <returns>A stream of line segments completely clipped by and contained in clip space.</returns>
-        public static IEnumerable<Line<Vector4D>> ClipLine(IEnumerable<Line<Vector4D>> lines)
+        public static IEnumerable<Vector4D> ClipLine(IEnumerable<Vector4D> lines)
         {
-            foreach (var line in lines)
+            var iter = lines.GetEnumerator();
+            while (iter.MoveNext())
             {
-                Vector4D p0 = line.P0;
-                Vector4D p1 = line.P1;
-                if (ClipHelp.ClipLine3D(ref p0, ref p1))
+                var P0 = iter.Current;
+                if (!iter.MoveNext())
                 {
-                    yield return new Line<Vector4D> { P0 = p0, P1 = p1 };
+                    yield break;
+                }
+                var P1 = iter.Current;
+                if (ClipHelp.ClipLine3D(ref P0, ref P1))
+                {
+                    yield return P0;
+                    yield return P1;
                 }
             }
         }
@@ -125,15 +123,6 @@ namespace RenderToy.PipelineModel
             return vertices.Select(v => HomogeneousDivide(v));
         }
         /// <summary>
-        /// Perform a homogeneous divide on a line list.
-        /// </summary>
-        /// <param name="lines">The stream of lines to be clipped.</param>
-        /// <returns>A stream of clipped lines guaranteed to be contained completely in clip space.</returns>
-        public static IEnumerable<Line<Vector4D>> HomogeneousDivide(IEnumerable<Line<Vector4D>> lines)
-        {
-            return lines.Select(v => new Line<Vector4D> { P0 = HomogeneousDivide(v.P0), P1 = HomogeneousDivide(v.P1) });
-        }
-        /// <summary>
         /// Perform a homogeneous divide on a triangle list.
         /// </summary>
         /// <param name="lines">The stream of triangles to be clipped.</param>
@@ -151,16 +140,6 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector4D> Transform(IEnumerable<Vector4D> vertices, Matrix3D transform)
         {
             return vertices.Select(v => MathHelp.Transform(transform, v));
-        }
-        /// <summary>
-        /// Transform a stream of line segments by an arbitrary 4D matrix.
-        /// </summary>
-        /// <param name="lines">The lines to be transformed.</param>
-        /// <param name="transform">The transformation to be applied.</param>
-        /// <returns>A stream of line segments transformed by the supplied matrix.</returns>
-        public static IEnumerable<Line<Vector4D>> Transform(IEnumerable<Line<Vector4D>> lines, Matrix3D transform)
-        {
-            return lines.Select(v => new Line<Vector4D> { P0 = MathHelp.Transform(transform, v.P0), P1 = MathHelp.Transform(transform, v.P1) });
         }
         /// <summary>
         /// Transform a stream of triangles by an arbitrary 4D matrix.
@@ -193,17 +172,6 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector4D> TransformToScreen(IEnumerable<Vector4D> vertices, double width, double height)
         {
             return vertices.Select(v => TransformToScreen(v, width, height));
-        }
-        /// <summary>
-        /// Transform a list of lines into screen space.
-        /// </summary>
-        /// <param name="lines">The lines to be transformed.</param>
-        /// <param name="width">The width of the screen area in pixels.</param>
-        /// <param name="height">The height of the screen area in pixels.</param>
-        /// <returns>A stream of screen-space transformed lines.</returns>
-        public static IEnumerable<Line<Vector4D>> TransformToScreen(IEnumerable<Line<Vector4D>> lines, double width, double height)
-        {
-            return lines.Select(v => new Line<Vector4D> { P0 = TransformToScreen(v.P0, width, height), P1 = TransformToScreen(v.P1, width, height) });
         }
         /// <summary>
         /// Transform a list of triangles into screen space.
@@ -250,23 +218,23 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="line"></param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeLine(Line<Vector4D> line)
+        public static IEnumerable<PixelBgra32> RasterizeLine(Vector4D P0, Vector4D P1)
         {
-            if (Math.Abs(line.P1.X - line.P0.X) > Math.Abs(line.P1.Y - line.P0.Y))
+            if (Math.Abs(P1.X - P0.X) > Math.Abs(P1.Y - P0.Y))
             {
                 // X spanning line; this line is longer in the X axis.
                 // Scan in the X direction plotting Y points.
                 var p0 = new Vector4D();
                 var p1 = new Vector4D();
-                if (line.P0.X < line.P1.X)
+                if (P0.X < P1.X)
                 {
-                    p0 = line.P0;
-                    p1 = line.P1;
+                    p0 = P0;
+                    p1 = P1;
                 }
                 else
                 {
-                    p0 = line.P1;
-                    p1 = line.P0;
+                    p0 = P1;
+                    p1 = P0;
                 }
                 for (int x = 0; x <= p1.X - p0.X; ++x)
                 {
@@ -279,15 +247,15 @@ namespace RenderToy.PipelineModel
                 // Scan in the Y direction plotting X points.
                 var p0 = new Vector4D();
                 var p1 = new Vector4D();
-                if (line.P0.Y < line.P1.Y)
+                if (P0.Y < P1.Y)
                 {
-                    p0 = line.P0;
-                    p1 = line.P1;
+                    p0 = P0;
+                    p1 = P1;
                 }
                 else
                 {
-                    p0 = line.P1;
-                    p1 = line.P0;
+                    p0 = P1;
+                    p1 = P0;
                 }
                 for (int y = 0; y <= p1.Y - p0.Y; ++y)
                 {
@@ -300,9 +268,19 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="lines">The lines to be rasterized.</param>
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeLine(IEnumerable<Line<Vector4D>> lines)
+        public static IEnumerable<PixelBgra32> RasterizeLine(IEnumerable<Vector4D> lines)
         {
-            return lines.SelectMany(l => RasterizeLine(l));
+            IEnumerator<Vector4D> iter = lines.GetEnumerator();
+            while (iter.MoveNext())
+            {
+                var P0 = iter.Current;
+                if (!iter.MoveNext()) yield break;
+                var P1 = iter.Current;
+                foreach (var pixel in RasterizeLine(P0, P1))
+                {
+                    yield return pixel;
+                }
+            }
         }
         /// <summary>
         /// Rasterize a triangle in screen-space and emit pixels.
@@ -481,7 +459,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="scene">The source scene.</param>
         /// <returns>A stream of colored line segments.</returns>
-        public static IEnumerable<Line<Vector3D>> SceneToLines(Scene scene)
+        public static IEnumerable<Vector3D> SceneToLines(Scene scene)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
@@ -498,15 +476,13 @@ namespace RenderToy.PipelineModel
                         {
                             // Draw U Lines.
                             {
-                                Vector3D p3u1 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 0.0) / VSEGMENTS));
-                                Vector3D p3u2 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
-                                yield return new Line<Vector3D> { P0 = p3u1, P1 = p3u2 };
+                                yield return MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 0.0) / VSEGMENTS));
+                                yield return MathHelp.TransformPoint(model_mvp, uv.GetPointUV((u + 0.0) / USEGMENTS, (v + 1.0) / VSEGMENTS));
                             }
                             // Draw V Lines.
                             {
-                                Vector3D p3u1 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((v + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
-                                Vector3D p3u2 = MathHelp.TransformPoint(model_mvp, uv.GetPointUV((v + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
-                                yield return new Line<Vector3D> { P0 = p3u1, P1 = p3u2 };
+                                yield return MathHelp.TransformPoint(model_mvp, uv.GetPointUV((v + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
+                                yield return MathHelp.TransformPoint(model_mvp, uv.GetPointUV((v + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS));
                             }
                         }
                     }
@@ -587,15 +563,6 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector4D> Vector3ToVector4(IEnumerable<Vector3D> vertices)
         {
             return vertices.Select(v => Vector3ToVector4(v));
-        }
-        /// <summary>
-        /// Cast a sequence of Vector3 lines to their homogeneous representation [x,y,z,1].
-        /// </summary>
-        /// <param name="lines">The lines to be cast.</param>
-        /// <returns>A stream of homoegeneous lines expanded as [x,y,z,1].</returns>
-        public static IEnumerable<Line<Vector4D>> Vector3ToVector4(IEnumerable<Line<Vector3D>> lines)
-        {
-            return lines.Select(v => new Line<Vector4D> { P0 = Vector3ToVector4(v.P0), P1 = Vector3ToVector4(v.P1) });
         }
         /// <summary>
         /// Cast a sequence of Vector3 triangles to their homogeneous representation [x,y,z,1].

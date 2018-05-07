@@ -140,15 +140,22 @@ namespace RenderToy.WPF.Figures
                 drawingContext.DrawLine(pen, new Point(p.X + 2, p.Y - 2), new Point(p.X - 2, p.Y + 2));
             }
         }
-        public static void DrawWireframe(DrawingContext drawingContext, IEnumerable<PipelineModel.Line<Vector4D>> lines)
+        public static void DrawWireframe(DrawingContext drawingContext, IEnumerable<Vector4D> lines)
         {
             DrawWireframe(drawingContext, lines, new Pen(Brushes.Black, 1));
         }
-        public static void DrawWireframe(DrawingContext drawingContext, IEnumerable<PipelineModel.Line<Vector4D>> lines, Pen pen)
+        public static void DrawWireframe(DrawingContext drawingContext, IEnumerable<Vector4D> lines, Pen pen)
         {
-            foreach (var l in lines)
+            var iter = lines.GetEnumerator();
+            while (iter.MoveNext())
             {
-                drawingContext.DrawLine(pen, new Point(l.P0.X, l.P0.Y), new Point(l.P1.X, l.P1.Y));
+                var P0 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    break;
+                }
+                var P1 = iter.Current;
+                drawingContext.DrawLine(pen, new Point(P0.X, P0.Y), new Point(P1.X, P1.Y));
             }
         }
         public static void DrawTriangles(DrawingContext drawingContext, IEnumerable<PipelineModel.Triangle<Vector4D>> triangles)
@@ -264,23 +271,6 @@ namespace RenderToy.WPF.Figures
             var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
             var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
             var vertexh = Pipeline.HomogeneousDivide(vertexclipspace);
-            var lines = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
-            Figure3DBase.DrawWireframe(drawingContext, lines);
-        }
-    }
-    class FigureWireframeRemoveNegativeW : Figure3DBase
-    {
-        public FigureWireframeRemoveNegativeW()
-        {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(-0.1, 0.5, 0.1), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
-        }
-        protected override void RenderFigure(DrawingContext drawingContext)
-        {
-            var vertexsource3 = Pipeline.SceneToLines(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
-            var removenegw = vertexclipspace.Where(x => x.P0.W > 0 && x.P1.W > 0);
-            var vertexh = Pipeline.HomogeneousDivide(removenegw);
             var lines = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawWireframe(drawingContext, lines);
         }
@@ -438,12 +428,12 @@ namespace RenderToy.WPF.Figures
                 Figure3DBase.DrawTriangles(drawingContext, primitives, new Pen(Brushes.LightGray, 2));
             }
             {
-                var clipframe = new Line<Vector4D>[]
+                var clipframe = new Vector4D[]
                 {
-                    new Line<Vector4D> { P0 = new Vector4D(-1, 1, 0.5, 1), P1 = new Vector4D(1, 1, 0.5, 1) },
-                    new Line<Vector4D> { P0 = new Vector4D(1, 1, 0.5, 1), P1 = new Vector4D(1, -1, 0.5, 1) },
-                    new Line<Vector4D> { P0 = new Vector4D(1, -1, 0.5, 1), P1 = new Vector4D(-1, -1, 0.5, 1) },
-                    new Line<Vector4D> { P0 = new Vector4D(-1, -1, 0.5, 1), P1 = new Vector4D(-1, 1, 0.5, 1) },
+                    new Vector4D(-1, 1, 0.5, 1), new Vector4D(1, 1, 0.5, 1),
+                    new Vector4D(1, 1, 0.5, 1), new Vector4D(1, -1, 0.5, 1),
+                    new Vector4D(1, -1, 0.5, 1), new Vector4D(-1, -1, 0.5, 1),
+                    new Vector4D(-1, -1, 0.5, 1), new Vector4D(-1, 1, 0.5, 1),
                 };
                 var transformed = Pipeline.Transform(clipframe, mvp);
                 var primitives = Pipeline.TransformToScreen(transformed, ActualWidth, ActualHeight);
@@ -537,19 +527,22 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var lines = new PipelineModel.Line<Vector4D>[]
-            {
-                new Line<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1] },
-                new Line<Vector4D> { P0 = FigurePoints[2], P1 = FigurePoints[3] }
-            };
+            var lines = new Vector4D[] { FigurePoints[0], FigurePoints[1], FigurePoints[2], FigurePoints[3] };
             var scaled = Pipeline.Transform(lines, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
             var pixels = Pipeline.RasterizeLine(scaled);
             Figure3DBase.DrawBitmap(drawingContext, pixels, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             Figure3DBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
             var pen = new Pen(Brushes.Black, 2);
-            foreach (var line in lines)
+            var iter = Array.AsReadOnly<Vector4D>(lines).GetEnumerator();
+            while (iter.MoveNext())
             {
-                drawingContext.DrawLine(pen, new Point(line.P0.X * ActualWidth, line.P0.Y * ActualHeight), new Point(line.P1.X * ActualWidth, line.P1.Y * ActualHeight));
+                var P0 = iter.Current;
+                if (!iter.MoveNext())
+                {
+                    break;
+                }
+                var P1 = iter.Current;
+                drawingContext.DrawLine(pen, new Point(P0.X * ActualWidth, P0.Y * ActualHeight), new Point(P1.X * ActualWidth, P1.Y * ActualHeight));
             }
         }
     }
