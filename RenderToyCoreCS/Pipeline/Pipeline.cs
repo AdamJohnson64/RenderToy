@@ -71,7 +71,7 @@ namespace RenderToy.PipelineModel
                     yield break;
                 }
                 var P1 = iter.Current;
-                if (ClipHelp.ClipLine3D(ref P0, ref P1))
+                if (ClipHelp.ClipLine4D(ref P0, ref P1))
                 {
                     yield return P0;
                     yield return P1;

@@ -91,21 +91,13 @@ namespace RenderToy
         }
         #endregion
         #region - Section : Homogeneous Clip (Lines) -
-        public static bool TransformAndClipLine(ref Vector4D p1, ref Vector4D p2, Matrix3D mvp)
-        {
-            // Transform the supplied points into projection space.
-            p1 = mvp.Transform(p1);
-            p2 = mvp.Transform(p2);
-            // Perform homogeneous space clipping.
-            return ClipLine3D(ref p1, ref p2);
-        }
         /// <summary>
         /// Homogeneous clip a clip-space line segment.
         /// </summary>
         /// <param name="p1">The clip-space starting position.</param>
         /// <param name="p2">The clip-space ending position.</param>
         /// <returns>True if any part of the line remains, false if it was completely clipped away.</returns>
-        public static bool ClipLine3D(ref Vector4D p1, ref Vector4D p2)
+        public static bool ClipLine4D(ref Vector4D p1, ref Vector4D p2)
         {
             // Clip to clip-space near (z=0).
             if (!ClipLine3D(ref p1, ref p2, new Vector4D(0, 0, 1, 0))) return false;

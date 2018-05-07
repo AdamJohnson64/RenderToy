@@ -68,7 +68,9 @@ namespace RenderToy
                 DrawHelp.fnDrawLineWorld drawline3d = (p1, p2) => {
                     Vector4D v41 = new Vector4D(p1.X, p1.Y, p1.Z, 1);
                     Vector4D v42 = new Vector4D(p2.X, p2.Y, p2.Z, 1);
-                    if (!ClipHelp.TransformAndClipLine(ref v41, ref v42, model_mvp)) return;
+                    v41 = model_mvp.Transform(v41);
+                    v42 = model_mvp.Transform(v42);
+                    if (!ClipHelp.ClipLine4D(ref v41, ref v42)) return;
                     drawline2d(
                         new Vector3D((1 + v41.X / v41.W) * render_width / 2, (1 - v41.Y / v41.W) * render_height / 2, v41.Z / v41.W),
                         new Vector3D((1 + v42.X / v42.W) * render_width / 2, (1 - v42.Y / v42.W) * render_height / 2, v42.Z / v42.W));
