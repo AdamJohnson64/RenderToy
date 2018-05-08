@@ -36,7 +36,6 @@ namespace RenderToy
 		{
 			::AmbientOcclusionAMPF32(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, render_width, render_height, bitmap_stride, sample_offset, sample_count);
 		}
-		#ifdef USE_F64
 		EXPORTGENERATOR(RaycastNormalsCPUF64)
 		EXPORTGENERATOR(RaycastTangentsCPUF64)
 		EXPORTGENERATOR(RaycastBitangentsCPUF64)
@@ -45,6 +44,5 @@ namespace RenderToy
 		{
 			::AmbientOcclusionCPUF64(scene->Data, inverse_mvp->Data, bitmap_ptr->Data, render_width, render_height, bitmap_stride, sample_offset, sample_count);
 		}
-		#endif  // USE_F64
 	};
 }

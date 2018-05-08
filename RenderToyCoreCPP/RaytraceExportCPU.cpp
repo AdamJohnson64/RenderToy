@@ -67,7 +67,6 @@ extern "C" void AmbientOcclusionCPUF32(const void* scene, const void* inverse_mv
 	}
 }
 
-#ifdef USE_F64
 extern "C" void RaycastNormalsCPUF64(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 	RenderImageCPU<double, RaytraceCLI::RenderModeRaycastNormals<double>>(scene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride);
 }
@@ -93,4 +92,3 @@ extern "C" void AmbientOcclusionCPUF64(const void* scene, const void* inverse_mv
 		}
 	}
 }
-#endif  // USE_F64

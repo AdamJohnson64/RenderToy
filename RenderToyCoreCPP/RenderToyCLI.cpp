@@ -67,7 +67,6 @@ namespace RenderToy
 		{
 			::ToneMap((const void*)accumulator_ptr, accumulator_stride, (void*)bitmap_ptr, render_width, render_height, bitmap_stride, rescale);
 		}
-		#ifdef USE_F64
 		EXPORTGENERATOR(RaycastNormalsCPUF64)
 		EXPORTGENERATOR(RaycastBitangentsCPUF64)
 		EXPORTGENERATOR(RaycastTangentsCPUF64)
@@ -77,6 +76,7 @@ namespace RenderToy
 		EXPORTGENERATOR(RaycastBitangentsCUDAF64)
 		EXPORTGENERATOR(RaytraceCUDAF64)
 		EXPORTGENERATOR(DebugMeshCUDAF64)
+		/*
 		static void AmbientOcclusionCPUF64(array<unsigned char>^ scene, array<unsigned char>^ inverse_mvp, System::IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count)
 		{
 			pin_ptr<unsigned char> pin_scene = &scene[0];
@@ -89,6 +89,6 @@ namespace RenderToy
 			pin_ptr<unsigned char> pin_inverse_mvp = &inverse_mvp[0];
 			::AmbientOcclusionCUDAF64(pin_scene, pin_inverse_mvp, (void*)bitmap_ptr, render_width, render_height, bitmap_stride, sample_offset, sample_count);
 		}
-		#endif  // USE_F64
+		*/
 	};
 }
