@@ -119,13 +119,13 @@ namespace RenderToy.WPF
             if (RenderMode == null) return;
             int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / RenderResolution;
             int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / RenderResolution;
-            RenderMode.SetCamera(MVP);
-            RenderMode.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
+            RenderMode.SetCamera(MVP);
+            RenderMode.SetTarget(bitmap.PixelWidth, bitmap.PixelHeight);
             bitmap.Lock();
             RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, RENDER_WIDTH, RENDER_HEIGHT));
+            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
             bitmap.Unlock();
             drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
         }
