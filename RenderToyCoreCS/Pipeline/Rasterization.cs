@@ -400,5 +400,32 @@ namespace RenderToy.PipelineModel
                 }
             }
         }
+        /// <summary>
+        /// Rasterize a stream of triangles to a stream of pixels via homogeneous rasterization.
+        /// </summary>
+        /// <param name="triangles">The triangles to rasterize.</param>
+        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
+        /// <param name="color">The color to render pixels with.</param>
+        /// <param name="render_width">The pixel width of the target bitmap.</param>
+        /// <param name="render_height">The pixel height of the target bitmap.</param>
+        /// <returns>A stream of pixels representing all triangles.</returns>
+        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(IEnumerable<Vector3D> triangles, Matrix3D mvp, uint color, ushort render_width, ushort render_height)
+        {
+            var v3tov4 = Transformation.Vector3ToVector4(triangles);
+            var clipspace = Transformation.Transform(v3tov4, mvp);
+            return RasterizeHomogeneous(clipspace, render_width, render_height);
+        }
+        /// <summary>
+        /// Rasterize a transformed scene of colored objects as triangles into a stream of pixels.
+        /// </summary>
+        /// <param name="scene">The scene to be rasterized.</param>
+        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
+        /// <param name="render_width">The pixel width of the target bitmap.</param>
+        /// <param name="render_height">The pixel height of the target bitmap.</param>
+        /// <returns>A stream of pixels representing the complete scene as triangles.</returns>
+        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(Scene scene, Matrix3D mvp, ushort render_width, ushort render_height)
+        {
+            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeHomogeneous(PrimitiveAssembly.CreateTriangles(x.Node.Primitive), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.WireColor), render_width, render_height));
+        }
     }
 }
