@@ -149,7 +149,7 @@ namespace RenderToy.PipelineModel
                 }
                 for (int y = 0; y <= p1.Y - p0.Y; ++y)
                 {
-                    yield return new PixelBgra32 { X = (ushort)(p0.X + (p1.X - p0.X) * y / (p1.Y - p0.Y)), Y = (ushort)(p0.Y + y), Color = 0xFF808080 };
+                    yield return new PixelBgra32 { X = (ushort)(p0.X + (p1.X - p0.X) * y / (p1.Y - p0.Y)), Y = (ushort)(p0.Y + y), Color = color };
                 }
             }
         }
