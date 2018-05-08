@@ -14,16 +14,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\OctreeREF.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\Octree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModelFormats\LoaderPLY.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\Pipeline.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\PrimitiveAssemblyPoints.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\PrimitiveAssemblyTriangles.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\Transformation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\Common.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\Rasterization.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\PrimitiveAssemblyLines.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderControl\AccumulateBuffer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderControl\BitmapBuffer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderControl\IMultiPass.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderControl\MultiPassAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderControl\SinglePassAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RenderControl\SinglePassSync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RenderModeCS\Point.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RenderModeCS\Raster.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RenderModeCS\Wireframe.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\RenderModeCS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Cameras\Perspective.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Cameras\IProjection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Materials\Checkerboard.cs" />
@@ -47,15 +50,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Transforms\TransformMatrix.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Transforms\TransformQuaternion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\CallHelp.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\ClipHelp.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\DrawHelp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\Clipping.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\Teapot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\Interop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\MathHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\MementoServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\Performance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\WorkQueue.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Pipeline\" />
   </ItemGroup>
 </Project>

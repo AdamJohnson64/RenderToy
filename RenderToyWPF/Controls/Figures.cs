@@ -229,12 +229,12 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var vertexsource3 = Pipeline.SceneToPoints(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
-            var vertexclipped = Pipeline.ClipPoint(vertexclipspace);
-            var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
-            var points = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            var vertexsource3 = PrimitiveAssembly.CreatePoints(Scene);
+            var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipped = Clipping.ClipPoint(vertexclipspace);
+            var vertexh = Transformation.HomogeneousDivide(vertexclipped);
+            var points = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawPoints(drawingContext, points);
         }
     }
@@ -246,11 +246,11 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var vertexsource3 = Pipeline.SceneToPoints(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
-            var vertexh = Pipeline.HomogeneousDivide(vertexclipspace);
-            var points = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            var vertexsource3 = PrimitiveAssembly.CreatePoints(Scene);
+            var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexh = Transformation.HomogeneousDivide(vertexclipspace);
+            var points = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawPoints(drawingContext, points);
         }
     }
@@ -262,12 +262,12 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var vertexsource3 = Pipeline.SceneToLines(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
-            var vertexclipped = Pipeline.ClipLine(vertexclipspace);
-            var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
-            var lines = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            var vertexsource3 = PrimitiveAssembly.CreateLines(Scene);
+            var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipped = Clipping.ClipLine(vertexclipspace);
+            var vertexh = Transformation.HomogeneousDivide(vertexclipped);
+            var lines = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawWireframe(drawingContext, lines);
         }
     }
@@ -279,11 +279,11 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var vertexsource3 = Pipeline.SceneToLines(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
-            var vertexh = Pipeline.HomogeneousDivide(vertexclipspace);
-            var lines = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            var vertexsource3 = PrimitiveAssembly.CreateLines(Scene);
+            var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexh = Transformation.HomogeneousDivide(vertexclipspace);
+            var lines = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawWireframe(drawingContext, lines);
         }
     }
@@ -298,12 +298,12 @@ namespace RenderToy.WPF.Figures
             var mvp = MathHelp.Invert(Camera.Object.Transform);
             mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
             mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            var vertexsource3 = Pipeline.SceneToLines(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, mvp);
-            var vertexclipped = Pipeline.ClipLine(vertexclipspace);
-            var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
-            var lines = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            var vertexsource3 = PrimitiveAssembly.CreateLines(Scene);
+            var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Transformation.Transform(vertexsource4, mvp);
+            var vertexclipped = Clipping.ClipLine(vertexclipspace);
+            var vertexh = Transformation.HomogeneousDivide(vertexclipped);
+            var lines = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawWireframe(drawingContext, lines);
         }
     }
@@ -315,12 +315,12 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var vertexsource3 = Pipeline.SceneToTriangles(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
-            var vertexclipped = Pipeline.ClipTriangle(vertexclipspace);
-            var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
-            var triangles = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            var vertexsource3 = PrimitiveAssembly.CreateTriangles(Scene);
+            var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipped = Clipping.ClipTriangle(vertexclipspace);
+            var vertexh = Transformation.HomogeneousDivide(vertexclipped);
+            var triangles = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawTriangles(drawingContext, triangles);
         }
     }
@@ -332,11 +332,11 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var vertexsource3 = Pipeline.SceneToTriangles(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
-            var vertexh = Pipeline.HomogeneousDivide(vertexclipspace);
-            var triangles = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            var vertexsource3 = PrimitiveAssembly.CreateTriangles(Scene);
+            var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexh = Transformation.HomogeneousDivide(vertexclipspace);
+            var triangles = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawTriangles(drawingContext, triangles);
         }
     }
@@ -348,12 +348,12 @@ namespace RenderToy.WPF.Figures
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var vertexsource3 = Pipeline.SceneToTriangles(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
-            var vertexclipped = Pipeline.ClipTriangle(vertexclipspace);
-            var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
-            var triangles = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+            var vertexsource3 = PrimitiveAssembly.CreateTriangles(Scene);
+            var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipped = Clipping.ClipTriangle(vertexclipspace);
+            var vertexh = Transformation.HomogeneousDivide(vertexclipped);
+            var triangles = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawTriangles(drawingContext, triangles);
         }
     }
@@ -435,8 +435,8 @@ namespace RenderToy.WPF.Figures
             mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             mvp = MathHelp.Multiply(mvp, MathHelp.CreateMatrixScale(0.5, 0.5, 0.5));
             {
-                var transformed = Pipeline.Transform(unclipped, mvp);
-                var primitives = Pipeline.TransformToScreen(transformed, ActualWidth, ActualHeight);
+                var transformed = Transformation.Transform(unclipped, mvp);
+                var primitives = Transformation.TransformToScreen(transformed, ActualWidth, ActualHeight);
                 Figure3DBase.DrawTriangles(drawingContext, primitives, new Pen(Brushes.LightGray, 2));
             }
             {
@@ -447,14 +447,14 @@ namespace RenderToy.WPF.Figures
                     new Vector4D(1, -1, 0.5, 1), new Vector4D(-1, -1, 0.5, 1),
                     new Vector4D(-1, -1, 0.5, 1), new Vector4D(-1, 1, 0.5, 1),
                 };
-                var transformed = Pipeline.Transform(clipframe, mvp);
-                var primitives = Pipeline.TransformToScreen(transformed, ActualWidth, ActualHeight);
+                var transformed = Transformation.Transform(clipframe, mvp);
+                var primitives = Transformation.TransformToScreen(transformed, ActualWidth, ActualHeight);
                 Figure3DBase.DrawWireframe(drawingContext, primitives, new Pen(Brushes.LightGray, 1));
             }
             {
-                var clipped = Pipeline.ClipTriangle(unclipped);
-                var transformed = Pipeline.Transform(clipped, mvp);
-                var primitives = Pipeline.TransformToScreen(transformed, ActualWidth, ActualHeight);
+                var clipped = Clipping.ClipTriangle(unclipped);
+                var transformed = Transformation.Transform(clipped, mvp);
+                var primitives = Transformation.TransformToScreen(transformed, ActualWidth, ActualHeight);
                 Figure3DBase.DrawTriangles(drawingContext, primitives, new Pen(Brushes.Black, 1));
             }
         }
@@ -519,8 +519,8 @@ namespace RenderToy.WPF.Figures
         protected override void RenderFigure(DrawingContext drawingContext)
         {
             var points = new Vector4D[] { FigurePoints[0], FigurePoints[1] };
-            var scaled = Pipeline.Transform(points, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
-            var pixels = Pipeline.RasterizePoint(scaled);
+            var scaled = Transformation.Transform(points, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
+            var pixels = Rasterization.RasterizePoint(scaled, 0xFF808080);
             Figure3DBase.DrawBitmap(drawingContext, pixels, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             Figure3DBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
         }
@@ -540,8 +540,8 @@ namespace RenderToy.WPF.Figures
         protected override void RenderFigure(DrawingContext drawingContext)
         {
             var lines = new Vector4D[] { FigurePoints[0], FigurePoints[1], FigurePoints[2], FigurePoints[3] };
-            var scaled = Pipeline.Transform(lines, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
-            var pixels = Pipeline.RasterizeLine(scaled);
+            var scaled = Transformation.Transform(lines, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
+            var pixels = Rasterization.RasterizeLine(scaled, 0xFF808080);
             Figure3DBase.DrawBitmap(drawingContext, pixels, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             Figure3DBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
             var pen = new Pen(Brushes.Black, 2);
@@ -572,8 +572,8 @@ namespace RenderToy.WPF.Figures
         protected override void RenderFigure(DrawingContext drawingContext)
         {
             var triangles = FigurePoints;
-            var scaled = Pipeline.Transform(triangles, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
-            var pixels = Pipeline.RasterizeTriangle(scaled);
+            var scaled = Transformation.Transform(triangles, MathHelp.CreateMatrixScale(pixelWidth, pixelHeight, 1));
+            var pixels = Rasterization.RasterizeTriangle(scaled, 0xFFFF0000);
             Figure3DBase.DrawBitmap(drawingContext, pixels, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             Figure3DBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
             var pen = new Pen(Brushes.Black, 2);
@@ -608,19 +608,19 @@ namespace RenderToy.WPF.Figures
         {
             const int pixelWidth = 32;
             const int pixelHeight = 32;
-            var vertexsource3 = Pipeline.SceneToTriangles(Scene);
-            var vertexsource4 = Pipeline.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Pipeline.Transform(vertexsource4, MVP);
-            var vertexclipped = Pipeline.ClipTriangle(vertexclipspace);
-            var vertexh = Pipeline.HomogeneousDivide(vertexclipped);
+            var vertexsource3 = PrimitiveAssembly.CreateTriangles(Scene);
+            var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
+            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipped = Clipping.ClipTriangle(vertexclipspace);
+            var vertexh = Transformation.HomogeneousDivide(vertexclipped);
             Figure3DBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
             {
-                var triangles = Pipeline.TransformToScreen(vertexh, pixelWidth, pixelHeight);
-                var pixels = Pipeline.RasterizeTriangle(triangles);
+                var triangles = Transformation.TransformToScreen(vertexh, pixelWidth, pixelHeight);
+                var pixels = Rasterization.RasterizeTriangle(triangles, 0xFFFF0000);
                 Figure3DBase.DrawBitmap(drawingContext, pixels, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             }
             {
-                var triangles = Pipeline.TransformToScreen(vertexh, ActualWidth, ActualHeight);
+                var triangles = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
                 Figure3DBase.DrawTriangles(drawingContext, triangles);
             }
         }
@@ -854,13 +854,6 @@ namespace RenderToy.WPF.Figures
         }
         IEnumerable<PixelBgra32> Rasterize()
         {
-            /*
-            var triangles = new Triangle<Vector4D>[]
-            {
-                new Triangle<Vector4D> { P0 = FigurePoints[0], P1 = FigurePoints[1], P2 = FigurePoints[2], Color = 0xFF00FFFF }
-            };
-            return Pipeline.RasterizeHomogeneous(triangles, pixelWidth, pixelHeight);
-            */
             var P0v4 = FigurePoints[0];
             var P1v4 = FigurePoints[1];
             var P2v4 = FigurePoints[2];
@@ -897,19 +890,19 @@ namespace RenderToy.WPF.Figures
             const int pixelWidth = 64;
             const int pixelHeight = 64;
             {
-                var A = Pipeline.SceneToTriangles(Scene);
-                var B = Pipeline.Vector3ToVector4(A);
-                var C = Pipeline.Transform(B, MVP);
-                var D = Pipeline.RasterizeHomogeneous(C, pixelWidth, pixelHeight);
+                var A = PrimitiveAssembly.CreateTriangles(Scene);
+                var B = Transformation.Vector3ToVector4(A);
+                var C = Transformation.Transform(B, MVP);
+                var D = Rasterization.RasterizeHomogeneous(C, pixelWidth, pixelHeight);
                 Figure3DBase.DrawBitmap(drawingContext, D, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             }
             {
-                var A = Pipeline.SceneToLines(Scene);
-                var B = Pipeline.Vector3ToVector4(A);
-                var C = Pipeline.Transform(B, MVP);
-                var D = Pipeline.ClipLine(C);
-                var E = Pipeline.HomogeneousDivide(D);
-                var F = Pipeline.TransformToScreen(E, ActualWidth, ActualHeight);
+                var A = PrimitiveAssembly.CreateLines(Scene);
+                var B = Transformation.Vector3ToVector4(A);
+                var C = Transformation.Transform(B, MVP);
+                var D = Clipping.ClipLine(C);
+                var E = Transformation.HomogeneousDivide(D);
+                var F = Transformation.TransformToScreen(E, ActualWidth, ActualHeight);
                 Figure3DBase.DrawWireframe(drawingContext, F);
             }
         }

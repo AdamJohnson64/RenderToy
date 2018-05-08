@@ -3,96 +3,12 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.SceneGraph.Primitives;
-
 namespace RenderToy
 {
     public static class DrawHelp
     {
-        #region - Section : General -
-        public static uint ColorToUInt32(Vector4D color)
-        {
-            return
-                ((uint)(color.W * 255) << 24) |
-                ((uint)(color.X * 255) << 16) |
-                ((uint)(color.Y * 255) << 8) |
-                ((uint)(color.Z * 255) << 0);
-        }
-        #endregion
-        #region - Section : Delegates for shape access -
-        public delegate Vector3D GetPointUV(double u, double v);
-        public delegate Vector3D GetPointUVW(double u, double v, double w);
-        #endregion
-        #region - Section : Higher Order Primitives (Points) -
-        /// <summary>
-        /// Generic point drawing function draws a point in 3D space.
-        /// </summary>
-        /// <param name="p">The world space point.</param>
-        public delegate void fnDrawPointWorld(Vector3D p);
-        /// <summary>
-        /// Draw a uv parametric surface as a series of points.
-        /// </summary>
-        /// <param name="point">The point rendering function.</param>
-        /// <param name="shape">The uv parametric surface to draw.</param>
-        public static void DrawParametricUV(fnDrawPointWorld point, GetPointUV shape)
-        {
-            int USEGMENTS = 20;
-            int VSEGMENTS = 20;
-            // Simply move some number of steps across u and v and draw the points in space.
-            for (int u = 0; u <= USEGMENTS; ++u)
-            {
-                for (int v = 0; v <= VSEGMENTS; ++v)
-                {
-                    // Determine the point and draw it; easy.
-                    point(shape((double)u / USEGMENTS, (double)v / VSEGMENTS));
-                }
-            }
-        }
-        /// <summary>
-        /// Draw a uvw parametric volume skin as a series of points.
-        /// </summary>
-        /// <param name="point">The point rendering function.</param>
-        /// <param name="shape">The uvw parametric volume to draw.</param>
-        public static void DrawParametricUVW(fnDrawPointWorld point, GetPointUVW shape)
-        {
-            DrawParametricUV(point, (u, v) => shape(u, v, 0));
-            DrawParametricUV(point, (u, v) => shape(u, v, 1));
-            DrawParametricUV(point, (u, v) => shape(u, 0, v));
-            DrawParametricUV(point, (u, v) => shape(u, 1, v));
-            DrawParametricUV(point, (u, v) => shape(0, u, v));
-            DrawParametricUV(point, (u, v) => shape(1, u, v));
-        }
-        /// <summary>
-        /// Draw a uvw parametric volume as a series of points.
-        /// </summary>
-        /// <param name="point">The point rendering function.</param>
-        /// <param name="shape">The uvw parametric volume to draw.</param>
-        public static void DrawParametricVolumeUVW(fnDrawPointWorld point, GetPointUVW shape)
-        {
-            int USEGMENTS = 20;
-            int VSEGMENTS = 20;
-            int WSEGMENTS = 20;
-            // Simply move some number of steps across u and v and draw the points in space.
-            for (int u = 0; u <= USEGMENTS; ++u)
-            {
-                for (int v = 0; v <= VSEGMENTS; ++v)
-                {
-                    for (int w = 0; w <= VSEGMENTS; ++w)
-                    {
-                        // Determine the point and draw it; easy.
-                        point(shape((double)u / USEGMENTS, (double)v / VSEGMENTS, (double)w / WSEGMENTS));
-                    }
-                }
-            }
-        }
-        #endregion
+        /*
         #region - Section : Higher Order Primitives (Wireframe) -
-        /// <summary>
-        /// Generic line drawing function draws a line in 3D space.
-        /// </summary>
-        /// <param name="p1">The world space starting position.</param>
-        /// <param name="p2">The world space ending position.</param>
-        public delegate void fnDrawLineWorld(Vector3D p1, Vector3D p2);
         /// <summary>
         /// Draw a wireframe representing a clip space.
         /// This specialized function will render a visualization of a clip space.
@@ -143,116 +59,6 @@ namespace RenderToy
                     line(frame[1], frame[3]);
                     line(frame[2], frame[3]);
                 }
-            }
-        }
-        /// <summary>
-        /// Render a wireframe for a parametric UV surface.
-        /// </summary>
-        /// <param name="line">The world space line rendering function.</param>
-        /// <param name="shape">The parametric surface to render.</param>
-        public static void DrawParametricUV(fnDrawLineWorld line, GetPointUV shape)
-        {
-            int USEGMENTS = 10;
-            int VSEGMENTS = 20;
-            for (int u = 0; u <= USEGMENTS; ++u)
-            {
-                for (int l = 0; l < VSEGMENTS; ++l)
-                {
-                    // Draw U Lines.
-                    {
-                        Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS);
-                        Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS);
-                        line(p3u1, p3u2);
-                    }
-                    // Draw V Lines.
-                    {
-                        Vector3D p3u1 = shape((l + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
-                        Vector3D p3u2 = shape((l + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
-                        line(p3u1, p3u2);
-                    }
-                }
-            }
-        }
-        /// <summary>
-        /// Render a wireframe for a parametric UVW volume skin.
-        /// </summary>
-        /// <param name="line">The world space line rendering function.</param>
-        /// <param name="shape">The parametric surface to render.</param>
-        public static void DrawParametricUVW(fnDrawLineWorld line, GetPointUVW shape)
-        {
-            DrawParametricUV(line, (u, v) => shape(u, v, 0));
-            DrawParametricUV(line, (u, v) => shape(u, v, 1));
-            DrawParametricUV(line, (u, v) => shape(u, 0, v));
-            DrawParametricUV(line, (u, v) => shape(u, 1, v));
-            DrawParametricUV(line, (u, v) => shape(0, u, v));
-            DrawParametricUV(line, (u, v) => shape(1, u, v));
-        }
-        /// <summary>
-        /// Render a wireframe for a parametric UVW volume.
-        /// </summary>
-        /// <param name="line">The world space line rendering function.</param>
-        /// <param name="shape">The parametric surface to render.</param>
-        public static void DrawParametricVolumeUVW(fnDrawLineWorld line, GetPointUVW shape)
-        {
-            int USEGMENTS = 10;
-            int VSEGMENTS = 20;
-            for (int u = 0; u <= USEGMENTS; ++u)
-            {
-                for (int v = 0; v <= USEGMENTS; ++v)
-                {
-                    for (int l = 0; l < VSEGMENTS; ++l)
-                    {
-                        // Draw UV Lines.
-                        {
-                            Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS);
-                            Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS);
-                            line(p3u1, p3u2);
-                        }
-                        {
-                            Vector3D p3u1 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS);
-                            Vector3D p3u2 = shape((v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS);
-                            line(p3u1, p3u2);
-                        }
-                        // Draw UW Lines.
-                        {
-                            Vector3D p3u1 = shape((u + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS, (v + 0.0) / USEGMENTS);
-                            Vector3D p3u2 = shape((u + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS, (v + 0.0) / USEGMENTS);
-                            line(p3u1, p3u2);
-                        }
-                        {
-                            Vector3D p3u1 = shape((v + 0.0) / USEGMENTS, (l + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
-                            Vector3D p3u2 = shape((v + 0.0) / USEGMENTS, (l + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS);
-                            line(p3u1, p3u2);
-                        }
-                        // Draw VW Lines.
-                        {
-                            Vector3D p3u1 = shape((l + 0.0) / VSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
-                            Vector3D p3u2 = shape((l + 1.0) / VSEGMENTS, (u + 0.0) / USEGMENTS, (v + 0.0) / USEGMENTS);
-                            line(p3u1, p3u2);
-                        }
-                        {
-                            Vector3D p3u1 = shape((l + 0.0) / VSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
-                            Vector3D p3u2 = shape((l + 1.0) / VSEGMENTS, (v + 0.0) / USEGMENTS, (u + 0.0) / USEGMENTS);
-                            line(p3u1, p3u2);
-                        }
-                    }
-                }
-            }
-        }
-        /// <summary>
-        /// Render a wireframe for an XZ plane.
-        /// </summary>
-        /// <param name="line">The world space line rendering function.</param>
-        public static void DrawPlane(fnDrawLineWorld line)
-        {
-            for (int i = 0; i <= 20; ++i)
-            {
-                // Draw an X line.
-                float z = -10.0f + i;
-                line(new Vector3D(-10, 0, z), new Vector3D(10, 0, z));
-                // Draw a Z line.
-                float x = -10.0f + i;
-                line(new Vector3D(x, 0, -10), new Vector3D(x, 0, 10));
             }
         }
         /// <summary>
@@ -337,7 +143,8 @@ namespace RenderToy
                 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,
                 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
             };
-            int[] flips = new int[] { /*3, */3, 3, /*3, 3,*/ 2, 2, 2, 2 };
+            //int[] flips = new int[] { 3, 3, 3, 3, 3, 2, 2, 2, 2 };
+            int[] flips = new int[] { 3, 3, 2, 2, 2, 2 };
             for (int patch = 0; patch < idx.Length / 16; ++patch)
             {
                 Vector3D[] hull = new Vector3D[16];
@@ -386,5 +193,6 @@ namespace RenderToy
             }
         }
         #endregion
+        */
     }
 }

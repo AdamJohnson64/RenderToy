@@ -6,6 +6,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RenderToy.BoundingVolumeHierarchy;
 using RenderToy.ModelFormat;
+using RenderToy.PipelineModel;
 using RenderToy.SceneGraph.Meshes;
 using RenderToy.SceneGraph.Primitives;
 using System;
@@ -126,7 +127,7 @@ namespace RenderToy
                 new Vector3D(1, 0, 0));
             // Clip right side offset 0.5 for a single triangle.
             {
-                var clipped = ClipHelp.ClipTriangle3D(triangle, new Vector3D(1, 0, 0), 0.5);
+                var clipped = Clipping.ClipTriangle(triangle, new Vector3D(1, 0, 0), 0.5);
                 // There should be one triangle.
                 if (clipped.Count() != 1) throw new Exception("N=[1,0,0], d=0.5; Expected one triangle.");
                 // There should be no X coordinate below +0.5.
@@ -135,7 +136,7 @@ namespace RenderToy
             }
             // Clip left side offset 0.5 for two triangles.
             {
-                var clipped = ClipHelp.ClipTriangle3D(triangle, new Vector3D(-1, 0, 0), -0.5);
+                var clipped = Clipping.ClipTriangle(triangle, new Vector3D(-1, 0, 0), -0.5);
                 if (clipped.Count() != 2) throw new Exception("N=[-1,0,0], d=-0.5; Expected two triangles.");
                 // There should be no X coordinate above +0.5.
                 var vertices = clipped.SelectMany(t => new[] { t.P0, t.P1, t.P2 });
@@ -143,13 +144,13 @@ namespace RenderToy
             }
             // Trivial pass; no clipping.
             {
-                var clipped = ClipHelp.ClipTriangle3D(triangle, new Vector3D(1, 0, 0), -2);
+                var clipped = Clipping.ClipTriangle(triangle, new Vector3D(1, 0, 0), -2);
                 if (clipped.Count() != 1) throw new Exception("Expected one triangle.");
                 if (!Triangle3DEqual(clipped.First(), triangle)) throw new Exception("N=[1,0,0], d=-2; Unclipped triangle was modified?");
             }
             // Trivial clip; complete clipping.
             {
-                var clipped = ClipHelp.ClipTriangle3D(triangle, new Vector3D(1, 0, 0), 2);
+                var clipped = Clipping.ClipTriangle(triangle, new Vector3D(1, 0, 0), 2);
                 if (clipped.Count() != 0) throw new Exception("Expected no triangles.");
             }
         }

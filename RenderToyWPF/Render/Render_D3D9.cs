@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.PipelineModel;
 using RenderToy.SceneGraph;
 using RenderToy.SceneGraph.Primitives;
 using System;
@@ -22,10 +23,10 @@ namespace RenderToy.WPF
                 Matrix3D model_mvp = transformedobject.Transform * mvp;
                 IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
                 if (uv == null) continue;
-                d3dsurface.SetColor(DrawHelp.ColorToUInt32(transformedobject.Node.WireColor));
+                d3dsurface.SetColor(Rasterization.ColorToUInt32(transformedobject.Node.WireColor));
                 Action<Vector4D, Vector4D, Vector4D> filltri_clipspace = (p1, p2, p3) =>
                 {
-                    var iter = ClipHelp.ClipTriangle4D(new Vector4D[] { p1, p2, p3 }).GetEnumerator();
+                    var iter = Clipping.ClipTriangle(new Vector4D[] { p1, p2, p3 }).GetEnumerator();
                     while (iter.MoveNext())
                     {
                         var P0 = iter.Current;
