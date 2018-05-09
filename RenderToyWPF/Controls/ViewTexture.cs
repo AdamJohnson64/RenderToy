@@ -210,9 +210,16 @@ namespace RenderToy.WPF
         {
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             if (bitmap == null) return;
-            drawingContext.PushTransform(Transform);
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, bitmapWidth, bitmapHeight));
-            drawingContext.Pop();
+            for (int y = -1; y <= 1; ++y)
+            {
+                for (int x = -1; x <= 1; ++x)
+                {
+                    drawingContext.PushTransform(Transform);
+                    drawingContext.DrawImage(bitmap, new Rect(x * bitmapWidth, y * bitmapHeight, bitmapWidth, bitmapHeight));
+                    drawingContext.Pop();
+                }
+            }
+            drawingContext.DrawRectangle(null, new Pen(Brushes.White, 1), Rect.Transform(new Rect(0, 0, bitmapWidth, bitmapHeight), Transform.Value));
         }
         ITexture2D texture = null;
         WriteableBitmap bitmap = null;
