@@ -34,6 +34,20 @@ namespace RenderToy.WPF
             }
             else return 0;
         }
+        double BrickUniform(double u, double v)
+        {
+            if (v - Math.Floor(v) < 0.5)
+            {
+                u = Math.Floor(u);
+                v = Math.Floor(v + 0.5);
+            }
+            else
+            {
+                u = Math.Floor(u + 0.5);
+                v = Math.Floor(v);
+            }
+            return TexturePerlin.PerlinNoise2D(u * 8, v * 8);
+        }
         public Vector4D SampleTexture(double u, double v)
         {
             // Calculate base noise.
@@ -41,7 +55,7 @@ namespace RenderToy.WPF
             n = MathHelp.Clamp(n, -1, 1) * 0.1;
             double m = TexturePerlin.PerlinNoise2D(u * 64, v * 512);
             m = MathHelp.Clamp(m, -1, 1) * 0.2;
-            Vector4D BrickColor = new Vector4D(0.5 + m + n, 0.0, 0.0, 1);
+            Vector4D BrickColor = new Vector4D(0.5 + m + n + BrickUniform(u, v) * 0.1, 0.0, 0.0, 1);
             m = TexturePerlin.PerlinNoise2D(u * 512, v * 512);
             m = MathHelp.Clamp(m, -1, 1) * 0.1;
             Vector4D MortarColor = new Vector4D(0.4 + m + n, 0.4 + m + n, 0.4 + m + n, 1);
@@ -131,7 +145,7 @@ namespace RenderToy.WPF
                         void* raster = (byte*)bitmap.BackBuffer.ToPointer() + bitmap.BackBufferStride * y;
                         for (int x = 0; x < bitmapWidth; ++x)
                         {
-                            ((uint*)raster)[x] = Rasterization.ColorToUInt32(texture.SampleTexture((x + 0.5) * 8 / bitmapWidth, (y + 0.5) * 8 / bitmapHeight));
+                            ((uint*)raster)[x] = Rasterization.ColorToUInt32(texture.SampleTexture((x + 0.5) * 4 / bitmapWidth, (y + 0.5) * 4 / bitmapHeight));
                         }
                     }
                 }
@@ -202,8 +216,8 @@ namespace RenderToy.WPF
         }
         ITexture2D texture = null;
         WriteableBitmap bitmap = null;
-        const int bitmapWidth = 1024;
-        const int bitmapHeight = 1024;
+        const int bitmapWidth = 256;
+        const int bitmapHeight = 256;
         double translatex = 0;
         double translatey = 0;
         double scale = 1;
