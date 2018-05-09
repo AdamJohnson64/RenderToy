@@ -5,6 +5,10 @@
 
 using RenderToy.RenderControl;
 using RenderToy.SceneGraph;
+using RenderToy.SceneGraph.Cameras;
+using RenderToy.SceneGraph.Materials;
+using RenderToy.SceneGraph.Primitives;
+using RenderToy.SceneGraph.Transforms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +45,7 @@ namespace RenderToy.WPF
                 CommandBindings.Add(new CommandBinding(RenderCallCommands.Commands[call], (s, e) => { RenderCall = call; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             }
             // Generate context menu.
-            var menu = new ContextMenu();
+            var menu = new ContextMenu { LayoutTransform = new ScaleTransform(1.5, 1.5) };
             {
                 var menu_group = new MenuItem { Header = "Resolution" };
                 menu_group.Items.Add(new MenuItem { Command = CommandResolution100 });
@@ -53,9 +57,18 @@ namespace RenderToy.WPF
             foreach (var group in RenderCallCommands.Calls.GroupBy(x => RenderCall.GetDisplayNameBare(x.MethodInfo.Name)))
             {
                 var menu_group = new MenuItem { Header = group.Key };
+                Scene scene = new Scene();
+                scene.AddChild(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), new Sphere(), StockMaterials.Red, StockMaterials.PlasticRed));
+                Matrix3D mvp = MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(0, 0, -2), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0)));
+                mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
                 foreach (var call in group)
                 {
-                    menu_group.Items.Add(new MenuItem { Command = RenderCallCommands.Commands[call] });
+                    WriteableBitmap bitmap = new WriteableBitmap(64, 64, 0, 0, PixelFormats.Bgra32, null);
+                    bitmap.Lock();
+                    call.Action(scene, mvp, bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride, null);
+                    bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+                    bitmap.Unlock();
+                    menu_group.Items.Add(new MenuItem { Command = RenderCallCommands.Commands[call], Icon = new Image { Source = bitmap } });
                 }
                 menu.Items.Add(menu_group);
             }
