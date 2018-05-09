@@ -61,6 +61,9 @@
                     </Grid>
                 </DockPanel>
             </TabItem>
+            <TabItem Header="Texture View">
+                <local:ViewTexture/>
+            </TabItem>
             <TabItem Header="Interactive Document">
                 <FlowDocumentReader ViewingMode="Page">
                     <StaticResource ResourceKey="RenderToyDocument"/>

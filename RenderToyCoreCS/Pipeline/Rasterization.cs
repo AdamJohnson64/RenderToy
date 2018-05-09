@@ -15,10 +15,10 @@ namespace RenderToy.PipelineModel
         public static uint ColorToUInt32(Vector4D color)
         {
             return
-                ((uint)(color.W * 255) << 24) |
-                ((uint)(color.X * 255) << 16) |
-                ((uint)(color.Y * 255) << 8) |
-                ((uint)(color.Z * 255) << 0);
+                ((uint)(MathHelp.Saturate(color.W) * 255) << 24) |
+                ((uint)(MathHelp.Saturate(color.X) * 255) << 16) |
+                ((uint)(MathHelp.Saturate(color.Y) * 255) << 8) |
+                ((uint)(MathHelp.Saturate(color.Z) * 255) << 0);
         }
         /// <summary>
         /// Write a stream of pixels into an unmanaged Bgra32 bitmap.

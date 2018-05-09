@@ -10,6 +10,10 @@ namespace RenderToy
 {
     public static partial class MathHelp
     {
+        #region - Section : Basic Math Extensions -
+        public static double Clamp(double v, double min, double max) { return v < min ? min : (v < max ? v : max); }
+        public static double Saturate(double v) { return Clamp(v, 0, 1); }
+        #endregion
         #region - Section : Simple Functions (Type-compatible with WPF) -
         public static Matrix3D CreateMatrixIdentity() { return new Matrix3D(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); }
         public static Matrix3D CreateMatrixScale(double x, double y, double z) { return new Matrix3D(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1); }
