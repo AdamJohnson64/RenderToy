@@ -1,6 +1,7 @@
 ﻿using RenderToy.PipelineModel;
 using System;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -12,32 +13,43 @@ namespace RenderToy.WPF
     }
     class TextureBrick : ITexture2D
     {
-        public Vector4D SampleTexture(double u, double v)
+        double Brickness(double u, double v)
         {
+            const double MortarWidth = 0.025;
             u = u - Math.Floor(u);
             v = v - Math.Floor(v);
-            double m = TexturePerlin.PerlinNoise2D(u * 128, v * 128);
-            m = MathHelp.Clamp(m, -1, 1) * 0.2;
-            Vector4D BrickColor = new Vector4D(0.5 + m, 0.0, 0.0, 1);
-            m = TexturePerlin.PerlinNoise2D(u * 512, v * 512);
-            m = MathHelp.Clamp(m, -1, 1) * 0.2;
-            Vector4D MortarColor = new Vector4D(0.4 + m, 0.4 + m, 0.4 + m, 1);
-            const double MortarWidth = 0.025;
-            if (v < MortarWidth) return MortarColor;
+            if (v < MortarWidth) return 0;
             else if (v < 0.5 - MortarWidth)
             {
-                if (u < MortarWidth) return MortarColor;
-                else if (u < 1.0 - MortarWidth) return BrickColor;
-                else return MortarColor;
+                if (u < MortarWidth) return 0;
+                else if (u < 1.0 - MortarWidth) return 1;
+                else return 0;
             }
-            else if (v < 0.5 + MortarWidth) return MortarColor;
+            else if (v < 0.5 + MortarWidth) return 0;
             else if (v < 1.0 - MortarWidth)
             {
-                if (u < 0.5 - MortarWidth) return BrickColor;
-                else if (u < 0.5 + MortarWidth) return MortarColor;
-                else return BrickColor;
+                if (u < 0.5 - MortarWidth) return 1;
+                else if (u < 0.5 + MortarWidth) return 0;
+                else return 1;
             }
-            else return MortarColor;
+            else return 0;
+        }
+        public Vector4D SampleTexture(double u, double v)
+        {
+            // Calculate base noise.
+            double n = TexturePerlin.PerlinNoise2D(u * 16, v * 16);
+            n = MathHelp.Clamp(n, -1, 1) * 0.1;
+            double m = TexturePerlin.PerlinNoise2D(u * 64, v * 512);
+            m = MathHelp.Clamp(m, -1, 1) * 0.2;
+            Vector4D BrickColor = new Vector4D(0.5 + m + n, 0.0, 0.0, 1);
+            m = TexturePerlin.PerlinNoise2D(u * 512, v * 512);
+            m = MathHelp.Clamp(m, -1, 1) * 0.1;
+            Vector4D MortarColor = new Vector4D(0.4 + m + n, 0.4 + m + n, 0.4 + m + n, 1);
+            double bn = TexturePerlin.PerlinNoise2D(u * 64, v * 64);
+            bn = MathHelp.Clamp(bn, 0, 1) * 1.25;
+            // Calculate brickness mask.
+            double brickness = Brickness(u, v) - bn;
+            return brickness < 0.5 ? MortarColor : BrickColor;
         }
     }
     class TexturePerlin : ITexture2D
@@ -96,27 +108,106 @@ namespace RenderToy.WPF
     }
     class ViewTexture : FrameworkElement
     {
-        protected override void OnRender(DrawingContext drawingContext)
+        public ViewTexture()
         {
-            const int bitmapWidth = 512;
-            const int bitmapHeight = 512;
-            ITexture2D texture = new TextureBrick();
-            WriteableBitmap bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
-            bitmap.Lock();
-            unsafe
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
+            ClipToBounds = true;
+            Texture = new TextureBrick();
+        }
+        ITexture2D Texture
+        {
+            set
             {
-                for (int y = 0; y < bitmapHeight; ++y)
+                texture = value;
+                InvalidateVisual();
+                bitmap = null;
+                if (texture == null) return;
+                bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
+                bitmap.Lock();
+                unsafe
                 {
-                    void* raster = (byte*)bitmap.BackBuffer.ToPointer() + bitmap.BackBufferStride * y;
-                    for (int x = 0; x < bitmapWidth; ++x)
+                    for (int y = 0; y < bitmapHeight; ++y)
                     {
-                        ((uint*)raster)[x] = Rasterization.ColorToUInt32(texture.SampleTexture((x + 0.5) * 3 / bitmapWidth - 1, (y + 0.5) * 3 / bitmapHeight - 1));
+                        void* raster = (byte*)bitmap.BackBuffer.ToPointer() + bitmap.BackBufferStride * y;
+                        for (int x = 0; x < bitmapWidth; ++x)
+                        {
+                            ((uint*)raster)[x] = Rasterization.ColorToUInt32(texture.SampleTexture((x + 0.5) * 8 / bitmapWidth, (y + 0.5) * 8 / bitmapHeight));
+                        }
                     }
                 }
+                bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapWidth, bitmapHeight));
+                bitmap.Unlock();
             }
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapWidth, bitmapHeight));
-            bitmap.Unlock();
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, bitmapWidth, bitmapHeight));
         }
+        Transform Transform
+        {
+            get
+            {
+                TransformGroup transform = new TransformGroup();
+                transform.Children.Add(new TranslateTransform(-bitmapWidth / 2, -bitmapHeight / 2));
+                transform.Children.Add(new TranslateTransform(translatex, translatey));
+                transform.Children.Add(new ScaleTransform(scale, scale));
+                transform.Children.Add(new TranslateTransform(ActualWidth / 2, ActualHeight / 2));
+                return transform;
+            }
+        }
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+            if (dragActive) return;
+            Focus();
+            CaptureMouse();
+            dragActive = true;
+            dragPoint = Transform.Inverse.Transform(e.GetPosition(this));
+        }
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonUp(e);
+            ReleaseMouseCapture();
+            dragActive = false;
+        }
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            if (!dragActive) return;
+            Point mouse = e.GetPosition(this);
+            translatex = (mouse.X - ActualWidth / 2) / scale - dragPoint.X + bitmapWidth / 2;
+            translatey = (mouse.Y - ActualHeight / 2) / scale - dragPoint.Y + bitmapHeight / 2;
+            InvalidateVisual();
+        }
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+            if (e.Delta < 0)
+            {
+                scale /= 2;
+            }
+            if (e.Delta > 0)
+            {
+                scale *= 2;
+            }
+            InvalidateVisual();
+            if (!dragActive) return;
+            Point mouse = e.GetPosition(this);
+            translatex = (mouse.X - ActualWidth / 2) / scale - dragPoint.X + bitmapWidth / 2;
+            translatey = (mouse.Y - ActualHeight / 2) / scale - dragPoint.Y + bitmapHeight / 2;
+        }
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
+            if (bitmap == null) return;
+            drawingContext.PushTransform(Transform);
+            drawingContext.DrawImage(bitmap, new Rect(0, 0, bitmapWidth, bitmapHeight));
+            drawingContext.Pop();
+        }
+        ITexture2D texture = null;
+        WriteableBitmap bitmap = null;
+        const int bitmapWidth = 1024;
+        const int bitmapHeight = 1024;
+        double translatex = 0;
+        double translatey = 0;
+        double scale = 1;
+        bool dragActive = false;
+        Point dragPoint;
     }
 }
