@@ -63,7 +63,41 @@
             </TabItem>
             <TabItem Header="Texture View">
                 <DockPanel>
+                    <!--
                     <local:ViewMaterialNetwork DockPanel.Dock="Left" Width="256"/>
+                    -->
+                    <ListView x:Name="Materials" DockPanel.Dock="Left">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.View>
+                            <GridView>
+                                <GridView.Columns>
+                                    <GridViewColumn Header="Preview" Width="80">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <local:ViewIMNodeThumbnail HorizontalAlignment="Center" ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64">
+                                                    <local:ViewIMNodeThumbnail.ToolTip>
+                                                        <ToolTip>
+                                                            <ToolTip.Template>
+                                                                <ControlTemplate>
+                                                                    <local:ViewIMNodeThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="256" ThumbnailHeight="256"/>
+                                                                </ControlTemplate>
+                                                            </ToolTip.Template>
+                                                        </ToolTip>
+                                                    </local:ViewIMNodeThumbnail.ToolTip>
+                                                </local:ViewIMNodeThumbnail>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    <GridViewColumn Header="Node Type" Width="128">
+                                    </GridViewColumn>
+                                </GridView.Columns>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
                     <local:ViewTexture/>
                 </DockPanel>
             </TabItem>

@@ -9,7 +9,9 @@ using RenderToy.SceneGraph;
 using RenderToy.SceneGraph.Materials;
 using RenderToy.SceneGraph.Primitives;
 using RenderToy.SceneGraph.Transforms;
+using RenderToy.Textures;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
@@ -53,6 +55,7 @@ namespace RenderToy.WPF
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
             DataContext = Scene.Default;
+            this.Materials.ItemsSource = ViewMaterialNetwork.EnumerateNodes(TextureBrick.Create()).Distinct().ToArray();
         }
     }
 }
