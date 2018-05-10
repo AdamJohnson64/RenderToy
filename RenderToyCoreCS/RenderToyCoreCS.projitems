@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Materials\Checkerboard.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Materials\GenericMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Materials\IMaterial.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Materials\IMNNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Materials\StockMaterials.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Meshes\Mesh.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Meshes\MeshBVH.cs" />
@@ -45,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Primitives\IPrimitive.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Primitives\Sphere.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Scene.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Textures\ITexture2D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\TransformedObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Transforms\ITransform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Transforms\TransformMatrix.cs" />

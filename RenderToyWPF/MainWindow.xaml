@@ -62,7 +62,10 @@
                 </DockPanel>
             </TabItem>
             <TabItem Header="Texture View">
-                <local:ViewTexture/>
+                <DockPanel>
+                    <local:ViewMaterialNetwork DockPanel.Dock="Left" Width="256"/>
+                    <local:ViewTexture/>
+                </DockPanel>
             </TabItem>
             <TabItem Header="Interactive Document">
                 <FlowDocumentReader ViewingMode="Page">
