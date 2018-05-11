@@ -63,9 +63,6 @@
             </TabItem>
             <TabItem Header="Texture View">
                 <DockPanel>
-                    <!--
-                    <local:ViewMaterialNetwork DockPanel.Dock="Left" Width="256"/>
-                    -->
                     <!-- ==================== Material List ==================== -->
                     <GroupBox Header="Material Nodes" Margin="4" Padding="4">
                         <ListView x:Name="MaterialNodes" DockPanel.Dock="Left" ItemsSource="{Binding Path=MaterialNodes}" IsSynchronizedWithCurrentItem="True">
@@ -117,9 +114,14 @@
                     <ContentControl Content="{Binding ElementName=MaterialNodes, Path=SelectedItem}">
                         <ContentControl.ContentTemplate>
                             <DataTemplate>
-                                <GroupBox Header="Preview" Margin="4" Padding="4">
-                                    <local:ViewMaterial Texture="{Binding}"/>
-                                </GroupBox>
+                                <TabControl>
+                                    <TabItem Header="Graph">
+                                        <local:ViewMaterialGraph Root="{Binding}"/>
+                                    </TabItem>
+                                    <TabItem Header="Preview">
+                                        <local:ViewMaterial Texture="{Binding}"/>
+                                    </TabItem>
+                                </TabControl>
                             </DataTemplate>
                         </ContentControl.ContentTemplate>
                     </ContentControl>

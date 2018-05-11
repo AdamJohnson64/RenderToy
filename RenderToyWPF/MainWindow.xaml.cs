@@ -9,6 +9,7 @@ using RenderToy.SceneGraph;
 using RenderToy.SceneGraph.Materials;
 using RenderToy.SceneGraph.Primitives;
 using RenderToy.SceneGraph.Transforms;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -63,9 +64,24 @@ namespace RenderToy.WPF
         public Document()
         {
             Scene = Scene.Default;
-            MaterialNodes = new ObservableCollection<IMNNode>(ViewMaterialNetwork.EnumerateNodes(MNBrick.Create()).Distinct());
+            MaterialNodes = new ObservableCollection<IMNNode>(EnumerateNodes(MNBrick.Create()).Distinct());
         }
         public Scene Scene { get; private set; }
         public ObservableCollection<IMNNode> MaterialNodes { get; private set; }
+        static IEnumerable<IMNNode> EnumerateNodes(IMNNode node)
+        {
+            yield return node;
+            System.Type type = node.GetType();
+            foreach (var property in type.GetProperties())
+            {
+                if (typeof(IMNNode).IsAssignableFrom(property.PropertyType))
+                {
+                    foreach (var next in EnumerateNodes((IMNNode)property.GetValue(node)))
+                    {
+                        yield return next;
+                    }
+                }
+            }
+        }
     }
 }

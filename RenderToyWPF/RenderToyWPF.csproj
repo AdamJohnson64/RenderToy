@@ -67,7 +67,7 @@
     <Compile Include="Controls\View3DBase.cs" />
     <Compile Include="Controls\Figures.cs" />
     <Compile Include="Controls\ViewMaterialThumbnail.cs" />
-    <Compile Include="Controls\ViewMaterialNetwork.cs" />
+    <Compile Include="Controls\ViewMaterialGraph.cs" />
     <Compile Include="Controls\ViewMaterial.cs" />
     <Compile Include="Controls\View3DWire.cs" />
     <Compile Include="PerformanceTrace.xaml.cs">
