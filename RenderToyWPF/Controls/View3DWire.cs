@@ -12,9 +12,9 @@ using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
-    class ViewWire : ViewBase
+    class View3DWire : View3DBase
     {
-        public ViewWire()
+        public View3DWire()
         {
             IsVisibleChanged += (s, e) =>
             {

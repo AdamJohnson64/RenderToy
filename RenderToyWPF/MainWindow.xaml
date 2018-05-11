@@ -34,9 +34,9 @@
                     </Menu>
                     <Grid>
                         <!-- Main Viewport Layer -->
-                        <local:ViewUser x:Name="ViewMain" Camera="{StaticResource Camera}"/>
+                        <local:View3DUser x:Name="ViewMain" Camera="{StaticResource Camera}"/>
                         <!-- Wireframe Layer -->
-                        <local:ViewWire x:Name="ViewWireframe" IsHitTestVisible="False" Camera="{StaticResource Camera}" Opacity="0.5"/>
+                        <local:View3DWire x:Name="ViewWireframe" IsHitTestVisible="False" Camera="{StaticResource Camera}" Opacity="0.5"/>
                         <!-- PIP Preview -->
                         <Border x:Name="ViewPreview" HorizontalAlignment="Right" VerticalAlignment="Top" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="8" Margin="8" Padding="4">
                             <Border.Background>
@@ -54,7 +54,7 @@
                             <StackPanel>
                                 <TextBlock HorizontalAlignment="Left" Foreground="DarkGray" Text="Preview"/>
                                 <Border Background="White" BorderBrush="DarkGray" BorderThickness="1" CornerRadius="4" Padding="2">
-                                    <local:ViewUser Width="192" Height="128" Camera="{StaticResource Camera}"/>
+                                    <local:View3DUser Width="192" Height="128" Camera="{StaticResource Camera}"/>
                                 </Border>
                             </StackPanel>
                         </Border>
@@ -66,39 +66,63 @@
                     <!--
                     <local:ViewMaterialNetwork DockPanel.Dock="Left" Width="256"/>
                     -->
-                    <ListView x:Name="Materials" DockPanel.Dock="Left">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                        <ListView.View>
-                            <GridView>
-                                <GridView.Columns>
-                                    <GridViewColumn Header="Preview" Width="80">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <local:ViewIMNodeThumbnail HorizontalAlignment="Center" ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64">
-                                                    <local:ViewIMNodeThumbnail.ToolTip>
-                                                        <ToolTip>
-                                                            <ToolTip.Template>
-                                                                <ControlTemplate>
-                                                                    <local:ViewIMNodeThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="256" ThumbnailHeight="256"/>
-                                                                </ControlTemplate>
-                                                            </ToolTip.Template>
-                                                        </ToolTip>
-                                                    </local:ViewIMNodeThumbnail.ToolTip>
-                                                </local:ViewIMNodeThumbnail>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn Header="Node Type" Width="128">
-                                    </GridViewColumn>
-                                </GridView.Columns>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                    <local:ViewTexture/>
+                    <!-- ==================== Material List ==================== -->
+                    <GroupBox Header="Material Nodes" Margin="4" Padding="4">
+                        <ListView x:Name="MaterialNodes" DockPanel.Dock="Left" ItemsSource="{Binding Path=MaterialNodes}" IsSynchronizedWithCurrentItem="True">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.View>
+                                <GridView>
+                                    <GridView.Columns>
+                                        <GridViewColumn Header="Preview" Width="80">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <local:ViewMaterialThumbnail HorizontalAlignment="Center" ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64">
+                                                        <local:ViewMaterialThumbnail.ToolTip>
+                                                            <ToolTip>
+                                                                <ToolTip.Template>
+                                                                    <ControlTemplate>
+                                                                    
+                                                                    </ControlTemplate>
+                                                                </ToolTip.Template>
+                                                            </ToolTip>
+                                                        </local:ViewMaterialThumbnail.ToolTip>
+                                                    </local:ViewMaterialThumbnail>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Node Type" Width="128">
+                                        </GridViewColumn>
+                                    </GridView.Columns>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </GroupBox>
+                    <!-- ==================== Detail View ==================== -->
+                    <ContentControl DockPanel.Dock="Left" Content="{Binding ElementName=MaterialNodes, Path=SelectedItem}">
+                        <ContentControl.ContentTemplate>
+                            <DataTemplate>
+                                <GroupBox Header="Selection" Background="LightYellow" Margin="4" Padding="4">
+                                    <StackPanel>
+                                        <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </GroupBox>
+                            </DataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+                    <!-- ==================== Texture View ==================== -->
+                    <ContentControl Content="{Binding ElementName=MaterialNodes, Path=SelectedItem}">
+                        <ContentControl.ContentTemplate>
+                            <DataTemplate>
+                                <GroupBox Header="Preview" Margin="4" Padding="4">
+                                    <local:ViewMaterial Texture="{Binding}"/>
+                                </GroupBox>
+                            </DataTemplate>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
                 </DockPanel>
             </TabItem>
             <TabItem Header="Interactive Document">

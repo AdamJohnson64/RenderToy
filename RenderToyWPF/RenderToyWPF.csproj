@@ -64,16 +64,17 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\Camera.cs" />
-    <Compile Include="Controls\ViewBase.cs" />
+    <Compile Include="Controls\View3DBase.cs" />
     <Compile Include="Controls\Figures.cs" />
+    <Compile Include="Controls\ViewMaterialThumbnail.cs" />
     <Compile Include="Controls\ViewMaterialNetwork.cs" />
-    <Compile Include="Controls\ViewTexture.cs" />
-    <Compile Include="Controls\ViewWire.cs" />
+    <Compile Include="Controls\ViewMaterial.cs" />
+    <Compile Include="Controls\View3DWire.cs" />
     <Compile Include="PerformanceTrace.xaml.cs">
       <DependentUpon>PerformanceTrace.xaml</DependentUpon>
     </Compile>
     <Compile Include="Render\Render_D3D9.cs" />
-    <Compile Include="Controls\ViewUser.cs" />
+    <Compile Include="Controls\View3DUser.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

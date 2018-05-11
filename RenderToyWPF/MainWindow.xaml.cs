@@ -9,7 +9,7 @@ using RenderToy.SceneGraph;
 using RenderToy.SceneGraph.Materials;
 using RenderToy.SceneGraph.Primitives;
 using RenderToy.SceneGraph.Transforms;
-using RenderToy.Textures;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -19,11 +19,11 @@ namespace RenderToy.WPF
 {
     public partial class MainWindow : Window
     {
-        public static RoutedUICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(ViewUser));
-        public static RoutedUICommand CommandSceneOpen = new RoutedUICommand("Open Scene (PLY)", "CommandSceneLoad", typeof(ViewUser));
-        public static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(ViewUser));
-        public static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(ViewUser));
-        public static RoutedUICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(ViewUser));
+        public static RoutedUICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(View3DUser));
+        public static RoutedUICommand CommandSceneOpen = new RoutedUICommand("Open Scene (PLY)", "CommandSceneLoad", typeof(View3DUser));
+        public static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(View3DUser));
+        public static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(View3DUser));
+        public static RoutedUICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(View3DUser));
         public MainWindow()
         {
             InitializeComponent();
@@ -54,8 +54,18 @@ namespace RenderToy.WPF
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
-            DataContext = Scene.Default;
-            this.Materials.ItemsSource = ViewMaterialNetwork.EnumerateNodes(TextureBrick.Create()).Distinct().ToArray();
+            DataContext = Document.Default;
         }
+    }
+    class Document
+    {
+        public static Document Default = new Document();
+        public Document()
+        {
+            Scene = Scene.Default;
+            MaterialNodes = new ObservableCollection<IMNNode>(ViewMaterialNetwork.EnumerateNodes(MNBrick.Create()).Distinct());
+        }
+        public Scene Scene { get; private set; }
+        public ObservableCollection<IMNNode> MaterialNodes { get; private set; }
     }
 }

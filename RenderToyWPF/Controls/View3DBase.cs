@@ -12,17 +12,17 @@ using System.Windows.Media;
 
 namespace RenderToy.WPF
 {
-    public abstract class ViewBase : FrameworkElement
+    public abstract class View3DBase : FrameworkElement
     {
         #region - Section : Construction -
-        public ViewBase()
+        public View3DBase()
         {
             SetBinding(CameraTransformProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.Self), Path = new PropertyPath("Camera.Transform") });
             SetBinding(SceneProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.Self), Path = new PropertyPath(DataContextProperty) });
         }
         #endregion
         #region - Section : DependencyProperties -
-        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(Scene), typeof(ViewBase), new FrameworkPropertyMetadata(Scene.Default, FrameworkPropertyMetadataOptions.AffectsRender, (d, e) => { ((ViewBase)d).OnSceneChanged((Scene)e.NewValue); }));
+        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(Scene), typeof(View3DBase), new FrameworkPropertyMetadata(Scene.Default, FrameworkPropertyMetadataOptions.AffectsRender, (d, e) => { ((View3DBase)d).OnSceneChanged((Scene)e.NewValue); }));
         public Scene Scene
         {
             get { return (Scene)GetValue(SceneProperty); }
@@ -31,13 +31,13 @@ namespace RenderToy.WPF
         protected virtual void OnSceneChanged(Scene scene)
         {
         }
-        public static DependencyProperty CameraProperty = DependencyProperty.Register("Camera", typeof(Camera), typeof(ViewBase));
+        public static DependencyProperty CameraProperty = DependencyProperty.Register("Camera", typeof(Camera), typeof(View3DBase));
         public Camera Camera
         {
             get { return (Camera)GetValue(CameraProperty); }
             set { SetValue(CameraProperty, value); }
         }
-        public static DependencyProperty CameraTransformProperty = DependencyProperty.Register("CameraTransform", typeof(Matrix3D), typeof(ViewBase), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty CameraTransformProperty = DependencyProperty.Register("CameraTransform", typeof(Matrix3D), typeof(View3DBase), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
         public Matrix3D CameraTransform
         {
             get { return (Matrix3D)GetValue(CameraTransformProperty); }

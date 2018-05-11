@@ -1,5 +1,9 @@
-﻿using RenderToy.PipelineModel;
-using RenderToy.Textures;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2017
+////////////////////////////////////////////////////////////////////////////////
+
+using RenderToy.SceneGraph.Materials;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -7,39 +11,18 @@ using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
-    class ViewTexture : FrameworkElement
+    class ViewMaterial : FrameworkElement
     {
-        public ViewTexture()
+        #region - Section : Dependency Properties -
+        public static DependencyProperty TextureProperty = DependencyProperty.Register("Texture", typeof(IMNNode), typeof(ViewMaterial), new FrameworkPropertyMetadata(null, OnInvalidateTexture));
+        public IMNNode Texture
         {
-            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
-            ClipToBounds = true;
-            //Texture = new TextureBrick();
-            Texture = new TextureNetwork();
+            get { return (IMNNode)GetValue(TextureProperty); }
+            set { SetValue(TextureProperty, value); }
         }
-        ITexture2D Texture
+        static void OnInvalidateTexture(object s, DependencyPropertyChangedEventArgs e)
         {
-            set
-            {
-                texture = value;
-                InvalidateVisual();
-                bitmap = null;
-                if (texture == null) return;
-                bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
-                bitmap.Lock();
-                unsafe
-                {
-                    for (int y = 0; y < bitmapHeight; ++y)
-                    {
-                        void* raster = (byte*)bitmap.BackBuffer.ToPointer() + bitmap.BackBufferStride * y;
-                        for (int x = 0; x < bitmapWidth; ++x)
-                        {
-                            ((uint*)raster)[x] = Rasterization.ColorToUInt32(texture.SampleTexture((x + 0.5) / bitmapWidth, (y + 0.5) / bitmapHeight));
-                        }
-                    }
-                }
-                bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapWidth, bitmapHeight));
-                bitmap.Unlock();
-            }
+            ((ViewMaterial)s).InvalidateTexture();
         }
         Transform Transform
         {
@@ -53,6 +36,31 @@ namespace RenderToy.WPF
                 return transform;
             }
         }
+        WriteableBitmap bitmap = null;
+        const int bitmapWidth = 256;
+        const int bitmapHeight = 256;
+        double translatex = 0;
+        double translatey = 0;
+        double scale = 1;
+        bool dragActive = false;
+        Point dragPoint;
+        #endregion
+        #region - Section : Construction -
+        public ViewMaterial()
+        {
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
+            ClipToBounds = true;
+            //Texture = new TextureNetwork();
+        }
+        #endregion
+        #region - Section : Bitmap Handling -
+        void InvalidateTexture()
+        {
+            bitmap = ViewMaterialThumbnail.CreateIMNodeThumbnail(Texture, bitmapWidth, bitmapHeight);
+            InvalidateVisual();
+        }
+        #endregion
+        #region - Section : UIElement Overrides -
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
@@ -109,14 +117,6 @@ namespace RenderToy.WPF
             }
             drawingContext.DrawRectangle(null, new Pen(Brushes.White, 1), Rect.Transform(new Rect(0, 0, bitmapWidth, bitmapHeight), Transform.Value));
         }
-        ITexture2D texture = null;
-        WriteableBitmap bitmap = null;
-        const int bitmapWidth = 256;
-        const int bitmapHeight = 256;
-        double translatex = 0;
-        double translatey = 0;
-        double scale = 1;
-        bool dragActive = false;
-        Point dragPoint;
+        #endregion
     }
 }

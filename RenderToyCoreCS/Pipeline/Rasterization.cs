@@ -1,4 +1,9 @@
-﻿using RenderToy.SceneGraph;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2017
+////////////////////////////////////////////////////////////////////////////////
+
+using RenderToy.SceneGraph;
 using System;
 using System.Collections.Generic;
 using System.Linq;

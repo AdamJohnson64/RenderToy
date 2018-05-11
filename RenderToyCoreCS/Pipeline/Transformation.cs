@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2017
+////////////////////////////////////////////////////////////////////////////////
+
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RenderToy.PipelineModel

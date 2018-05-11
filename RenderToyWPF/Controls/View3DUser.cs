@@ -20,13 +20,13 @@ using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
-    class ViewUser : ViewBase
+    class View3DUser : View3DBase
     {
-        static RoutedUICommand CommandResolution100 = new RoutedUICommand("100% Resolution", "CommandResolution100", typeof(ViewUser));
-        static RoutedUICommand CommandResolution50 = new RoutedUICommand("50% Resolution", "CommandResolution50", typeof(ViewUser));
-        static RoutedUICommand CommandResolution25 = new RoutedUICommand("25% Resolution", "CommandResolution25", typeof(ViewUser));
-        static RoutedUICommand CommandResolution10 = new RoutedUICommand("10% Resolution", "CommandResolution10", typeof(ViewUser));
-        public ViewUser()
+        static RoutedUICommand CommandResolution100 = new RoutedUICommand("100% Resolution", "CommandResolution100", typeof(View3DUser));
+        static RoutedUICommand CommandResolution50 = new RoutedUICommand("50% Resolution", "CommandResolution50", typeof(View3DUser));
+        static RoutedUICommand CommandResolution25 = new RoutedUICommand("25% Resolution", "CommandResolution25", typeof(View3DUser));
+        static RoutedUICommand CommandResolution10 = new RoutedUICommand("10% Resolution", "CommandResolution10", typeof(View3DUser));
+        public View3DUser()
         {
             RenderCall = RenderCallCommands.Calls[0];
             IsVisibleChanged += (s, e) =>
