@@ -14,15 +14,15 @@ namespace RenderToy.Materials
     public interface IMaterial
     {
     }
-    class EvalContext
+    public class EvalContext
     {
         public double U, V;
     }
-    interface IMNNode
+    public interface IMNNode
     {
         bool IsConstant();
     }
-    interface IMNNode<T> : IMNNode
+    public interface IMNNode<T> : IMNNode
     {
         T Eval(EvalContext context);
     }
@@ -160,33 +160,6 @@ namespace RenderToy.Materials
         {
             return SampleTexture(context.U, context.V);
         }
-        public static IMNNode<Vector4D> Create()
-        {
-            var val0 = new MNConstant { Value = 0.0 };
-            var val05 = new MNConstant { Value = 0.5 };
-            var val1 = new MNConstant { Value = 1.0 };
-            var val16 = new MNConstant { Value = 16.0 };
-            var val64 = new MNConstant { Value = 64.0 };
-            var val512 = new MNConstant { Value = 512.0 };
-            var texu = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 4.0 } };
-            var texv = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 4.0 } };
-            var perlinlow = new MNPerlin2D { U = new MNMultiply { Lhs = texu, Rhs = val16 }, V = new MNMultiply { Lhs = texv, Rhs = val16 } };
-            var perlinmid = new MNPerlin2D { U = new MNMultiply { Lhs = texu, Rhs = val64 }, V = new MNMultiply { Lhs = texv, Rhs = val64 } };
-            var perlinhigh = new MNPerlin2D { U = new MNMultiply { Lhs = texu, Rhs = val512 }, V = new MNMultiply { Lhs = texv, Rhs = val512 } };
-            var perlinband = new MNPerlin2D { U = new MNMultiply { Lhs = texu, Rhs = val64 }, V = new MNMultiply { Lhs = texv, Rhs = val512 } };
-            var perlinlowscale = new MNMultiply { Lhs = perlinlow, Rhs = new MNConstant { Value = 0.1 } };
-            var perlinmidscale = new MNMultiply { Lhs = new MNSaturate { Value = perlinmid }, Rhs = new MNConstant { Value = 1.25 } };
-            var perlinhighscale = new MNMultiply { Lhs = perlinhigh, Rhs = new MNConstant { Value = 0.1 } };
-            var perlinbandscale = new MNMultiply { Lhs = perlinband, Rhs = new MNConstant { Value = 0.2 } };
-            var brickmask = new MNThreshold { Value = new MNSubtract { Lhs = new MNBrickMask { U = texu, V = texv }, Rhs = perlinmidscale } };
-            var bricknoise = new MNMultiply { Lhs = new MNBrickNoise { U = texu, V = texv }, Rhs = new MNConstant { Value = 0.1 } };
-            var brickcolor = new MNAdd { Lhs = new MNAdd { Lhs = val05, Rhs = perlinbandscale }, Rhs = bricknoise };
-            var mortarcolor = new MNAdd { Lhs = new MNConstant { Value = 0.4 }, Rhs = new MNAdd { Lhs = perlinhighscale, Rhs = perlinlowscale } };
-            var colorr = new MNLerp { Value0 = mortarcolor, Value1 = brickcolor, Factor = brickmask };
-            var colorg = new MNLerp { Value0 = mortarcolor, Value1 = val0, Factor = brickmask };
-            var colorb = new MNLerp { Value0 = mortarcolor, Value1 = val0, Factor = brickmask };
-            return new MNVector4D { R = colorr, G = colorg, B = colorb, A = val1 };
-        }
     }
     class MNBrickMask : MNSample2D<double>, IMNNode<double>
     {
@@ -198,23 +171,55 @@ namespace RenderToy.Materials
     }
     class MNCheckerboard : IMNNode<Vector4D>, IMaterial
     {
-        public MNCheckerboard(Vector4D color1, Vector4D color2)
-        {
-            Color1 = color1;
-            Color2 = color2;
-        }
         public Vector4D Eval(EvalContext context)
         {
             int u = (int)((context.U - Math.Floor(context.U)) * 2);
             int v = (int)((context.V - Math.Floor(context.V)) * 2);
-            return ((u + v) & 1) == 0 ? Color1 : Color2;
+            return ((u + v) & 1) == 0 ? Color1.Eval(context) : Color2.Eval(context);
         }
         public bool IsConstant()
         {
             return false;
         }
-        private readonly Vector4D Color1;
-        private readonly Vector4D Color2;
+        public IMNNode<Vector4D> Color1 { get { return color1; } set { color1 = value; } }
+        public IMNNode<Vector4D> Color2 { get { return color2; } set { color2 = value; } }
+        protected IMNNode<Vector4D> color1, color2;
+    }
+    class MNMarbleBlack : IMNNode<Vector4D>
+    {
+        public Vector4D Eval(EvalContext context)
+        {
+            double perlinlow = MNPerlin2D.PerlinNoise2D(context.U * 5, context.V * 5);
+            double perlinhigh = MNPerlin2D.PerlinNoise2D(context.U * 50, context.V * 50);
+            double v1 = (1 + Math.Sin((context.U + perlinlow / 2 + perlinhigh / 5) * 50)) / 2;
+            double v2 = (1 + Math.Sin((context.U + 50 + perlinlow / 2) * 100)) / 2;
+            v1 = Math.Pow(v1, 20) * 0.8;
+            v2 = Math.Pow(v2, 20) * 0.2;
+            double v = v1 + v2;
+            return new Vector4D(v, v, v, 1);
+        }
+        public bool IsConstant()
+        {
+            return false;
+        }
+    }
+    class MNMarbleWhite : IMNNode<Vector4D>
+    {
+        public Vector4D Eval(EvalContext context)
+        {
+            double perlinlow = MNPerlin2D.PerlinNoise2D(context.U * 5, context.V * 5);
+            double perlinhigh = MNPerlin2D.PerlinNoise2D(context.U * 50, context.V * 50);
+            double v1 = (1 + Math.Sin((context.U + perlinlow / 2 + perlinhigh / 5) * 50)) / 2;
+            double v2 = (1 + Math.Sin((context.U + 50 + perlinlow / 2) * 100)) / 2;
+            v1 = Math.Pow(v1, 20) * 0.8;
+            v2 = Math.Pow(v2, 20) * 0.2;
+            double v = 1 - (v1 + v2);
+            return new Vector4D(v, v, v, 1);
+        }
+        public bool IsConstant()
+        {
+            return false;
+        }
     }
     class MNPerlin2D : MNSample2D<double>, IMNNode<double>
     {

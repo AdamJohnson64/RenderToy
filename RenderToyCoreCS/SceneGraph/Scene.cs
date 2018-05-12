@@ -22,7 +22,7 @@ namespace RenderToy.SceneGraph
                 Scene scene = new Scene();
                 var mesh = Mesh.CreateMesh(new Sphere(), 18, 9);
                 var meshbvh = MeshBVH.Create(Mesh.FlattenIndices(mesh.Vertices, mesh.Triangles).ToArray());
-                scene.children.Add(new Node("Plane Ground", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, new MNCheckerboard(StockMaterials.Black, StockMaterials.White)));
+                scene.children.Add(new Node("Plane Ground", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, new MNCheckerboard()));
                 scene.children.Add(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-5, 1, 0)), new Sphere(), StockMaterials.Red, StockMaterials.PlasticRed));
                 scene.children.Add(new Node("Sphere (Green)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-3, 1, 0)), meshbvh, StockMaterials.Green, StockMaterials.PlasticGreen));
                 scene.children.Add(new Node("Sphere (Blue)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-1, 1, 0)), new Sphere(), StockMaterials.Blue, StockMaterials.PlasticBlue));
