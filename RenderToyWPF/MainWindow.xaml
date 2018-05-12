@@ -140,40 +140,14 @@
                 <DockPanel>
                     <!-- ==================== Material List ==================== -->
                     <GroupBox Header="Material Nodes" Margin="4" Padding="4">
-                        <ListView x:Name="MaterialNodes" DockPanel.Dock="Left" ItemsSource="{Binding Path=MaterialNodes}" IsSynchronizedWithCurrentItem="True">
+                        <ListView x:Name="MaterialNodes" DockPanel.Dock="Left" ItemsSource="{Binding Path=MaterialNodes}" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource GraphNodeTemplate}">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                 </Style>
                             </ListView.ItemContainerStyle>
-                            <ListView.View>
-                                <GridView>
-                                    <GridView.Columns>
-                                        <GridViewColumn Header="Preview" Width="80">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <local:ViewMaterialThumbnail HorizontalAlignment="Center" ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64" ToolTip="{StaticResource GraphNodeToolTip}"/>
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                        <GridViewColumn Header="Node Type" Width="128" DisplayMemberBinding="{Binding Converter={StaticResource ShortTypeNameConverter}}"/>
-                                    </GridView.Columns>
-                                </GridView>
-                            </ListView.View>
                         </ListView>
                     </GroupBox>
-                    <!-- ==================== Detail View ==================== -->
-                    <ContentControl DockPanel.Dock="Left" Content="{Binding ElementName=MaterialNodes, Path=SelectedItem}">
-                        <ContentControl.ContentTemplate>
-                            <DataTemplate>
-                                <GroupBox Header="Selection" Background="LightYellow" Margin="4" Padding="4">
-                                    <StackPanel>
-                                        <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="32" ThumbnailHeight="32" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </GroupBox>
-                            </DataTemplate>
-                        </ContentControl.ContentTemplate>
-                    </ContentControl>
                     <!-- ==================== Texture View ==================== -->
                     <ContentControl Content="{Binding ElementName=MaterialNodes, Path=SelectedItem}">
                         <ContentControl.ContentTemplate>
