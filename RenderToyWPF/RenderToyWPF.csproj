@@ -63,19 +63,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Controls\Camera.cs" />
-    <Compile Include="Controls\View3DBase.cs" />
-    <Compile Include="Controls\Figures.cs" />
-    <Compile Include="Controls\ViewMaterialNode.cs" />
-    <Compile Include="Controls\ViewMaterialThumbnail.cs" />
-    <Compile Include="Controls\ViewMaterialGraph.cs" />
-    <Compile Include="Controls\ViewMaterial.cs" />
-    <Compile Include="Controls\View3DWire.cs" />
-    <Compile Include="PerformanceTrace.xaml.cs">
+    <Compile Include="Utility\Camera.cs" />
+    <Compile Include="3D\View3DBase.cs" />
+    <Compile Include="Document\Figures.cs" />
+    <Compile Include="Material\ViewMaterialNode.cs" />
+    <Compile Include="Material\ViewMaterialThumbnail.cs" />
+    <Compile Include="Material\ViewMaterialGraph.cs" />
+    <Compile Include="Material\ViewMaterial.cs" />
+    <Compile Include="3D\View3DWire.cs" />
+    <Compile Include="Utility\PerformanceTrace.xaml.cs">
       <DependentUpon>PerformanceTrace.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Render\Render_D3D9.cs" />
-    <Compile Include="Controls\View3DUser.cs" />
+    <Compile Include="Utility\Render_D3D9.cs" />
+    <Compile Include="3D\View3DUser.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -88,11 +88,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="PerformanceTrace.xaml">
+    <Page Include="Utility\PerformanceTrace.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="RenderToyDocument.xaml">
+    <Page Include="Document\RenderToyDocument.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
