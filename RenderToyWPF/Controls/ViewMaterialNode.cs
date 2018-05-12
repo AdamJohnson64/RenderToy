@@ -22,7 +22,8 @@ namespace RenderToy.WPF
             base.OnRender(drawingContext);
             var penblack = new Pen(Brushes.Black, 1);
             var typeface = new Typeface("Arial");
-            drawingContext.DrawRoundedRectangle(Brushes.LightGray, penblack, new Rect(64, 0, ActualWidth - 64, ActualHeight), 4, 4);
+            drawingContext.DrawRoundedRectangle(Brushes.LightGray, penblack, new Rect(0, 0, ActualWidth - 64, ActualHeight), 4, 4);
+            if (Node == null) return;
             var properties =
                 Node.GetType().GetProperties()
                 .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType))
@@ -30,17 +31,17 @@ namespace RenderToy.WPF
             for (int i = 0; i < properties.Length; ++i)
             {
                 double y = (i + 0.5) * ActualHeight / properties.Length;
-                drawingContext.DrawLine(penblack, new Point(0, y), new Point(64, y));
-                drawingContext.DrawEllipse(Brushes.White, penblack, new Point(4, y), 4, 4);
+                drawingContext.DrawLine(penblack, new Point(ActualWidth - 64, y), new Point(ActualWidth, y));
+                drawingContext.DrawEllipse(Brushes.White, penblack, new Point(ActualWidth - 4, y), 4, 4);
                 var formattedtext = new FormattedText(properties[i].Name, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 10, Brushes.Black);
-                drawingContext.DrawText(formattedtext, new Point(32 - formattedtext.Width / 2, y - formattedtext.Height));
+                drawingContext.DrawText(formattedtext, new Point(ActualWidth - 32 - formattedtext.Width / 2, y - formattedtext.Height));
             }
         }
         protected override Size ArrangeOverride(Size arrangeBounds)
         {
             var interior = GetVisualChild(0) as UIElement;
             if (interior == null) return arrangeBounds;
-            interior.Arrange(new Rect(64 + 4, 4, Math.Max(0, arrangeBounds.Width - 64 - 8), Math.Max(0, arrangeBounds.Height - 8)));
+            interior.Arrange(new Rect(4, 4, Math.Max(0, arrangeBounds.Width - 64 - 8), Math.Max(0, arrangeBounds.Height - 8)));
             return arrangeBounds;
         }
         protected override Size MeasureOverride(Size constraint)

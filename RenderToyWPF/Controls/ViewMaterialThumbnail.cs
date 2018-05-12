@@ -6,6 +6,7 @@
 using RenderToy.PipelineModel;
 using RenderToy.SceneGraph.Materials;
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -115,8 +116,18 @@ namespace RenderToy.WPF
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            if (bitmap == null) return;
-            drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
+            if (ThumbnailSource is IMNNode<double> && ThumbnailSource.IsConstant())
+            {
+                EvalContext context = new EvalContext();
+                double value = ((IMNNode<double>)ThumbnailSource).Eval(context);
+                var formattedtext = new FormattedText(value.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 10, Brushes.Black);
+                drawingContext.DrawText(formattedtext, new Point(0, 0));
+            }
+            else
+            {
+                if (bitmap == null) return;
+                drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
+            }
         }
         #endregion
     }

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RenderToy.WPF"
+        xmlns:materials="clr-namespace:RenderToy.SceneGraph.Materials"
         mc:Ignorable="d"
         Title="RenderToy Experiment" Height="600" Width="1024">
     <UserControl>
@@ -78,17 +79,7 @@
                                         <GridViewColumn Header="Preview" Width="80">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <local:ViewMaterialThumbnail HorizontalAlignment="Center" ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64">
-                                                        <local:ViewMaterialThumbnail.ToolTip>
-                                                            <ToolTip>
-                                                                <ToolTip.Template>
-                                                                    <ControlTemplate>
-                                                                    
-                                                                    </ControlTemplate>
-                                                                </ToolTip.Template>
-                                                            </ToolTip>
-                                                        </local:ViewMaterialThumbnail.ToolTip>
-                                                    </local:ViewMaterialThumbnail>
+                                                    <local:ViewMaterialThumbnail HorizontalAlignment="Center" ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64"/>
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -116,7 +107,18 @@
                             <DataTemplate>
                                 <TabControl>
                                     <TabItem Header="Graph">
-                                        <local:ViewMaterialGraph Root="{Binding}"/>
+                                        <local:ViewMaterialGraph Root="{Binding}">
+                                            <local:ViewMaterialGraph.NodeTemplate>
+                                                <DataTemplate>
+                                                    <local:ViewMaterialNode Node="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="16" ThumbnailHeight="16"/>
+                                                            <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}"/>
+                                                        </StackPanel>
+                                                    </local:ViewMaterialNode>
+                                                </DataTemplate>
+                                            </local:ViewMaterialGraph.NodeTemplate>
+                                        </local:ViewMaterialGraph>
                                     </TabItem>
                                     <TabItem Header="Node">
                                         <local:ViewMaterialNode Node="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center">
