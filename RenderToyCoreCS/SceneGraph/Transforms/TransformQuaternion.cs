@@ -3,9 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Utility;
 using System;
 
-namespace RenderToy.SceneGraph.Transforms
+namespace RenderToy.Transforms
 {
     public class TransformQuaternion : ITransform
     {

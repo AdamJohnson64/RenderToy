@@ -3,9 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Cameras;
 using RenderToy.SceneGraph;
-using RenderToy.SceneGraph.Cameras;
-using RenderToy.SceneGraph.Transforms;
+using RenderToy.Transforms;
+using RenderToy.Utility;
 using System;
 using System.IO;
 using System.Linq;

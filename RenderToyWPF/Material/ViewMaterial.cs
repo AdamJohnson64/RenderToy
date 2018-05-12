@@ -3,7 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.SceneGraph.Materials;
+using RenderToy.Materials;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;

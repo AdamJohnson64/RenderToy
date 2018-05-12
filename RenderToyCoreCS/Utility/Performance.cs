@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RenderToy
+namespace RenderToy.Utility
 {
     public static class Performance
     {
@@ -118,7 +118,7 @@ namespace RenderToy
                 {
                     if (!open.ContainsKey(e.Text))
                     {
-                        open[e.Text] = new Stack<RenderToy.PerformanceEvent>();
+                        open[e.Text] = new Stack<PerformanceEvent>();
                     }
                     open[e.Text].Push(e);
                 }

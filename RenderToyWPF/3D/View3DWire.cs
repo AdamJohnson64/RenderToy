@@ -5,6 +5,7 @@
 
 using RenderToy.RenderControl;
 using RenderToy.SceneGraph;
+using RenderToy.Utility;
 using System;
 using System.Windows;
 using System.Windows.Media;

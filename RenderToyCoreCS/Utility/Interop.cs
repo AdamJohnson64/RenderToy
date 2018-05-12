@@ -3,16 +3,16 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Materials;
+using RenderToy.Meshes;
+using RenderToy.Primitives;
 using RenderToy.SceneGraph;
-using RenderToy.SceneGraph.Materials;
-using RenderToy.SceneGraph.Meshes;
-using RenderToy.SceneGraph.Primitives;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace RenderToy
+namespace RenderToy.Utility
 {
     public class SceneFormatter
     {

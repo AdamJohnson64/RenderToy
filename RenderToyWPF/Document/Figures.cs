@@ -1,4 +1,11 @@
-﻿using System;
+﻿using RenderToy.Cameras;
+using RenderToy.Materials;
+using RenderToy.PipelineModel;
+using RenderToy.Primitives;
+using RenderToy.SceneGraph;
+using RenderToy.Transforms;
+using RenderToy.Utility;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -6,12 +13,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using RenderToy.PipelineModel;
-using RenderToy.SceneGraph;
-using RenderToy.SceneGraph.Cameras;
-using RenderToy.SceneGraph.Materials;
-using RenderToy.SceneGraph.Primitives;
-using RenderToy.SceneGraph.Transforms;
 
 namespace RenderToy.WPF.Figures
 {

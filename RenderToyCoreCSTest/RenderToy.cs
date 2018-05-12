@@ -5,10 +5,11 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RenderToy.BoundingVolumeHierarchy;
+using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.PipelineModel;
-using RenderToy.SceneGraph.Meshes;
-using RenderToy.SceneGraph.Primitives;
+using RenderToy.Primitives;
+using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -3,7 +3,8 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.SceneGraph.Transforms;
+using RenderToy.Transforms;
+using RenderToy.Utility;
 using System.Windows;
 
 namespace RenderToy.WPF

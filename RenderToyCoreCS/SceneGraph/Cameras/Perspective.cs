@@ -3,9 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Utility;
 using System;
 
-namespace RenderToy.SceneGraph.Cameras
+namespace RenderToy.Cameras
 {
     public class Perspective : IProjection
     {

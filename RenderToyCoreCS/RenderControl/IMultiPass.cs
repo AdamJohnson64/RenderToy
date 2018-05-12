@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.SceneGraph;
+using RenderToy.Utility;
 using System;
 
 namespace RenderToy.RenderControl

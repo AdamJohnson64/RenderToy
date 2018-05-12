@@ -5,6 +5,7 @@
 
 using RenderToy.PipelineModel;
 using RenderToy.SceneGraph;
+using RenderToy.Utility;
 using System;
 
 namespace RenderToy

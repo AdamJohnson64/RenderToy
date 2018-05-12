@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Utility;
 using System.Collections.Generic;
 
 namespace RenderToy.SceneGraph

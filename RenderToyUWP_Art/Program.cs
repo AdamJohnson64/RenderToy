@@ -10,11 +10,12 @@
 #define RENDERSIMPLE
 #endif
 
+using RenderToy.Cameras;
+using RenderToy.Materials;
+using RenderToy.Primitives;
 using RenderToy.SceneGraph;
-using RenderToy.SceneGraph.Cameras;
-using RenderToy.SceneGraph.Materials;
-using RenderToy.SceneGraph.Primitives;
-using RenderToy.SceneGraph.Transforms;
+using RenderToy.Transforms;
+using RenderToy.Utility;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;

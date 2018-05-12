@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Linq;
+using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

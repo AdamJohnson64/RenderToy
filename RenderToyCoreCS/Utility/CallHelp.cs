@@ -22,7 +22,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace RenderToy
+namespace RenderToy.Utility
 {
     [DebuggerDisplay("{MethodInfo.Name}")]
     public class RenderCall

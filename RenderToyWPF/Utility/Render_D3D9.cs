@@ -4,8 +4,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.PipelineModel;
+using RenderToy.Primitives;
 using RenderToy.SceneGraph;
-using RenderToy.SceneGraph.Primitives;
+using RenderToy.Utility;
 using System;
 using System.Linq;
 

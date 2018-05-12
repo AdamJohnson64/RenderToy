@@ -3,7 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.SceneGraph.Materials;
+using RenderToy.Materials;
 using System;
 using System.Collections.Generic;
 using System.Linq;

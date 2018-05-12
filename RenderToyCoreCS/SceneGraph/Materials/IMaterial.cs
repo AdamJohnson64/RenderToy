@@ -3,9 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Utility;
 using System;
 
-namespace RenderToy.SceneGraph.Materials
+namespace RenderToy.Materials
 {
     /// <summary>
     /// This empty IMaterial interface is only used to type-identify suitable material types.
@@ -155,7 +156,6 @@ namespace RenderToy.SceneGraph.Materials
             double brickness = BrickMask(u, v) - perlinmid;
             return brickness < 0.5 ? MortarColor : BrickColor;
         }
-        public bool IsConstant() { return false; }
         public Vector4D Eval(EvalContext context)
         {
             return SampleTexture(context.U, context.V);
@@ -249,7 +249,6 @@ namespace RenderToy.SceneGraph.Materials
             double p = PerlinNoise2D(u, v);
             return new Vector4D(p, p, p, 1);
         }
-        public bool IsConstant() { return false; }
         public double Eval(EvalContext context) { return PerlinNoise2D(u.Eval(context), v.Eval(context)); }
     }
 }

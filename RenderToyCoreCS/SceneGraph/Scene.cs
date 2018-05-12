@@ -3,10 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.SceneGraph.Materials;
-using RenderToy.SceneGraph.Meshes;
-using RenderToy.SceneGraph.Primitives;
-using RenderToy.SceneGraph.Transforms;
+using RenderToy.Materials;
+using RenderToy.Meshes;
+using RenderToy.Primitives;
+using RenderToy.Transforms;
 using RenderToy.Utility;
 using System.Collections.Generic;
 using System.Linq;

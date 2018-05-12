@@ -3,10 +3,11 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Utility;
 using System;
 using System.Diagnostics;
 
-namespace RenderToy
+namespace RenderToy.Utility
 {
     public static partial class MathHelp
     {
@@ -99,14 +100,14 @@ namespace RenderToy
     }
     public static partial class MathHelp
     {
-        public static double Determinant(RenderToy.Matrix3D val)
+        public static double Determinant(Matrix3D val)
         {
             return (-val.M14 * (+val.M23 * (val.M31 * val.M42 - val.M32 * val.M41) - val.M33 * (val.M21 * val.M42 - val.M22 * val.M41) + val.M43 * (val.M21 * val.M32 - val.M22 * val.M31)) + val.M24 * (+val.M13 * (val.M31 * val.M42 - val.M32 * val.M41) - val.M33 * (val.M11 * val.M42 - val.M12 * val.M41) + val.M43 * (val.M11 * val.M32 - val.M12 * val.M31)) - val.M34 * (+val.M13 * (val.M21 * val.M42 - val.M22 * val.M41) - val.M23 * (val.M11 * val.M42 - val.M12 * val.M41) + val.M43 * (val.M11 * val.M22 - val.M12 * val.M21)) + val.M44 * (+val.M13 * (val.M21 * val.M32 - val.M22 * val.M31) - val.M23 * (val.M11 * val.M32 - val.M12 * val.M31) + val.M33 * (val.M11 * val.M22 - val.M12 * val.M21)));
         }
-        public static RenderToy.Matrix3D Invert(RenderToy.Matrix3D val)
+        public static Matrix3D Invert(Matrix3D val)
         {
             double invdet = 1 / Determinant(val);
-            return new RenderToy.Matrix3D(
+            return new Matrix3D(
                 invdet * (+(+val.M42 * (val.M23 * val.M34 - val.M33 * val.M24) - val.M43 * (val.M22 * val.M34 - val.M32 * val.M24) + val.M44 * (val.M22 * val.M33 - val.M32 * val.M23))),
                 invdet * (-(+val.M42 * (val.M13 * val.M34 - val.M33 * val.M14) - val.M43 * (val.M12 * val.M34 - val.M32 * val.M14) + val.M44 * (val.M12 * val.M33 - val.M32 * val.M13))),
                 invdet * (+(+val.M42 * (val.M13 * val.M24 - val.M23 * val.M14) - val.M43 * (val.M12 * val.M24 - val.M22 * val.M14) + val.M44 * (val.M12 * val.M23 - val.M22 * val.M13))),
@@ -124,7 +125,7 @@ namespace RenderToy
                 invdet * (-(+val.M41 * (val.M12 * val.M23 - val.M22 * val.M13) - val.M42 * (val.M11 * val.M23 - val.M21 * val.M13) + val.M43 * (val.M11 * val.M22 - val.M21 * val.M12))),
                 invdet * (+(+val.M31 * (val.M12 * val.M23 - val.M22 * val.M13) - val.M32 * (val.M11 * val.M23 - val.M21 * val.M13) + val.M33 * (val.M11 * val.M22 - val.M21 * val.M12))));
         }
-        public static Matrix3D Multiply(RenderToy.Matrix3D a, RenderToy.Matrix3D b)
+        public static Matrix3D Multiply(Matrix3D a, Matrix3D b)
         {
             return new Matrix3D(
                 a.M11 * b.M11 + a.M12 * b.M21 + a.M13 * b.M31 + a.M14 * b.M41,
@@ -161,21 +162,21 @@ namespace RenderToy
             }
             */
         }
-        public static Vector3D TransformPoint(RenderToy.Matrix3D a, Vector3D b)
+        public static Vector3D TransformPoint(Matrix3D a, Vector3D b)
         {
             return new Vector3D(
                 a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z + a.M41,
                 a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z + a.M42,
                 a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z + a.M43);
         }
-        public static Vector3D TransformVector(RenderToy.Matrix3D a, Vector3D b)
+        public static Vector3D TransformVector(Matrix3D a, Vector3D b)
         {
             return new Vector3D(
                 a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z,
                 a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z,
                 a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z);
         }
-        public static Vector4D Transform(RenderToy.Matrix3D a, Vector4D b)
+        public static Vector4D Transform(Matrix3D a, Vector4D b)
         {
             return new Vector4D(
                 a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z + a.M41 * b.W,

@@ -3,9 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.SceneGraph.Materials;
-using RenderToy.SceneGraph.Primitives;
-using RenderToy.SceneGraph.Transforms;
+using RenderToy.Materials;
+using RenderToy.Primitives;
+using RenderToy.Transforms;
+using RenderToy.Utility;
 using System.Collections.Generic;
 
 namespace RenderToy.SceneGraph

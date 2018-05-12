@@ -3,7 +3,9 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace RenderToy.SceneGraph.Transforms
+using RenderToy.Utility;
+
+namespace RenderToy.Transforms
 {
     public class TransformMatrix : ITransform
     {

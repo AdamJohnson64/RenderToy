@@ -3,8 +3,9 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Cameras;
 using RenderToy.SceneGraph;
-using RenderToy.SceneGraph.Cameras;
+using RenderToy.Utility;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;

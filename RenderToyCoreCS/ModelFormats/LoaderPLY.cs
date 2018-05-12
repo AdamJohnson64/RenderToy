@@ -3,8 +3,9 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.SceneGraph.Meshes;
-using RenderToy.SceneGraph.Primitives;
+using RenderToy.Meshes;
+using RenderToy.Primitives;
+using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;

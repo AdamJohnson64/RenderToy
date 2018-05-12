@@ -3,8 +3,9 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Materials;
 using RenderToy.PipelineModel;
-using RenderToy.SceneGraph.Materials;
+using RenderToy.Utility;
 using System;
 using System.Globalization;
 using System.Windows;
@@ -61,7 +62,7 @@ namespace RenderToy.WPF
         }
         public static WriteableBitmap CreateIMNodeThumbnailDouble(IMNNode<double> node, int bitmapWidth, int bitmapHeight)
         {
-            if (node == null || bitmapWidth == 0 || bitmapHeight == null) return null;
+            if (node == null || bitmapWidth == 0 || bitmapHeight == 0) return null;
             var bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
             bitmap.Lock();
             var context = new EvalContext();
@@ -85,7 +86,7 @@ namespace RenderToy.WPF
         }
         public static WriteableBitmap CreateIMNodeThumbnailV4D(IMNNode<Vector4D> node, int bitmapWidth, int bitmapHeight)
         {
-            if (node == null || bitmapWidth == 0 || bitmapHeight == null) return null;
+            if (node == null || bitmapWidth == 0 || bitmapHeight == 0) return null;
             var bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
             bitmap.Lock();
             var context = new EvalContext();

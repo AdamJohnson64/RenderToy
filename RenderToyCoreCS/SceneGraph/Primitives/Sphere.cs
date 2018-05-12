@@ -3,9 +3,10 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Utility;
 using System;
 
-namespace RenderToy.SceneGraph.Primitives
+namespace RenderToy.Primitives
 {
     /// <summary>
     /// Sphere of unit radius.

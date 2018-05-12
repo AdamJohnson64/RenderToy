@@ -3,16 +3,12 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.SceneGraph.Primitives;
-////////////////////////////////////////////////////////////////////////////////
-// RenderToy - A bit of history that's now a bit of silicon...
-// Copyright (C) Adam Johnson 2017
-////////////////////////////////////////////////////////////////////////////////
-
+using RenderToy.Primitives;
+using RenderToy.Utility;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RenderToy.SceneGraph.Meshes
+namespace RenderToy.Meshes
 {
     /// <summary>
     /// Triangle-only mesh.

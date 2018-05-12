@@ -3,7 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace RenderToy.SceneGraph.Primitives
+namespace RenderToy.Primitives
 {
     /// <summary>
     /// This empty IPrimitive interface is only used to type-identify suitable primitive types.

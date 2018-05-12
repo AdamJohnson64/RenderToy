@@ -3,12 +3,13 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.SceneGraph.Primitives;
+using RenderToy.Primitives;
+using RenderToy.Utility;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace RenderToy.SceneGraph.Meshes
+namespace RenderToy.Meshes
 {
     [DebuggerDisplay("[{Bound.Min.X}, {Bound.Min.Y}, {Bound.Min.Z}] -> [{Bound.Max.X}, {Bound.Max.Y}, {Bound.Max.Z}], {Triangles.Length} Triangles")]
     public class MeshBVH : IPrimitive

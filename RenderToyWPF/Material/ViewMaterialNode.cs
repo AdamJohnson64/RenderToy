@@ -1,4 +1,4 @@
-﻿using RenderToy.SceneGraph.Materials;
+﻿using RenderToy.Materials;
 using System;
 using System.Globalization;
 using System.Linq;

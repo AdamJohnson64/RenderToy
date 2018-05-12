@@ -3,7 +3,9 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace RenderToy.SceneGraph.Cameras
+using RenderToy.Utility;
+
+namespace RenderToy.Cameras
 {
     public interface IProjection
     {

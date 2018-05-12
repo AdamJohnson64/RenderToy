@@ -4,11 +4,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using Microsoft.Win32;
+using RenderToy.Materials;
 using RenderToy.ModelFormat;
+using RenderToy.Primitives;
 using RenderToy.SceneGraph;
-using RenderToy.SceneGraph.Materials;
-using RenderToy.SceneGraph.Primitives;
-using RenderToy.SceneGraph.Transforms;
+using RenderToy.Transforms;
+using RenderToy.Utility;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;

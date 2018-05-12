@@ -3,7 +3,9 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace RenderToy.SceneGraph.Materials
+using RenderToy.Utility;
+
+namespace RenderToy.Materials
 {
     public class Checkerboard : IMaterial
     {
