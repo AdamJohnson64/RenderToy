@@ -196,6 +196,26 @@ namespace RenderToy.Materials
     {
         public double Eval(EvalContext context) { return MNBrick.BrickNoise(u.Eval(context), v.Eval(context)); }
     }
+    class MNCheckerboard : IMNNode<Vector4D>, IMaterial
+    {
+        public MNCheckerboard(Vector4D color1, Vector4D color2)
+        {
+            Color1 = color1;
+            Color2 = color2;
+        }
+        public Vector4D Eval(EvalContext context)
+        {
+            int u = (int)((context.U - Math.Floor(context.U)) * 2);
+            int v = (int)((context.V - Math.Floor(context.V)) * 2);
+            return ((u + v) & 1) == 0 ? Color1 : Color2;
+        }
+        public bool IsConstant()
+        {
+            return false;
+        }
+        private readonly Vector4D Color1;
+        private readonly Vector4D Color2;
+    }
     class MNPerlin2D : MNSample2D<double>, IMNNode<double>
     {
         static double Interpolate(double a, double b, double x)

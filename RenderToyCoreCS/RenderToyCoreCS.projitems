@@ -29,7 +29,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\RenderModeCS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Cameras\Perspective.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Cameras\IProjection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Materials\Checkerboard.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Materials\GenericMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Materials\IMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Materials\StockMaterials.cs" />

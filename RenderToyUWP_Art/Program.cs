@@ -117,7 +117,7 @@ namespace RenderToy
             get
             {
                 Scene scene = new Scene();
-                scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), new Plane(), StockMaterials.DarkGray, new Checkerboard(StockMaterials.Black, StockMaterials.White)));
+                scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), new Plane(), StockMaterials.DarkGray, new MNCheckerboard(StockMaterials.Black, StockMaterials.White)));
                 scene.AddChild(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-2, 1, 0)), new Sphere(), StockMaterials.Red, StockMaterials.PlasticRed));
                 scene.AddChild(new Node("Sphere (Green)", new TransformMatrix(MathHelp.CreateMatrixTranslate(0, 1, 0)), new Sphere(), StockMaterials.Green, StockMaterials.PlasticGreen));
                 scene.AddChild(new Node("Sphere (Blue)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+2, 1, 0)), new Sphere(), StockMaterials.Blue, StockMaterials.PlasticBlue));
