@@ -574,9 +574,9 @@ public:
 		break;
 		case MATERIAL_CHECKERBOARD_XZ:
 		{
-			int mx = (vector_point.x - floor(vector_point.x)) < 0.5 ? 0 : 1;
-			int mz = (vector_point.z - floor(vector_point.z)) < 0.5 ? 0 : 1;
-			FLOAT c = FLOAT((mx + mz) % 2);
+			int mx = (vector_point.x - floor(vector_point.x)) * 2;
+			int mz = (vector_point.z - floor(vector_point.z)) * 2;
+			FLOAT c = FLOAT((mx + mz) & 1);
 			return make_vector4<FLOAT>(c, c, c, 1);
 		}
 		}
