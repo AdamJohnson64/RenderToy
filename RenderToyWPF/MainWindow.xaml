@@ -9,6 +9,7 @@
     <UserControl>
         <UserControl.Resources>
             <local:Camera x:Key="Camera"/>
+            <local:ShortTypeNameConverter x:Key="ShortTypeNameConverter"/>
         </UserControl.Resources>
         <TabControl>
             <TabItem Header="Interactive View">
@@ -91,8 +92,7 @@
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
-                                        <GridViewColumn Header="Node Type" Width="128">
-                                        </GridViewColumn>
+                                        <GridViewColumn Header="Node Type" Width="128" DisplayMemberBinding="{Binding Converter={StaticResource ShortTypeNameConverter}}"/>
                                     </GridView.Columns>
                                 </GridView>
                             </ListView.View>
@@ -104,7 +104,7 @@
                             <DataTemplate>
                                 <GroupBox Header="Selection" Background="LightYellow" Margin="4" Padding="4">
                                     <StackPanel>
-                                        <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64" HorizontalAlignment="Center"/>
+                                        <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="32" ThumbnailHeight="32" HorizontalAlignment="Center"/>
                                     </StackPanel>
                                 </GroupBox>
                             </DataTemplate>
@@ -117,6 +117,14 @@
                                 <TabControl>
                                     <TabItem Header="Graph">
                                         <local:ViewMaterialGraph Root="{Binding}"/>
+                                    </TabItem>
+                                    <TabItem Header="Node">
+                                        <local:ViewMaterialNode Node="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}"/>
+                                                <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="32" ThumbnailHeight="32" HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </local:ViewMaterialNode>
                                     </TabItem>
                                     <TabItem Header="Preview">
                                         <local:ViewMaterial Texture="{Binding}"/>

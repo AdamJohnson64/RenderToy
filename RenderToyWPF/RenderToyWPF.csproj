@@ -66,6 +66,7 @@
     <Compile Include="Controls\Camera.cs" />
     <Compile Include="Controls\View3DBase.cs" />
     <Compile Include="Controls\Figures.cs" />
+    <Compile Include="Controls\ViewMaterialNode.cs" />
     <Compile Include="Controls\ViewMaterialThumbnail.cs" />
     <Compile Include="Controls\ViewMaterialGraph.cs" />
     <Compile Include="Controls\ViewMaterial.cs" />
