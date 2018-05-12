@@ -11,6 +11,79 @@
         <UserControl.Resources>
             <local:Camera x:Key="Camera"/>
             <local:ShortTypeNameConverter x:Key="ShortTypeNameConverter"/>
+            <ToolTip x:Key="GraphNodeToolTip">
+                <StackPanel>
+                    <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}" Margin="4"/>
+                    <Border Background="Beige" BorderBrush="Black" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4">
+                        <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="256" ThumbnailHeight="256"/>
+                    </Border>
+                </StackPanel>
+            </ToolTip>
+            <DataTemplate x:Key="GraphNodeMNAdd">
+                <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="+"/>
+                </Border>
+            </DataTemplate>
+            <DataTemplate x:Key="GraphNodeMNLerp">
+                <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Lerp"/>
+                </Border>
+            </DataTemplate>
+            <DataTemplate x:Key="GraphNodeMNMultiply">
+                <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="X"/>
+                </Border>
+            </DataTemplate>
+            <DataTemplate x:Key="GraphNodeMNSaturate">
+                <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Saturate"/>
+                </Border>
+            </DataTemplate>
+            <DataTemplate x:Key="GraphNodeMNSubtract">
+                <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="-"/>
+                </Border>
+            </DataTemplate>
+            <DataTemplate x:Key="GraphNodeMNThreshold">
+                <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Threshold"/>
+                </Border>
+            </DataTemplate>
+            <DataTemplate x:Key="GraphNodeMNConstant">
+                <Border Background="LightGreen" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Path=Value}"/>
+                </Border>
+            </DataTemplate>
+            <DataTemplate x:Key="GraphNodeTexCoordU">
+                <Border Background="LightGreen" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="U"/>
+                </Border>
+            </DataTemplate>
+            <DataTemplate x:Key="GraphNodeTexCoordV">
+                <Border Background="LightGreen" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="V"/>
+                </Border>
+            </DataTemplate>
+            <DataTemplate x:Key="GraphNodeTemplate">
+                <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+                    <StackPanel Orientation="Horizontal">
+                        <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="32" ThumbnailHeight="32" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}" Margin="2" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </DataTemplate>
+            <local:TypeBasedDataTemplateSelector x:Key="GraphNodeDataTemplateSelector">
+                <local:TypeBasedDataTemplate DataType="{x:Type materials:MNAdd}" DataTemplate="{StaticResource GraphNodeMNAdd}"/>
+                <local:TypeBasedDataTemplate DataType="{x:Type materials:MNLerp}" DataTemplate="{StaticResource GraphNodeMNLerp}"/>
+                <local:TypeBasedDataTemplate DataType="{x:Type materials:MNMultiply}" DataTemplate="{StaticResource GraphNodeMNMultiply}"/>
+                <local:TypeBasedDataTemplate DataType="{x:Type materials:MNSaturate}" DataTemplate="{StaticResource GraphNodeMNSaturate}"/>
+                <local:TypeBasedDataTemplate DataType="{x:Type materials:MNSubtract}" DataTemplate="{StaticResource GraphNodeMNSubtract}"/>
+                <local:TypeBasedDataTemplate DataType="{x:Type materials:MNThreshold}" DataTemplate="{StaticResource GraphNodeMNThreshold}"/>
+                <local:TypeBasedDataTemplate DataType="{x:Type materials:MNConstant}" DataTemplate="{StaticResource GraphNodeMNConstant}"/>
+                <local:TypeBasedDataTemplate DataType="{x:Type materials:MNTexCoordU}" DataTemplate="{StaticResource GraphNodeTexCoordU}"/>
+                <local:TypeBasedDataTemplate DataType="{x:Type materials:MNTexCoordV}" DataTemplate="{StaticResource GraphNodeTexCoordV}"/>
+                <local:TypeBasedDataTemplate DataTemplate="{StaticResource GraphNodeTemplate}"/>
+            </local:TypeBasedDataTemplateSelector>
         </UserControl.Resources>
         <TabControl>
             <TabItem Header="Interactive View">
@@ -79,11 +152,7 @@
                                         <GridViewColumn Header="Preview" Width="80">
                                             <GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <local:ViewMaterialThumbnail HorizontalAlignment="Center" ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64">
-                                                        <local:ViewMaterialThumbnail.ToolTip>
-                                                            <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="256" ThumbnailHeight="256"/>
-                                                        </local:ViewMaterialThumbnail.ToolTip>
-                                                    </local:ViewMaterialThumbnail>
+                                                    <local:ViewMaterialThumbnail HorizontalAlignment="Center" ThumbnailSource="{Binding}" ThumbnailWidth="64" ThumbnailHeight="64" ToolTip="{StaticResource GraphNodeToolTip}"/>
                                                 </DataTemplate>
                                             </GridViewColumn.CellTemplate>
                                         </GridViewColumn>
@@ -114,31 +183,13 @@
                                         <local:ViewMaterialGraph Root="{Binding}">
                                             <local:ViewMaterialGraph.NodeTemplate>
                                                 <DataTemplate>
-                                                    <local:ViewMaterialNode Node="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                        <Border Background="LightGray" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2">
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="24" ThumbnailHeight="24" VerticalAlignment="Center">
-                                                                    <local:ViewMaterialThumbnail.ToolTip>
-                                                                        <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="256" ThumbnailHeight="256"/>
-                                                                    </local:ViewMaterialThumbnail.ToolTip>
-                                                                </local:ViewMaterialThumbnail>
-                                                                <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}" Margin="2" VerticalAlignment="Center"/>
-                                                            </StackPanel>
-                                                        </Border>
-                                                    </local:ViewMaterialNode>
+                                                    <local:ViewMaterialNode ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}"/>
                                                 </DataTemplate>
                                             </local:ViewMaterialGraph.NodeTemplate>
                                         </local:ViewMaterialGraph>
                                     </TabItem>
                                     <TabItem Header="Node">
-                                        <local:ViewMaterialNode Node="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <Border Background="LightGray" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="4">
-                                                <StackPanel>
-                                                    <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}" Margin="4"/>
-                                                    <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="32" ThumbnailHeight="32" HorizontalAlignment="Center"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </local:ViewMaterialNode>
+                                        <local:ViewMaterialNode Content="{Binding}" ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </TabItem>
                                     <TabItem Header="Preview">
                                         <local:ViewMaterial Texture="{Binding}"/>

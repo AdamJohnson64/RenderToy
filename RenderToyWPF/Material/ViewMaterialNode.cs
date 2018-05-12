@@ -14,22 +14,16 @@ namespace RenderToy.WPF
     {
         Point GetInputHandleLocation(PropertyInfo p);
     }
-    class ViewMaterialNode : ContentControl, INodeInputHandle
+    class ViewMaterialNode : ContentPresenter, INodeInputHandle
     {
-        public static DependencyProperty NodeProperty = DependencyProperty.Register("Node", typeof(IMNNode), typeof(ViewMaterialNode), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
-        public IMNNode Node
-        {
-            get { return (IMNNode)GetValue(NodeProperty); }
-            set { SetValue(NodeProperty, value); }
-        }
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
             var penblack = new Pen(Brushes.Black, 1);
             var typeface = new Typeface("Arial");
-            if (Node == null) return;
+            if (Content == null) return;
             var properties =
-                Node.GetType().GetProperties()
+                Content.GetType().GetProperties()
                 .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType))
                 .ToArray();
             for (int i = 0; i < properties.Length; ++i)
@@ -50,11 +44,11 @@ namespace RenderToy.WPF
         }
         protected override Size MeasureOverride(Size constraint)
         {
-            if (Node == null) return new Size(0, 0);
+            if (Content == null) return new Size(0, 0);
             var interior = GetVisualChild(0) as UIElement;
             if (interior == null) return new Size(0, 0);
             var properties =
-                Node.GetType().GetProperties()
+                Content.GetType().GetProperties()
                 .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType));
             if (properties.Count() == 0)
             {
@@ -71,14 +65,15 @@ namespace RenderToy.WPF
         }
         public Point GetInputHandleLocation(PropertyInfo p)
         {
-            if (Node == null) return new Point(0, 0);
+            if (Content == null) return new Point(0, 0);
             var properties =
-                Node.GetType().GetProperties()
+                Content.GetType().GetProperties()
                 .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType))
                 .Select((i, v) => new { Property = i, Index = v })
                 .ToArray();
             var find = properties
                 .FirstOrDefault(i => i.Property == p);
+            if (find == null) return new Point(0, 0);
             return new Point(ActualWidth - 4, (find.Index + 0.5) * ActualHeight / properties.Length);
         }
     }

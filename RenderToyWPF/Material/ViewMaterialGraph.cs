@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 
 namespace RenderToy.WPF
@@ -131,10 +133,10 @@ namespace RenderToy.WPF
                     output.Visual = visual;
                     visuals.Add(output, output.Visual);
                     AddVisualChild(output.Visual);
-                    var frameworkelement = output.Visual as FrameworkElement;
+                    var frameworkelement = output.Visual as ContentPresenter;
                     if (frameworkelement != null)
                     {
-                        frameworkelement.DataContext = node;
+                        frameworkelement.Content = node;
                     }
                     var ui = output.Visual as UIElement;
                     if (ui != null)
@@ -195,5 +197,23 @@ namespace RenderToy.WPF
             LayoutGraph();
         }
         #endregion
+    }
+    class TypeBasedDataTemplate
+    {
+        public Type DataType { get; set; }
+        public DataTemplate DataTemplate { get; set; }
+    }
+    [ContentProperty("Templates")]
+    class TypeBasedDataTemplateSelector : DataTemplateSelector
+    {
+        public List<TypeBasedDataTemplate> Templates { get { return templates; } }
+        List<TypeBasedDataTemplate> templates = new List<TypeBasedDataTemplate>();
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            if (item == null) return null;
+            var find = templates.FirstOrDefault(i => i.DataType == null || i.DataType.IsAssignableFrom(item.GetType()));
+            if (find == null) return null;
+            return find.DataTemplate;
+        }
     }
 }
