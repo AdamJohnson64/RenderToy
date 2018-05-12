@@ -45,10 +45,24 @@ namespace RenderToy.WPF
         }
         protected override Size MeasureOverride(Size constraint)
         {
+            if (Node == null) return new Size(0, 0);
             var interior = GetVisualChild(0) as UIElement;
             if (interior == null) return new Size(0, 0);
-            interior.Measure(new Size(constraint.Width - 64, constraint.Height));
-            return new Size(interior.DesiredSize.Width + 64, interior.DesiredSize.Height);
+            var properties =
+                Node.GetType().GetProperties()
+                .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType));
+            if (properties.Count() == 0)
+            {
+                // If we have no inputs then don't reserve 64 pixels for the input interfaces.
+                interior.Measure(new Size(constraint.Width, constraint.Height));
+                return new Size(interior.DesiredSize.Width, interior.DesiredSize.Height);
+            }
+            else
+            {
+                // Reserve 64 pixels to draw the input interfaces.
+                interior.Measure(new Size(constraint.Width - 64, constraint.Height));
+                return new Size(interior.DesiredSize.Width + 64, interior.DesiredSize.Height);
+            }
         }
     }
     class ShortTypeNameConverter : IValueConverter
