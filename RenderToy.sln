@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27428.2037
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyWPF", "RenderToyWPF\RenderToyWPF.csproj", "{D98DB157-6492-4FDF-926C-684EF1AFE84A}"
 EndProject
@@ -37,6 +37,7 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RenderToyCoreCS\RenderToyCoreCS.projitems*{00e78119-d5d7-4f74-8e0b-e97850ecffca}*SharedItemsImports = 4
+		RenderToyCoreCS\RenderToyCoreCS.projitems*{0afaed8e-b5ab-4693-8698-6686481c0784}*SharedItemsImports = 4
 		RenderToyCoreCS\RenderToyCoreCS.projitems*{201b2138-c542-4c95-901c-5f5066c9b625}*SharedItemsImports = 4
 		RenderToyCoreCS\RenderToyCoreCS.projitems*{496d4d78-f405-4d98-90d4-da9b9ffa7e34}*SharedItemsImports = 13
 		RenderToyCoreCS\RenderToyCoreCS.projitems*{95d65cdc-0b6b-4d8c-8930-c6e4845829e1}*SharedItemsImports = 4
