@@ -22,7 +22,6 @@ namespace RenderToy.WPF
             base.OnRender(drawingContext);
             var penblack = new Pen(Brushes.Black, 1);
             var typeface = new Typeface("Arial");
-            drawingContext.DrawRoundedRectangle(Brushes.LightGray, penblack, new Rect(0, 0, ActualWidth - 64, ActualHeight), 4, 4);
             if (Node == null) return;
             var properties =
                 Node.GetType().GetProperties()
@@ -41,15 +40,15 @@ namespace RenderToy.WPF
         {
             var interior = GetVisualChild(0) as UIElement;
             if (interior == null) return arrangeBounds;
-            interior.Arrange(new Rect(4, 4, Math.Max(0, arrangeBounds.Width - 64 - 8), Math.Max(0, arrangeBounds.Height - 8)));
+            interior.Arrange(new Rect(0, 0, interior.DesiredSize.Width, interior.DesiredSize.Height));
             return arrangeBounds;
         }
         protected override Size MeasureOverride(Size constraint)
         {
             var interior = GetVisualChild(0) as UIElement;
-            if (interior == null) return new Size(8, 8);
-            interior.Measure(new Size(Math.Max(64 + 8, constraint.Width - 64 - 8), Math.Max(8, constraint.Height - 8)));
-            return new Size(64 + 4 + interior.DesiredSize.Width + 4, 4 + interior.DesiredSize.Height + 4);
+            if (interior == null) return new Size(0, 0);
+            interior.Measure(new Size(constraint.Width - 64, constraint.Height));
+            return new Size(interior.DesiredSize.Width + 64, interior.DesiredSize.Height);
         }
     }
     class ShortTypeNameConverter : IValueConverter

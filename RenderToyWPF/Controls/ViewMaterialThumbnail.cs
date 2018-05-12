@@ -116,12 +116,22 @@ namespace RenderToy.WPF
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            if (ThumbnailSource is IMNNode<double> && ThumbnailSource.IsConstant())
+            if (ThumbnailSource is MNTexCoordU)
+            {
+                var formattedtext = new FormattedText("U", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.Black);
+                drawingContext.DrawText(formattedtext, new Point((ActualWidth - formattedtext.Width) / 2, (ActualHeight - formattedtext.Height) / 2));
+            }
+            else if (ThumbnailSource is MNTexCoordV)
+            {
+                var formattedtext = new FormattedText("V", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.Black);
+                drawingContext.DrawText(formattedtext, new Point((ActualWidth - formattedtext.Width) / 2, (ActualHeight - formattedtext.Height) / 2));
+            }
+            else if (ThumbnailSource is IMNNode<double> && ThumbnailSource.IsConstant())
             {
                 EvalContext context = new EvalContext();
                 double value = ((IMNNode<double>)ThumbnailSource).Eval(context);
-                var formattedtext = new FormattedText(value.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 10, Brushes.Black);
-                drawingContext.DrawText(formattedtext, new Point(0, 0));
+                var formattedtext = new FormattedText(value.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.Black);
+                drawingContext.DrawText(formattedtext, new Point((ActualWidth - formattedtext.Width) / 2, (ActualHeight - formattedtext.Height) / 2));
             }
             else
             {
