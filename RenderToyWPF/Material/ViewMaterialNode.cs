@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -9,7 +10,11 @@ using System.Windows.Media;
 
 namespace RenderToy.WPF
 {
-    class ViewMaterialNode : ContentControl
+    interface INodeInputHandle
+    {
+        Point GetInputHandleLocation(PropertyInfo p);
+    }
+    class ViewMaterialNode : ContentControl, INodeInputHandle
     {
         public static DependencyProperty NodeProperty = DependencyProperty.Register("Node", typeof(IMNNode), typeof(ViewMaterialNode), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
         public IMNNode Node
@@ -63,6 +68,18 @@ namespace RenderToy.WPF
                 interior.Measure(new Size(constraint.Width - 64, constraint.Height));
                 return new Size(interior.DesiredSize.Width + 64, interior.DesiredSize.Height);
             }
+        }
+        public Point GetInputHandleLocation(PropertyInfo p)
+        {
+            if (Node == null) return new Point(0, 0);
+            var properties =
+                Node.GetType().GetProperties()
+                .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType))
+                .Select((i, v) => new { Property = i, Index = v })
+                .ToArray();
+            var find = properties
+                .FirstOrDefault(i => i.Property == p);
+            return new Point(ActualWidth - 4, (find.Index + 0.5) * ActualHeight / properties.Length);
         }
     }
     class ShortTypeNameConverter : IValueConverter

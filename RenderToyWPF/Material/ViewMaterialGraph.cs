@@ -7,6 +7,7 @@ using RenderToy.Materials;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -40,12 +41,17 @@ namespace RenderToy.WPF
         }
         #endregion
         #region - Section : Graph Handling -
+        class NodeConnection
+        {
+            public PropertyInfo Origin;
+            public NodePosition Target;
+        }
         class NodePosition
         {
             public double X, Y;
             public IMNNode Node;
             public Visual Visual;
-            public NodePosition[] Children;
+            public NodeConnection[] Children;
         }
         struct NodeTree
         {
@@ -81,8 +87,8 @@ namespace RenderToy.WPF
             double minrange = y - myheight / 2;
             foreach (var child in node.Children)
             {
-                double maxrange = minrange + CalculateHeight(child);
-                LayoutGraph(child, x + mywidth + 32, (minrange + maxrange) / 2);
+                double maxrange = minrange + CalculateHeight(child.Target);
+                LayoutGraph(child.Target, x + mywidth + 32, (minrange + maxrange) / 2);
                 minrange = maxrange;
             }
         }
@@ -103,7 +109,7 @@ namespace RenderToy.WPF
             var ui = node.Visual as UIElement;
             if (ui == null) return 0;
             double myheight = ui.DesiredSize.Height;
-            double nextheight = node.Children.Sum(i => CalculateHeight(i));
+            double nextheight = node.Children.Sum(i => CalculateHeight(i.Target));
             return Math.Max(myheight, nextheight);
         }
         NodePosition GenerateVisualTree(IMNNode node)
@@ -113,9 +119,8 @@ namespace RenderToy.WPF
             var subnodes =
                 node.GetType().GetProperties()
                 .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType))
-                .Select(i => (IMNNode)i.GetValue(node))
-                .Distinct()
-                .Select(i => GenerateVisualTree(i));
+                .Select(i => new { Origin = i, Value = (IMNNode)i.GetValue(node) })
+                .Select(i => new NodeConnection { Origin = i.Origin, Target = GenerateVisualTree(i.Value) });
             output.Children = subnodes.ToArray();
             if (NodeTemplate != null)
             {
@@ -175,9 +180,12 @@ namespace RenderToy.WPF
         {
             foreach (var parent in visuals.Keys)
             {
+                var interfaces = parent.Visual as INodeInputHandle;
+                if (interfaces == null) continue;
                 foreach (var child in parent.Children)
                 {
-                    drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(parent.X + GetWidth(parent), parent.Y + GetHeight(child) / 2), new Point(child.X, child.Y + GetHeight(child) / 2));
+                    var interfacepoint = interfaces.GetInputHandleLocation(child.Origin);
+                    drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(parent.X + interfacepoint.X, parent.Y + interfacepoint.Y), new Point(child.Target.X, child.Target.Y + GetHeight(child.Target) / 2));
                 }
             }
         }
