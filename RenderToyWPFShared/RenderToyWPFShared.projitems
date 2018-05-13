@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>bc2d7f38-71a7-4f50-b206-bd97d2d46f12</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>RenderToyWPFShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)3D\View3DBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\View3DUser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\View3DWire.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Document\Figures.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterial.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterialGraph.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterialNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterialThumbnail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\Camera.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\PerformanceTrace.xaml.cs">
+      <DependentUpon>PerformanceTrace.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\Render_D3D9.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\ViewZoom.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Document\RenderToyDocument.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Utility\PerformanceTrace.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+</Project>

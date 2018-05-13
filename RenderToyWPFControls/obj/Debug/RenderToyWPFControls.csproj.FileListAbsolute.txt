@@ -1,0 +1,8 @@
+C:\Users\adamc\Source\Repos\RenderToy\RenderToyWPFControls\obj\Debug\RenderToyWPFControls.csprojResolveAssemblyReference.cache
+C:\Users\adamc\Source\Repos\RenderToy\RenderToyWPFControls\bin\Debug\RenderToyWPFControls.dll
+C:\Users\adamc\Source\Repos\RenderToy\RenderToyWPFControls\bin\Debug\RenderToyWPFControls.pdb
+C:\Users\adamc\Source\Repos\RenderToy\RenderToyWPFControls\obj\Debug\RenderToyWPFControls.Properties.Resources.resources
+C:\Users\adamc\Source\Repos\RenderToy\RenderToyWPFControls\obj\Debug\RenderToyWPFControls.csproj.GenerateResource.Cache
+C:\Users\adamc\Source\Repos\RenderToy\RenderToyWPFControls\obj\Debug\RenderToyWPFControls.csproj.CoreCompileInputs.cache
+C:\Users\adamc\Source\Repos\RenderToy\RenderToyWPFControls\obj\Debug\RenderToyWPFControls.dll
+C:\Users\adamc\Source\Repos\RenderToy\RenderToyWPFControls\obj\Debug\RenderToyWPFControls.pdb

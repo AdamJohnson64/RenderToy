@@ -154,16 +154,15 @@
                             <DataTemplate>
                                 <TabControl>
                                     <TabItem Header="Graph">
-                                        <local:ViewMaterialGraph Root="{Binding}">
-                                            <local:ViewMaterialGraph.NodeTemplate>
-                                                <DataTemplate>
-                                                    <local:ViewMaterialNode ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}"/>
-                                                </DataTemplate>
-                                            </local:ViewMaterialGraph.NodeTemplate>
-                                        </local:ViewMaterialGraph>
-                                    </TabItem>
-                                    <TabItem Header="Node">
-                                        <local:ViewMaterialNode Content="{Binding}" ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <local:ViewZoom>
+                                            <local:ViewMaterialGraph Root="{Binding}">
+                                                <local:ViewMaterialGraph.NodeTemplate>
+                                                    <DataTemplate>
+                                                        <local:ViewMaterialNode ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}"/>
+                                                    </DataTemplate>
+                                                </local:ViewMaterialGraph.NodeTemplate>
+                                            </local:ViewMaterialGraph>
+                                        </local:ViewZoom>
                                     </TabItem>
                                     <TabItem Header="Preview">
                                         <local:ViewMaterial Texture="{Binding}"/>

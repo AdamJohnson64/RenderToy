@@ -16,7 +16,7 @@ using System.Windows.Media;
 
 namespace RenderToy.WPF
 {
-    class ViewMaterialGraph : FrameworkElement
+    public class ViewMaterialGraph : FrameworkElement
     {
         #region - Section : Dependency Properties -
         public static DependencyProperty RootProperty = DependencyProperty.Register("Root", typeof(IMNNode), typeof(ViewMaterialGraph), new FrameworkPropertyMetadata(null, OnRootChanged));
@@ -62,6 +62,7 @@ namespace RenderToy.WPF
         }
         void InvalidateGraph()
         {
+            // Disconnect all the previous visuals.
             if (visuals != null)
             {
                 foreach (var visual in visuals)
@@ -69,27 +70,30 @@ namespace RenderToy.WPF
                     RemoveVisualChild(visual.Value);
                 }
             }
+            // Rebuild the visuals and re-add them.
             visuals = new Dictionary<NodePosition, Visual>();
             visualroot = GenerateVisualTree(Root);
-            LayoutGraph();
-        }
-        void LayoutGraph()
-        {
-            UpdateLayout();
-            LayoutGraph(visualroot, 0, ActualHeight / 2);
+            // Kick the layout engine to position and size the new graph.
             InvalidateArrange();
+            // Kick the render engine to redraw connections.
             InvalidateVisual();
+        }
+        static void LayoutGraph(NodePosition root)
+        {
+            // Position the root so the topmost span reaches exactly Y=0.
+            LayoutGraph(root, 0, CalculateBranchHeight(root) / 2);
         }
         static void LayoutGraph(NodePosition node, double x, double y)
         {
+            if (node == null) return;
             node.X = x;
             node.Y = y;
             double mywidth = GetWidth(node);
-            double myheight = CalculateHeight(node);
+            double myheight = CalculateBranchHeight(node);
             double minrange = y - myheight / 2;
             foreach (var child in node.Children)
             {
-                double maxrange = minrange + CalculateHeight(child.Target);
+                double maxrange = minrange + CalculateBranchHeight(child.Target);
                 LayoutGraph(child.Target, x + mywidth + 32, (minrange + maxrange) / 2);
                 minrange = maxrange;
             }
@@ -97,25 +101,25 @@ namespace RenderToy.WPF
         static double GetWidth(NodePosition node)
         {
             var ui = node.Visual as UIElement;
-            if (ui == null) return 0;
-            return ui.DesiredSize.Width;
+            return ui == null ? 0 : ui.DesiredSize.Width;
         }
         static double GetHeight(NodePosition node)
         {
             var ui = node.Visual as UIElement;
-            if (ui == null) return 0;
-            return ui.DesiredSize.Height;
+            return ui == null ? 0 : ui.DesiredSize.Height;
         }
-        static double CalculateHeight(NodePosition node)
+        static double CalculateBranchHeight(NodePosition node)
         {
+            if (node == null) return 0;
             var ui = node.Visual as UIElement;
             if (ui == null) return 0;
             double myheight = ui.DesiredSize.Height;
-            double nextheight = node.Children.Sum(i => CalculateHeight(i.Target));
+            double nextheight = node.Children.Sum(i => CalculateBranchHeight(i.Target));
             return Math.Max(myheight, nextheight);
         }
         NodePosition GenerateVisualTree(IMNNode node)
         {
+            if (node == null) return null;
             NodePosition output = new NodePosition();
             output.Node = node;
             var subnodes =
@@ -147,6 +151,17 @@ namespace RenderToy.WPF
             }
             return output;
         }
+        static IEnumerable<NodePosition> EnumerateNodes(NodePosition root)
+        {
+            yield return root;
+            foreach (var child in root.Children)
+            {
+                foreach (var next in EnumerateNodes(child.Target))
+                {
+                    yield return next;
+                }
+            }
+        }
         Dictionary<NodePosition, Visual> visuals = new Dictionary<NodePosition, Visual>();
         NodePosition visualroot;
         #endregion
@@ -169,14 +184,35 @@ namespace RenderToy.WPF
         }
         protected override Size MeasureOverride(Size constraint)
         {
+            // Pre-measure all children to obtain their desired sizes.
             int visualcount = visuals.Count;
             for (int i = 0; i < visualcount; ++i)
             {
                 var visual = GetVisualChild(i) as UIElement;
                 if (visual == null) continue;
-                visual.Measure(constraint);
+                // Ignore our actual layout size - we'll position as best we can in virtual space.
+                visual.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             }
-            return constraint;
+            // If we don't have a graph then ignore.
+            if (visualroot == null) return new Size(0, 0);
+            // Arrange all the interior nodes.
+            LayoutGraph(visualroot);
+            // Walk the visual tree and fit all the nodes.
+            double minx = double.PositiveInfinity;
+            double miny = double.PositiveInfinity;
+            double maxx = double.NegativeInfinity;
+            double maxy = double.NegativeInfinity;
+            foreach (var node in EnumerateNodes(visualroot))
+            {
+                var visual = node.Visual as UIElement;
+                if (visual == null) continue;
+                minx = Math.Min(minx, node.X);
+                miny = Math.Min(miny, node.Y);
+                maxx = Math.Max(maxx, node.X + visual.DesiredSize.Width);
+                maxy = Math.Max(maxy, node.Y + visual.DesiredSize.Height);
+            }
+            // Request enough size for the whole graph.
+            return new Size(Math.Max(0, maxx), Math.Max(0, maxy));
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
@@ -190,11 +226,6 @@ namespace RenderToy.WPF
                     drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(parent.X + interfacepoint.X, parent.Y + interfacepoint.Y), new Point(child.Target.X, child.Target.Y + GetHeight(child.Target) / 2));
                 }
             }
-        }
-        protected override void OnMouseDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseDown(e);
-            LayoutGraph();
         }
         #endregion
     }
