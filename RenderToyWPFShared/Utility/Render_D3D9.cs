@@ -4,10 +4,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.PipelineModel;
-using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Utility;
 using System;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace RenderToy.WPF
 {
@@ -20,31 +21,23 @@ namespace RenderToy.WPF
             d3dsurface.BeginScene();
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
-                IParametricUV uv = transformedobject.Node.Primitive as IParametricUV;
-                if (uv == null) continue;
-                d3dsurface.SetColor(Rasterization.ColorToUInt32(transformedobject.Node.WireColor));
-                var A = PipelineModel.PrimitiveAssembly.CreateTriangles(uv);
+                var A = PrimitiveAssembly.CreateTriangles(transformedobject.Node.Primitive);
                 var B = Transformation.Vector3ToVector4(A);
                 var C = Transformation.Transform(B, transformedobject.Transform * mvp);
                 var D = Clipping.ClipTriangle(C);
                 var E = Transformation.HomogeneousDivide(D);
-                var iter = E.GetEnumerator();
-                while (iter.MoveNext())
-                {
-                    var P0 = iter.Current;
-                    if (!iter.MoveNext()) break;
-                    var P1 = iter.Current;
-                    if (!iter.MoveNext()) break;
-                    var P2 = iter.Current;
-                    d3dsurface.DrawTriangle(
-                        (float)P0.X, (float)P0.Y, (float)P0.Z, (float)P0.W,
-                        (float)P1.X, (float)P1.Y, (float)P1.Z, (float)P1.W,
-                        (float)P2.X, (float)P2.Y, (float)P2.Z, (float)P2.W);
-                }
+                var F = E.Select(i => new XYZWDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, W = (float)i.W, Color = Rasterization.ColorToUInt32(transformedobject.Node.WireColor) });
+                var vertexbuffer = F.ToArray();
+                d3dsurface.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.D3DPT_TRIANGLELIST, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZWDiffuse)));
             }
             d3dsurface.EndScene();
             d3dsurface.CopyTo(bitmap_ptr, render_width, render_height, bitmap_stride);
         }
+        struct XYZWDiffuse
+        {
+            public float X, Y, Z, W;
+            public uint Color;
+        };
         #endregion
     }
 }

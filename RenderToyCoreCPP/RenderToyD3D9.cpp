@@ -58,6 +58,10 @@ namespace RenderToy
 		IDirect3D9* pD3D = nullptr;
 		static D3D9GlobalServices^ Instance = gcnew D3D9GlobalServices();
 	};
+	public enum class D3DPrimitiveType
+	{
+		D3DPT_TRIANGLELIST = D3DPT_TRIANGLELIST,
+	};
 	public ref class D3D9Surface {
 	public:
 		#pragma region - Section : Construction -
@@ -110,15 +114,9 @@ namespace RenderToy
 		void EndScene() {
 			TRY_D3D(pDevice->EndScene());
 		}
-		void DrawTriangle(float x1, float y1, float z1, float w1, float x2, float y2, float z2, float w2, float x3, float y3, float z3, float w3) {
-			FlexibleVertex_XYZW_DIFFUSE v[] = {
-				{ x1, y1, z1, w1, color },
-				{ x2, y2, z2, w2, color },
-				{ x3, y3, z3, w3, color } };
-			TRY_D3D(pDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 1, v, sizeof(FlexibleVertex_XYZW_DIFFUSE)));
-		}
-		void SetColor(unsigned int color) {
-			this->color = color;
+		void DrawPrimitiveUP(D3DPrimitiveType PrimitiveType, unsigned int PrimitiveCount, System::IntPtr ^pVertexStreamZeroData, unsigned int VertexStreamZeroStride)
+		{
+			TRY_D3D(pDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)PrimitiveType, PrimitiveCount, pVertexStreamZeroData->ToPointer(), VertexStreamZeroStride));
 		}
 		void CopyTo(System::IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 			D3DLOCKED_RECT rectd3d = { 0 };
@@ -134,6 +132,5 @@ namespace RenderToy
 	private:
 		IDirect3DDevice9* pDevice = nullptr;
 		IDirect3DSurface9* pSurface = nullptr;
-		unsigned int color = 0xffffffff;
 	};
 }
