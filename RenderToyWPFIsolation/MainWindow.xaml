@@ -3,13 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:RenderToyWPFIsolation"
         xmlns:rendertoy="clr-namespace:RenderToy.WPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
+    <Window.Resources>
+        <rendertoy:MaterialBitmapConverter x:Key="MaterialBitmapConverter"/>
+    </Window.Resources>
     <Grid>
         <rendertoy:ViewZoom>
-            <rendertoy:ViewMaterialGraph x:Name="Graph">
+            <!--
+            <Image x:Name="Material" Source="{Binding Converter={StaticResource MaterialBitmapConverter}}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+            -->
+            <rendertoy:ViewMaterialGraph x:Name="Material">
                 <rendertoy:ViewMaterialGraph.NodeTemplate>
                     <DataTemplate>
                         <rendertoy:ViewMaterialNode>
@@ -17,7 +22,7 @@
                                 <DataTemplate>
                                     <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2">
                                         <StackPanel Orientation="Horizontal">
-                                            <rendertoy:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="32" ThumbnailHeight="32" VerticalAlignment="Center"/>
+                                            <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="32" MaterialHeight="32" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>

@@ -11,7 +11,7 @@ namespace RenderToyWPFIsolation
         public MainWindow()
         {
             InitializeComponent();
-            Graph.Root = StockMaterials.Brick();
+            Material.Root = StockMaterials.Brick();
         }
     }
 }
