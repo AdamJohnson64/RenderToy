@@ -56,7 +56,7 @@ namespace RenderToy.WPF
         #region - Section : Bitmap Handling -
         void InvalidateTexture()
         {
-            bitmap = ViewMaterialThumbnail.CreateIMNodeThumbnail(Texture, bitmapWidth, bitmapHeight);
+            bitmap = MaterialBitmapConverter.ConvertToBitmap(Texture, bitmapWidth, bitmapHeight);
             InvalidateVisual();
         }
         #endregion
