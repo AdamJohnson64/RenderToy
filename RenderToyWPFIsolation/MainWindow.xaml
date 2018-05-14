@@ -9,8 +9,11 @@
     <Window.Resources>
         <rendertoy:MaterialBitmapConverter x:Key="MaterialBitmapConverter"/>
     </Window.Resources>
-    <Grid>
-        <rendertoy:ViewZoom>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoom}"/>>
+        </Menu>
+        <rendertoy:ViewZoom x:Name="ViewZoom">
             <!--
             <Image x:Name="Material" Source="{Binding Converter={StaticResource MaterialBitmapConverter}}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
             -->
@@ -32,5 +35,5 @@
                 </rendertoy:ViewMaterialGraph.NodeTemplate>
             </rendertoy:ViewMaterialGraph>
         </rendertoy:ViewZoom>
-    </Grid>
+    </DockPanel>
 </Window>

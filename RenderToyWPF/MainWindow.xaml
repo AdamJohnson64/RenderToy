@@ -154,20 +154,30 @@
                             <DataTemplate>
                                 <TabControl>
                                     <TabItem Header="Graph">
-                                        <local:ViewZoom>
-                                            <local:ViewMaterialGraph Root="{Binding}">
-                                                <local:ViewMaterialGraph.NodeTemplate>
-                                                    <DataTemplate>
-                                                        <local:ViewMaterialNode ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}"/>
-                                                    </DataTemplate>
-                                                </local:ViewMaterialGraph.NodeTemplate>
-                                            </local:ViewMaterialGraph>
-                                        </local:ViewZoom>
+                                        <DockPanel>
+                                            <Menu DockPanel.Dock="Top">
+                                                <MenuItem Command="{x:Static local:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomGraph}"/>>
+                                            </Menu>
+                                            <local:ViewZoom x:Name="ViewZoomGraph">
+                                                <local:ViewMaterialGraph Root="{Binding}">
+                                                    <local:ViewMaterialGraph.NodeTemplate>
+                                                        <DataTemplate>
+                                                            <local:ViewMaterialNode ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}"/>
+                                                        </DataTemplate>
+                                                    </local:ViewMaterialGraph.NodeTemplate>
+                                                </local:ViewMaterialGraph>
+                                            </local:ViewZoom>
+                                        </DockPanel>
                                     </TabItem>
                                     <TabItem Header="Preview">
-                                        <local:ViewZoom>
-                                            <local:ViewMaterial MaterialSource="{Binding}" MaterialWidth="128" MaterialHeight="128" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                        </local:ViewZoom>
+                                        <DockPanel>
+                                            <Menu DockPanel.Dock="Top">
+                                                <MenuItem Command="{x:Static local:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomPreview}"/>>
+                                            </Menu>
+                                            <local:ViewZoom x:Name="ViewZoomPreview">
+                                                <local:ViewMaterial MaterialSource="{Binding}" MaterialWidth="128" MaterialHeight="128" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                            </local:ViewZoom>
+                                        </DockPanel>
                                     </TabItem>
                                 </TabControl>
                             </DataTemplate>

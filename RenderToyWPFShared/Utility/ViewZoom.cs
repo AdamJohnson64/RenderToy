@@ -12,6 +12,7 @@ namespace RenderToy.WPF
         public ViewZoom()
         {
             ClipToBounds = true;
+            CommandBindings.Add(new CommandBinding(RecenterCommand, Recenter));
         }
         #endregion
         #region - Section : Transform Management -
@@ -52,6 +53,17 @@ namespace RenderToy.WPF
         double offsety = 0;
         bool dragActive = false;
         Point dragPoint;
+        #endregion
+        #region - Section : Commands -
+        public static readonly RoutedUICommand RecenterCommand = new RoutedUICommand { Text = "Recenter" };
+        static void Recenter(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
+        {
+            var host = (ViewZoom)sender;
+            host.zoom = 1;
+            host.offsetx = 0;
+            host.offsety = 0;
+            host.UpdateTransform();
+        }
         #endregion
         #region - Section : Overrides -
         protected override void OnMouseMove(MouseEventArgs e)
