@@ -4,8 +4,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Materials;
+using System;
+using System.Globalization;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -14,108 +15,67 @@ namespace RenderToy.WPF
     class ViewMaterial : FrameworkElement
     {
         #region - Section : Dependency Properties -
-        public static DependencyProperty TextureProperty = DependencyProperty.Register("Texture", typeof(IMNNode), typeof(ViewMaterial), new FrameworkPropertyMetadata(null, OnInvalidateTexture));
-        public IMNNode Texture
+        static DependencyProperty MaterialSourceProperty = DependencyProperty.Register("MaterialSource", typeof(IMNNode), typeof(ViewMaterial), new FrameworkPropertyMetadata(null, InvalidateBitmap));
+        public IMNNode MaterialSource
         {
-            get { return (IMNNode)GetValue(TextureProperty); }
-            set { SetValue(TextureProperty, value); }
+            get { return (IMNNode)GetValue(MaterialSourceProperty); }
+            set { SetValue(MaterialSourceProperty, value); }
         }
-        static void OnInvalidateTexture(object s, DependencyPropertyChangedEventArgs e)
+        static DependencyProperty MaterialWidthProperty = DependencyProperty.Register("MaterialWidth", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(32, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
+        public int MaterialWidth
         {
-            ((ViewMaterial)s).InvalidateTexture();
+            get { return (int)GetValue(MaterialWidthProperty); }
+            set { SetValue(MaterialWidthProperty, value); }
         }
-        Transform Transform
+        static DependencyProperty MaterialHeightProperty = DependencyProperty.Register("MaterialHeight", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(32, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
+        public int MaterialHeight
         {
-            get
-            {
-                TransformGroup transform = new TransformGroup();
-                transform.Children.Add(new TranslateTransform(-bitmapWidth / 2, -bitmapHeight / 2));
-                transform.Children.Add(new TranslateTransform(translatex, translatey));
-                transform.Children.Add(new ScaleTransform(scale, scale));
-                transform.Children.Add(new TranslateTransform(ActualWidth / 2, ActualHeight / 2));
-                return transform;
-            }
+            get { return (int)GetValue(MaterialHeightProperty); }
+            set { SetValue(MaterialHeightProperty, value); }
+        }
+        static void InvalidateBitmap(object s, DependencyPropertyChangedEventArgs e)
+        {
+            ((ViewMaterial)s).InvalidateBitmap();
+        }
+        #endregion
+        #region - Section : Image Handling -
+        void InvalidateBitmap()
+        {
+            bitmap = MaterialBitmapConverter.ConvertToBitmap(MaterialSource, MaterialWidth, MaterialHeight);
+            InvalidateVisual();
         }
         WriteableBitmap bitmap = null;
-        const int bitmapWidth = 256;
-        const int bitmapHeight = 256;
-        double translatex = 0;
-        double translatey = 0;
-        double scale = 1;
-        bool dragActive = false;
-        Point dragPoint;
-        #endregion
-        #region - Section : Construction -
-        public ViewMaterial()
-        {
-            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
-            ClipToBounds = true;
-            //Texture = new TextureNetwork();
-        }
-        #endregion
-        #region - Section : Bitmap Handling -
-        void InvalidateTexture()
-        {
-            bitmap = MaterialBitmapConverter.ConvertToBitmap(Texture, bitmapWidth, bitmapHeight);
-            InvalidateVisual();
-        }
         #endregion
         #region - Section : UIElement Overrides -
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        protected override Size MeasureOverride(Size availableSize)
         {
-            base.OnMouseLeftButtonDown(e);
-            if (dragActive) return;
-            Focus();
-            CaptureMouse();
-            dragActive = true;
-            dragPoint = Transform.Inverse.Transform(e.GetPosition(this));
-        }
-        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonUp(e);
-            ReleaseMouseCapture();
-            dragActive = false;
-        }
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            base.OnMouseMove(e);
-            if (!dragActive) return;
-            Point mouse = e.GetPosition(this);
-            translatex = (mouse.X - ActualWidth / 2) / scale - dragPoint.X + bitmapWidth / 2;
-            translatey = (mouse.Y - ActualHeight / 2) / scale - dragPoint.Y + bitmapHeight / 2;
-            InvalidateVisual();
-        }
-        protected override void OnMouseWheel(MouseWheelEventArgs e)
-        {
-            base.OnMouseWheel(e);
-            if (e.Delta < 0)
-            {
-                scale /= 2;
-            }
-            if (e.Delta > 0)
-            {
-                scale *= 2;
-            }
-            InvalidateVisual();
-            if (!dragActive) return;
-            Point mouse = e.GetPosition(this);
-            translatex = (mouse.X - ActualWidth / 2) / scale - dragPoint.X + bitmapWidth / 2;
-            translatey = (mouse.Y - ActualHeight / 2) / scale - dragPoint.Y + bitmapHeight / 2;
+            return new Size(Math.Min(availableSize.Width, MaterialWidth), Math.Min(availableSize.Height, MaterialHeight));
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
-            if (bitmap == null) return;
-            for (int y = -1; y <= 1; ++y)
+            base.OnRender(drawingContext);
+            if (MaterialSource is MNTexCoordU)
             {
-                for (int x = -1; x <= 1; ++x)
-                {
-                    drawingContext.PushTransform(Transform);
-                    drawingContext.DrawImage(bitmap, new Rect(x * bitmapWidth, y * bitmapHeight, bitmapWidth, bitmapHeight));
-                    drawingContext.Pop();
-                }
+                var formattedtext = new FormattedText("U", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.Black);
+                drawingContext.DrawText(formattedtext, new Point((ActualWidth - formattedtext.Width) / 2, (ActualHeight - formattedtext.Height) / 2));
             }
-            drawingContext.DrawRectangle(null, new Pen(Brushes.White, 1), Rect.Transform(new Rect(0, 0, bitmapWidth, bitmapHeight), Transform.Value));
+            else if (MaterialSource is MNTexCoordV)
+            {
+                var formattedtext = new FormattedText("V", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.Black);
+                drawingContext.DrawText(formattedtext, new Point((ActualWidth - formattedtext.Width) / 2, (ActualHeight - formattedtext.Height) / 2));
+            }
+            else if (MaterialSource is IMNNode<double> && MaterialSource.IsConstant())
+            {
+                EvalContext context = new EvalContext();
+                double value = ((IMNNode<double>)MaterialSource).Eval(context);
+                var formattedtext = new FormattedText(value.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.Black);
+                drawingContext.DrawText(formattedtext, new Point((ActualWidth - formattedtext.Width) / 2, (ActualHeight - formattedtext.Height) / 2));
+            }
+            else
+            {
+                if (bitmap == null) return;
+                drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));
+            }
         }
         #endregion
     }

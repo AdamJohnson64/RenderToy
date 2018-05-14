@@ -14,10 +14,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)3D\View3DWire.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Document\Figures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Material\MaterialBitmapConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterialGraph.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterialNode.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterialThumbnail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\Camera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\PerformanceTrace.xaml.cs">
       <DependentUpon>PerformanceTrace.xaml</DependentUpon>

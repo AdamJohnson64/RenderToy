@@ -15,7 +15,7 @@
                 <StackPanel>
                     <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}" Margin="4"/>
                     <Border Background="Beige" BorderBrush="Black" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4">
-                        <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="256" ThumbnailHeight="256"/>
+                        <local:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256"/>
                     </Border>
                 </StackPanel>
             </ToolTip>
@@ -67,7 +67,7 @@
             <DataTemplate x:Key="GraphNodeTemplate">
                 <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
                     <StackPanel Orientation="Horizontal">
-                        <local:ViewMaterialThumbnail ThumbnailSource="{Binding}" ThumbnailWidth="32" ThumbnailHeight="32" VerticalAlignment="Center"/>
+                        <local:ViewMaterial MaterialSource="{Binding}" MaterialWidth="32" MaterialHeight="32" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}" Margin="2" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
@@ -165,7 +165,9 @@
                                         </local:ViewZoom>
                                     </TabItem>
                                     <TabItem Header="Preview">
-                                        <local:ViewMaterial Texture="{Binding}"/>
+                                        <local:ViewZoom>
+                                            <local:ViewMaterial MaterialSource="{Binding}" MaterialWidth="128" MaterialHeight="128" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                        </local:ViewZoom>
                                     </TabItem>
                                 </TabControl>
                             </DataTemplate>
