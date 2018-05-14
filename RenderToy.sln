@@ -39,11 +39,11 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{0afaed8e-b5ab-4693-8698-6686481c0784}*SharedItemsImports = 4
-		RenderToyCoreCS\RenderToyCoreCS.projitems*{201b2138-c542-4c95-901c-5f5066c9b625}*SharedItemsImports = 4
+		RenderToyCoreShared\RenderToyCoreShared.projitems*{201b2138-c542-4c95-901c-5f5066c9b625}*SharedItemsImports = 4
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{496d4d78-f405-4d98-90d4-da9b9ffa7e34}*SharedItemsImports = 13
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{5ec8c9a2-46ef-4767-bf70-e6551893d2ca}*SharedItemsImports = 4
 		RenderToyWPFShared\RenderToyWPFShared.projitems*{5ec8c9a2-46ef-4767-bf70-e6551893d2ca}*SharedItemsImports = 4
-		RenderToyCoreCS\RenderToyCoreCS.projitems*{95d65cdc-0b6b-4d8c-8930-c6e4845829e1}*SharedItemsImports = 4
+		RenderToyCoreShared\RenderToyCoreShared.projitems*{95d65cdc-0b6b-4d8c-8930-c6e4845829e1}*SharedItemsImports = 4
 		RenderToyWPFShared\RenderToyWPFShared.projitems*{bc2d7f38-71a7-4f50-b206-bd97d2d46f12}*SharedItemsImports = 13
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{d98db157-6492-4fdf-926c-684ef1afe84a}*SharedItemsImports = 4
 		RenderToyWPFShared\RenderToyWPFShared.projitems*{d98db157-6492-4fdf-926c-684ef1afe84a}*SharedItemsImports = 4

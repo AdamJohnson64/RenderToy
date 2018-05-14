@@ -55,7 +55,7 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
-  <Import Project="..\RenderToyCoreCS\RenderToyCoreCS.projitems" Label="Shared" />
+  <Import Project="..\RenderToyCoreShared\RenderToyCoreShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>$(TargetPath) $(SolutionDir)RenderToyUWP\Assets\</PostBuildEvent>
