@@ -30,7 +30,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCX", "RenderToyCX\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyUWP_Art", "RenderToyUWP_Art\RenderToyUWP_Art.csproj", "{95D65CDC-0B6B-4D8C-8930-C6E4845829E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyCoreCSTest", "RenderToyCoreCSTest\RenderToyCoreCSTest.csproj", "{0AFAED8E-B5AB-4693-8698-6686481C0784}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyCoreTest", "RenderToyCoreTest\RenderToyCoreTest.csproj", "{0AFAED8E-B5AB-4693-8698-6686481C0784}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyWPFIsolation", "RenderToyWPFIsolation\RenderToyWPFIsolation.csproj", "{5EC8C9A2-46EF-4767-BF70-E6551893D2CA}"
 EndProject
