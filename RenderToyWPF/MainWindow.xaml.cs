@@ -30,7 +30,7 @@ namespace RenderToy.WPF
         {
             InitializeComponent();
             CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => {
-                DataContext = TestScenes.DefaultScene;
+                DataContext = Document.Default;
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandSceneOpen, (s, e) => {
@@ -39,9 +39,9 @@ namespace RenderToy.WPF
                 if (ofd.ShowDialog() == true)
                 {
                     var scene = new Scene();
-                    scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, new MNCheckerboard()));
+                    scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, new Checkerboard()));
                     scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadBVHFromPath(ofd.FileName), StockMaterials.LightGray, StockMaterials.PlasticRed));
-                    DataContext = scene;
+                    DataContext = new Document(scene);
                 }
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -61,23 +61,48 @@ namespace RenderToy.WPF
     }
     class Document
     {
-        public static Document Default = new Document();
-        public Document()
-        {
-            Scene = TestScenes.DefaultScene;
-            Materials = new ObservableCollection<IMNNode>(EnumerateNodes(StockMaterials.Brick()).Distinct());
-        }
         public IScene Scene { get; private set; }
-        public ObservableCollection<IMNNode> Materials { get; private set; }
-        static IEnumerable<IMNNode> EnumerateNodes(IMNNode node)
+        public ObservableCollection<IMaterial> Materials { get; private set; }
+        public static Document Default = new Document(TestScenes.DefaultScene);
+        public Document(IScene scene)
         {
+            Scene = scene;
+            var materials = EnumerateSceneRoot(scene)
+                .Select(i => i.GetMaterial())
+                .OfType<IMaterial>();
+            //.SelectMany(i => EnumerateNodes(i));
+            Materials = new ObservableCollection<IMaterial>(materials);
+        }
+        static IEnumerable<INode> EnumerateSceneRoot(IScene root)
+        {
+            if (root == null) yield break;
+            foreach (var child in root.GetChildren())
+            {
+                foreach (var next in EnumerateSceneGraph(child))
+                {
+                    yield return next;
+                }
+            }
+        }
+        static IEnumerable<INode> EnumerateSceneGraph(INode root)
+        {
+            if (root == null) yield break;
+            yield return root;
+            foreach (var next in EnumerateSceneRoot(root))
+            {
+                yield return next;
+            }
+        }
+        static IEnumerable<IMaterial> EnumerateMaterialNodes(IMaterial node)
+        {
+            if (node == null) yield break;
             yield return node;
             System.Type type = node.GetType();
             foreach (var property in type.GetProperties())
             {
-                if (typeof(IMNNode).IsAssignableFrom(property.PropertyType))
+                if (typeof(IMaterial).IsAssignableFrom(property.PropertyType))
                 {
-                    foreach (var next in EnumerateNodes((IMNNode)property.GetValue(node)))
+                    foreach (var next in EnumerateMaterialNodes((IMaterial)property.GetValue(node)))
                     {
                         yield return next;
                     }

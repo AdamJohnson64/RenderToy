@@ -25,7 +25,7 @@
                                 <DataTemplate>
                                     <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2">
                                         <StackPanel Orientation="Horizontal">
-                                            <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="32" MaterialHeight="32" VerticalAlignment="Center"/>
+                                            <rendertoy:ViewMaterial MaterialSource="{Binding}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>

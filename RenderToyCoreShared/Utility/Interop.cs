@@ -165,7 +165,7 @@ namespace RenderToy.Utility
                 binarywriter.Write((int)Material.MATERIAL_COMMON);
                 EmitAndQueue(material);
             }
-            else if (material is MNCheckerboard)
+            else if (material is Checkerboard)
             {
                 binarywriter.Write((int)Material.MATERIAL_CHECKERBOARD_XZ);
                 binarywriter.Write((int)0);

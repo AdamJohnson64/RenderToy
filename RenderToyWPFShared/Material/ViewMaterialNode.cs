@@ -24,7 +24,7 @@ namespace RenderToy.WPF
             if (Content == null) return;
             var properties =
                 Content.GetType().GetProperties()
-                .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType))
+                .Where(i => typeof(IMaterial).IsAssignableFrom(i.PropertyType))
                 .ToArray();
             for (int i = 0; i < properties.Length; ++i)
             {
@@ -49,7 +49,7 @@ namespace RenderToy.WPF
             if (interior == null) return new Size(0, 0);
             var properties =
                 Content.GetType().GetProperties()
-                .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType));
+                .Where(i => typeof(IMaterial).IsAssignableFrom(i.PropertyType));
             if (properties.Count() == 0)
             {
                 // If we have no inputs then don't reserve 64 pixels for the input interfaces.
@@ -68,13 +68,26 @@ namespace RenderToy.WPF
             if (Content == null) return new Point(0, 0);
             var properties =
                 Content.GetType().GetProperties()
-                .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType))
+                .Where(i => typeof(IMaterial).IsAssignableFrom(i.PropertyType))
                 .Select((i, v) => new { Property = i, Index = v })
                 .ToArray();
             var find = properties
                 .FirstOrDefault(i => i.Property == p);
             if (find == null) return new Point(0, 0);
             return new Point(ActualWidth - 4, (find.Index + 0.5) * ActualHeight / properties.Length);
+        }
+    }
+    class MaterialNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var material = value as IMaterial;
+            if (material == null) return "NULL";
+            return material.GetMaterialName();
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
     class ShortTypeNameConverter : IValueConverter

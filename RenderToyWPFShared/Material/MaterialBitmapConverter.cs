@@ -14,9 +14,9 @@ namespace RenderToy.WPF
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is IMNNode)
+            if (value is IMaterial)
             {
-                return ConvertToBitmap((IMNNode)value, bitmapWidth, bitmapHeight);
+                return ConvertToBitmap((IMaterial)value, bitmapWidth, bitmapHeight);
             }
             return null;
         }
@@ -24,7 +24,7 @@ namespace RenderToy.WPF
         {
             throw new NotImplementedException();
         }
-        public static WriteableBitmap ConvertToBitmap(IMNNode node, int bitmapWidth, int bitmapHeight)
+        public static WriteableBitmap ConvertToBitmap(IMaterial node, int bitmapWidth, int bitmapHeight)
         {
             if (node == null) return null;
             System.Type type = node.GetType();
@@ -87,5 +87,6 @@ namespace RenderToy.WPF
         }
         const int bitmapWidth = 256;
         const int bitmapHeight = 256;
+        public static int ThumbnailSize = 32;
     }
 }

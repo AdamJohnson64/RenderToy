@@ -18,10 +18,10 @@ namespace RenderToy.WPF
     public class ViewMaterialGraph : FrameworkElement
     {
         #region - Section : Dependency Properties -
-        public static DependencyProperty RootProperty = DependencyProperty.Register("Root", typeof(IMNNode), typeof(ViewMaterialGraph), new FrameworkPropertyMetadata(null, OnRootChanged));
-        public IMNNode Root
+        public static DependencyProperty RootProperty = DependencyProperty.Register("Root", typeof(IMaterial), typeof(ViewMaterialGraph), new FrameworkPropertyMetadata(null, OnRootChanged));
+        public IMaterial Root
         {
-            get { return (IMNNode)GetValue(RootProperty); }
+            get { return (IMaterial)GetValue(RootProperty); }
             set { SetValue(RootProperty, value); }
         }
         public static DependencyProperty NodeTemplateProperty = DependencyProperty.Register("NodeTemplate", typeof(DataTemplate), typeof(ViewMaterialGraph), new FrameworkPropertyMetadata(null, OnRootChanged));
@@ -50,13 +50,13 @@ namespace RenderToy.WPF
         class NodePosition
         {
             public double X, Y;
-            public IMNNode Node;
+            public IMaterial Node;
             public Visual Visual;
             public NodeConnection[] Children;
         }
         struct NodeTree
         {
-            public IMNNode Node;
+            public IMaterial Node;
             public NodeTree[] Children;
         }
         void InvalidateGraph()
@@ -116,15 +116,15 @@ namespace RenderToy.WPF
             double nextheight = node.Children.Sum(i => CalculateBranchHeight(i.Target));
             return Math.Max(myheight, nextheight);
         }
-        NodePosition GenerateVisualTree(IMNNode node)
+        NodePosition GenerateVisualTree(IMaterial node)
         {
             if (node == null) return null;
             NodePosition output = new NodePosition();
             output.Node = node;
             var subnodes =
                 node.GetType().GetProperties()
-                .Where(i => typeof(IMNNode).IsAssignableFrom(i.PropertyType))
-                .Select(i => new { Origin = i, Value = (IMNNode)i.GetValue(node) })
+                .Where(i => typeof(IMaterial).IsAssignableFrom(i.PropertyType))
+                .Select(i => new { Origin = i, Value = (IMaterial)i.GetValue(node) })
                 .Select(i => new NodeConnection { Origin = i.Origin, Target = GenerateVisualTree(i.Value) });
             output.Children = subnodes.ToArray();
             if (NodeTemplate != null)

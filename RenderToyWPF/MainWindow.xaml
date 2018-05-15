@@ -10,10 +10,10 @@
     <UserControl>
         <UserControl.Resources>
             <rendertoy:Camera x:Key="Camera"/>
-            <rendertoy:ShortTypeNameConverter x:Key="ShortTypeNameConverter"/>
+            <rendertoy:MaterialNameConverter x:Key="MaterialNameConverter"/>
             <ToolTip x:Key="GraphNodeToolTip">
                 <StackPanel>
-                    <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}" Margin="4"/>
+                    <TextBlock Text="{Binding Converter={StaticResource MaterialNameConverter}}" Margin="4"/>
                     <Border Background="Beige" BorderBrush="Black" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4">
                         <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256"/>
                     </Border>
@@ -68,7 +68,7 @@
                 <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
                     <StackPanel Orientation="Horizontal">
                         <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="32" MaterialHeight="32" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding Converter={StaticResource ShortTypeNameConverter}}" Margin="2" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Converter={StaticResource MaterialNameConverter}}" Margin="2" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
             </DataTemplate>

@@ -23,13 +23,13 @@ namespace RenderToy.Materials
         public static Vector4D White = new Vector4D(1, 1, 1, 1);
         public static Vector4D DarkGray = new Vector4D(0.25, 0.25, 0.25, 1);
         public static Vector4D LightGray = new Vector4D(0.75, 0.75, 0.75, 1);
-        public static GenericMaterial PlasticRed = new GenericMaterial(Empty, Red, White, Percent50, Percent0, 1);
-        public static GenericMaterial PlasticGreen = new GenericMaterial(Empty, Green, White, Percent50, Percent0, 1);
-        public static GenericMaterial PlasticBlue = new GenericMaterial(Empty, Blue, White, Percent50, Percent0, 1);
-        public static GenericMaterial PlasticYellow = new GenericMaterial(Empty, Yellow, White, Percent50, Percent0, 1);
-        public static GenericMaterial PlasticMagenta = new GenericMaterial(Empty, Magenta, White, Percent50, Percent0, 1);
-        public static GenericMaterial PlasticCyan = new GenericMaterial(Empty, Cyan, White, Percent50, Percent0, 1);
-        public static GenericMaterial Glass = new GenericMaterial(Empty, Empty, White, Percent0, Percent100, 1.5);
+        public static GenericMaterial PlasticRed = new GenericMaterial("Red Plastic", Empty, Red, White, Percent50, Percent0, 1);
+        public static GenericMaterial PlasticGreen = new GenericMaterial("Green Plastic", Empty, Green, White, Percent50, Percent0, 1);
+        public static GenericMaterial PlasticBlue = new GenericMaterial("Blue Plastic", Empty, Blue, White, Percent50, Percent0, 1);
+        public static GenericMaterial PlasticYellow = new GenericMaterial("Yellow Plastic", Empty, Yellow, White, Percent50, Percent0, 1);
+        public static GenericMaterial PlasticMagenta = new GenericMaterial("Magenta Plastic", Empty, Magenta, White, Percent50, Percent0, 1);
+        public static GenericMaterial PlasticCyan = new GenericMaterial("Cyan Plastic", Empty, Cyan, White, Percent50, Percent0, 1);
+        public static GenericMaterial Glass = new GenericMaterial("Glass", Empty, Empty, White, Percent0, Percent100, 1.5);
         public static IMNNode<Vector4D> Brick()
         {
             var val0 = new MNConstant { Value = 0.0 };
@@ -40,16 +40,16 @@ namespace RenderToy.Materials
             var val512 = new MNConstant { Value = 512.0 };
             var texu = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 4.0 } };
             var texv = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 4.0 } };
-            var perlinlow = new MNPerlin2D { U = new MNMultiply { Lhs = texu, Rhs = val16 }, V = new MNMultiply { Lhs = texv, Rhs = val16 } };
-            var perlinmid = new MNPerlin2D { U = new MNMultiply { Lhs = texu, Rhs = val64 }, V = new MNMultiply { Lhs = texv, Rhs = val64 } };
-            var perlinhigh = new MNPerlin2D { U = new MNMultiply { Lhs = texu, Rhs = val512 }, V = new MNMultiply { Lhs = texv, Rhs = val512 } };
-            var perlinband = new MNPerlin2D { U = new MNMultiply { Lhs = texu, Rhs = val64 }, V = new MNMultiply { Lhs = texv, Rhs = val512 } };
+            var perlinlow = new Perlin2D { U = new MNMultiply { Lhs = texu, Rhs = val16 }, V = new MNMultiply { Lhs = texv, Rhs = val16 } };
+            var perlinmid = new Perlin2D { U = new MNMultiply { Lhs = texu, Rhs = val64 }, V = new MNMultiply { Lhs = texv, Rhs = val64 } };
+            var perlinhigh = new Perlin2D { U = new MNMultiply { Lhs = texu, Rhs = val512 }, V = new MNMultiply { Lhs = texv, Rhs = val512 } };
+            var perlinband = new Perlin2D { U = new MNMultiply { Lhs = texu, Rhs = val64 }, V = new MNMultiply { Lhs = texv, Rhs = val512 } };
             var perlinlowscale = new MNMultiply { Lhs = perlinlow, Rhs = new MNConstant { Value = 0.1 } };
             var perlinmidscale = new MNMultiply { Lhs = new MNSaturate { Value = perlinmid }, Rhs = new MNConstant { Value = 1.25 } };
             var perlinhighscale = new MNMultiply { Lhs = perlinhigh, Rhs = new MNConstant { Value = 0.1 } };
             var perlinbandscale = new MNMultiply { Lhs = perlinband, Rhs = new MNConstant { Value = 0.2 } };
-            var brickmask = new MNThreshold { Value = new MNSubtract { Lhs = new MNBrickMask { U = texu, V = texv }, Rhs = perlinmidscale } };
-            var bricknoise = new MNMultiply { Lhs = new MNBrickNoise { U = texu, V = texv }, Rhs = new MNConstant { Value = 0.1 } };
+            var brickmask = new MNThreshold { Value = new MNSubtract { Lhs = new BrickMask { U = texu, V = texv }, Rhs = perlinmidscale } };
+            var bricknoise = new MNMultiply { Lhs = new BrickNoise { U = texu, V = texv }, Rhs = new MNConstant { Value = 0.1 } };
             var brickcolor = new MNAdd { Lhs = new MNAdd { Lhs = val05, Rhs = perlinbandscale }, Rhs = bricknoise };
             var mortarcolor = new MNAdd { Lhs = new MNConstant { Value = 0.4 }, Rhs = new MNAdd { Lhs = perlinhighscale, Rhs = perlinlowscale } };
             var colorr = new MNLerp { Value0 = mortarcolor, Value1 = brickcolor, Factor = brickmask };
@@ -59,7 +59,7 @@ namespace RenderToy.Materials
         }
         public static IMNNode<Vector4D> MarbleTile()
         {
-            return new MNCheckerboard { Color1 = new MNMarbleWhite(), Color2 = new MNMarbleBlack() };
+            return new Checkerboard { Color1 = new MNMarbleWhite(), Color2 = new MarbleBlack() };
         }
     }
 }
