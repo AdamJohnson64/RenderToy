@@ -132,25 +132,26 @@ namespace RenderToy.Utility
             // Write the inverse transform.
             Serialize(MathHelp.Invert(obj.Transform), Serialize);
             // Write the object type.
-            if (obj.Node.Primitive is Plane)
+            var primitive = obj.Node.GetPrimitive();
+            if (primitive is Plane)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_PLANE);
                 binarywriter.Write((int)0);
             }
-            else if (obj.Node.Primitive is Sphere)
+            else if (primitive is Sphere)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_SPHERE);
                 binarywriter.Write((int)0);
             }
-            else if (obj.Node.Primitive is Cube)
+            else if (primitive is Cube)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_CUBE);
                 binarywriter.Write((int)0);
             }
-            else if (obj.Node.Primitive is MeshBVH)
+            else if (primitive is MeshBVH)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
-                EmitAndQueue(obj.Node.Primitive);
+                EmitAndQueue(primitive);
             }
             else
             {
@@ -158,12 +159,13 @@ namespace RenderToy.Utility
                 binarywriter.Write((int)0);
             }
             // Write the material type.
-            if (obj.Node.Material is GenericMaterial)
+            var material = obj.Node.GetMaterial();
+            if (material is GenericMaterial)
             {
                 binarywriter.Write((int)Material.MATERIAL_COMMON);
-                EmitAndQueue(obj.Node.Material);
+                EmitAndQueue(material);
             }
-            else if (obj.Node.Material is MNCheckerboard)
+            else if (material is MNCheckerboard)
             {
                 binarywriter.Write((int)Material.MATERIAL_CHECKERBOARD_XZ);
                 binarywriter.Write((int)0);

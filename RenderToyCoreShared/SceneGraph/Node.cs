@@ -11,25 +11,36 @@ using System.Collections.Generic;
 
 namespace RenderToy.SceneGraph
 {
-    public class Node
+    public interface INode
+    {
+        string GetName();
+        ITransform GetTransform();
+        IPrimitive GetPrimitive();
+        Vector4D GetWireColor();
+        IMaterial GetMaterial();
+        IReadOnlyList<INode> GetChildren();
+    }
+    public class Node : INode
     {
         public Node(string name, ITransform transform, IPrimitive primitive, Vector4D wirecolor, IMaterial material)
         {
-            Name = name;
-            Transform = transform;
-            Primitive = primitive;
-            WireColor = wirecolor;
-            Material = material;
+            this.name = name;
+            this.transform = transform;
+            this.primitive = primitive;
+            this.wirecolor = wirecolor;
+            this.material = material;
         }
-        public readonly string Name;
-        public readonly ITransform Transform;
-        public readonly IPrimitive Primitive;
-        public readonly Vector4D WireColor;
-        public readonly IMaterial Material;
-        public IReadOnlyList<Node> Children
-        {
-            get { return children; }
-        }
-        List<Node> children = new List<Node>();
+        public string GetName() { return name; }
+        public ITransform GetTransform() { return transform; }
+        public IPrimitive GetPrimitive() { return primitive; }
+        public Vector4D GetWireColor() { return wirecolor; }
+        public IMaterial GetMaterial() { return material; }
+        public IReadOnlyList<INode> GetChildren() { return children; }
+        readonly string name;
+        readonly ITransform transform;
+        readonly IPrimitive primitive;
+        readonly Vector4D wirecolor;
+        readonly IMaterial material;
+        readonly List<INode> children = new List<INode>();
     }
 }

@@ -96,7 +96,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of pixels representing the complete scene as points.</returns>
         public static IEnumerable<PixelBgra32> RasterizePoint(Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
-            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizePoint(PrimitiveAssembly.CreatePoints(x.Node.Primitive), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.WireColor), render_width, render_height));
+            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizePoint(PrimitiveAssembly.CreatePoints(x.Node.GetPrimitive()), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.GetWireColor()), render_width, render_height));
         }
         /// <summary>
         /// Rasterize a stream of clip-space points and emit pixels.
@@ -206,7 +206,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of pixels representing the complete scene as lines.</returns>
         public static IEnumerable<PixelBgra32> RasterizeLine(Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
-            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeLine(PrimitiveAssembly.CreateLines(x.Node.Primitive), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.WireColor), render_width, render_height));
+            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeLine(PrimitiveAssembly.CreateLines(x.Node.GetPrimitive()), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.GetWireColor()), render_width, render_height));
         }
         /// <summary>
         /// Rasterize a triangle in screen-space and emit pixels.
@@ -301,7 +301,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of pixels representing the complete scene as triangles.</returns>
         public static IEnumerable<PixelBgra32> RasterizeTriangle(Scene scene, Matrix3D mvp, int render_width, int render_height)
         {
-            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeTriangle(PrimitiveAssembly.CreateTriangles(x.Node.Primitive), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.WireColor), render_width, render_height));
+            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeTriangle(PrimitiveAssembly.CreateTriangles(x.Node.GetPrimitive()), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.GetWireColor()), render_width, render_height));
         }
         /// <summary>
         /// Rasterize a homogeneous triangle directly without homogeneous divide.
@@ -431,7 +431,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of pixels representing the complete scene as triangles.</returns>
         public static IEnumerable<PixelBgra32> RasterizeHomogeneous(Scene scene, Matrix3D mvp, ushort render_width, ushort render_height)
         {
-            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeHomogeneous(PrimitiveAssembly.CreateTriangles(x.Node.Primitive), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.WireColor), render_width, render_height));
+            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeHomogeneous(PrimitiveAssembly.CreateTriangles(x.Node.GetPrimitive()), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.GetWireColor()), render_width, render_height));
         }
     }
 }

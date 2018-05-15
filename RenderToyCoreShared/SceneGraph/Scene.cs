@@ -22,7 +22,7 @@ namespace RenderToy.SceneGraph
                 return scene;
             }
         }
-        public IReadOnlyList<Node> Children
+        public IReadOnlyList<INode> Children
         {
             get { return children; }
         }
@@ -44,11 +44,11 @@ namespace RenderToy.SceneGraph
             scene.children.Add(new Node("Sphere (Cyan)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+5, 1, 0)), new Sphere(), StockMaterials.Cyan, StockMaterials.PlasticCyan));
             scene.children.Add(new Node("Sphere (Glass)", new TransformMatrix(MathHelp.CreateMatrixTranslate(0, 3, 0)), new Sphere(), StockMaterials.Black, StockMaterials.Glass));
         }
-        public void AddChild(Node node)
+        public void AddChild(INode node)
         {
             children.Add(node);
         }
-        List<Node> children = new List<Node>();
+        List<INode> children = new List<INode>();
         static Scene scene;
     } 
 }
