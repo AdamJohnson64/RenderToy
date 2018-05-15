@@ -16,17 +16,14 @@
 
 #define TRY_D3D(D3D9FUNC) if ((D3D9FUNC) != D3D_OK) throw gcnew System::Exception(#D3D9FUNC)
 
-struct FlexibleVertex_XYZW_DIFFUSE {
-	float x, y, z, w;
-	unsigned int color;
-};
-
 namespace RenderToy
 {
-	ref class D3D9GlobalServices {
+	ref class D3D9GlobalServices
+	{
 	private:
 		#pragma region - Section : Construction -
-		D3D9GlobalServices() {
+		D3D9GlobalServices()
+		{
 			hHostWindow = CreateWindow("STATIC", "D3D9HostWindow", WS_OVERLAPPEDWINDOW, 0, 0, 16, 16, nullptr, nullptr, nullptr, nullptr);
 			if (hHostWindow == nullptr) {
 				throw gcnew System::Exception("CreateWindow() failed.");
@@ -36,13 +33,16 @@ namespace RenderToy
 				throw gcnew System::Exception("Direct3DCreate9() failed.");
 			}
 		}
-		!D3D9GlobalServices() {
+		!D3D9GlobalServices()
+		{
 			Destroy();
 		}
-		~D3D9GlobalServices() {
+		~D3D9GlobalServices()
+		{
 			Destroy();
 		}
-		void Destroy() {
+		void Destroy()
+		{
 			if (pD3D != nullptr) {
 				pD3D->Release();
 				pD3D = nullptr;
@@ -58,14 +58,38 @@ namespace RenderToy
 		IDirect3D9* pD3D = nullptr;
 		static D3D9GlobalServices^ Instance = gcnew D3D9GlobalServices();
 	};
+	public enum class D3DCullMode
+	{
+		None = D3DCULL_NONE,
+		CW = D3DCULL_CW,
+		CCW = D3DCULL_CCW,
+	};
+	public enum class D3DFvf
+	{
+		XYZ = D3DFVF_XYZ,
+		XYZW = D3DFVF_XYZW,
+		Normal = D3DFVF_DIFFUSE,
+		Diffuse = D3DFVF_DIFFUSE,
+	};
 	public enum class D3DPrimitiveType
 	{
-		D3DPT_TRIANGLELIST = D3DPT_TRIANGLELIST,
+		TriangleList = D3DPT_TRIANGLELIST,
+	};
+	public enum class D3DRenderState
+	{
+		CullMode = D3DRS_CULLMODE,
+		Lighting = D3DRS_LIGHTING,
+	};
+	public enum class D3DTransformState
+	{
+		View = D3DTS_VIEW,
+		Projection = D3DTS_PROJECTION,
 	};
 	public ref class D3D9Surface {
 	public:
 		#pragma region - Section : Construction -
-		D3D9Surface(int render_width, int render_height) {
+		D3D9Surface(int render_width, int render_height)
+		{
 			D3DPRESENT_PARAMETERS d3dpp = { 0 };
 			d3dpp.BackBufferWidth = render_width;
 			d3dpp.BackBufferHeight = render_height;
@@ -84,41 +108,59 @@ namespace RenderToy
 			TRY_D3D(pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pSurfaceTmp));
 			pSurface = pSurfaceTmp;
 		}
-		!D3D9Surface() {
+		!D3D9Surface()
+		{
 			Destroy();
 		}
-		~D3D9Surface() {
+		~D3D9Surface()
+		{
 			Destroy();
 		}
-		void Destroy() {
-			if (pSurface != nullptr) {
+		void Destroy()
+		{
+			if (pSurface != nullptr)
+			{
 				pSurface->Release();
 				pSurface = nullptr;
 			}
-			if (pDevice != nullptr) {
+			if (pDevice != nullptr)
+			{
 				pDevice->Release();
 				pDevice = nullptr;
 			}
 		}
 		#pragma endregion
 		#pragma region - Section : Managed Interface -
-		property System::IntPtr SurfacePtr {
+		property System::IntPtr SurfacePtr
+		{
 			System::IntPtr get() { return System::IntPtr(pSurface); }
 		}
-		void BeginScene() {
+		void BeginScene()
+		{
 			TRY_D3D(pDevice->BeginScene());
-			TRY_D3D(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
-			TRY_D3D(pDevice->SetRenderState(D3DRS_LIGHTING, FALSE));
-			TRY_D3D(pDevice->SetFVF(D3DFVF_XYZW | D3DFVF_DIFFUSE));
 		}
-		void EndScene() {
+		void EndScene()
+		{
 			TRY_D3D(pDevice->EndScene());
+		}
+		void SetTransform(D3DTransformState State, System::IntPtr ^pMatrix)
+		{
+			TRY_D3D(pDevice->SetTransform((D3DTRANSFORMSTATETYPE)State, (const D3DMATRIX*)pMatrix->ToPointer()));
+		}
+		void SetRenderState(D3DRenderState State, unsigned int Value)
+		{
+			TRY_D3D(pDevice->SetRenderState((D3DRENDERSTATETYPE)State, Value));
+		}
+		void SetFVF(D3DFvf FVF)
+		{
+			TRY_D3D(pDevice->SetFVF((DWORD)FVF));
 		}
 		void DrawPrimitiveUP(D3DPrimitiveType PrimitiveType, unsigned int PrimitiveCount, System::IntPtr ^pVertexStreamZeroData, unsigned int VertexStreamZeroStride)
 		{
 			TRY_D3D(pDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)PrimitiveType, PrimitiveCount, pVertexStreamZeroData->ToPointer(), VertexStreamZeroStride));
 		}
-		void CopyTo(System::IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+		void CopyTo(System::IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+		{
 			D3DLOCKED_RECT rectd3d = { 0 };
 			RECT rect = { 0, 0, render_width, render_height };
 			TRY_D3D(pSurface->LockRect(&rectd3d, &rect, D3DLOCK_READONLY));
