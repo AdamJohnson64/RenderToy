@@ -10,7 +10,7 @@ namespace RenderToy.RenderControl
 {
     struct AccumulateBuffer
     {
-        public AccumulateBuffer(Scene scene, Matrix3D mvp, int width, int height, byte[] accumulator)
+        public AccumulateBuffer(IScene scene, Matrix3D mvp, int width, int height, byte[] accumulator)
         {
             Scene = scene;
             MVP = mvp;
@@ -19,7 +19,7 @@ namespace RenderToy.RenderControl
             Buffer = accumulator;
             Pass = 0;
         }
-        public Scene Scene;
+        public IScene Scene;
         public Matrix3D MVP;
         public int Width;
         public int Height;

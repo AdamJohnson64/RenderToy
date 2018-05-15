@@ -10,7 +10,7 @@ namespace RenderToy.RenderControl
 {
     struct BitmapBuffer
     {
-        public BitmapBuffer(Scene scene, Matrix3D mvp, int width, int height, byte[] buffer)
+        public BitmapBuffer(IScene scene, Matrix3D mvp, int width, int height, byte[] buffer)
         {
             Scene = scene;
             MVP = mvp;
@@ -18,7 +18,7 @@ namespace RenderToy.RenderControl
             Height = height;
             Buffer = buffer;
         }
-        public Scene Scene;
+        public IScene Scene;
         public Matrix3D MVP;
         public int Width;
         public int Height;

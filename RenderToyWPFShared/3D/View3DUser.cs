@@ -58,7 +58,7 @@ namespace RenderToy.WPF
             foreach (var group in RenderCallCommands.Calls.GroupBy(x => RenderCall.GetDisplayNameBare(x.MethodInfo.Name)))
             {
                 var menu_group = new MenuItem { Header = group.Key };
-                Scene scene = new Scene();
+                var scene = new Scene();
                 scene.AddChild(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), new Sphere(), StockMaterials.Red, StockMaterials.PlasticRed));
                 Matrix3D mvp = MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(0, 0, -2), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0)));
                 mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
@@ -122,7 +122,7 @@ namespace RenderToy.WPF
         int renderResolution = 2;
         #endregion
         #region - Overrides : RenderViewportBase -
-        protected override void OnSceneChanged(Scene scene)
+        protected override void OnSceneChanged(IScene scene)
         {
             base.OnSceneChanged(scene);
             if (RenderMode == null) return;

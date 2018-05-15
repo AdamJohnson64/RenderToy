@@ -23,7 +23,7 @@ namespace RenderToy.RenderControl
         /// Configure the scene for the render.
         /// </summary>
         /// <param name="scene">The scene graph object.</param>
-        void SetScene(Scene scene);
+        void SetScene(IScene scene);
         /// <summary>
         /// Configure the output target dimensions for the render.
         /// </summary>

@@ -45,7 +45,7 @@ namespace RenderToy.WPF.Figures
                 return mvp;
             }
         }
-        public Scene Scene
+        public IScene Scene
         {
             get
             {

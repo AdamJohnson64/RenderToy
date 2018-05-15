@@ -29,7 +29,7 @@ namespace RenderToy.WPF
         }
         SinglePassAsyncAdaptor render;
         #region - Overrides : RenderViewportBase -
-        protected override void OnSceneChanged(Scene scene)
+        protected override void OnSceneChanged(IScene scene)
         {
             base.OnSceneChanged(scene);
             if (render == null) return;

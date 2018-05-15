@@ -13,18 +13,19 @@ using System.Linq;
 
 namespace RenderToy.SceneGraph
 {
-    public class Scene
+    public interface IScene
     {
-        public static Scene Default
+        IReadOnlyList<INode> GetChildren();
+    }
+    public class Scene : IScene
+    {
+        public IReadOnlyList<INode> GetChildren() { return children; }
+        public void AddChild(INode node) { children.Add(node); }
+        List<INode> children = new List<INode>();
+        #region - Section : Default Scene -
+        public static IScene Default
         {
-            get
-            {
-                return scene;
-            }
-        }
-        public IReadOnlyList<INode> Children
-        {
-            get { return children; }
+            get { return scene; }
         }
         static Scene()
         {
@@ -44,11 +45,7 @@ namespace RenderToy.SceneGraph
             scene.children.Add(new Node("Sphere (Cyan)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+5, 1, 0)), new Sphere(), StockMaterials.Cyan, StockMaterials.PlasticCyan));
             scene.children.Add(new Node("Sphere (Glass)", new TransformMatrix(MathHelp.CreateMatrixTranslate(0, 3, 0)), new Sphere(), StockMaterials.Black, StockMaterials.Glass));
         }
-        public void AddChild(INode node)
-        {
-            children.Add(node);
-        }
-        List<INode> children = new List<INode>();
         static Scene scene;
+        #endregion
     } 
 }

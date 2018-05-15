@@ -38,7 +38,7 @@ namespace RenderToy.WPF
                 ofd.Title = "Choose Model File";
                 if (ofd.ShowDialog() == true)
                 {
-                    Scene scene = new Scene();
+                    var scene = new Scene();
                     scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, new MNCheckerboard()));
                     scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadBVHFromPath(ofd.FileName), StockMaterials.LightGray, StockMaterials.PlasticRed));
                     DataContext = scene;
@@ -64,10 +64,10 @@ namespace RenderToy.WPF
         public static Document Default = new Document();
         public Document()
         {
-            Scene = Scene.Default;
+            Scene = SceneGraph.Scene.Default;
             MaterialNodes = new ObservableCollection<IMNNode>(EnumerateNodes(StockMaterials.Brick()).Distinct());
         }
-        public Scene Scene { get; private set; }
+        public IScene Scene { get; private set; }
         public ObservableCollection<IMNNode> MaterialNodes { get; private set; }
         static IEnumerable<IMNNode> EnumerateNodes(IMNNode node)
         {

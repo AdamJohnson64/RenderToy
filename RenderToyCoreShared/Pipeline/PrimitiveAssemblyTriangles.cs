@@ -19,7 +19,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="scene">The source scene.</param>
         /// <returns>A stream of triangles representing the scene.</returns>
-        public static IEnumerable<Vector3D> CreateTriangles(Scene scene)
+        public static IEnumerable<Vector3D> CreateTriangles(IScene scene)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {

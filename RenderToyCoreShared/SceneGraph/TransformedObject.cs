@@ -17,10 +17,10 @@ namespace RenderToy.SceneGraph
         }
         public readonly INode Node;
         public readonly Matrix3D Transform;
-        public static IEnumerable<TransformedObject> Enumerate(Scene scene)
+        public static IEnumerable<TransformedObject> Enumerate(IScene scene)
         {
             if (scene == null) yield break;
-            foreach (INode root in scene.Children)
+            foreach (INode root in scene.GetChildren())
             {
                 foreach (TransformedObject tobj in Enumerate(root, Matrix3D.Identity))
                 {

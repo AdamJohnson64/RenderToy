@@ -42,7 +42,7 @@ namespace RenderToy.WPF
         /// <param name="render_width">The width of the output bitmap in pixels.</param>
         /// <param name="render_height">The height of the output bitmap in pixels.</param>
         /// <param name="bitmap_stride">The byte count between rasters of the output bitmap.</param>
-        public static void RasterXYZD3D9(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+        public static void RasterXYZD3D9(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var device = direct3d.CreateDevice();
             var rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 1);
@@ -80,7 +80,7 @@ namespace RenderToy.WPF
         /// <param name="render_width">The width of the output bitmap in pixels.</param>
         /// <param name="render_height">The height of the output bitmap in pixels.</param>
         /// <param name="bitmap_stride">The byte count between rasters of the output bitmap.</param>
-        public static void RasterXYZWD3D9(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+        public static void RasterXYZWD3D9(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var device = direct3d.CreateDevice();
             var rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 1);

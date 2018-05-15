@@ -94,7 +94,7 @@ namespace RenderToy.PipelineModel
         /// <param name="render_width">The pixel width of the target bitmap.</param>
         /// <param name="render_height">The pixel height of the target bitmap.</param>
         /// <returns>A stream of pixels representing the complete scene as points.</returns>
-        public static IEnumerable<PixelBgra32> RasterizePoint(Scene scene, Matrix3D mvp, int render_width, int render_height)
+        public static IEnumerable<PixelBgra32> RasterizePoint(IScene scene, Matrix3D mvp, int render_width, int render_height)
         {
             return TransformedObject.Enumerate(scene).SelectMany(x => RasterizePoint(PrimitiveAssembly.CreatePoints(x.Node.GetPrimitive()), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.GetWireColor()), render_width, render_height));
         }
@@ -204,7 +204,7 @@ namespace RenderToy.PipelineModel
         /// <param name="render_width">The pixel width of the target bitmap.</param>
         /// <param name="render_height">The pixel height of the target bitmap.</param>
         /// <returns>A stream of pixels representing the complete scene as lines.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeLine(Scene scene, Matrix3D mvp, int render_width, int render_height)
+        public static IEnumerable<PixelBgra32> RasterizeLine(IScene scene, Matrix3D mvp, int render_width, int render_height)
         {
             return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeLine(PrimitiveAssembly.CreateLines(x.Node.GetPrimitive()), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.GetWireColor()), render_width, render_height));
         }
@@ -299,7 +299,7 @@ namespace RenderToy.PipelineModel
         /// <param name="render_width">The pixel width of the target bitmap.</param>
         /// <param name="render_height">The pixel height of the target bitmap.</param>
         /// <returns>A stream of pixels representing the complete scene as triangles.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeTriangle(Scene scene, Matrix3D mvp, int render_width, int render_height)
+        public static IEnumerable<PixelBgra32> RasterizeTriangle(IScene scene, Matrix3D mvp, int render_width, int render_height)
         {
             return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeTriangle(PrimitiveAssembly.CreateTriangles(x.Node.GetPrimitive()), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.GetWireColor()), render_width, render_height));
         }
@@ -429,7 +429,7 @@ namespace RenderToy.PipelineModel
         /// <param name="render_width">The pixel width of the target bitmap.</param>
         /// <param name="render_height">The pixel height of the target bitmap.</param>
         /// <returns>A stream of pixels representing the complete scene as triangles.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(Scene scene, Matrix3D mvp, ushort render_width, ushort render_height)
+        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(IScene scene, Matrix3D mvp, ushort render_width, ushort render_height)
         {
             return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeHomogeneous(PrimitiveAssembly.CreateTriangles(x.Node.GetPrimitive()), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.GetWireColor()), render_width, render_height));
         }

@@ -11,14 +11,18 @@ using System.Collections.Generic;
 
 namespace RenderToy.SceneGraph
 {
-    public interface INode
+    /// <summary>
+    /// A generic node in a scene consisting of a transformed primitive with a given material.
+    /// A node is also a type of scene given that it contains children.
+    /// This property allows the passing of children as scene subgraphs for partial evaluation.
+    /// </summary>
+    public interface INode : IScene
     {
         string GetName();
         ITransform GetTransform();
         IPrimitive GetPrimitive();
         Vector4D GetWireColor();
         IMaterial GetMaterial();
-        IReadOnlyList<INode> GetChildren();
     }
     public class Node : INode
     {

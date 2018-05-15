@@ -22,12 +22,12 @@ namespace RenderToy.Utility
         struct FlatSceneF64Token
         {
         }
-        public static byte[] CreateFlatMemoryF32(Scene scene)
+        public static byte[] CreateFlatMemoryF32(IScene scene)
         {
             Func<byte[]> build = () => new SceneFormatter(scene, false).m.ToArray();
             return MementoServer.Get(scene, typeof(FlatSceneF32Token), build);
         }
-        public static byte[] CreateFlatMemoryF64(Scene scene)
+        public static byte[] CreateFlatMemoryF64(IScene scene)
         {
             Func<byte[]> build = () => new SceneFormatter(scene, true).m.ToArray();
             return MementoServer.Get(scene, typeof(FlatSceneF64Token), build);
@@ -50,7 +50,7 @@ namespace RenderToy.Utility
             }
             return memory.ToArray();
         }
-        SceneFormatter(Scene scene, bool use_f64)
+        SceneFormatter(IScene scene, bool use_f64)
         {
             UseF64 = use_f64;
             // Prepare the scene definition for the renderer.

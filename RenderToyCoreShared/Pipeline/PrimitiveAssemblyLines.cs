@@ -19,7 +19,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="scene">The source scene.</param>
         /// <returns>A stream of colored line segments.</returns>
-        public static IEnumerable<Vector3D> CreateLines(Scene scene)
+        public static IEnumerable<Vector3D> CreateLines(IScene scene)
         {
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {

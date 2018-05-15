@@ -23,13 +23,13 @@ namespace RenderToy.WPF
         }
         #endregion
         #region - Section : DependencyProperties -
-        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(Scene), typeof(View3DBase), new FrameworkPropertyMetadata(Scene.Default, FrameworkPropertyMetadataOptions.AffectsRender, (d, e) => { ((View3DBase)d).OnSceneChanged((Scene)e.NewValue); }));
-        public Scene Scene
+        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(IScene), typeof(View3DBase), new FrameworkPropertyMetadata(SceneGraph.Scene.Default, FrameworkPropertyMetadataOptions.AffectsRender, (d, e) => { ((View3DBase)d).OnSceneChanged((IScene)e.NewValue); }));
+        public IScene Scene
         {
-            get { return (Scene)GetValue(SceneProperty); }
+            get { return (IScene)GetValue(SceneProperty); }
             set { SetValue(SceneProperty, value); }
         }
-        protected virtual void OnSceneChanged(Scene scene)
+        protected virtual void OnSceneChanged(IScene scene)
         {
         }
         public static DependencyProperty CameraProperty = DependencyProperty.Register("Camera", typeof(Camera), typeof(View3DBase));

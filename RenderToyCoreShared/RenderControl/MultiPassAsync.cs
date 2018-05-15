@@ -93,7 +93,7 @@ namespace RenderToy.RenderControl
         Mutex lock_desc = new Mutex();
         #endregion
         public override string ToString() { return RenderCall.GetDisplayNameFull(fillwith.MethodInfo.Name); }
-        public void SetScene(Scene scene)
+        public void SetScene(IScene scene)
         {
             try
             {
