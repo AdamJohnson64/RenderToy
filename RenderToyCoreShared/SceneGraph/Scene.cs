@@ -50,6 +50,5 @@ namespace RenderToy.SceneGraph
         }
         List<Node> children = new List<Node>();
         static Scene scene;
-        public readonly MementoServer Memento = new MementoServer();
     } 
 }

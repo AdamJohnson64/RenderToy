@@ -25,12 +25,12 @@ namespace RenderToy.Utility
         public static byte[] CreateFlatMemoryF32(Scene scene)
         {
             Func<byte[]> build = () => new SceneFormatter(scene, false).m.ToArray();
-            return scene.Memento.Get(typeof(FlatSceneF32Token), build);
+            return MementoServer.Get(scene, typeof(FlatSceneF32Token), build);
         }
         public static byte[] CreateFlatMemoryF64(Scene scene)
         {
             Func<byte[]> build = () => new SceneFormatter(scene, true).m.ToArray();
-            return scene.Memento.Get(typeof(FlatSceneF64Token), build);
+            return MementoServer.Get(scene, typeof(FlatSceneF64Token), build);
         }
         public static byte[] CreateFlatMemoryF32(Matrix3D obj)
         {
