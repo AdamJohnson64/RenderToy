@@ -33,36 +33,66 @@ namespace RenderToy.WPF
             public float X, Y, Z;
             public uint Color;
         };
+        /// <summary>
+        /// Rasterize the scene using XYZ 3D triangles and transforming via the hardware pipeline.
+        /// </summary>
+        /// <param name="scene">The scene to render.</param>
+        /// <param name="mvp">The model-view-projection matrix.</param>
+        /// <param name="bitmap_ptr">A pointer to an output bitmap.</param>
+        /// <param name="render_width">The width of the output bitmap in pixels.</param>
+        /// <param name="render_height">The height of the output bitmap in pixels.</param>
+        /// <param name="bitmap_stride">The byte count between rasters of the output bitmap.</param>
         public static void RasterXYZD3D9(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            D3D9Surface d3dsurface = new D3D9Surface(render_width, render_height);
-            d3dsurface.BeginScene();
-            d3dsurface.SetFVF(D3DFvf.XYZ | D3DFvf.Diffuse);
-            d3dsurface.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
-            d3dsurface.SetRenderState(D3DRenderState.Lighting, 0);
+            var device = direct3d.CreateDevice();
+            var rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 1);
+            var depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 1);
+            device.SetRenderTarget(0, rendertarget);
+            device.SetDepthStencilSurface(depthstencil);
+            device.BeginScene();
+            device.Clear(D3DClear.Target | D3DClear.ZBuffer, 0x00000000, 1.0f, 0);
+            device.SetFVF(D3DFvf.XYZ | D3DFvf.Diffuse);
+            device.SetRenderState(D3DRenderState.ZEnable, 1U);
+            device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
+            device.SetRenderState(D3DRenderState.Lighting, 0);
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 var A = PrimitiveAssembly.CreateTriangles(transformedobject.Node.Primitive);
                 var B = A.Select(i => new XYZDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, Color = Rasterization.ColorToUInt32(transformedobject.Node.WireColor) });
                 var vertexbuffer = B.ToArray();
-                d3dsurface.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
-                d3dsurface.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZDiffuse)));
+                device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
+                device.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZDiffuse)));
             }
-            d3dsurface.EndScene();
-            d3dsurface.CopyTo(bitmap_ptr, render_width, render_height, bitmap_stride);
+            device.EndScene();
+            rendertarget.CopyTo(bitmap_ptr, render_width, render_height, bitmap_stride);
         }
         struct XYZWDiffuse
         {
             public float X, Y, Z, W;
             public uint Color;
         };
+        /// <summary>
+        /// Rasterize the scene using XYZW homogeneous triangles and transforming via the our software pipeline.
+        /// </summary>
+        /// <param name="scene">The scene to render.</param>
+        /// <param name="mvp">The model-view-projection matrix.</param>
+        /// <param name="bitmap_ptr">A pointer to an output bitmap.</param>
+        /// <param name="render_width">The width of the output bitmap in pixels.</param>
+        /// <param name="render_height">The height of the output bitmap in pixels.</param>
+        /// <param name="bitmap_stride">The byte count between rasters of the output bitmap.</param>
         public static void RasterXYZWD3D9(Scene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            D3D9Surface d3dsurface = new D3D9Surface(render_width, render_height);
-            d3dsurface.BeginScene();
-            d3dsurface.SetFVF(D3DFvf.XYZW | D3DFvf.Diffuse);
-            d3dsurface.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
-            d3dsurface.SetRenderState(D3DRenderState.Lighting, 0);
+            var device = direct3d.CreateDevice();
+            var rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 1);
+            var depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 1);
+            device.SetRenderTarget(0, rendertarget);
+            device.SetDepthStencilSurface(depthstencil);
+            device.BeginScene();
+            device.Clear(D3DClear.Target | D3DClear.ZBuffer, 0x00000000, 1.0f, 0);
+            device.SetFVF(D3DFvf.XYZW | D3DFvf.Diffuse);
+            device.SetRenderState(D3DRenderState.ZEnable, 1U);
+            device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
+            device.SetRenderState(D3DRenderState.Lighting, 0);
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 var A = PrimitiveAssembly.CreateTriangles(transformedobject.Node.Primitive);
@@ -72,11 +102,12 @@ namespace RenderToy.WPF
                 var E = Transformation.HomogeneousDivide(D);
                 var F = E.Select(i => new XYZWDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, W = (float)i.W, Color = Rasterization.ColorToUInt32(transformedobject.Node.WireColor) });
                 var vertexbuffer = F.ToArray();
-                d3dsurface.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZWDiffuse)));
+                device.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZWDiffuse)));
             }
-            d3dsurface.EndScene();
-            d3dsurface.CopyTo(bitmap_ptr, render_width, render_height, bitmap_stride);
+            device.EndScene();
+            rendertarget.CopyTo(bitmap_ptr, render_width, render_height, bitmap_stride);
         }
+        static Direct3D9 direct3d = new Direct3D9();
         #endregion
     }
 }

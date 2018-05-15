@@ -18,51 +18,22 @@
 
 namespace RenderToy
 {
-	ref class D3D9GlobalServices
+	public enum class D3DClear
 	{
-	private:
-		#pragma region - Section : Construction -
-		D3D9GlobalServices()
-		{
-			hHostWindow = CreateWindow("STATIC", "D3D9HostWindow", WS_OVERLAPPEDWINDOW, 0, 0, 16, 16, nullptr, nullptr, nullptr, nullptr);
-			if (hHostWindow == nullptr) {
-				throw gcnew System::Exception("CreateWindow() failed.");
-			}
-			pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-			if (pD3D == nullptr) {
-				throw gcnew System::Exception("Direct3DCreate9() failed.");
-			}
-		}
-		!D3D9GlobalServices()
-		{
-			Destroy();
-		}
-		~D3D9GlobalServices()
-		{
-			Destroy();
-		}
-		void Destroy()
-		{
-			if (pD3D != nullptr) {
-				pD3D->Release();
-				pD3D = nullptr;
-			}
-			if (hHostWindow != nullptr) {
-				DestroyWindow(hHostWindow);
-				hHostWindow = nullptr;
-			}
-		}
-		#pragma endregion
-	public:
-		HWND hHostWindow = nullptr;
-		IDirect3D9* pD3D = nullptr;
-		static D3D9GlobalServices^ Instance = gcnew D3D9GlobalServices();
+		Target = D3DCLEAR_TARGET,
+		ZBuffer = D3DCLEAR_ZBUFFER,
+		Stencil = D3DCLEAR_STENCIL,
 	};
 	public enum class D3DCullMode
 	{
 		None = D3DCULL_NONE,
 		CW = D3DCULL_CW,
 		CCW = D3DCULL_CCW,
+	};
+	public enum class D3DFormat
+	{
+		A8R8G8B8 = D3DFMT_A8R8G8B8,
+		D24X8 = D3DFMT_D24X8,
 	};
 	public enum class D3DFvf
 	{
@@ -71,12 +42,17 @@ namespace RenderToy
 		Normal = D3DFVF_DIFFUSE,
 		Diffuse = D3DFVF_DIFFUSE,
 	};
+	public enum class D3DMultisample
+	{
+		None = D3DMULTISAMPLE_NONE,
+	};
 	public enum class D3DPrimitiveType
 	{
 		TriangleList = D3DPT_TRIANGLELIST,
 	};
 	public enum class D3DRenderState
 	{
+		ZEnable = D3DRS_ZENABLE,
 		CullMode = D3DRS_CULLMODE,
 		Lighting = D3DRS_LIGHTING,
 	};
@@ -85,94 +61,167 @@ namespace RenderToy
 		View = D3DTS_VIEW,
 		Projection = D3DTS_PROJECTION,
 	};
-	public ref class D3D9Surface {
-	public:
-		#pragma region - Section : Construction -
-		D3D9Surface(int render_width, int render_height)
+	ref class Direct3D9Globals
+	{
+	private:
+		Direct3D9Globals()
 		{
-			D3DPRESENT_PARAMETERS d3dpp = { 0 };
-			d3dpp.BackBufferWidth = render_width;
-			d3dpp.BackBufferHeight = render_height;
-			d3dpp.BackBufferFormat = D3DFMT_A8R8G8B8;
-			d3dpp.BackBufferCount = 1;
-			d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-			d3dpp.Windowed = TRUE;
-			d3dpp.EnableAutoDepthStencil = TRUE;
-			d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
-			d3dpp.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
-			IDirect3DDevice9* pDeviceTmp = nullptr;
-			TRY_D3D(D3D9GlobalServices::Instance->pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3D9GlobalServices::Instance->hHostWindow, D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDeviceTmp));
-			pDevice = pDeviceTmp;
-			TRY_D3D(pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x00000000, 1.0, 0));
-			IDirect3DSurface9* pSurfaceTmp = nullptr;
-			TRY_D3D(pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pSurfaceTmp));
-			pSurface = pSurfaceTmp;
+			hHostWindow = CreateWindow("STATIC", "D3D9HostWindow", WS_OVERLAPPEDWINDOW, 0, 0, 16, 16, nullptr, nullptr, nullptr, nullptr);
+			if (hHostWindow == nullptr) {
+				throw gcnew System::Exception("CreateWindow() failed.");
+			}
 		}
-		!D3D9Surface()
+		!Direct3D9Globals()
 		{
 			Destroy();
 		}
-		~D3D9Surface()
+		~Direct3D9Globals()
 		{
 			Destroy();
 		}
 		void Destroy()
 		{
-			if (pSurface != nullptr)
-			{
-				pSurface->Release();
-				pSurface = nullptr;
-			}
-			if (pDevice != nullptr)
-			{
-				pDevice->Release();
-				pDevice = nullptr;
+			if (hHostWindow != nullptr) {
+				DestroyWindow(hHostWindow);
+				hHostWindow = nullptr;
 			}
 		}
-		#pragma endregion
-		#pragma region - Section : Managed Interface -
-		property System::IntPtr SurfacePtr
+	public:
+		HWND hHostWindow = nullptr;
+		static Direct3D9Globals^ Instance = gcnew Direct3D9Globals();
+	};
+	template <typename T>
+	public ref class Direct3DWrap
+	{
+	public:
+		Direct3DWrap()
 		{
-			System::IntPtr get() { return System::IntPtr(pSurface); }
+			this->pWrapped = nullptr;
 		}
-		void BeginScene()
+		Direct3DWrap(T* pWrapped)
 		{
-			TRY_D3D(pDevice->BeginScene());
+			this->pWrapped = pWrapped;
 		}
-		void EndScene()
+		!Direct3DWrap()
 		{
-			TRY_D3D(pDevice->EndScene());
+			Destroy();
 		}
-		void SetTransform(D3DTransformState State, System::IntPtr ^pMatrix)
+		~Direct3DWrap()
 		{
-			TRY_D3D(pDevice->SetTransform((D3DTRANSFORMSTATETYPE)State, (const D3DMATRIX*)pMatrix->ToPointer()));
+			Destroy();
 		}
-		void SetRenderState(D3DRenderState State, unsigned int Value)
+		void Destroy()
 		{
-			TRY_D3D(pDevice->SetRenderState((D3DRENDERSTATETYPE)State, Value));
+			if (pWrapped != nullptr)
+			{
+				pWrapped->Release();
+				pWrapped = nullptr;
+			}
 		}
-		void SetFVF(D3DFvf FVF)
+		property T* Wrapped
 		{
-			TRY_D3D(pDevice->SetFVF((DWORD)FVF));
+			T* get()
+			{
+				return pWrapped;
+			}
 		}
-		void DrawPrimitiveUP(D3DPrimitiveType PrimitiveType, unsigned int PrimitiveCount, System::IntPtr ^pVertexStreamZeroData, unsigned int VertexStreamZeroStride)
+	protected:
+		T* pWrapped;
+	};
+	public ref class Direct3DSurface9 : public Direct3DWrap<IDirect3DSurface9>
+	{
+	public:
+		Direct3DSurface9(IDirect3DSurface9* pObject) : Direct3DWrap(pObject)
 		{
-			TRY_D3D(pDevice->DrawPrimitiveUP((D3DPRIMITIVETYPE)PrimitiveType, PrimitiveCount, pVertexStreamZeroData->ToPointer(), VertexStreamZeroStride));
 		}
 		void CopyTo(System::IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
 		{
-			D3DLOCKED_RECT rectd3d = { 0 };
-			RECT rect = { 0, 0, render_width, render_height };
-			TRY_D3D(pSurface->LockRect(&rectd3d, &rect, D3DLOCK_READONLY));
+			D3DLOCKED_RECT LockedRect = { 0 };
+			RECT Rect = { 0, 0, render_width, render_height };
+			TRY_D3D(pWrapped->LockRect(&LockedRect, &Rect, D3DLOCK_READONLY));
 			void* copyTo = (void*)bitmap_ptr;
 			for (int y = 0; y < render_height; ++y) {
-				memcpy((unsigned char*)copyTo + bitmap_stride * y, (unsigned char*)rectd3d.pBits + rectd3d.Pitch * y, 4 * render_width);
+				memcpy((unsigned char*)copyTo + bitmap_stride * y, (unsigned char*)LockedRect.pBits + LockedRect.Pitch * y, 4 * render_width);
 			}
-			TRY_D3D(pSurface->UnlockRect());
+			TRY_D3D(pWrapped->UnlockRect());
 		}
-		#pragma endregion
-	private:
-		IDirect3DDevice9* pDevice = nullptr;
-		IDirect3DSurface9* pSurface = nullptr;
+	};
+	public ref class Direct3DDevice9 : public Direct3DWrap<IDirect3DDevice9>
+	{
+	public:
+		Direct3DDevice9(IDirect3DDevice9 *pObject)
+		{
+			pWrapped = pObject;
+		}
+		Direct3DSurface9^ CreateRenderTarget(unsigned int Width, unsigned int Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Lockable)
+		{
+			IDirect3DSurface9 *ppSurface = NULL;
+			TRY_D3D(pWrapped->CreateRenderTarget(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Lockable, &ppSurface, nullptr));
+			return gcnew Direct3DSurface9(ppSurface);
+		}
+		Direct3DSurface9^ CreateDepthStencilSurface(unsigned int Width, unsigned int Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Discard)
+		{
+			IDirect3DSurface9 *ppSurface = NULL;
+			TRY_D3D(pWrapped->CreateDepthStencilSurface(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Discard, &ppSurface, nullptr));
+			return gcnew Direct3DSurface9(ppSurface);
+		}
+		void SetRenderTarget(DWORD RenderTargetIndex, Direct3DSurface9^ pRenderTarget)
+		{
+			TRY_D3D(pWrapped->SetRenderTarget(RenderTargetIndex, pRenderTarget->Wrapped));
+		}
+		void SetDepthStencilSurface(Direct3DSurface9^ pNewZStencil)
+		{
+			TRY_D3D(pWrapped->SetDepthStencilSurface(pNewZStencil->Wrapped));
+		}
+		void BeginScene()
+		{
+			TRY_D3D(pWrapped->BeginScene());
+		}
+		void EndScene()
+		{
+			TRY_D3D(pWrapped->EndScene());
+		}
+		void Clear(D3DClear Flags, D3DCOLOR Color, float Z, DWORD Stencil)
+		{
+			TRY_D3D(pWrapped->Clear(0, nullptr, (DWORD)Flags, Color, Z, Stencil));
+		}
+		void SetTransform(D3DTransformState State, System::IntPtr ^pMatrix)
+		{
+			TRY_D3D(pWrapped->SetTransform((D3DTRANSFORMSTATETYPE)State, (const D3DMATRIX*)pMatrix->ToPointer()));
+		}
+		void SetRenderState(D3DRenderState State, DWORD Value)
+		{
+			TRY_D3D(pWrapped->SetRenderState((D3DRENDERSTATETYPE)State, Value));
+		}
+		void SetFVF(D3DFvf FVF)
+		{
+			TRY_D3D(pWrapped->SetFVF((DWORD)FVF));
+		}
+		void DrawPrimitiveUP(D3DPrimitiveType PrimitiveType, unsigned int PrimitiveCount, System::IntPtr ^pVertexStreamZeroData, unsigned int VertexStreamZeroStride)
+		{
+			TRY_D3D(pWrapped->DrawPrimitiveUP((D3DPRIMITIVETYPE)PrimitiveType, PrimitiveCount, pVertexStreamZeroData->ToPointer(), VertexStreamZeroStride));
+		}
+	};
+	public ref class Direct3D9 : public Direct3DWrap<IDirect3D9>
+	{
+	public:
+		Direct3D9()
+		{
+			pWrapped = Direct3DCreate9(D3D_SDK_VERSION);
+			if (pWrapped == nullptr) {
+				throw gcnew System::Exception("Direct3DCreate9() failed.");
+			}
+		}
+		Direct3DDevice9^ CreateDevice()
+		{
+			D3DPRESENT_PARAMETERS d3dpp = { 0 };
+			d3dpp.BackBufferWidth = 1;
+			d3dpp.BackBufferHeight = 1;
+			d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+			d3dpp.Windowed = TRUE;
+			IDirect3DDevice9* pReturnedDeviceInterface = nullptr;
+			TRY_D3D(pWrapped->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Direct3D9Globals::Instance->hHostWindow, D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pReturnedDeviceInterface));
+			return gcnew Direct3DDevice9(pReturnedDeviceInterface);
+		}
 	};
 }
