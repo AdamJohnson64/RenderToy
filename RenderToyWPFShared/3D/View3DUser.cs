@@ -55,11 +55,11 @@ namespace RenderToy.WPF
                 menu_group.Items.Add(new MenuItem { Command = CommandResolution10 });
                 menu.Items.Add(menu_group);
             }
+            var scene = new Scene();
+            scene.AddChild(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), new Sphere(), StockMaterials.Red, StockMaterials.PlasticRed));
             foreach (var group in RenderCallCommands.Calls.GroupBy(x => RenderCall.GetDisplayNameBare(x.MethodInfo.Name)))
             {
                 var menu_group = new MenuItem { Header = group.Key };
-                var scene = new Scene();
-                scene.AddChild(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), new Sphere(), StockMaterials.Red, StockMaterials.PlasticRed));
                 Matrix3D mvp = MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(0, 0, -2), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0)));
                 mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
                 foreach (var call in group)

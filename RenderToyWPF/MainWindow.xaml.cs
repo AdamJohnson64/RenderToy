@@ -30,7 +30,7 @@ namespace RenderToy.WPF
         {
             InitializeComponent();
             CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => {
-                DataContext = Scene.Default;
+                DataContext = TestScenes.DefaultScene;
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandSceneOpen, (s, e) => {
@@ -64,11 +64,11 @@ namespace RenderToy.WPF
         public static Document Default = new Document();
         public Document()
         {
-            Scene = SceneGraph.Scene.Default;
-            MaterialNodes = new ObservableCollection<IMNNode>(EnumerateNodes(StockMaterials.Brick()).Distinct());
+            Scene = TestScenes.DefaultScene;
+            Materials = new ObservableCollection<IMNNode>(EnumerateNodes(StockMaterials.Brick()).Distinct());
         }
         public IScene Scene { get; private set; }
-        public ObservableCollection<IMNNode> MaterialNodes { get; private set; }
+        public ObservableCollection<IMNNode> Materials { get; private set; }
         static IEnumerable<IMNNode> EnumerateNodes(IMNNode node)
         {
             yield return node;

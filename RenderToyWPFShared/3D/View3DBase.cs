@@ -23,7 +23,7 @@ namespace RenderToy.WPF
         }
         #endregion
         #region - Section : DependencyProperties -
-        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(IScene), typeof(View3DBase), new FrameworkPropertyMetadata(SceneGraph.Scene.Default, FrameworkPropertyMetadataOptions.AffectsRender, (d, e) => { ((View3DBase)d).OnSceneChanged((IScene)e.NewValue); }));
+        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(IScene), typeof(View3DBase), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender, (d, e) => { ((View3DBase)d).OnSceneChanged((IScene)e.NewValue); }));
         public IScene Scene
         {
             get { return (IScene)GetValue(SceneProperty); }

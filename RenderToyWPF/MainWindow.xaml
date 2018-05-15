@@ -86,7 +86,7 @@
             </rendertoy:TypeBasedDataTemplateSelector>
         </UserControl.Resources>
         <TabControl>
-            <TabItem Header="Interactive View">
+            <TabItem Header="Interactive View" DataContext="{Binding Path=Scene}">
                 <DockPanel>
                     <!-- Menu -->
                     <Menu DockPanel.Dock="Left">
@@ -136,11 +136,11 @@
                     </Grid>
                 </DockPanel>
             </TabItem>
-            <TabItem Header="Texture View">
+            <TabItem Header="Materials" DataContext="{Binding Path=Materials}">
                 <DockPanel>
                     <!-- ==================== Material List ==================== -->
                     <GroupBox Header="Material Nodes" Margin="4" Padding="4">
-                        <ListView x:Name="MaterialNodes" DockPanel.Dock="Left" ItemsSource="{Binding Path=MaterialNodes}" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource GraphNodeTemplate}">
+                        <ListView x:Name="MaterialList" DockPanel.Dock="Left" ItemsSource="{Binding}" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource GraphNodeTemplate}">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -149,7 +149,7 @@
                         </ListView>
                     </GroupBox>
                     <!-- ==================== Texture View ==================== -->
-                    <ContentControl Content="{Binding ElementName=MaterialNodes, Path=SelectedItem}">
+                    <ContentControl Content="{Binding ElementName=MaterialList, Path=SelectedItem}">
                         <ContentControl.ContentTemplate>
                             <DataTemplate>
                                 <TabControl>
