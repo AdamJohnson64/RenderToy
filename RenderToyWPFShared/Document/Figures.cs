@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -35,12 +36,11 @@ namespace RenderToy.WPF.Figures
     abstract class Figure3DBase : FigureBase
     {
         #region - Section : Properties -
-        public Matrix3D MVP
+        public static DependencyProperty ModelViewProjectionProperty = DependencyProperty.Register("ModelViewProjection", typeof(Matrix3D), typeof(Figure3DBase), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
+        public Matrix3D ModelViewProjection
         {
-            get
-            {
-                return Camera.ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            }
+            get { return (Matrix3D)GetValue(ModelViewProjectionProperty); }
+            set { SetValue(ModelViewProjectionProperty, value); }
         }
         public IScene Scene
         {
@@ -64,69 +64,10 @@ namespace RenderToy.WPF.Figures
         public Figure3DBase()
         {
             Camera = new Camera();
+            this.SetBinding(ModelViewProjectionProperty, new Binding { Source = Camera, Path = new PropertyPath(Camera.ModelViewProjectionProperty) });
+            CameraController.SetCamera(this, Camera);
             ClipToBounds = true;
         }
-        #endregion
-        #region - Overrides : UIElement -
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonDown(e);
-            Focus();
-            CaptureMouse();
-            Mouse.OverrideCursor = Cursors.None;
-            isDragging = true;
-            dragFrom = System.Windows.Forms.Cursor.Position;
-            e.Handled = true;
-        }
-        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonUp(e);
-            Mouse.OverrideCursor = null;
-            ReleaseMouseCapture();
-            isDragging = false;
-            e.Handled = true;
-        }
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            base.OnMouseMove(e);
-            if (!isDragging) return;
-            System.Drawing.Point dragTo = System.Windows.Forms.Cursor.Position;
-            double dx = dragTo.X - dragFrom.X;
-            double dy = dragTo.Y - dragFrom.Y;
-            System.Windows.Forms.Cursor.Position = dragFrom;
-            // If there's no camera then there's nothing to update from here.
-            if (Camera == null) return;
-            // Detect modifier keys.
-            bool isPressedLeftControl = Keyboard.IsKeyDown(Key.LeftCtrl);
-            bool isPressedLeftShift = Keyboard.IsKeyDown(Key.LeftShift);
-            // Process camera motion with modifier keys.
-            if (isPressedLeftShift && isPressedLeftControl)
-            {
-                // Truck Mode (CTRL + SHIFT).
-                Camera.TranslatePost(new Vector3D(0, 0, dy * -0.05));
-            }
-            else if (!isPressedLeftShift && isPressedLeftControl)
-            {
-                // Rotate Mode (CTRL Only)
-                Camera.RotatePre(new Quaternion(new Vector3D(0, 1, 0), dx * 0.05));
-                Camera.RotatePost(new Quaternion(new Vector3D(1, 0, 0), dy * 0.05));
-            }
-            else if (!isPressedLeftShift && !isPressedLeftControl)
-            {
-                // Translation Mode (no modifier keys).
-                Camera.TranslatePost(new Vector3D(dx * -0.05, dy * 0.05, 0));
-            }
-            InvalidateVisual();
-            e.Handled = true;
-        }
-        protected override void OnMouseWheel(MouseWheelEventArgs e)
-        {
-            base.OnMouseWheel(e);
-            Camera.TranslatePost(new Vector3D(0, 0, e.Delta * 0.01));
-            e.Handled = true;
-        }
-        bool isDragging = false;
-        System.Drawing.Point dragFrom;
         #endregion
         #region - Section : Static Helpers -
         public static void DrawPoints(DrawingContext drawingContext, IEnumerable<Vector4D> points)
@@ -229,7 +170,7 @@ namespace RenderToy.WPF.Figures
         {
             var vertexsource3 = PrimitiveAssembly.CreatePoints(Scene);
             var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipspace = Transformation.Transform(vertexsource4, ModelViewProjection);
             var vertexclipped = Clipping.ClipPoint(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivide(vertexclipped);
             var points = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
@@ -246,7 +187,7 @@ namespace RenderToy.WPF.Figures
         {
             var vertexsource3 = PrimitiveAssembly.CreatePoints(Scene);
             var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipspace = Transformation.Transform(vertexsource4, ModelViewProjection);
             var vertexh = Transformation.HomogeneousDivide(vertexclipspace);
             var points = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawPoints(drawingContext, points);
@@ -262,7 +203,7 @@ namespace RenderToy.WPF.Figures
         {
             var vertexsource3 = PrimitiveAssembly.CreateLines(Scene);
             var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipspace = Transformation.Transform(vertexsource4, ModelViewProjection);
             var vertexclipped = Clipping.ClipLine(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivide(vertexclipped);
             var lines = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
@@ -279,7 +220,7 @@ namespace RenderToy.WPF.Figures
         {
             var vertexsource3 = PrimitiveAssembly.CreateLines(Scene);
             var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipspace = Transformation.Transform(vertexsource4, ModelViewProjection);
             var vertexh = Transformation.HomogeneousDivide(vertexclipspace);
             var lines = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawWireframe(drawingContext, lines);
@@ -313,7 +254,7 @@ namespace RenderToy.WPF.Figures
         {
             var vertexsource3 = PrimitiveAssembly.CreateTriangles(Scene);
             var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipspace = Transformation.Transform(vertexsource4, ModelViewProjection);
             var vertexclipped = Clipping.ClipTriangle(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivide(vertexclipped);
             var triangles = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
@@ -330,7 +271,7 @@ namespace RenderToy.WPF.Figures
         {
             var vertexsource3 = PrimitiveAssembly.CreateTriangles(Scene);
             var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipspace = Transformation.Transform(vertexsource4, ModelViewProjection);
             var vertexh = Transformation.HomogeneousDivide(vertexclipspace);
             var triangles = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
             Figure3DBase.DrawTriangles(drawingContext, triangles);
@@ -346,7 +287,7 @@ namespace RenderToy.WPF.Figures
         {
             var vertexsource3 = PrimitiveAssembly.CreateTriangles(Scene);
             var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipspace = Transformation.Transform(vertexsource4, ModelViewProjection);
             var vertexclipped = Clipping.ClipTriangle(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivide(vertexclipped);
             var triangles = Transformation.TransformToScreen(vertexh, ActualWidth, ActualHeight);
@@ -606,7 +547,7 @@ namespace RenderToy.WPF.Figures
             const int pixelHeight = 32;
             var vertexsource3 = PrimitiveAssembly.CreateTriangles(Scene);
             var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
-            var vertexclipspace = Transformation.Transform(vertexsource4, MVP);
+            var vertexclipspace = Transformation.Transform(vertexsource4, ModelViewProjection);
             var vertexclipped = Clipping.ClipTriangle(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivide(vertexclipped);
             Figure3DBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
@@ -888,14 +829,14 @@ namespace RenderToy.WPF.Figures
             {
                 var A = PrimitiveAssembly.CreateTriangles(Scene);
                 var B = Transformation.Vector3ToVector4(A);
-                var C = Transformation.Transform(B, MVP);
+                var C = Transformation.Transform(B, ModelViewProjection);
                 var D = Rasterization.RasterizeHomogeneous(C, pixelWidth, pixelHeight);
                 Figure3DBase.DrawBitmap(drawingContext, D, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             }
             {
                 var A = PrimitiveAssembly.CreateLines(Scene);
                 var B = Transformation.Vector3ToVector4(A);
-                var C = Transformation.Transform(B, MVP);
+                var C = Transformation.Transform(B, ModelViewProjection);
                 var D = Clipping.ClipLine(C);
                 var E = Transformation.HomogeneousDivide(D);
                 var F = Transformation.TransformToScreen(E, ActualWidth, ActualHeight);
