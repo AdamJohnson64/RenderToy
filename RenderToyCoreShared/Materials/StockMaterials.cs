@@ -32,36 +32,56 @@ namespace RenderToy.Materials
         public static GenericMaterial Glass = new GenericMaterial("Glass", Empty, Empty, White, Percent0, Percent100, 1.5);
         public static IMNNode<Vector4D> Brick()
         {
-            var val0 = new MNConstant { Value = 0.0 };
-            var val05 = new MNConstant { Value = 0.5 };
-            var val1 = new MNConstant { Value = 1.0 };
-            var val16 = new MNConstant { Value = 16.0 };
-            var val64 = new MNConstant { Value = 64.0 };
-            var val512 = new MNConstant { Value = 512.0 };
-            var texu = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 4.0 } };
-            var texv = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 4.0 } };
-            var perlinlow = new Perlin2D { U = new MNMultiply { Lhs = texu, Rhs = val16 }, V = new MNMultiply { Lhs = texv, Rhs = val16 } };
-            var perlinmid = new Perlin2D { U = new MNMultiply { Lhs = texu, Rhs = val64 }, V = new MNMultiply { Lhs = texv, Rhs = val64 } };
-            var perlinhigh = new Perlin2D { U = new MNMultiply { Lhs = texu, Rhs = val512 }, V = new MNMultiply { Lhs = texv, Rhs = val512 } };
-            var perlinband = new Perlin2D { U = new MNMultiply { Lhs = texu, Rhs = val64 }, V = new MNMultiply { Lhs = texv, Rhs = val512 } };
-            var perlinlowscale = new MNMultiply { Lhs = perlinlow, Rhs = new MNConstant { Value = 0.1 } };
-            var perlinmidscale = new MNMultiply { Lhs = new MNSaturate { Value = perlinmid }, Rhs = new MNConstant { Value = 1.25 } };
-            var perlinhighscale = new MNMultiply { Lhs = perlinhigh, Rhs = new MNConstant { Value = 0.1 } };
-            var perlinbandscale = new MNMultiply { Lhs = perlinband, Rhs = new MNConstant { Value = 0.2 } };
-            var brickmask = new MNThreshold { Value = new MNSubtract { Lhs = new BrickMask { U = texu, V = texv }, Rhs = perlinmidscale } };
-            var bricknoise = new MNMultiply { Lhs = new BrickNoise { U = texu, V = texv }, Rhs = new MNConstant { Value = 0.1 } };
-            var brickcolor = new MNAdd { Lhs = new MNAdd { Lhs = val05, Rhs = perlinbandscale }, Rhs = bricknoise };
-            var mortarcolor = new MNAdd { Lhs = new MNConstant { Value = 0.4 }, Rhs = new MNAdd { Lhs = perlinhighscale, Rhs = perlinlowscale } };
-            var colorr = new MNLerp { Value0 = mortarcolor, Value1 = brickcolor, Factor = brickmask };
-            var colorg = new MNLerp { Value0 = mortarcolor, Value1 = val0, Factor = brickmask };
-            var colorb = new MNLerp { Value0 = mortarcolor, Value1 = val0, Factor = brickmask };
-            return new MNVector4D { R = colorr, G = colorg, B = colorb, A = val1 };
+            var texu = Multiply(TexU(), Constant(4));
+            var texv = Multiply(TexV(), Constant(4));
+            var perlinlow = new Perlin2D { U = Multiply(texu, Constant(16)), V = Multiply(texv, Constant(16)) };
+            var perlinmid = new Perlin2D { U = Multiply(texu, Constant(64)), V = Multiply(texv, Constant(64)) };
+            var perlinhigh = new Perlin2D { U = Multiply(texu, Constant(512)), V = Multiply(texv, Constant(512)) };
+            var perlinband = new Perlin2D { U = Multiply(texu, Constant(64)), V = Multiply(texv, Constant(512)) };
+            var perlinlowscale = Multiply(perlinlow, Constant(0.1));
+            var perlinmidscale = Multiply(new MNSaturate { Value = perlinmid }, Constant(1.25));
+            var perlinhighscale = Multiply(perlinhigh, Constant(0.1));
+            var perlinbandscale = Multiply(perlinband, Constant(0.2));
+            var brickmask = new MNThreshold { Value = Subtract(new BrickMask { U = texu, V = texv }, perlinmidscale) };
+            var bricknoise = Multiply(new BrickNoise { U = texu, V = texv }, Constant(0.1));
+            var brickcolor = Add(Add(Constant(0.5), perlinbandscale), bricknoise);
+            var mortarcolor = Add(Constant(0.4), Add(perlinhighscale, perlinlowscale));
+            var colorr = Lerp(mortarcolor, brickcolor, brickmask);
+            var colorg = Lerp(mortarcolor, Constant(0), brickmask);
+            var colorb = Lerp(mortarcolor, Constant(0), brickmask);
+            return RGBA(colorr, colorg, colorb, Constant(1));
+        }
+        public static IMNNode<Vector4D> MarbleBlack()
+        {
+            var perlinlow = new Perlin2D { U = Multiply(TexU(), Constant(5)), V = Multiply(TexV(), Constant(5)) };
+            var perlinhigh = new Perlin2D { U = Multiply(TexU(), Constant(50)), V = Multiply(TexV(), Constant(50)) };
+            var v1 = Multiply(Power(Multiply(Constant(0.5), Add(Constant(1), Sin(Multiply(Add(TexU(), Add(Multiply(perlinlow, Constant(0.5)), Multiply(perlinhigh, Constant(0.2)))), Constant(50))))), Constant(20)), Constant(0.8));
+            var v2 = Multiply(Power(Multiply(Constant(0.5), Add(Constant(1), Sin(Multiply(Add(TexU(), Add(Multiply(perlinlow, Constant(0.5)), Constant(50))), Constant(100))))), Constant(20)), Constant(0.2));
+            var c = Add(v1, v2);
+            return RGBA(c, c, c, Constant(1));
+        }
+        public static IMNNode<Vector4D> MarbleWhite()
+        {
+            var perlinlow = new Perlin2D { U = Multiply(TexU(), Constant(5)), V = Multiply(TexV(), Constant(5)) };
+            var perlinhigh = new Perlin2D { U = Multiply(TexU(), Constant(50)), V = Multiply(TexV(), Constant(50)) };
+            var v1 = Multiply(Power(Multiply(Constant(0.5), Add(Constant(1), Sin(Multiply(Add(TexU(), Add(Multiply(perlinlow, Constant(0.5)), Multiply(perlinhigh, Constant(0.2)))), Constant(50))))), Constant(20)), Constant(0.8));
+            var v2 = Multiply(Power(Multiply(Constant(0.5), Add(Constant(1), Sin(Multiply(Add(TexU(), Add(Multiply(perlinlow, Constant(0.5)), Constant(50))), Constant(100))))), Constant(20)), Constant(0.2));
+            var c = Subtract(Constant(1), Add(v1, v2));
+            return RGBA(c, c, c, Constant(1));
         }
         public static IMNNode<Vector4D> MarbleTile()
         {
-            var u = new MNTexCoordU();
-            var v = new MNTexCoordV();
-            return new Checkerboard { Color1 = new MNMarbleWhite { U = u, V = v }, Color2 = new MarbleBlack { U = u, V = v } };
+            return new Checkerboard { Color1 = MarbleWhite(), Color2 = MarbleBlack() };
         }
+        static IMNNode<double> Constant(double value) { return new MNConstant { Value = value }; }
+        static IMNNode<double> TexU() { return new MNTexCoordU(); }
+        static IMNNode<double> TexV() { return new MNTexCoordV(); }
+        static IMNNode<double> Add(IMNNode<double> lhs, IMNNode<double> rhs) { return new MNAdd { Lhs = lhs, Rhs = rhs }; }
+        static IMNNode<double> Multiply(IMNNode<double> lhs, IMNNode<double> rhs) { return new MNMultiply { Lhs = lhs, Rhs = rhs }; }
+        static IMNNode<double> Subtract(IMNNode<double> lhs, IMNNode<double> rhs) { return new MNSubtract { Lhs = lhs, Rhs = rhs }; }
+        static IMNNode<double> Lerp(IMNNode<double> value0, IMNNode<double> value1, IMNNode<double> factor) { return new MNLerp { Value0 = value0, Value1 = value1, Factor = factor }; }
+        static IMNNode<double> Power(IMNNode<double> value, IMNNode<double> exponent) { return new MNPower { Value = value, Exponent = exponent }; }
+        static IMNNode<double> Sin(IMNNode<double> value) { return new MNSin { Value = value }; }
+        static IMNNode<Vector4D> RGBA(IMNNode<double> r, IMNNode<double> g, IMNNode<double> b, IMNNode<double> a) { return new MNVector4D { R = r, G = g, B = b, A = a }; }
     }
 }

@@ -86,10 +86,24 @@ namespace RenderToy.Materials
         public string GetName() { return "X"; }
         public double Eval(EvalContext context) { return lhs.Eval(context) * rhs.Eval(context); }
     }
+    class MNPower : IMNNode<double>, INamed
+    {
+        public string GetName() { return "Power"; }
+        public bool IsConstant() { return value.IsConstant() && exponent.IsConstant(); }
+        public double Eval(EvalContext context) { return Math.Pow(value.Eval(context), exponent.Eval(context)); }
+        public IMNNode<double> Value { get { return this.value; } set { this.value = value; } }
+        public IMNNode<double> Exponent { get { return exponent; } set { exponent = value; } }
+        protected IMNNode<double> value, exponent;
+    }
     class MNSaturate : MNUnary<double>, IMNNode<double>, INamed
     {
         public string GetName() { return "Saturate"; }
         public double Eval(EvalContext context) { double v = value.Eval(context); return v < 0 ? 0 : (v < 1 ? v : 1); }
+    }
+    class MNSin : MNUnary<double>, IMNNode<double>, INamed
+    {
+        public string GetName() { return "Sin"; }
+        public double Eval(EvalContext context) { return Math.Sin(value.Eval(context)); }
     }
     class MNThreshold : MNUnary<double>, IMNNode<double>, INamed
     {
@@ -189,40 +203,6 @@ namespace RenderToy.Materials
         public IMNNode<Vector4D> Color1 { get { return color1; } set { color1 = value; } }
         public IMNNode<Vector4D> Color2 { get { return color2; } set { color2 = value; } }
         protected IMNNode<Vector4D> color1, color2;
-    }
-    class MarbleBlack : MNSample2D<Vector4D>, IMNNode<Vector4D>, INamed
-    {
-        public string GetName() { return "Black Marble"; }
-        public bool IsConstant() { return false; }
-        public Vector4D Eval(EvalContext context)
-        {
-            double uvalue = u.Eval(context);
-            double vvalue = v.Eval(context);
-            double perlinlow = Perlin2D.PerlinNoise2D(uvalue * 5, vvalue * 5);
-            double perlinhigh = Perlin2D.PerlinNoise2D(uvalue * 50, vvalue * 50);
-            double v1 = (1 + Math.Sin((uvalue + perlinlow / 2 + perlinhigh / 5) * 50)) / 2;
-            double v2 = (1 + Math.Sin((uvalue + 50 + perlinlow / 2) * 100)) / 2;
-            v1 = Math.Pow(v1, 20) * 0.8;
-            v2 = Math.Pow(v2, 20) * 0.2;
-            double c = v1 + v2;
-            return new Vector4D(c, c, c, 1);
-        }
-    }
-    class MNMarbleWhite : MNSample2D<Vector4D>, IMNNode<Vector4D>, INamed
-    {
-        public string GetName() { return "White Marble"; }
-        public bool IsConstant() { return false; }
-        public Vector4D Eval(EvalContext context)
-        {
-            double perlinlow = Perlin2D.PerlinNoise2D(context.U * 5, context.V * 5);
-            double perlinhigh = Perlin2D.PerlinNoise2D(context.U * 50, context.V * 50);
-            double v1 = (1 + Math.Sin((context.U + perlinlow / 2 + perlinhigh / 5) * 50)) / 2;
-            double v2 = (1 + Math.Sin((context.U + 50 + perlinlow / 2) * 100)) / 2;
-            v1 = Math.Pow(v1, 20) * 0.8;
-            v2 = Math.Pow(v2, 20) * 0.2;
-            double v = 1 - (v1 + v2);
-            return new Vector4D(v, v, v, 1);
-        }
     }
     class Perlin2D : MNSample2D<double>, IMNNode<double>, INamed
     {
