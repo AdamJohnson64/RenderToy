@@ -143,6 +143,13 @@ namespace RenderToy
 				return pWrapped;
 			}
 		}
+		property System::IntPtr ManagedPtr
+		{
+			System::IntPtr get()
+			{
+				return System::IntPtr(pWrapped);
+			}
+		}
 	protected:
 		T* pWrapped;
 	};

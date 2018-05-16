@@ -46,7 +46,7 @@ namespace RenderToy.WPF
     public static class RenderD3D
     {
         #region - Section : Phase 3 - Rasterized Rendering (Direct3D 9) -
-        struct XYZWDiffuse
+        public struct XYZWDiffuse
         {
             public float X, Y, Z, W;
             public uint Diffuse;
@@ -87,7 +87,7 @@ namespace RenderToy.WPF
             device.EndScene();
             D3DHelper.CopySurface(rendertarget, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
-        struct XYZDiffuse
+        public struct XYZDiffuse
         {
             public float X, Y, Z;
             public uint Diffuse;
@@ -125,7 +125,7 @@ namespace RenderToy.WPF
             device.EndScene();
             D3DHelper.CopySurface(rendertarget, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
-        struct XYZNorDiffuseTex1
+        public struct XYZNorDiffuseTex1
         {
             public float Xp, Yp, Zp;
             public float Xn, Yn, Zn;

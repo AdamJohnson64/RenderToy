@@ -182,6 +182,11 @@
                     </ContentControl>
                 </DockPanel>
             </TabItem>
+            <!-- ==================== Accelerated DirectX Visualizer ==================== -->
+            <TabItem Header="DirectX View" DataContext="{Binding Path=Scene}">
+                <rendertoy:View3DDX Scene="{Binding}" Camera="{StaticResource Camera}"/>
+            </TabItem>
+            <!-- ==================== RenderToy Inspiration & History ==================== -->
             <TabItem Header="Interactive Document">
                 <FlowDocumentReader ViewingMode="Page">
                     <StaticResource ResourceKey="RenderToyDocument"/>
