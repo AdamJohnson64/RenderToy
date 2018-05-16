@@ -92,10 +92,11 @@ namespace RenderToy.WPF
                 if (createdvertexbuffer.VertexBuffer == null) continue;
                 var createdtexture = MementoServer.Get(transformedobject.Node.GetMaterial(), GeneratedTextureToken, () =>
                 {
-                    const int TextureSize = 1024;
+                    const int TextureSize = 256;
+                    var material = transformedobject.Node.GetMaterial() as IMNNode<Vector4D>;
+                    if (material == null) return null;
                     var texture = device.CreateTexture((uint)TextureSize, (uint)TextureSize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
                     D3DLockedRect lockit = texture.LockRect(0);
-                    var material = StockMaterials.MarbleTile();
                     EvalContext context = new EvalContext();
                     unsafe
                     {
