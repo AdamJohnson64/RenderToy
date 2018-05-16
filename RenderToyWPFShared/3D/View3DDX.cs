@@ -12,8 +12,6 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Data;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 
@@ -37,7 +35,11 @@ namespace RenderToy.WPF
         {
             d3dimage = new D3DImage();
             d3d = new Direct3D9();
-            device = d3d.CreateDevice();
+            d3dimage.IsFrontBufferAvailableChanged += (s, e) =>
+            {
+                RecreateDevice();
+            };
+            RecreateDevice();
         }
         static readonly Token GeneratedTextureToken = new Token();
         static readonly Token GeneratedVertexBufferToken = new Token();
@@ -129,8 +131,20 @@ namespace RenderToy.WPF
         }
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
-            render_width = (int)sizeInfo.NewSize.Width;
-            render_height = (int)sizeInfo.NewSize.Height;
+            RecreateSurfaces();
+        }
+        void RecreateDevice()
+        {
+            MementoServer.EvictByToken(GeneratedTextureToken);
+            MementoServer.EvictByToken(GeneratedVertexBufferToken);
+            device = d3d.CreateDevice();
+            RecreateSurfaces();
+        }
+        void RecreateSurfaces()
+        {
+            render_width = (int)ActualWidth;
+            render_height = (int)ActualHeight;
+            if (render_width == 0 || render_height == 0) return; 
             rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 1);
             depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 1);
             InvalidateVisual();

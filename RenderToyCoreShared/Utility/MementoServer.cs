@@ -18,13 +18,43 @@ namespace RenderToy.Utility
     /// </summary>
     public class MementoServer
     {
+        /// <summary>
+        /// Evict all cached data constructed with a specific token.
+        /// </summary>
+        /// <param name="token">The token identity of objects to be evicted.</param>
+        public static void EvictByToken(object token)
+        {
+            var removethese = Cache.Where(i => i.Key.Token.Target == token).ToArray();
+            foreach (var key in removethese)
+            {
+                Cache.TryRemove(key.Key, out object value);
+            }
+            if (removethese.Length > 0)
+            {
+                Debug.WriteLine("Evicting cached data; " + Cache.Count + " entries remaining.");
+            }
+        }
+        /// <summary>
+        /// Retrieve a cached object via its owner and token, or build it as required.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="owner">The owning object of the cached data.</param>
+        /// <param name="token">The token identifying this specific record.</param>
+        /// <param name="build">A function which will build the data if missing.</param>
+        /// <returns></returns>
         public static T Get<T>(object owner, object token, Func<T> build)
         {
             return (T)GetBase(owner, token, () => (T)build());
         }
+        /// <summary>
+        /// Private constructor to prevent accidental user construction.
+        /// </summary>
         MementoServer()
         {
         }
+        /// <summary>
+        /// Static initialization to prepare automatic eviction timers.
+        /// </summary>
         static MementoServer()
         {
             cleanup = new Timer((o) =>
@@ -56,6 +86,9 @@ namespace RenderToy.Utility
         }
         static ConcurrentDictionary<Key, object> Cache = new ConcurrentDictionary<Key, object>();
         static Timer cleanup;
+        /// <summary>
+        /// Keys for the cache dictionary comprising owner and token.
+        /// </summary>
         class Key
         {
             public Key(object owner, object token)
