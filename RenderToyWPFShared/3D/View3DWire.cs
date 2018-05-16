@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Cameras;
 using RenderToy.RenderControl;
 using RenderToy.SceneGraph;
 using RenderToy.Utility;
@@ -40,7 +41,7 @@ namespace RenderToy.WPF
             if (render == null) return;
             int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
             int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
-            render.SetCamera(MVP);
+            render.SetCamera(ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             render.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);

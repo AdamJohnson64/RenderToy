@@ -36,22 +36,14 @@ namespace RenderToy.Transforms
         {
             Matrix3D frame = MathHelp.CreateMatrixRotation(Rotation);
             Position += MathHelp.TransformPoint(frame, offset);
-            InvalidateTransform();
         }
         public void RotatePost(Quaternion rotate)
         {
             Rotation = Rotation * rotate;
-            InvalidateTransform();
         }
         public void RotatePre(Quaternion rotate)
         {
             Rotation = rotate * Rotation;
-            InvalidateTransform();
-        }
-        public event Action OnTransformChanged;
-        void InvalidateTransform()
-        {
-            if (OnTransformChanged != null) OnTransformChanged();
         }
         Vector3D Position = new Vector3D(0, 0, 0);
         Quaternion Rotation = new Quaternion(0, 0, 0, 1);

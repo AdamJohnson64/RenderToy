@@ -39,10 +39,7 @@ namespace RenderToy.WPF.Figures
         {
             get
             {
-                var mvp = MathHelp.Invert(Camera.Object.Transform);
-                mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
-                mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-                return mvp;
+                return Camera.ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             }
         }
         public IScene Scene
@@ -106,18 +103,18 @@ namespace RenderToy.WPF.Figures
             if (isPressedLeftShift && isPressedLeftControl)
             {
                 // Truck Mode (CTRL + SHIFT).
-                Camera.Object.TranslatePost(new Vector3D(0, 0, dy * -0.05));
+                Camera.TranslatePost(new Vector3D(0, 0, dy * -0.05));
             }
             else if (!isPressedLeftShift && isPressedLeftControl)
             {
                 // Rotate Mode (CTRL Only)
-                Camera.Object.RotatePre(new Quaternion(new Vector3D(0, 1, 0), dx * 0.05));
-                Camera.Object.RotatePost(new Quaternion(new Vector3D(1, 0, 0), dy * 0.05));
+                Camera.RotatePre(new Quaternion(new Vector3D(0, 1, 0), dx * 0.05));
+                Camera.RotatePost(new Quaternion(new Vector3D(1, 0, 0), dy * 0.05));
             }
             else if (!isPressedLeftShift && !isPressedLeftControl)
             {
                 // Translation Mode (no modifier keys).
-                Camera.Object.TranslatePost(new Vector3D(dx * -0.05, dy * 0.05, 0));
+                Camera.TranslatePost(new Vector3D(dx * -0.05, dy * 0.05, 0));
             }
             InvalidateVisual();
             e.Handled = true;
@@ -125,7 +122,7 @@ namespace RenderToy.WPF.Figures
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
-            Camera.Object.TranslatePost(new Vector3D(0, 0, e.Delta * 0.01));
+            Camera.TranslatePost(new Vector3D(0, 0, e.Delta * 0.01));
             e.Handled = true;
         }
         bool isDragging = false;
@@ -226,7 +223,7 @@ namespace RenderToy.WPF.Figures
     {
         public FigurePointIntro()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
@@ -243,7 +240,7 @@ namespace RenderToy.WPF.Figures
     {
         public FigurePointNegativeW()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
@@ -259,7 +256,7 @@ namespace RenderToy.WPF.Figures
     {
         public FigureWireframeIntro()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
@@ -276,7 +273,7 @@ namespace RenderToy.WPF.Figures
     {
         public FigureWireframeNegativeW()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
@@ -292,13 +289,11 @@ namespace RenderToy.WPF.Figures
     {
         public FigureWireframeClipped()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
-            var mvp = MathHelp.Invert(Camera.Object.Transform);
-            mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
-            mvp = MathHelp.Multiply(mvp, Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+            var mvp = Camera.ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             var vertexsource3 = PrimitiveAssembly.CreateLines(Scene);
             var vertexsource4 = Transformation.Vector3ToVector4(vertexsource3);
             var vertexclipspace = Transformation.Transform(vertexsource4, mvp);
@@ -312,7 +307,7 @@ namespace RenderToy.WPF.Figures
     {
         public FigureTriangleIntro()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
@@ -329,7 +324,7 @@ namespace RenderToy.WPF.Figures
     {
         public FigureTriangleNegativeW()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
@@ -345,7 +340,7 @@ namespace RenderToy.WPF.Figures
     {
         public FigureTriangleClipped()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(2, 2, 0), new Vector3D(-10, 0, 10), new Vector3D(0, 1, 0));
         }
         protected override void RenderFigure(DrawingContext drawingContext)
         {
@@ -602,7 +597,7 @@ namespace RenderToy.WPF.Figures
     {
         public FigureRasterScene()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
         }
         protected override void RenderFigure(DrawingContext drawingContext)
@@ -883,7 +878,7 @@ namespace RenderToy.WPF.Figures
     {
         public FigureRasterSceneHomogeneous()
         {
-            Camera.Object.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
+            Camera.Transform = MathHelp.CreateMatrixLookAt(new Vector3D(10, 10, -20), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0));
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
         }
         protected override void RenderFigure(DrawingContext drawingContext)

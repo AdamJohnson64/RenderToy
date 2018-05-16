@@ -106,9 +106,9 @@
                     </Menu>
                     <Grid>
                         <!-- Main Viewport Layer -->
-                        <rendertoy:View3DUser x:Name="ViewMain" Camera="{StaticResource Camera}"/>
+                        <rendertoy:View3DUser x:Name="ViewMain" Scene="{Binding}" ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
                         <!-- Wireframe Layer -->
-                        <rendertoy:View3DWire x:Name="ViewWireframe" IsHitTestVisible="False" Camera="{StaticResource Camera}" Opacity="0.5"/>
+                        <rendertoy:View3DWire x:Name="ViewWireframe" IsHitTestVisible="False" Scene="{Binding}" ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" Opacity="0.5"/>
                         <!-- PIP Preview -->
                         <Border x:Name="ViewPreview" HorizontalAlignment="Right" VerticalAlignment="Top" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="8" Margin="8" Padding="4">
                             <Border.Background>
@@ -126,7 +126,7 @@
                             <StackPanel>
                                 <TextBlock HorizontalAlignment="Left" Foreground="DarkGray" Text="Preview"/>
                                 <Border Background="White" BorderBrush="DarkGray" BorderThickness="1" CornerRadius="4" Padding="2">
-                                    <rendertoy:View3DUser Width="192" Height="128" Camera="{StaticResource Camera}"/>
+                                    <rendertoy:View3DUser Width="192" Height="128" Scene="{Binding}" ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}"/>
                                 </Border>
                             </StackPanel>
                         </Border>
@@ -184,7 +184,7 @@
             </TabItem>
             <!-- ==================== Accelerated DirectX Visualizer ==================== -->
             <TabItem Header="DirectX View" DataContext="{Binding Path=Scene}">
-                <rendertoy:View3DDX Scene="{Binding}" Camera="{StaticResource Camera}"/>
+                <rendertoy:View3DDX Scene="{Binding}" ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
             </TabItem>
             <!-- ==================== RenderToy Inspiration & History ==================== -->
             <TabItem Header="Interactive Document">

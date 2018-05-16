@@ -194,6 +194,24 @@ namespace RenderToy
 			TRY_D3D(pWrapped->UnlockRect(Level));
 		}
 	};
+	public ref class Direct3DVertexBuffer9 : public Direct3DWrap<IDirect3DVertexBuffer9>
+	{
+	public:
+		Direct3DVertexBuffer9(IDirect3DVertexBuffer9 *pObject)
+		{
+			pWrapped = pObject;
+		}
+		System::IntPtr Lock(UINT OffsetToLock, UINT SizeToLock, DWORD Flags)
+		{
+			void* ppbData = nullptr;
+			TRY_D3D(pWrapped->Lock(OffsetToLock, SizeToLock, &ppbData, Flags));
+			return System::IntPtr(ppbData);
+		}
+		void Unlock()
+		{
+			TRY_D3D(pWrapped->Unlock());
+		}
+	};
 	public ref class Direct3DDevice9 : public Direct3DWrap<IDirect3DDevice9>
 	{
 	public:
@@ -201,19 +219,25 @@ namespace RenderToy
 		{
 			pWrapped = pObject;
 		}
-		Direct3DTexture9^ CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, DWORD Usage, D3DFormat Format, D3DPool Pool)
+		Direct3DTexture9^ CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFormat Format, D3DPool Pool)
 		{
 			IDirect3DTexture9 *ppTexture = nullptr;
 			TRY_D3D(pWrapped->CreateTexture(Width, Height, Levels, Usage, (D3DFORMAT)Format, (D3DPOOL)Pool, &ppTexture, nullptr));
 			return gcnew Direct3DTexture9(ppTexture);
 		}
-		Direct3DSurface9^ CreateRenderTarget(unsigned int Width, unsigned int Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Lockable)
+		Direct3DVertexBuffer9^ CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPool Pool)
+		{
+			IDirect3DVertexBuffer9 *ppVertexBuffer = nullptr;
+			TRY_D3D(pWrapped->CreateVertexBuffer(Length, Usage, FVF, (D3DPOOL)Pool, &ppVertexBuffer, nullptr));
+			return gcnew Direct3DVertexBuffer9(ppVertexBuffer);
+		}
+		Direct3DSurface9^ CreateRenderTarget(UINT Width, UINT Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Lockable)
 		{
 			IDirect3DSurface9 *ppSurface = nullptr;
 			TRY_D3D(pWrapped->CreateRenderTarget(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Lockable, &ppSurface, nullptr));
 			return gcnew Direct3DSurface9(ppSurface);
 		}
-		Direct3DSurface9^ CreateDepthStencilSurface(unsigned int Width, unsigned int Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Discard)
+		Direct3DSurface9^ CreateDepthStencilSurface(UINT Width, UINT Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Discard)
 		{
 			IDirect3DSurface9 *ppSurface = nullptr;
 			TRY_D3D(pWrapped->CreateDepthStencilSurface(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Discard, &ppSurface, nullptr));
@@ -255,7 +279,15 @@ namespace RenderToy
 		{
 			TRY_D3D(pWrapped->SetFVF((DWORD)FVF));
 		}
-		void DrawPrimitiveUP(D3DPrimitiveType PrimitiveType, unsigned int PrimitiveCount, System::IntPtr ^pVertexStreamZeroData, unsigned int VertexStreamZeroStride)
+		void SetStreamSource(UINT StreamNumber, Direct3DVertexBuffer9 ^pStreamData, UINT OffsetInBytes, UINT Stride)
+		{
+			TRY_D3D(pWrapped->SetStreamSource(StreamNumber, pStreamData->Wrapped, OffsetInBytes, Stride));
+		}
+		void DrawPrimitive(D3DPrimitiveType PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
+		{
+			TRY_D3D(pWrapped->DrawPrimitive((D3DPRIMITIVETYPE)PrimitiveType, StartVertex, PrimitiveCount));
+		}
+		void DrawPrimitiveUP(D3DPrimitiveType PrimitiveType, UINT PrimitiveCount, System::IntPtr ^pVertexStreamZeroData, UINT VertexStreamZeroStride)
 		{
 			TRY_D3D(pWrapped->DrawPrimitiveUP((D3DPRIMITIVETYPE)PrimitiveType, PrimitiveCount, pVertexStreamZeroData->ToPointer(), VertexStreamZeroStride));
 		}
