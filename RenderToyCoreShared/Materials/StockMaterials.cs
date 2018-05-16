@@ -59,7 +59,9 @@ namespace RenderToy.Materials
         }
         public static IMNNode<Vector4D> MarbleTile()
         {
-            return new Checkerboard { Color1 = new MNMarbleWhite(), Color2 = new MarbleBlack() };
+            var u = new MNTexCoordU();
+            var v = new MNTexCoordV();
+            return new Checkerboard { Color1 = new MNMarbleWhite { U = u, V = v }, Color2 = new MarbleBlack { U = u, V = v } };
         }
     }
 }

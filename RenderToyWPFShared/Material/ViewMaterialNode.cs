@@ -77,24 +77,13 @@ namespace RenderToy.WPF
             return new Point(ActualWidth - 4, (find.Index + 0.5) * ActualHeight / properties.Length);
         }
     }
-    class MaterialNameConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            var material = value as IMaterial;
-            if (material == null) return "NULL";
-            return material.GetMaterialName();
-        }
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    class ShortTypeNameConverter : IValueConverter
+    class NamedConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null) return "NULL";
+            var named = value as INamed;
+            if (named != null) return named.GetName();
             return value.GetType().Name;
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

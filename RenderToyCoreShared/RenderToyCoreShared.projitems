@@ -49,6 +49,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Transforms\TransformQuaternion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\CallHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\Clipping.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\INamed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\Teapot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\Interop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\MathHelp.cs" />
