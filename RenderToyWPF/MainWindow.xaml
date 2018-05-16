@@ -7,8 +7,8 @@
         xmlns:rendertoy="clr-namespace:RenderToy.WPF"
         mc:Ignorable="d"
         Title="RenderToy Experiment" Height="600" Width="1024">
-    <UserControl>
-        <UserControl.Resources>
+    <DockPanel>
+        <DockPanel.Resources>
             <rendertoy:Camera x:Key="Camera"/>
             <rendertoy:NamedConverter x:Key="NamedConverter"/>
             <ToolTip x:Key="GraphNodeToolTip">
@@ -84,27 +84,24 @@
                 <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNTexCoordV}" DataTemplate="{StaticResource GraphNodeTexCoordV}"/>
                 <rendertoy:TypeBasedDataTemplate DataTemplate="{StaticResource GraphNodeTemplate}"/>
             </rendertoy:TypeBasedDataTemplateSelector>
-        </UserControl.Resources>
+        </DockPanel.Resources>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="New" Command="{x:Static rendertoy:MainWindow.CommandSceneNew}"/>
+                <MenuItem Header="Open" Command="{x:Static rendertoy:MainWindow.CommandSceneOpen}"/>
+            </MenuItem>
+            <MenuItem Header="Debug">
+                <MenuItem Header="Performance Trace" Command="{x:Static rendertoy:MainWindow.CommandDebugToolPerformanceTrace}"/>
+            </MenuItem>
+        </Menu>
         <TabControl>
             <TabItem Header="Interactive View" DataContext="{Binding Path=Scene}">
                 <DockPanel>
                     <!-- Menu -->
-                    <Menu DockPanel.Dock="Left">
-                        <Menu.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel/>
-                            </ItemsPanelTemplate>
-                        </Menu.ItemsPanel>
-                        <MenuItem Header="File" BorderBrush="Black" BorderThickness="1" Margin="2">
-                            <MenuItem Header="New" Command="{x:Static rendertoy:MainWindow.CommandSceneNew}"/>
-                            <MenuItem Header="Open" Command="{x:Static rendertoy:MainWindow.CommandSceneOpen}"/>
-                        </MenuItem>
-                        <MenuItem Header="View" BorderBrush="Black" BorderThickness="1" Margin="2">
+                    <Menu DockPanel.Dock="Top">
+                        <MenuItem Header="View">
                             <MenuItem Header="Preview" Command="{x:Static rendertoy:MainWindow.CommandRenderPreviewsToggle}"/>
                             <MenuItem Header="Wireframe" Command="{x:Static rendertoy:MainWindow.CommandRenderWireframeToggle}"/>
-                        </MenuItem>
-                        <MenuItem Header="Debug" BorderBrush="Black" BorderThickness="1" Margin="2">
-                            <MenuItem Header="Performance Trace" Command="{x:Static rendertoy:MainWindow.CommandDebugToolPerformanceTrace}"/>
                         </MenuItem>
                     </Menu>
                     <Grid>
@@ -191,5 +188,5 @@
                 </FlowDocumentReader>
             </TabItem>
         </TabControl>
-    </UserControl>
+    </DockPanel>
 </Window>
