@@ -39,9 +39,6 @@ namespace RenderToy.WPF
             d3d = new Direct3D9();
             device = d3d.CreateDevice();
         }
-        class Token
-        {
-        }
         static readonly Token GeneratedTextureToken = new Token();
         static readonly Token GeneratedVertexBufferToken = new Token();
         struct VertexBufferInfo

@@ -125,6 +125,7 @@ namespace RenderToy.Utility
                 binarywriter.Write((int)length);
             }
         }
+        static Token MeshBVHToken = new Token();
         void Serialize(TransformedObject obj)
         {
             // Write the transform.
@@ -147,6 +148,16 @@ namespace RenderToy.Utility
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_CUBE);
                 binarywriter.Write((int)0);
+            }
+            else if (primitive is Mesh)
+            {
+                var meshbvh = MementoServer.Get(primitive, MeshBVHToken, () =>
+                {
+                    var mesh = (Mesh)primitive;
+                    return MeshBVH.Create(Mesh.FlattenIndices(mesh.Vertices, mesh.Triangles).ToArray());
+                });
+                binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
+                EmitAndQueue(meshbvh);
             }
             else if (primitive is MeshBVH)
             {

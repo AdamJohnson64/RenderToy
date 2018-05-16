@@ -40,7 +40,7 @@ namespace RenderToy.WPF
                 {
                     var scene = new Scene();
                     scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, StockMaterials.MarbleTile()));
-                    scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadBVHFromPath(ofd.FileName), StockMaterials.LightGray, StockMaterials.PlasticRed));
+                    scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.LightGray, StockMaterials.PlasticRed));
                     DataContext = new Document(scene);
                 }
                 e.Handled = true;

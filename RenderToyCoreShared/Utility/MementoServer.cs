@@ -81,4 +81,11 @@ namespace RenderToy.Utility
             public readonly WeakReference Token;
         }
     }
+    /// <summary>
+    /// A generic dummy token to use in the MementoServer.
+    /// You should create a token for each type of data served by the MementoServer.
+    /// </summary>
+    class Token
+    {
+    }
 }

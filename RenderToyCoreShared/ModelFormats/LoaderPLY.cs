@@ -19,10 +19,6 @@ namespace RenderToy.ModelFormat
         {
             return LoadFromPath(path, (v,i) => new Mesh(v, i));
         }
-        public static IPrimitive LoadBVHFromPath(string path)
-        {
-            return LoadFromPath(path, (v,i) => MeshBVH.Create(Mesh.FlattenIndices(v.ToArray(), i.ToArray()).ToArray()));
-        }
         delegate IPrimitive ConditionMesh(IReadOnlyList<Vector3D> vertices, IReadOnlyList<TriIndex> triangles);
         static IPrimitive LoadFromPath(string path, ConditionMesh conditioner)
         {

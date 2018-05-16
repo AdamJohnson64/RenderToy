@@ -27,6 +27,11 @@ namespace RenderToy.PipelineModel
             {
                 return CreateTrianglesDX(uv);
             }
+            Mesh mesh = prim as Mesh;
+            if (mesh != null)
+            {
+                return CreateTrianglesDX(mesh);
+            }
             MeshBVH meshbvh = prim as MeshBVH;
             if (meshbvh != null)
             {
@@ -57,6 +62,21 @@ namespace RenderToy.PipelineModel
                     yield return v00; yield return v10; yield return v11;
                     yield return v11; yield return v01; yield return v00;
                 }
+            }
+        }
+        /// <summary>
+        /// Create triangles representing a simple mesh.
+        /// </summary>
+        /// <param name="mesh">The mesh.</param>
+        /// <returns>A stream of triangles describing the surface of this primitive.</returns>
+        public static IEnumerable<VertexDX> CreateTrianglesDX(Mesh mesh)
+        {
+            var v = mesh.Vertices;
+            foreach (var t in mesh.Triangles)
+            {
+                yield return new VertexDX { Position = v[t.Index0] };
+                yield return new VertexDX { Position = v[t.Index1] };
+                yield return new VertexDX { Position = v[t.Index2] };
             }
         }
         /// <summary>
