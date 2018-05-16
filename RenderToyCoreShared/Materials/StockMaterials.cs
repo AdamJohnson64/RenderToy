@@ -47,9 +47,8 @@ namespace RenderToy.Materials
             var brickcolor = Add(Add(Constant(0.5), perlinbandscale), bricknoise);
             var mortarcolor = Add(Constant(0.4), Add(perlinhighscale, perlinlowscale));
             var colorr = Lerp(mortarcolor, brickcolor, brickmask);
-            var colorg = Lerp(mortarcolor, Constant(0), brickmask);
-            var colorb = Lerp(mortarcolor, Constant(0), brickmask);
-            return RGBA(colorr, colorg, colorb, Constant(1));
+            var color = Lerp(mortarcolor, Constant(0), brickmask);
+            return RGBA(colorr, color, color, Constant(1));
         }
         public static IMNNode<Vector4D> MarbleBlack()
         {

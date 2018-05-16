@@ -44,7 +44,7 @@ namespace RenderToy.WPF
         #region - Section : Graph Handling -
         class NodeConnection
         {
-            public PropertyInfo Origin;
+            public PropertyInfo[] Origin;
             public NodePosition Target;
         }
         class NodePosition
@@ -125,7 +125,8 @@ namespace RenderToy.WPF
                 node.GetType().GetProperties()
                 .Where(i => typeof(IMaterial).IsAssignableFrom(i.PropertyType))
                 .Select(i => new { Origin = i, Value = (IMaterial)i.GetValue(node) })
-                .Select(i => new NodeConnection { Origin = i.Origin, Target = GenerateVisualTree(i.Value) });
+                .GroupBy(i => i.Value)
+                .Select(i => new NodeConnection { Origin = i.Select(j => j.Origin).ToArray(), Target = GenerateVisualTree(i.Key) });
             output.Children = subnodes.ToArray();
             if (NodeTemplate != null)
             {
@@ -221,8 +222,11 @@ namespace RenderToy.WPF
                 if (interfaces == null) continue;
                 foreach (var child in parent.Children)
                 {
-                    var interfacepoint = interfaces.GetInputHandleLocation(child.Origin);
-                    drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(parent.X + interfacepoint.X, parent.Y + interfacepoint.Y), new Point(child.Target.X, child.Target.Y + GetHeight(child.Target) / 2));
+                    foreach (var origin in child.Origin)
+                    {
+                        var interfacepoint = interfaces.GetInputHandleLocation(origin);
+                        drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(parent.X + interfacepoint.X, parent.Y + interfacepoint.Y), new Point(child.Target.X, child.Target.Y + GetHeight(child.Target) / 2));
+                    }
                 }
             }
         }
