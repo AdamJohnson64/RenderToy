@@ -1,4 +1,9 @@
-﻿// The pipeline is our ticket to fully configurable render process from source
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
+
+// The pipeline is our ticket to fully configurable render process from source
 // data to display.
 //
 // By modelling the render pipeline as functional components we can combine

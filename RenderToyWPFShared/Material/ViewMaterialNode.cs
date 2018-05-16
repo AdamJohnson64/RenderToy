@@ -1,4 +1,9 @@
-﻿using RenderToy.Materials;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
+
+using RenderToy.Materials;
 using RenderToy.Utility;
 using System;
 using System.Globalization;
