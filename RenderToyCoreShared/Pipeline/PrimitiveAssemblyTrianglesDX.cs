@@ -3,9 +3,11 @@
 // Copyright (C) Adam Johnson 2017
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Meshes;
 using RenderToy.Primitives;
 using RenderToy.Utility;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RenderToy.PipelineModel
 {
@@ -24,6 +26,11 @@ namespace RenderToy.PipelineModel
             if (uv != null)
             {
                 return CreateTrianglesDX(uv);
+            }
+            MeshBVH meshbvh = prim as MeshBVH;
+            if (meshbvh != null)
+            {
+                return CreateTrianglesDX(meshbvh);
             }
             return new VertexDX[] { };
         }
@@ -49,6 +56,25 @@ namespace RenderToy.PipelineModel
                     VertexDX v11 = new VertexDX { Position = p311, TexCoord = uv11 };
                     yield return v00; yield return v10; yield return v11;
                     yield return v11; yield return v01; yield return v00;
+                }
+            }
+        }
+        /// <summary>
+        /// Create triangles representing a BVH split mesh.
+        /// </summary>
+        /// <param name="meshbvh">The mesh.</param>
+        /// <returns>A stream of triangles describing the surface of this primitive.</returns>
+        public static IEnumerable<VertexDX> CreateTrianglesDX(MeshBVH meshbvh)
+        {
+            var nodes_with_triangles = MeshBVH.EnumerateNodes(meshbvh)
+                .Where(x => x.Triangles != null);
+            foreach (var node in nodes_with_triangles)
+            {
+                foreach (var t in node.Triangles)
+                {
+                    yield return new VertexDX { Position = t.P0 };
+                    yield return new VertexDX { Position = t.P1 };
+                    yield return new VertexDX { Position = t.P2 };
                 }
             }
         }
