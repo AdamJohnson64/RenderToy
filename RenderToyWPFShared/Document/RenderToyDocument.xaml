@@ -1,9 +1,26 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:RenderToy.WPF.Figures">
+    xmlns:local="clr-namespace:RenderToy.WPF.Figures"
+    xmlns:rendertoy="clr-namespace:RenderToy.WPF">
 <FlowDocument x:Key="RenderToyDocument"  ColumnWidth="400" FontSize="14" FontFamily="Georgia">
-
+<FlowDocument.Resources>
+    <rendertoy:NamedConverter x:Key="NamedConverter"/>
+    <DataTemplate x:Key="MaterialGraphNode">
+        <rendertoy:ViewMaterialNode>
+            <rendertoy:ViewMaterialNode.ContentTemplate>
+                <DataTemplate>
+                    <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2">
+                        <StackPanel Orientation="Horizontal">
+                            <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="32" MaterialHeight="32" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Converter={StaticResource NamedConverter}}" Margin="2" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </rendertoy:ViewMaterialNode.ContentTemplate>
+        </rendertoy:ViewMaterialNode>
+    </DataTemplate>
+</FlowDocument.Resources>
 <!-- ====================================================================== -->
 <!-- MAJOR SECTION : Title, Introduction and Inspiration -->
 <!-- ====================================================================== -->
@@ -13,8 +30,13 @@
 </Paragraph>
 
 <Paragraph><Italic>
+Welcome to RenderToy!<LineBreak/>
+<LineBreak/>
 This document is transcribed from the original into live XPS format. The images in this document are generated via code for demonstration purposes.
 </Italic></Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
 
 <Paragraph>
 3D Graphics is a <Italic>huge</Italic> topic. Back when I started studying this in the 90s some of the concepts were as immature as my view of them. My first rasterizer was in screen space and interpolated incorrectly (without the homogeneous divide) and I didn't even know what linear algebra was at that point. I’d screengrab the code but it’s in Turbo Pascal and it won’t run anymore...
@@ -30,12 +52,17 @@ We will cover several approaches to rendering in a demo style:
 <ListItem><Paragraph><Bold>Line Rendering (Wireframe)</Bold> - Fast rendering and acceptable working quality.</Paragraph></ListItem>
 <ListItem><Paragraph><Bold>Triangle Rasterization</Bold> - Slow rendering but good working quality.</Paragraph></ListItem>
 <ListItem><Paragraph><Bold>Whitted Raytracing</Bold> - Very slow rendering but good quality.</Paragraph></ListItem>
-<ListItem><Paragraph><Bold>Path Tracing</Bold> - Incredible slow rendering but very good quality.</Paragraph></ListItem>
+<ListItem><Paragraph><Bold>Path Tracing</Bold> - Incredibly slow rendering but very good quality.</Paragraph></ListItem>
 </List>
 <Paragraph>
 We’ll start from point rendering because it insulates us from the complexities of rendering enough that we can work on the 3D aspects of the problem. Bear in mind that no-one renders like this normally because the results are pretty poor. There’s going to be lots of empty space on the screen.
 </Paragraph>
 <Paragraph FontSize="24">Software Goals</Paragraph>
+<Paragraph>
+We're not aiming for realtime-capable amazingly fast rendering. You won't be able to use the code presented here to create 60Hz 3D games with fancy shading and that's not really our intention. Rather, we want to produce <Italic>readable</Italic> code that is reasonably self-explanatory. We also want to produce <Italic>flexible</Italic> code that is easy to adapt for new experiments. We're not going to exploit fancy SIMD/AVX features of the Intel CPU in order to keep everything simple and clear.<LineBreak/>
+<LineBreak/>
+More formally we're looking for:
+</Paragraph>
 <Paragraph><Italic>Modern.</Italic></Paragraph>
 <List>
 <ListItem><Paragraph>Modern Operating System (Windows 10).</Paragraph></ListItem>
@@ -57,12 +84,21 @@ We’ll start from point rendering because it insulates us from the complexities
 <ListItem><Paragraph>Split out controls (etc) for the express purpose of simple reuse.</Paragraph></ListItem>
 </List>
 
+<!-- ====================================================================== -->
+<!-- MAJOR SECTION : Warm Up - Introduce Common Features -->
+<!-- ====================================================================== -->
+<Paragraph BreakPageBefore="True" FontSize="24">Warm Up</Paragraph>
+
+<Paragraph>
+Before we dive in to the actual rendering process we're going to need some things to draw. We're not going to package any amazing artist-defined models in here because we're aiming for a compact application. I'm also not much of an artist so we'll need something else.
+</Paragraph>
+
 <!-- Section Break -->
 <BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
 
 <Paragraph FontSize="24">UV Parametric Surfaces</Paragraph>
 <Paragraph>
-Before we start drawing anything we have to choose something to draw. For our purposes we’ll choose a class of surfaces called <Bold>uv parametric surfaces</Bold>. There’s nothing special about these beyond the fact that they take a pair of values to define their surface in 3 dimensional space.
+For our purposes we’ll choose a class of surfaces called <Italic>uv parametric surfaces</Italic>. There’s nothing special about these beyond the fact that they take a pair of values to define their surface in 3 dimensional space.
 </Paragraph>
 <Paragraph FontFamily="Times New Roman" FontStyle="Italic" TextAlignment="Center">f(u,v)=[x,y,z]</Paragraph>
 <Paragraph>
@@ -731,6 +767,49 @@ Here's the same triangle again rendered with the homogeneous method:
 Note it's completely identical in function. We can just as easily throw the entire scene into the rasterizer and obtain perspective-correct color interpolation with no clipping required.
 </Paragraph>
 <BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureRasterSceneHomogeneous Width="256" Height="256"/></Border></BlockUIContainer>
+<Paragraph>
+Another thing worth noting is that this is the way your GPU <Italic>actually</Italic> renders triangles - this is what your hardware is doing. Interpolating in our old system actually turns out to be quite a pain so we're going to ignore that fancy footwork we've been talking about and concentrate on this approach.
+</Paragraph>
+
+<!-- ====================================================================== -->
+<!-- MAJOR SECTION : Texturing -->
+<!-- ====================================================================== -->
+<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Texturing</Paragraph>
+<Paragraph>
+So far we've been drawing all of our triangles with either a flat color or a simple RGB gradient. This is adequate to demonstrate filling and interpolating but it doesn't look particularly inspiring. To improve on this we introduce textures. Specifically we're going to concentrate on <Italic>Procedural Textures</Italic> as these are compact and easy to work with at multiple resolutions. With a bit of simple mathematics you can get some interesting results...
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTextureMarbleTile/></Border></BlockUIContainer>
+<Paragraph>
+Let's look at how this works:
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8">
+    <rendertoy:ViewZoom  Width="256" Height="256">
+        <local:FigureTextureGraphMarbleTile NodeTemplate="{StaticResource MaterialGraphNode}"/>
+    </rendertoy:ViewZoom>
+</Border></BlockUIContainer>
+<Paragraph>
+Looks complicated but it's quite simple once it's broken down. The node on the left is the output node which is an RGBA compositor - it takes four inputs defined as double-precision floating point values and combines them into a 4D vector forming an RGBA value. The connection points on the right of this node are the expression trees that produce the floating point values. In this case our checkerboard is a monochrome image so we see the same expression tree feeding into R, G, and B to produce a grayscale value. You may also notice some of the primitive math functions in the expression tree along with a few exotic functions. We'll look at those exotic functions here.
+</Paragraph>
+
+<!-- Section Break -->
+<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="2" Fill="DarkGray"/></BlockUIContainer>
+
+<Paragraph FontSize="24">Perlin Noise</Paragraph>
+<Paragraph>
+The humble <Italic>Perlin Noise</Italic> is a mainstay for many procedural textures owing to the fact that it's relatively fast to evaluate and produces interesting features that can make images look more natural. We generate this noise pattern by interpolating values inside a regular grid and overlaying multiple smaller grids with different amplitudes (i.e. fractal). Each of these summed signals is called an <Italic>octave</Italic> and with enough of them we get some quite detailed patterns.
+</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTexturePerlinNoise/></Border></BlockUIContainer>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8">
+    <rendertoy:ViewZoom  Width="256" Height="256">
+        <local:FigureTextureGraphPerlinNoise NodeTemplate="{StaticResource MaterialGraphNode}"/>
+    </rendertoy:ViewZoom>
+</Border></BlockUIContainer>
+<Paragraph>
+In this network we are producing the monochrome image of a 2D Perlin Noise function. On the left you see the normal RGBA output fed from the Perlin 2D function. On the right you can see a U and V input - these are the <Italic>interpolator values</Italic> and we need two of them in 2D. When dealing with textures on a GPU we take these numbers from the UV coordinates on the mesh and they're usually scaled between zero and one. Values outside the normal range can exhibit a variety of custom behaviors including tiling, mirroring, clamping, etc. For now we'll just treat the surface as defined from zero to one. We also scale the UV inputs to compress the noise pattern into a higher frequency noise. 
+</Paragraph>
+<Paragraph>
+<Italic>To be continued...</Italic>
+</Paragraph>
 
 </FlowDocument>
 </ResourceDictionary>

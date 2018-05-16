@@ -95,6 +95,12 @@
             </MenuItem>
         </Menu>
         <TabControl>
+            <!-- ==================== RenderToy Inspiration & History ==================== -->
+            <TabItem Header="Interactive Document">
+                <FlowDocumentReader ViewingMode="Page">
+                    <StaticResource ResourceKey="RenderToyDocument"/>
+                </FlowDocumentReader>
+            </TabItem>
             <TabItem Header="Interactive View" DataContext="{Binding Path=Scene}">
                 <DockPanel>
                     <!-- Menu -->
@@ -185,12 +191,6 @@
             <!-- ==================== Accelerated DirectX Visualizer ==================== -->
             <TabItem Header="DirectX View" DataContext="{Binding Path=Scene}">
                 <rendertoy:View3DDX Scene="{Binding}" ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
-            </TabItem>
-            <!-- ==================== RenderToy Inspiration & History ==================== -->
-            <TabItem Header="Interactive Document">
-                <FlowDocumentReader ViewingMode="Page">
-                    <StaticResource ResourceKey="RenderToyDocument"/>
-                </FlowDocumentReader>
             </TabItem>
         </TabControl>
     </DockPanel>

@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -847,6 +848,43 @@ namespace RenderToy.WPF.Figures
                 var F = Transformation.TransformToScreen(E, ActualWidth, ActualHeight);
                 Figure3DBase.DrawWireframe(drawingContext, F);
             }
+        }
+    }
+    #endregion
+    #region - Section : Texture Figures -
+    class FigureTextureMarbleTile : Image
+    {
+        public FigureTextureMarbleTile()
+        {
+            Source = MaterialBitmapConverter.ConvertToBitmap(StockMaterials.MarbleTile(), 128, 128);
+        }
+    }
+    class FigureTextureGraphMarbleTile : ViewMaterialGraph
+    {
+        public FigureTextureGraphMarbleTile()
+        {
+            Root = StockMaterials.MarbleTile();
+        }
+    }
+    class FigureTexturePerlinNoise : Image
+    {
+        public FigureTexturePerlinNoise()
+        {
+            Source = MaterialBitmapConverter.ConvertToBitmap(Material(), 128, 128);
+        }
+        public static IMNNode<Vector4D> Material()
+        {
+            var u = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 50 } };
+            var v = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 50 } };
+            var perlin = new Perlin2D { U = u, V = v };
+            return new MNVector4D { R = perlin, G = perlin, B = perlin, A = new MNConstant { Value = 1 } };
+        }
+    }
+    class FigureTextureGraphPerlinNoise : ViewMaterialGraph
+    {
+        public FigureTextureGraphPerlinNoise()
+        {
+            Root = FigureTexturePerlinNoise.Material();
         }
     }
     #endregion
