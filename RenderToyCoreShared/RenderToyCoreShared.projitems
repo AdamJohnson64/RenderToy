@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\KDTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\OctreeREF.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\Octree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModelFormats\LoaderBPT.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModelFormats\LoaderPLY.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\PrimitiveAssemblyPoints.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\PrimitiveAssemblyTriangles.cs" />

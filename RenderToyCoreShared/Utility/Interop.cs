@@ -5,6 +5,7 @@
 
 using RenderToy.Materials;
 using RenderToy.Meshes;
+using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using System;
@@ -126,6 +127,20 @@ namespace RenderToy.Utility
             }
         }
         static Token MeshBVHToken = new Token();
+        static IEnumerable<T[]> Split<T>(IEnumerable<T> elements, int group)
+        {
+            var iter = elements.GetEnumerator();
+            while (true)
+            {
+                T[] build = new T[group];
+                for (int i = 0; i < group; ++i)
+                {
+                    if (!iter.MoveNext()) yield break;
+                    build[i] = iter.Current;
+                }
+                yield return build;
+            }
+        }
         void Serialize(TransformedObject obj)
         {
             // Write the transform.
@@ -163,6 +178,17 @@ namespace RenderToy.Utility
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
                 EmitAndQueue(primitive);
+            }
+            else if (primitive is IParametricUV)
+            {
+                var meshbvh = MementoServer.Get(primitive, MeshBVHToken, () =>
+                {
+                    var mesh = (IParametricUV)primitive;
+                    var triangles = Split(PrimitiveAssembly.CreateTriangles(mesh), 3).Select(i => new Triangle3D(i[0], i[1], i[2]));
+                    return MeshBVH.Create(triangles.ToArray());
+                });
+                binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
+                EmitAndQueue(meshbvh);
             }
             else
             {

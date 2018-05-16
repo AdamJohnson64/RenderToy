@@ -40,7 +40,17 @@ namespace RenderToy.WPF
                 {
                     var scene = new Scene();
                     scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, StockMaterials.MarbleTile()));
-                    scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.LightGray, StockMaterials.PlasticRed));
+                    if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".BPT")
+                    {
+                        foreach (var primitive in LoaderBPT.LoadFromPath(ofd.FileName))
+                        {
+                            scene.AddChild(new Node("Bezier Patch", new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.LightGray, StockMaterials.PlasticRed));
+                        }
+                    }
+                    else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".PLY")
+                    {
+                        scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.LightGray, StockMaterials.PlasticRed));
+                    }
                     DataContext = new Document(scene);
                 }
                 e.Handled = true;
@@ -69,7 +79,8 @@ namespace RenderToy.WPF
             Scene = scene;
             var materials = EnumerateSceneRoot(scene)
                 .Select(i => i.GetMaterial())
-                .OfType<IMaterial>();
+                .OfType<IMaterial>()
+                .Distinct();
             //.SelectMany(i => EnumerateNodes(i));
             Materials = new ObservableCollection<IMaterial>(materials);
         }
