@@ -38,13 +38,21 @@ namespace RenderToy
 	public enum class D3DFvf
 	{
 		XYZ = D3DFVF_XYZ,
-		XYZW = D3DFVF_XYZW,
-		Normal = D3DFVF_DIFFUSE,
+		Normal = D3DFVF_NORMAL,
 		Diffuse = D3DFVF_DIFFUSE,
+		Tex1 = D3DFVF_TEX1,
+		XYZW = D3DFVF_XYZW,
 	};
 	public enum class D3DMultisample
 	{
 		None = D3DMULTISAMPLE_NONE,
+	};
+	public enum class D3DPool
+	{
+		Default = D3DPOOL_DEFAULT,
+		Managed = D3DPOOL_MANAGED,
+		SystemMemory = D3DPOOL_SYSTEMMEM,
+		Scratch = D3DPOOL_SCRATCH,
 	};
 	public enum class D3DPrimitiveType
 	{
@@ -60,6 +68,16 @@ namespace RenderToy
 	{
 		View = D3DTS_VIEW,
 		Projection = D3DTS_PROJECTION,
+	};
+	public enum class D3DUsage
+	{
+		WriteOnly = D3DUSAGE_WRITEONLY,
+	};
+	public ref class D3DLockedRect
+	{
+	public:
+		INT Pitch;
+		void* Bits;
 	};
 	ref class Direct3D9Globals
 	{
@@ -134,16 +152,39 @@ namespace RenderToy
 		Direct3DSurface9(IDirect3DSurface9* pObject) : Direct3DWrap(pObject)
 		{
 		}
-		void CopyTo(System::IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+		D3DLockedRect^ LockRect()
 		{
 			D3DLOCKED_RECT LockedRect = { 0 };
-			RECT Rect = { 0, 0, render_width, render_height };
-			TRY_D3D(pWrapped->LockRect(&LockedRect, &Rect, D3DLOCK_READONLY));
-			void* copyTo = (void*)bitmap_ptr;
-			for (int y = 0; y < render_height; ++y) {
-				memcpy((unsigned char*)copyTo + bitmap_stride * y, (unsigned char*)LockedRect.pBits + LockedRect.Pitch * y, 4 * render_width);
-			}
+			TRY_D3D(pWrapped->LockRect(&LockedRect, nullptr, D3DLOCK_READONLY));
+			auto result = gcnew D3DLockedRect();
+			result->Pitch = LockedRect.Pitch;
+			result->Bits = LockedRect.pBits;
+			return result;
+		}
+		void UnlockRect()
+		{
 			TRY_D3D(pWrapped->UnlockRect());
+		}
+	};
+	public ref class Direct3DTexture9 : public Direct3DWrap<IDirect3DTexture9>
+	{
+	public:
+		Direct3DTexture9(IDirect3DTexture9 *pObject)
+		{
+			pWrapped = pObject;
+		}
+		D3DLockedRect^ LockRect(unsigned int Level)
+		{
+			D3DLOCKED_RECT LockedRect = { 0 };
+			TRY_D3D(pWrapped->LockRect(Level, &LockedRect, nullptr, D3DLOCK_DISCARD));
+			auto result = gcnew D3DLockedRect();
+			result->Pitch = LockedRect.Pitch;
+			result->Bits = LockedRect.pBits;
+			return result;
+		}
+		void UnlockRect(unsigned int Level)
+		{
+			TRY_D3D(pWrapped->UnlockRect(Level));
 		}
 	};
 	public ref class Direct3DDevice9 : public Direct3DWrap<IDirect3DDevice9>
@@ -153,15 +194,21 @@ namespace RenderToy
 		{
 			pWrapped = pObject;
 		}
+		Direct3DTexture9^ CreateTexture(unsigned int Width, unsigned int Height, unsigned int Levels, DWORD Usage, D3DFormat Format, D3DPool Pool)
+		{
+			IDirect3DTexture9 *ppTexture = nullptr;
+			TRY_D3D(pWrapped->CreateTexture(Width, Height, Levels, Usage, (D3DFORMAT)Format, (D3DPOOL)Pool, &ppTexture, nullptr));
+			return gcnew Direct3DTexture9(ppTexture);
+		}
 		Direct3DSurface9^ CreateRenderTarget(unsigned int Width, unsigned int Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Lockable)
 		{
-			IDirect3DSurface9 *ppSurface = NULL;
+			IDirect3DSurface9 *ppSurface = nullptr;
 			TRY_D3D(pWrapped->CreateRenderTarget(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Lockable, &ppSurface, nullptr));
 			return gcnew Direct3DSurface9(ppSurface);
 		}
 		Direct3DSurface9^ CreateDepthStencilSurface(unsigned int Width, unsigned int Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Discard)
 		{
-			IDirect3DSurface9 *ppSurface = NULL;
+			IDirect3DSurface9 *ppSurface = nullptr;
 			TRY_D3D(pWrapped->CreateDepthStencilSurface(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Discard, &ppSurface, nullptr));
 			return gcnew Direct3DSurface9(ppSurface);
 		}
@@ -180,6 +227,10 @@ namespace RenderToy
 		void EndScene()
 		{
 			TRY_D3D(pWrapped->EndScene());
+		}
+		void SetTexture(DWORD Stage, Direct3DTexture9 ^pTexture)
+		{
+			TRY_D3D(pWrapped->SetTexture(Stage, pTexture->Wrapped));
 		}
 		void Clear(D3DClear Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 		{

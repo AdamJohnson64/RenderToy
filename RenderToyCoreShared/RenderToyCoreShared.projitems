@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ModelFormats\LoaderPLY.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\PrimitiveAssemblyPoints.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\PrimitiveAssemblyTriangles.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pipeline\PrimitiveAssemblyTrianglesDX.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\Transformation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\Common.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\Rasterization.cs" />
