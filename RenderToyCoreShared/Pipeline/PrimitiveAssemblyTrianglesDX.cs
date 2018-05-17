@@ -86,7 +86,7 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<VertexDX> CreateTrianglesDX(Mesh mesh)
         {
             var v = mesh.Vertices;
-            foreach (var t in mesh.Triangles)
+            foreach (var t in Mesh.ExtractTriangles(mesh.Triangles))
             {
                 yield return new VertexDX { Position = v[t.Index0], Diffuse = 0xFF0000FF };
                 yield return new VertexDX { Position = v[t.Index1], Diffuse = 0xFF00FF00 };

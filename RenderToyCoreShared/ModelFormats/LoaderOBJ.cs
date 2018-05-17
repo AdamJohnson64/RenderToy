@@ -9,13 +9,12 @@ namespace RenderToy.ModelFormat
 {
     static class LoaderOBJ
     {
-        public static IEnumerable<TriIndex> GenerateFaces(int vertexcount)
+        public static IEnumerable<int> GenerateFaces(int vertexcount)
         {
             if ((vertexcount % 3) != 0) throw new FileLoadException("Bad vertex count.");
-            vertexcount /= 3;
             for (int i = 0; i < vertexcount; ++i)
             {
-                yield return new TriIndex(i * 3 + 0, i * 3 + 1, i * 3 + 2);
+                yield return i;
             }
         }
         public static IEnumerable<IPrimitive> LoadFromPath(string path)

@@ -5,6 +5,7 @@
 
 using RenderToy.Primitives;
 using RenderToy.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +16,7 @@ namespace RenderToy.Meshes
     /// </summary>
     public class Mesh : IPrimitive
     {
-        public Mesh(IEnumerable<Vector3D> vertices, IEnumerable<TriIndex> triangles)
+        public Mesh(IEnumerable<Vector3D> vertices, IEnumerable<int> triangles)
         {
             Vertices = vertices.ToArray();
             Triangles = triangles.ToArray();
@@ -30,22 +31,39 @@ namespace RenderToy.Meshes
                     vertices.Add(shape.GetPointUV((double)u / usteps, (double)v / vsteps));
                 }
             }
-            var indices = new List<TriIndex>();
+            var indices = new List<int>();
             for (int v = 0; v < vsteps; ++v)
             {
                 for (int u = 0; u < usteps; ++u)
                 {
-                    indices.Add(new TriIndex((u + 0) + (v + 0) * (usteps + 1), (u + 1) + (v + 0) * (usteps + 1), (u + 1) + (v + 1) * (usteps + 1)));
-                    indices.Add(new TriIndex((u + 1) + (v + 1) * (usteps + 1), (u + 0) + (v + 1) * (usteps + 1), (u + 0) + (v + 0) * (usteps + 1)));
+                    indices.Add((u + 0) + (v + 0) * (usteps + 1));
+                    indices.Add((u + 1) + (v + 0) * (usteps + 1));
+                    indices.Add((u + 1) + (v + 1) * (usteps + 1));
+                    indices.Add((u + 1) + (v + 1) * (usteps + 1));
+                    indices.Add((u + 0) + (v + 1) * (usteps + 1));
+                    indices.Add((u + 0) + (v + 0) * (usteps + 1));
                 }
             }
             return new Mesh(vertices, indices);
         }
-        public static IEnumerable<Triangle3D> FlattenIndices(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> triangles)
+        public static IEnumerable<Triangle3D> FlattenIndices(IReadOnlyList<Vector3D> vertices, IEnumerable<int> indices)
         {
-            return triangles.Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
+            return Mesh.ExtractTriangles(indices).Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
         }
         public readonly Vector3D[] Vertices;
-        public readonly TriIndex[] Triangles;
+        public readonly int[] Triangles;
+        internal static IEnumerable<TriIndex> ExtractTriangles(IEnumerable<int> indices)
+        {
+            var iter = indices.GetEnumerator();
+            while (iter.MoveNext())
+            {
+                int i0 = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                int i1 = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                int i2 = iter.Current;
+                yield return new TriIndex(i0, i1, i2);
+            }
+        }
     }
 }

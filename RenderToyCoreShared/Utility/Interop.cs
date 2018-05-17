@@ -90,10 +90,6 @@ namespace RenderToy.Utility
                     {
                         Serialize((IReadOnlyList<Triangle3D>)writeremaining.Target);
                     }
-                    else if (writeremaining.Target is IReadOnlyList<TriIndex>)
-                    {
-                        Serialize((IReadOnlyList<TriIndex>)writeremaining.Target);
-                    }
                     else if (writeremaining.Target is GenericMaterial)
                     {
                         Serialize((GenericMaterial)writeremaining.Target);
@@ -272,16 +268,6 @@ namespace RenderToy.Utility
                 Serialize(item.P0, Serialize);
                 Serialize(item.P1, Serialize);
                 Serialize(item.P2, Serialize);
-            }
-        }
-        void Serialize(IReadOnlyList<TriIndex> obj)
-        {
-            binarywriter.Write((int)obj.Count);
-            foreach (var item in obj)
-            {
-                binarywriter.Write(item.Index0);
-                binarywriter.Write(item.Index1);
-                binarywriter.Write(item.Index2);
             }
         }
         void Serialize(double obj)

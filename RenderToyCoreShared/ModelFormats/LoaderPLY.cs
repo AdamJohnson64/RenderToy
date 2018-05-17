@@ -19,7 +19,7 @@ namespace RenderToy.ModelFormat
         {
             return LoadFromPath(path, (v,i) => new Mesh(v, i));
         }
-        delegate IPrimitive ConditionMesh(IReadOnlyList<Vector3D> vertices, IReadOnlyList<TriIndex> triangles);
+        delegate IPrimitive ConditionMesh(IReadOnlyList<Vector3D> vertices, IReadOnlyList<int> triangles);
         static IPrimitive LoadFromPath(string path, ConditionMesh conditioner)
         {
             using (StreamReader streamreader = File.OpenText(path))
@@ -65,7 +65,7 @@ namespace RenderToy.ModelFormat
             if (streamreader.ReadLine() != "property list uchar int vertex_indices") throw new Exception("Expected 'property list uchar int vertex_indices'.");
             if (streamreader.ReadLine() != "end_header") throw new Exception("Expected 'end_header'.");
             var vertices = new List<Vector3D>();
-            var indices = new List<TriIndex>();
+            var indices = new List<int>();
             for (int v = 0; v < numvertex; ++v)
             {
                 line = streamreader.ReadLine();
@@ -77,7 +77,9 @@ namespace RenderToy.ModelFormat
                 line = streamreader.ReadLine();
                 string[] parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts[0] != "3") throw new Exception("Expected '3'.");
-                indices.Add(new TriIndex(int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3])));
+                indices.Add(int.Parse(parts[1]));
+                indices.Add(int.Parse(parts[2]));
+                indices.Add(int.Parse(parts[3]));
             }
             return conditioner(vertices, indices);
         }

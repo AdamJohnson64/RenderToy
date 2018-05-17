@@ -95,9 +95,7 @@ namespace RenderToy.PipelineModel
             var v = mesh.Vertices;
             foreach (var t in mesh.Triangles)
             {
-                yield return v[t.Index0];
-                yield return v[t.Index1];
-                yield return v[t.Index2];
+                yield return v[t];
             }
         }
         /// <summary>

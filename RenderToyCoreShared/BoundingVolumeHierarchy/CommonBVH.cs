@@ -32,12 +32,6 @@ namespace RenderToy.BoundingVolumeHierarchy
             }
             return new Bound3D(min, max);
         }
-        public static Bound3D ComputeBounds(IReadOnlyList<Vector3D> vertices, IEnumerable<TriIndex> indices)
-        {
-            return ComputeBounds(
-                indices
-                .SelectMany(i => new[] { vertices[i.Index0], vertices[i.Index1], vertices[i.Index2] }));
-        }
         #endregion
         #region - Section : Intersection Test (Separating Axis Theorem) -
         static IEnumerable<Vector3D> EnumeratePoints(Bound3D box)
