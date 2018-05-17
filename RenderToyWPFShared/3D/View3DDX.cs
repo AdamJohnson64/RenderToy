@@ -96,21 +96,21 @@ namespace RenderToy.WPF
                 if (createdvertexbuffer.VertexBuffer == null) continue;
                 var createdtexture = MementoServer.Get(transformedobject.Node.GetMaterial(), GeneratedTextureToken, () =>
                 {
-                    const int TextureSize = 256;
                     var material = transformedobject.Node.GetMaterial() as IMNNode<Vector4D>;
                     if (material == null) return null;
-                    var texture = device.CreateTexture((uint)TextureSize, (uint)TextureSize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
+                    int texturesize = material.IsConstant() ? 8 : 256;
+                    var texture = device.CreateTexture((uint)texturesize, (uint)texturesize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
                     D3DLockedRect lockit = texture.LockRect(0);
                     EvalContext context = new EvalContext();
                     unsafe
                     {
-                        for (int y = 0; y < TextureSize; ++y)
+                        for (int y = 0; y < texturesize; ++y)
                         {
                             uint* raster = (uint*)((byte*)lockit.Bits + lockit.Pitch * y);
-                            for (int x = 0; x < TextureSize; ++x)
+                            for (int x = 0; x < texturesize; ++x)
                             {
-                                context.U = x / (double)TextureSize;
-                                context.V = y / (double)TextureSize;
+                                context.U = x / (double)texturesize;
+                                context.V = y / (double)texturesize;
                                 raster[x] = Rasterization.ColorToUInt32(material.Eval(context));
                             }
                         }
