@@ -26,5 +26,10 @@ namespace RenderToy.Primitives
             double vsin = Math.Sin(v * Math.PI);
             return new Vector3D(-usin * vsin, vcos, ucos * vsin);
         }
+        public Vector3D GetNormalUV(double u, double v)
+        {
+            // For a unit sphere the normal is the same as the surface point.
+            return GetPointUV(u, v);
+        }
     }
 }

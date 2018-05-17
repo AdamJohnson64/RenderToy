@@ -17,5 +17,13 @@ namespace RenderToy.Primitives
         /// <param name="v">The V location on the surface.</param>
         /// <returns>A 3D point in object local space.</returns>
         Vector3D GetPointUV(double u, double v);
+        /// <summary>
+        /// Get the normal at a point on this surface.
+        /// Parametric surfaces are only meaningfully defined in the range [0,1] in both U and V.
+        /// </summary>
+        /// <param name="u">The U location on the surface.</param>
+        /// <param name="v">The V location on the surface.</param>
+        /// <returns>A 3D vector normal in object local space (not guaranteed to be normalized).</returns>
+        Vector3D GetNormalUV(double u, double v);
     }
 }

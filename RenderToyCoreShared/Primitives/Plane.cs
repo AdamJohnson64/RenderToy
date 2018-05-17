@@ -18,5 +18,9 @@ namespace RenderToy.Primitives
         {
             return new Vector3D(-1 + u * 2, 0, -1 + v * 2);
         }
+        public Vector3D GetNormalUV(double u, double v)
+        {
+            return new Vector3D(0, 1, 0);
+        }
     }
 }

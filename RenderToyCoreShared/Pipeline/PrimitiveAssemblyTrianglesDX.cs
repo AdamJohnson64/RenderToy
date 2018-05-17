@@ -55,14 +55,26 @@ namespace RenderToy.PipelineModel
                     Vector3D p310 = uv.GetPointUV(uv10.X, uv10.Y);
                     Vector3D p301 = uv.GetPointUV(uv01.X, uv01.Y);
                     Vector3D p311 = uv.GetPointUV(uv11.X, uv11.Y);
-                    VertexDX v00 = new VertexDX { Position = p300, TexCoord = uv00 };
-                    VertexDX v10 = new VertexDX { Position = p310, TexCoord = uv10 };
-                    VertexDX v01 = new VertexDX { Position = p301, TexCoord = uv01 };
-                    VertexDX v11 = new VertexDX { Position = p311, TexCoord = uv11 };
+                    Vector3D n300 = uv.GetNormalUV(uv00.X, uv00.Y);
+                    Vector3D n310 = uv.GetNormalUV(uv10.X, uv10.Y);
+                    Vector3D n301 = uv.GetNormalUV(uv01.X, uv01.Y);
+                    Vector3D n311 = uv.GetNormalUV(uv11.X, uv11.Y);
+                    VertexDX v00 = new VertexDX { Position = p300, Normal = n300, TexCoord = uv00, Diffuse = NormalColor(n300) };
+                    VertexDX v10 = new VertexDX { Position = p310, Normal = n310, TexCoord = uv10, Diffuse = NormalColor(n310) };
+                    VertexDX v01 = new VertexDX { Position = p301, Normal = n301, TexCoord = uv01, Diffuse = NormalColor(n301) };
+                    VertexDX v11 = new VertexDX { Position = p311, Normal = n311, TexCoord = uv11, Diffuse = NormalColor(n311) };
                     yield return v00; yield return v10; yield return v11;
                     yield return v11; yield return v01; yield return v00;
                 }
             }
+        }
+        static uint NormalColor(Vector3D normal)
+        {
+            var v4 = Transformation.Vector3ToVector4(normal);
+            v4.X = (v4.X + 1) * 0.5;
+            v4.Y = (v4.Y + 1) * 0.5;
+            v4.Z = (v4.Z + 1) * 0.5;
+            return Rasterization.ColorToUInt32(v4);
         }
         /// <summary>
         /// Create triangles representing a simple mesh.

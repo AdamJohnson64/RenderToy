@@ -19,5 +19,12 @@ namespace RenderToy.Primitives
             double usin = Math.Sin(u * Math.PI * 2);
             return new Vector3D(-usin, -1 + v * 2, ucos);
         }
+        public Vector3D GetNormalUV(double u, double v)
+        {
+            // Remove the Y component for the normal.
+            double ucos = Math.Cos(u * Math.PI * 2);
+            double usin = Math.Sin(u * Math.PI * 2);
+            return new Vector3D(-usin, 0, ucos);
+        }
     }
 }
