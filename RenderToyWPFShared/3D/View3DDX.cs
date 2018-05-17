@@ -73,7 +73,7 @@ namespace RenderToy.WPF
                         Xn = (float)i.Normal.X,
                         Yn = (float)i.Normal.Y,
                         Zn = (float)i.Normal.Z,
-                        Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.GetWireColor()),
+                        Diffuse = i.Diffuse,
                         U = (float)i.TexCoord.X,
                         V = (float)i.TexCoord.Y,
                     });

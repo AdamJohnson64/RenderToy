@@ -70,6 +70,8 @@ namespace RenderToy.PipelineModel
         }
         static uint NormalColor(Vector3D normal)
         {
+            // TODO: This is a useful test, we might want to resurrect it later.
+            return 0xFFFFFFFF;
             var v4 = Transformation.Vector3ToVector4(normal);
             v4.X = (v4.X + 1) * 0.5;
             v4.Y = (v4.Y + 1) * 0.5;
@@ -86,9 +88,9 @@ namespace RenderToy.PipelineModel
             var v = mesh.Vertices;
             foreach (var t in mesh.Triangles)
             {
-                yield return new VertexDX { Position = v[t.Index0] };
-                yield return new VertexDX { Position = v[t.Index1] };
-                yield return new VertexDX { Position = v[t.Index2] };
+                yield return new VertexDX { Position = v[t.Index0], Diffuse = 0xFF0000FF };
+                yield return new VertexDX { Position = v[t.Index1], Diffuse = 0xFF00FF00 };
+                yield return new VertexDX { Position = v[t.Index2], Diffuse = 0xFFFF0000 };
             }
         }
         /// <summary>

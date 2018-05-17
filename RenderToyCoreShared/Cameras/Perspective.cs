@@ -14,7 +14,7 @@ namespace RenderToy.Cameras
         {
             get
             {
-                return CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0);
+                return CreateProjection(0.01, 10000.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0);
             }
         }
         public static Matrix3D AspectCorrectFit(double width, double height)

@@ -29,6 +29,7 @@ namespace RenderToy.Materials
         public static GenericMaterial PlasticYellow = new GenericMaterial("Yellow Plastic", Empty, Yellow, White, Percent50, Percent0, 1);
         public static GenericMaterial PlasticMagenta = new GenericMaterial("Magenta Plastic", Empty, Magenta, White, Percent50, Percent0, 1);
         public static GenericMaterial PlasticCyan = new GenericMaterial("Cyan Plastic", Empty, Cyan, White, Percent50, Percent0, 1);
+        public static GenericMaterial PlasticWhite = new GenericMaterial("White Plastic", Empty, White, White, Percent50, Percent0, 1);
         public static GenericMaterial Glass = new GenericMaterial("Glass", Empty, Empty, White, Percent0, Percent100, 1.5);
         public static IMNNode<Vector4D> Brick()
         {

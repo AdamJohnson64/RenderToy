@@ -44,12 +44,19 @@ namespace RenderToy.WPF
                     {
                         foreach (var primitive in LoaderBPT.LoadFromPath(ofd.FileName))
                         {
-                            scene.AddChild(new Node("Bezier Patch", new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.LightGray, StockMaterials.PlasticRed));
+                            scene.AddChild(new Node("Bezier Patch", new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite));
+                        }
+                    }
+                    else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".OBJ")
+                    {
+                        foreach (var primitive in LoaderOBJ.LoadFromPath(ofd.FileName))
+                        {
+                            scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite));
                         }
                     }
                     else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".PLY")
                     {
-                        scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.LightGray, StockMaterials.PlasticRed));
+                        scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.White, StockMaterials.PlasticWhite));
                     }
                     DataContext = new Document(scene);
                 }
