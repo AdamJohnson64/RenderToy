@@ -123,9 +123,11 @@ namespace RenderToy.WPF
                 device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
             }
             device.EndScene();
-            d3dimage.Lock();
-            d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, rendertarget.ManagedPtr);
-            d3dimage.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
+            if (d3dimage.TryLock(new Duration(TimeSpan.FromMilliseconds(500))))
+            {
+                d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, rendertarget.ManagedPtr);
+                d3dimage.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
+            }
             d3dimage.Unlock();
             drawingContext.DrawImage(d3dimage, new Rect(0, 0, ActualWidth, ActualHeight));
         }
