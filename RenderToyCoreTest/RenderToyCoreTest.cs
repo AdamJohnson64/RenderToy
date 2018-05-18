@@ -163,29 +163,43 @@ namespace RenderToy
     [TestClass]
     public class MeshPLYTests
     {
-        [TestMethod]
-        public void LoadAllPLYFilesTest()
+        static void ForAllTestModels(string wildcard, Action<string> execute)
         {
-            string mydocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string[] all_ply_files = Directory.GetFiles(mydocuments, "*.ply");
-            var results = all_ply_files
-                .Select(filename => Path.Combine(mydocuments, filename))
+            var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "RenderToyModels");
+            var results = Directory.EnumerateFiles(root, wildcard, SearchOption.AllDirectories)
+                .Select(filename => Path.Combine(root, filename))
                 .Select(pathname => {
                     try
                     {
                         Performance.LogEvent("Loading mesh '" + pathname + "'.");
-                        return LoaderPLY.LoadFromPath(pathname);
+                        execute(pathname);
+                        return true;
                     }
                     catch (Exception e)
                     {
                         Performance.LogEvent("Exception while loading '" + pathname + "': " + e.Message);
-                        return null;
+                        return false;
                     }
                 }).ToArray();
-            if (results.Any(x => x == null))
+            if (results.Any(x => !x))
             {
                 throw new Exception("There were errors processing some files; refer to output for details.");
             }
+        }
+        [TestMethod]
+        public void LoadAllBPTFilesTest()
+        {
+            ForAllTestModels("*.bpt", (pathname) => LoaderBPT.LoadFromPath(pathname));
+        }
+        [TestMethod]
+        public void LoadAllOBJFilesTest()
+        {
+            ForAllTestModels("*.obj", (pathname) => LoaderOBJ.LoadFromPath(pathname));
+        }
+        [TestMethod]
+        public void LoadAllPLYFilesTest()
+        {
+            ForAllTestModels("*.ply", (pathname) => LoaderPLY.LoadFromPath(pathname));
         }
     }
     [TestClass]
