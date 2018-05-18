@@ -39,7 +39,6 @@ namespace RenderToy.WPF
                 if (ofd.ShowDialog() == true)
                 {
                     var scene = new Scene();
-                    scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, StockMaterials.MarbleTile));
                     if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".BPT")
                     {
                         foreach (var primitive in LoaderBPT.LoadFromPath(ofd.FileName))
