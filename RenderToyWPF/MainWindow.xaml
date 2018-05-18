@@ -110,7 +110,7 @@
                             <MenuItem Header="Wireframe" Command="{x:Static rendertoy:MainWindow.CommandRenderWireframeToggle}"/>
                         </MenuItem>
                     </Menu>
-                    <Grid>
+                    <Grid Background="LightGray">
                         <!-- Main Viewport Layer -->
                         <rendertoy:View3DUser x:Name="ViewMain" Scene="{Binding}" ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
                         <!-- Wireframe Layer -->
