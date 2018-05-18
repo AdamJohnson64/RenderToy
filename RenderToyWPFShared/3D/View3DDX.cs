@@ -50,87 +50,87 @@ namespace RenderToy.WPF
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if (rendertarget == null) return;
-            device.SetRenderTarget(0, rendertarget);
-            device.SetDepthStencilSurface(depthstencil);
-            device.BeginScene();
-            device.Clear(D3DClear.Target | D3DClear.ZBuffer, 0x00000000, 1.0f, 0);
-            device.SetFVF(D3DFvf.XYZ | D3DFvf.Normal | D3DFvf.Diffuse | D3DFvf.Tex1);
-            device.SetRenderState(D3DRenderState.ZEnable, 1U);
-            device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
-            device.SetRenderState(D3DRenderState.Lighting, 0);
-            var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            foreach (var transformedobject in TransformedObject.Enumerate(Scene))
-            {
-                var createdvertexbuffer = MementoServer.Get(transformedobject.Node.GetPrimitive(), GeneratedVertexBufferToken, () =>
-                {
-                    var verticesin = PrimitiveAssembly.CreateTrianglesDX(transformedobject.Node.GetPrimitive());
-                    var verticesout = verticesin.Select(i => new RenderD3D.XYZNorDiffuseTex1
-                    {
-                        Xp = (float)i.Position.X,
-                        Yp = (float)i.Position.Y,
-                        Zp = (float)i.Position.Z,
-                        Xn = (float)i.Normal.X,
-                        Yn = (float)i.Normal.Y,
-                        Zn = (float)i.Normal.Z,
-                        Diffuse = i.Diffuse,
-                        U = (float)i.TexCoord.X,
-                        V = (float)i.TexCoord.Y,
-                    });
-                    var data = verticesout.ToArray();
-                    var size = (uint)(Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)) * data.Length);
-                    VertexBufferInfo buffer = new VertexBufferInfo();
-                    if (data.Length > 0)
-                    {
-                        buffer.VertexBuffer = device.CreateVertexBuffer(size, 0, (uint)(D3DFvf.XYZ | D3DFvf.Normal | D3DFvf.Diffuse | D3DFvf.Tex1), D3DPool.Managed);
-                        var locked = buffer.VertexBuffer.Lock(0U, size, 0U);
-                        unsafe
-                        {
-                            Buffer.MemoryCopy(Marshal.UnsafeAddrOfPinnedArrayElement(data, 0).ToPointer(), locked.ToPointer(), size, size);
-                        }
-                        buffer.VertexBuffer.Unlock();
-                    }
-                    buffer.PrimitiveCount = data.Length / 3;
-                    return buffer;
-                });
-                if (createdvertexbuffer.VertexBuffer == null) continue;
-                var nodematerial = transformedobject.Node.GetMaterial();
-                if (nodematerial == null)
-                {
-                    // The missing material (Purple).
-                    nodematerial = StockMaterials.Missing;
-                }
-                var createdtexture = MementoServer.Get(nodematerial, GeneratedTextureToken, () =>
-                {
-                    var material = nodematerial as IMNNode<Vector4D>;
-                    if (material == null) return null;
-                    int texturesize = material.IsConstant() ? 8 : 256;
-                    var texture = device.CreateTexture((uint)texturesize, (uint)texturesize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
-                    D3DLockedRect lockit = texture.LockRect(0);
-                    EvalContext context = new EvalContext();
-                    unsafe
-                    {
-                        for (int y = 0; y < texturesize; ++y)
-                        {
-                            uint* raster = (uint*)((byte*)lockit.Bits + lockit.Pitch * y);
-                            for (int x = 0; x < texturesize; ++x)
-                            {
-                                context.U = x / (double)texturesize;
-                                context.V = y / (double)texturesize;
-                                raster[x] = Rasterization.ColorToUInt32(material.Eval(context));
-                            }
-                        }
-                    }
-                    return texture;
-                });
-                device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
-                device.SetTexture(0, createdtexture);
-                device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
-                device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
-            }
-            device.EndScene();
+            if (rendertarget == null || depthstencil == null) return;
             if (d3dimage.TryLock(new Duration(TimeSpan.FromMilliseconds(500))))
             {
+                device.SetRenderTarget(0, rendertarget);
+                device.SetDepthStencilSurface(depthstencil);
+                device.BeginScene();
+                device.Clear(D3DClear.Target | D3DClear.ZBuffer, 0x00000000, 1.0f, 0);
+                device.SetFVF(D3DFvf.XYZ | D3DFvf.Normal | D3DFvf.Diffuse | D3DFvf.Tex1);
+                device.SetRenderState(D3DRenderState.ZEnable, 1U);
+                device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
+                device.SetRenderState(D3DRenderState.Lighting, 0);
+                var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+                foreach (var transformedobject in TransformedObject.Enumerate(Scene))
+                {
+                    var createdvertexbuffer = MementoServer.Get(transformedobject.Node.GetPrimitive(), GeneratedVertexBufferToken, () =>
+                    {
+                        var verticesin = PrimitiveAssembly.CreateTrianglesDX(transformedobject.Node.GetPrimitive());
+                        var verticesout = verticesin.Select(i => new RenderD3D.XYZNorDiffuseTex1
+                        {
+                            Xp = (float)i.Position.X,
+                            Yp = (float)i.Position.Y,
+                            Zp = (float)i.Position.Z,
+                            Xn = (float)i.Normal.X,
+                            Yn = (float)i.Normal.Y,
+                            Zn = (float)i.Normal.Z,
+                            Diffuse = i.Diffuse,
+                            U = (float)i.TexCoord.X,
+                            V = (float)i.TexCoord.Y,
+                        });
+                        var data = verticesout.ToArray();
+                        var size = (uint)(Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)) * data.Length);
+                        VertexBufferInfo buffer = new VertexBufferInfo();
+                        if (data.Length > 0)
+                        {
+                            buffer.VertexBuffer = device.CreateVertexBuffer(size, 0, (uint)(D3DFvf.XYZ | D3DFvf.Normal | D3DFvf.Diffuse | D3DFvf.Tex1), D3DPool.Managed);
+                            var locked = buffer.VertexBuffer.Lock(0U, size, 0U);
+                            unsafe
+                            {
+                                Buffer.MemoryCopy(Marshal.UnsafeAddrOfPinnedArrayElement(data, 0).ToPointer(), locked.ToPointer(), size, size);
+                            }
+                            buffer.VertexBuffer.Unlock();
+                        }
+                        buffer.PrimitiveCount = data.Length / 3;
+                        return buffer;
+                    });
+                    if (createdvertexbuffer.VertexBuffer == null) continue;
+                    var nodematerial = transformedobject.Node.GetMaterial();
+                    if (nodematerial == null)
+                    {
+                        // The missing material (Purple).
+                        nodematerial = StockMaterials.Missing;
+                    }
+                    var createdtexture = MementoServer.Get(nodematerial, GeneratedTextureToken, () =>
+                    {
+                        var material = nodematerial as IMNNode<Vector4D>;
+                        if (material == null) return null;
+                        int texturesize = material.IsConstant() ? 8 : 256;
+                        var texture = device.CreateTexture((uint)texturesize, (uint)texturesize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
+                        D3DLockedRect lockit = texture.LockRect(0);
+                        EvalContext context = new EvalContext();
+                        unsafe
+                        {
+                            for (int y = 0; y < texturesize; ++y)
+                            {
+                                uint* raster = (uint*)((byte*)lockit.Bits + lockit.Pitch * y);
+                                for (int x = 0; x < texturesize; ++x)
+                                {
+                                    context.U = x / (double)texturesize;
+                                    context.V = y / (double)texturesize;
+                                    raster[x] = Rasterization.ColorToUInt32(material.Eval(context));
+                                }
+                            }
+                        }
+                        return texture;
+                    });
+                    device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
+                    device.SetTexture(0, createdtexture);
+                    device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
+                    device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
+                }
+                device.EndScene();
                 d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, rendertarget.ManagedPtr);
                 d3dimage.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
             }
