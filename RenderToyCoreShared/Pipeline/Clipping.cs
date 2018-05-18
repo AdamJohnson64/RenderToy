@@ -5,6 +5,7 @@
 
 using RenderToy.Meshes;
 using RenderToy.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,13 +14,6 @@ namespace RenderToy.PipelineModel
     public static partial class Clipping
     {
         #region - Section : World Clip (Triangles) -
-        public static IEnumerable<Vector3D> ClipTriangle(IEnumerable<Vector3D> triangle, Vector3D plane_normal, double plane_distance)
-        {
-            return
-                Triangle3D.ExtractTriangles(triangle)
-                .SelectMany(i => ClipTriangle(i, plane_normal, plane_distance))
-                .SelectMany(i => new[] { i.P0, i.P1, i.P2 });
-        }
         /// <summary>
         /// Clip a single 3D triangle against an arbitrary plane.
         /// </summary>
@@ -27,54 +21,64 @@ namespace RenderToy.PipelineModel
         /// <param name="plane_normal">The normal of the plane to clip with.</param>
         /// <param name="plane_distance">The offset of the plane along its normal.</param>
         /// <returns>A list of 3D triangle fragments for the resulting clipped 3D triangle.</returns>
-        public static IEnumerable<Triangle3D> ClipTriangle(Triangle3D triangle, Vector3D plane_normal, double plane_distance)
+        public static IEnumerable<Vector3D> ClipTriangle(IEnumerable<Vector3D> triangles, Vector3D plane_normal, double plane_distance)
         {
-            var p = new[] { triangle.P0, triangle.P1, triangle.P2 };
-            var sides = p.Select(x => MathHelp.Dot(x, plane_normal) - plane_distance);
-            // Get the side for all points (inside or outside).
-            var outside = sides
-                .Select((x, i) => new { index = i, side = x })
-                .Where(x => x.side > 0)
-                .ToArray();
-            // Get the side for all points (inside or outside).
-            var inside = sides
-                .Select((x, i) => new { index = i, side = x })
-                .Where(x => x.side <= 0)
-                .ToArray();
-            // All points are clipped; trivially reject the whole triangle.
-            if (outside.Length == 0 && inside.Length == 3)
+            var iter = triangles.GetEnumerator();
+            var p = new Vector3D[3];
+            while (iter.MoveNext())
             {
-                yield break;
-            }
-            // If one point is clipped then emit the single remaining triangle.
-            if (outside.Length == 1 && inside.Length == 2)
-            {
-                var p1 = p[outside[0].index];
-                var p2 = p[inside[0].index];
-                var p3 = p[inside[1].index];
-                var pi1 = CalculateIntersectionPointLine(p1, p2, plane_normal, plane_distance);
-                var pi2 = CalculateIntersectionPointLine(p3, p1, plane_normal, plane_distance);
-                yield return new Triangle3D(p1, pi1, pi2);
-                yield break;
-            }
-            // If two points are clipped then emit two triangles.
-            if (outside.Length == 2 && inside.Length == 1)
-            {
-                int first = outside[0].index;
-                var p1 = p[outside[0].index];
-                var p2 = p[outside[1].index];
-                var p3 = p[inside[0].index];
-                var p2i = CalculateIntersectionPointLine(p2, p3, plane_normal, plane_distance);
-                var p3i = CalculateIntersectionPointLine(p3, p1, plane_normal, plane_distance);
-                yield return new Triangle3D(p1, p2, p2i);
-                yield return new Triangle3D(p2i, p3i, p1);
-                yield break;
-            }
-            // All points are unclipped; trivially accept this triangle.
-            if (outside.Length == 3 && inside.Length == 0)
-            {
-                yield return triangle;
-                yield break;
+                // Gather up the triangle points.
+                p[0] = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                p[1] = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                p[2] = iter.Current;
+                // Process for clipping.
+                var sides = p.Select(x => MathHelp.Dot(x, plane_normal) - plane_distance);
+                // Get the side for all points (inside or outside).
+                var outside = sides
+                    .Select((x, i) => new { index = i, side = x })
+                    .Where(x => x.side > 0)
+                    .ToArray();
+                // Get the side for all points (inside or outside).
+                var inside = sides
+                    .Select((x, i) => new { index = i, side = x })
+                    .Where(x => x.side <= 0)
+                    .ToArray();
+                // All points are clipped; trivially reject the whole triangle.
+                if (outside.Length == 0 && inside.Length == 3)
+                {
+                    continue;
+                }
+                // If one point is clipped then emit the single remaining triangle.
+                if (outside.Length == 1 && inside.Length == 2)
+                {
+                    var p1 = p[outside[0].index];
+                    var p2 = p[inside[0].index];
+                    var p3 = p[inside[1].index];
+                    var pi1 = CalculateIntersectionPointLine(p1, p2, plane_normal, plane_distance);
+                    var pi2 = CalculateIntersectionPointLine(p3, p1, plane_normal, plane_distance);
+                    yield return p1; yield return pi1; yield return pi2;
+                    continue;
+                }
+                // If two points are clipped then emit two triangles.
+                if (outside.Length == 2 && inside.Length == 1)
+                {
+                    int first = outside[0].index;
+                    var p1 = p[outside[0].index];
+                    var p2 = p[outside[1].index];
+                    var p3 = p[inside[0].index];
+                    var p2i = CalculateIntersectionPointLine(p2, p3, plane_normal, plane_distance);
+                    var p3i = CalculateIntersectionPointLine(p3, p1, plane_normal, plane_distance);
+                    yield return p1; yield return p2; yield return p2i;
+                    yield return p2i; yield return p3i; yield return p1;
+                    continue;
+                }
+                // All points are unclipped; trivially accept this triangle.
+                if (outside.Length == 3 && inside.Length == 0)
+                {
+                    yield return p[0]; yield return p[1]; yield return p[2]; continue;
+                }
             }
         }
         /// <summary>
@@ -268,81 +272,60 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector4D> ClipTriangle(IEnumerable<Vector4D> tri, Vector4D plane)
         {
             var iter = tri.GetEnumerator();
+            var p = new Vector4D[3];
             while (iter.MoveNext())
             {
-                var P0 = iter.Current;
-                if (!iter.MoveNext())
+                p[0] = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                p[1] = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                p[2] = iter.Current;
+                var sides = p.Select(x => MathHelp.Dot(x, plane));
+                // Get the side for all points (inside or outside).
+                var outside = sides
+                    .Select((x, i) => new { index = i, side = x })
+                    .Where(x => x.side > 0)
+                    .ToArray();
+                // Get the side for all points (inside or outside).
+                var inside = sides
+                    .Select((x, i) => new { index = i, side = x })
+                    .Where(x => x.side <= 0)
+                    .ToArray();
+                // All points are clipped; trivially reject the whole triangle.
+                if (outside.Length == 0 && inside.Length == 3)
                 {
-                    break;
+                    continue;
                 }
-                var P1 = iter.Current;
-                if (!iter.MoveNext())
+                // If one point is clipped then emit the single remaining triangle.
+                if (outside.Length == 1 && inside.Length == 2)
                 {
-                    break;
+                    var p1 = p[outside[0].index];
+                    var p2 = p[inside[0].index];
+                    var p3 = p[inside[1].index];
+                    var pi1 = CalculateIntersectionPointLine(p1, p2, plane);
+                    var pi2 = CalculateIntersectionPointLine(p3, p1, plane);
+                    yield return p1; yield return pi1; yield return pi2;
+                    continue;
                 }
-                var P2 = iter.Current;
-                foreach (var clipped in ClipTriangle(P0, P1, P2, plane))
+                // If two points are clipped then emit two triangles.
+                if (outside.Length == 2 && inside.Length == 1)
                 {
-                    yield return clipped;
+                    int first = outside[0].index;
+                    var p1 = p[outside[0].index];
+                    var p2 = p[outside[1].index];
+                    var p3 = p[inside[0].index];
+                    var p2i = CalculateIntersectionPointLine(p2, p3, plane);
+                    var p3i = CalculateIntersectionPointLine(p3, p1, plane);
+                    yield return p1; yield return p2; yield return p2i;
+                    yield return p2i; yield return p3i; yield return p1;
+                    continue;
                 }
-            }
-        }
-        /// <summary>
-        /// Clip a single 4D triangle against a plane.
-        /// </summary>
-        /// <param name="P0">The first point of the triangle.</param>
-        /// <param name="P1">The second point of the triangle.</param>
-        /// <param name="P2">The third point of the triangle.</param>
-        /// <param name="plane"></param>
-        /// <returns>A stream of triangle fragments that result from clipping by the plane.</returns>
-        public static IEnumerable<Vector4D> ClipTriangle(Vector4D P0, Vector4D P1, Vector4D P2, Vector4D plane)
-        {
-            var p = new[] { P0, P1, P2 };
-            var sides = p.Select(x => MathHelp.Dot(x, plane));
-            // Get the side for all points (inside or outside).
-            var outside = sides
-                .Select((x, i) => new { index = i, side = x })
-                .Where(x => x.side > 0)
-                .ToArray();
-            // Get the side for all points (inside or outside).
-            var inside = sides
-                .Select((x, i) => new { index = i, side = x })
-                .Where(x => x.side <= 0)
-                .ToArray();
-            // All points are clipped; trivially reject the whole triangle.
-            if (outside.Length == 0 && inside.Length == 3)
-            {
-                yield break;
-            }
-            // If one point is clipped then emit the single remaining triangle.
-            if (outside.Length == 1 && inside.Length == 2)
-            {
-                var p1 = p[outside[0].index];
-                var p2 = p[inside[0].index];
-                var p3 = p[inside[1].index];
-                var pi1 = CalculateIntersectionPointLine(p1, p2, plane);
-                var pi2 = CalculateIntersectionPointLine(p3, p1, plane);
-                yield return p1; yield return pi1; yield return pi2;
-                yield break;
-            }
-            // If two points are clipped then emit two triangles.
-            if (outside.Length == 2 && inside.Length == 1)
-            {
-                int first = outside[0].index;
-                var p1 = p[outside[0].index];
-                var p2 = p[outside[1].index];
-                var p3 = p[inside[0].index];
-                var p2i = CalculateIntersectionPointLine(p2, p3, plane);
-                var p3i = CalculateIntersectionPointLine(p3, p1, plane);
-                yield return p1; yield return p2; yield return p2i;
-                yield return p2i; yield return p3i; yield return p1;
-                yield break;
-            }
-            // All points are unclipped; trivially accept this triangle.
-            if (outside.Length == 3 && inside.Length == 0)
-            {
-                yield return P0; yield return P1; yield return P2;
-                yield break;
+                // All points are unclipped; trivially accept this triangle.
+                if (outside.Length == 3 && inside.Length == 0)
+                {
+                    yield return p[0]; yield return p[1]; yield return p[2];
+                    continue;
+                }
             }
         }
         #endregion
