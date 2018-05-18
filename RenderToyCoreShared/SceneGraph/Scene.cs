@@ -9,7 +9,6 @@ using RenderToy.Primitives;
 using RenderToy.Transforms;
 using RenderToy.Utility;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace RenderToy.SceneGraph
 {

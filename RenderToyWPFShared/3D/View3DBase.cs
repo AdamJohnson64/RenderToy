@@ -3,12 +3,9 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.Cameras;
 using RenderToy.SceneGraph;
 using RenderToy.Utility;
 using System.Windows;
-using System.Windows.Data;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace RenderToy.WPF
