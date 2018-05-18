@@ -52,16 +52,29 @@ namespace RenderToy.Meshes
         }
         public readonly Vector3D[] Vertices;
         public readonly int[] Triangles;
+        internal static IEnumerable<Triangle3D> ExtractTriangles(IEnumerable<Vector3D> triangles)
+        {
+            var iter = triangles.GetEnumerator();
+            while (iter.MoveNext())
+            {
+                var p0 = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                var p1 = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                var p2 = iter.Current;
+                yield return new Triangle3D(p0, p1, p2);
+            }
+        }
         internal static IEnumerable<TriIndex> ExtractTriangles(IEnumerable<int> indices)
         {
             var iter = indices.GetEnumerator();
             while (iter.MoveNext())
             {
-                int i0 = iter.Current;
+                var i0 = iter.Current;
                 if (!iter.MoveNext()) throw new Exception();
-                int i1 = iter.Current;
+                var i1 = iter.Current;
                 if (!iter.MoveNext()) throw new Exception();
-                int i2 = iter.Current;
+                var i2 = iter.Current;
                 yield return new TriIndex(i0, i1, i2);
             }
         }

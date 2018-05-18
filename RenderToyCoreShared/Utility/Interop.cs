@@ -165,7 +165,7 @@ namespace RenderToy.Utility
                 var meshbvh = MementoServer.Get(primitive, MeshBVHToken, () =>
                 {
                     var mesh = (Mesh)primitive;
-                    return MeshBVH.Create(Mesh.FlattenIndices(mesh.Vertices, mesh.Triangles).ToArray());
+                    return MeshBVH.Create(mesh);
                 });
                 binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
                 EmitAndQueue(meshbvh);

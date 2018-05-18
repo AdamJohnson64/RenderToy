@@ -20,6 +20,10 @@ namespace RenderToy.Meshes
             Triangles = triangles;
             Children = children;
         }
+        public static MeshBVH Create(Mesh mesh)
+        {
+            return Create(Mesh.FlattenIndices(mesh.Vertices, mesh.Triangles).ToArray());
+        }
         public static MeshBVH Create(Triangle3D[] triangles)
         {
             Stopwatch perf = new Stopwatch();

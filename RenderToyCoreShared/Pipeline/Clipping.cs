@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Meshes;
 using RenderToy.Utility;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,13 @@ namespace RenderToy.PipelineModel
     public static partial class Clipping
     {
         #region - Section : World Clip (Triangles) -
+        public static IEnumerable<Vector3D> ClipTriangle(IEnumerable<Vector3D> triangle, Vector3D plane_normal, double plane_distance)
+        {
+            return
+                Mesh.ExtractTriangles(triangle)
+                .SelectMany(i => ClipTriangle(i, plane_normal, plane_distance))
+                .SelectMany(i => new[] { i.P0, i.P1, i.P2 });
+        }
         /// <summary>
         /// Clip a single 3D triangle against an arbitrary plane.
         /// </summary>
