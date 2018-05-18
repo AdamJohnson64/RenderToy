@@ -22,7 +22,7 @@ namespace RenderToy.Meshes
         }
         public static MeshBVH Create(Mesh mesh)
         {
-            return Create(Mesh.FlattenIndices(mesh.Vertices, mesh.Triangles).ToArray());
+            return Create(Triangle3D.FlattenIndices(mesh.Vertices, mesh.Triangles).ToArray());
         }
         public static MeshBVH Create(Triangle3D[] triangles)
         {

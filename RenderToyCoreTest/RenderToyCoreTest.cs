@@ -25,7 +25,7 @@ namespace RenderToy
         public void BVHTimingTest()
         {
             var mesh = Mesh.CreateMesh(new Sphere(), 100, 100);
-            var triangles = Mesh.FlattenIndices(mesh.Vertices, mesh.Triangles).ToArray();
+            var triangles = Triangle3D.FlattenIndices(mesh.Vertices, mesh.Triangles).ToArray();
             Performance.LogBegin("BVH Octree (Reference)");
             try
             {

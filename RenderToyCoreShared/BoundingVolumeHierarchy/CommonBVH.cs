@@ -141,11 +141,41 @@ namespace RenderToy
     {
         public Triangle3D(Vector3D p0, Vector3D p1, Vector3D p2) { P0 = p0; P1 = p1; P2 = p2; }
         public readonly Vector3D P0, P1, P2;
+        public static IEnumerable<Triangle3D> FlattenIndices(IReadOnlyList<Vector3D> vertices, IEnumerable<int> indices)
+        {
+            return TriIndex.ExtractTriangles(indices).Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
+        }
+        public static IEnumerable<Triangle3D> ExtractTriangles(IEnumerable<Vector3D> triangles)
+        {
+            var iter = triangles.GetEnumerator();
+            while (iter.MoveNext())
+            {
+                var p0 = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                var p1 = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                var p2 = iter.Current;
+                yield return new Triangle3D(p0, p1, p2);
+            }
+        }
     }
-    public struct TriIndex
+    internal struct TriIndex
     {
         public TriIndex(int i0, int i1, int i2) { Index0 = i0; Index1 = i1; Index2 = i2; }
         public readonly int Index0, Index1, Index2;
+        public static IEnumerable<TriIndex> ExtractTriangles(IEnumerable<int> indices)
+        {
+            var iter = indices.GetEnumerator();
+            while (iter.MoveNext())
+            {
+                var i0 = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                var i1 = iter.Current;
+                if (!iter.MoveNext()) throw new Exception();
+                var i2 = iter.Current;
+                yield return new TriIndex(i0, i1, i2);
+            }
+        }
     }
     #endregion
 }

@@ -16,7 +16,7 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector3D> ClipTriangle(IEnumerable<Vector3D> triangle, Vector3D plane_normal, double plane_distance)
         {
             return
-                Mesh.ExtractTriangles(triangle)
+                Triangle3D.ExtractTriangles(triangle)
                 .SelectMany(i => ClipTriangle(i, plane_normal, plane_distance))
                 .SelectMany(i => new[] { i.P0, i.P1, i.P2 });
         }
