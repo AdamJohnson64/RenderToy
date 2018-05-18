@@ -47,6 +47,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Primitives\Sphere.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Scene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\TransformedObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TextureFormats\LoaderTGA.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Textures\Texture24.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transforms\ITransform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transforms\TransformMatrix.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transforms\TransformQuaternion.cs" />

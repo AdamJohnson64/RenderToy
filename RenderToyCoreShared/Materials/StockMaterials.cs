@@ -23,6 +23,7 @@ namespace RenderToy.Materials
         public static Vector4D White = new Vector4D(1, 1, 1, 1);
         public static Vector4D DarkGray = new Vector4D(0.25, 0.25, 0.25, 1);
         public static Vector4D LightGray = new Vector4D(0.75, 0.75, 0.75, 1);
+        public static GenericMaterial PlasticBlack = new GenericMaterial("Black Plastic", Empty, Black, White, Percent50, Percent0, 1);
         public static GenericMaterial PlasticRed = new GenericMaterial("Red Plastic", Empty, Red, White, Percent50, Percent0, 1);
         public static GenericMaterial PlasticGreen = new GenericMaterial("Green Plastic", Empty, Green, White, Percent50, Percent0, 1);
         public static GenericMaterial PlasticBlue = new GenericMaterial("Blue Plastic", Empty, Blue, White, Percent50, Percent0, 1);
@@ -31,7 +32,16 @@ namespace RenderToy.Materials
         public static GenericMaterial PlasticCyan = new GenericMaterial("Cyan Plastic", Empty, Cyan, White, Percent50, Percent0, 1);
         public static GenericMaterial PlasticWhite = new GenericMaterial("White Plastic", Empty, White, White, Percent50, Percent0, 1);
         public static GenericMaterial Glass = new GenericMaterial("Glass", Empty, Empty, White, Percent0, Percent100, 1.5);
-        public static IMNNode<Vector4D> Brick()
+        public static IMNNode<Vector4D> Missing = GenerateMissing();
+        public static IMNNode<Vector4D> Brick = GenerateBrick();
+        public static IMNNode<Vector4D> MarbleBlack = GenerateMarbleBlack();
+        public static IMNNode<Vector4D> MarbleWhite = GenerateMarbleWhite();
+        public static IMNNode<Vector4D> MarbleTile = GenerateMarbleTile();
+        static IMNNode<Vector4D> GenerateMissing()
+        {
+            return new Checkerboard { U = Multiply(TexU(), Constant(8)), V = Multiply(TexV(), Constant(8)), Color1 = PlasticMagenta, Color2 = PlasticBlack };
+        }
+        static IMNNode<Vector4D> GenerateBrick()
         {
             var texu = Multiply(TexU(), Constant(4));
             var texv = Multiply(TexV(), Constant(4));
@@ -51,7 +61,7 @@ namespace RenderToy.Materials
             var color = Lerp(mortarcolor, Constant(0), brickmask);
             return RGBA(colorr, color, color, Constant(1));
         }
-        public static IMNNode<Vector4D> MarbleBlack()
+        static IMNNode<Vector4D> GenerateMarbleBlack()
         {
             var perlinlow = new Perlin2D { U = Multiply(TexU(), Constant(5)), V = Multiply(TexV(), Constant(5)) };
             var perlinhigh = new Perlin2D { U = Multiply(TexU(), Constant(50)), V = Multiply(TexV(), Constant(50)) };
@@ -60,7 +70,7 @@ namespace RenderToy.Materials
             var c = Add(v1, v2);
             return RGBA(c, c, c, Constant(1));
         }
-        public static IMNNode<Vector4D> MarbleWhite()
+        static IMNNode<Vector4D> GenerateMarbleWhite()
         {
             var perlinlow = new Perlin2D { U = Multiply(TexU(), Constant(5)), V = Multiply(TexV(), Constant(5)) };
             var perlinhigh = new Perlin2D { U = Multiply(TexU(), Constant(50)), V = Multiply(TexV(), Constant(50)) };
@@ -69,9 +79,9 @@ namespace RenderToy.Materials
             var c = Subtract(Constant(1), Add(v1, v2));
             return RGBA(c, c, c, Constant(1));
         }
-        public static IMNNode<Vector4D> MarbleTile()
+        static IMNNode<Vector4D> GenerateMarbleTile()
         {
-            return new Checkerboard { Color1 = MarbleWhite(), Color2 = MarbleBlack() };
+            return new Checkerboard { U = TexU(), V = TexV(), Color1 = MarbleWhite, Color2 = MarbleBlack };
         }
         static IMNNode<double> Constant(double value) { return new MNConstant { Value = value }; }
         static IMNNode<double> TexU() { return new MNTexCoordU(); }

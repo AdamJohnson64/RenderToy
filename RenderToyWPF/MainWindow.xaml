@@ -67,7 +67,7 @@
             <DataTemplate x:Key="GraphNodeTemplate">
                 <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
                     <StackPanel Orientation="Horizontal">
-                        <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="32" MaterialHeight="32" VerticalAlignment="Center"/>
+                        <rendertoy:ViewMaterial MaterialSource="{Binding}" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding Converter={StaticResource NamedConverter}}" Margin="2" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
@@ -178,7 +178,7 @@
                                                 <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomPreview}"/>>
                                             </Menu>
                                             <rendertoy:ViewZoom x:Name="ViewZoomPreview">
-                                                <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="128" MaterialHeight="128" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                                <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                                             </rendertoy:ViewZoom>
                                         </DockPanel>
                                     </TabItem>

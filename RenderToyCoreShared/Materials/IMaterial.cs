@@ -190,15 +190,16 @@ namespace RenderToy.Materials
         public string GetName() { return "Brick Noise"; }
         public double Eval(EvalContext context) { return Brick.BrickNoise(u.Eval(context), v.Eval(context)); }
     }
-    class Checkerboard : IMNNode<Vector4D>, INamed
+    class Checkerboard : MNSample2D<Vector4D>, IMNNode<Vector4D>, INamed
     {
         public string GetName() { return "Checkerboard"; }
-        public bool IsConstant() { return color1.IsConstant() && color2.IsConstant(); }
         public Vector4D Eval(EvalContext context)
         {
-            int u = (int)((context.U - Math.Floor(context.U)) * 2);
-            int v = (int)((context.V - Math.Floor(context.V)) * 2);
-            return ((u + v) & 1) == 0 ? Color1.Eval(context) : Color2.Eval(context);
+            double uvalue = u.Eval(context);
+            double vvalue = v.Eval(context);
+            int ucheck = (int)((uvalue - Math.Floor(uvalue)) * 2);
+            int vcheck = (int)((vvalue - Math.Floor(vvalue)) * 2);
+            return ((ucheck + vcheck) & 1) == 0 ? Color1.Eval(context) : Color2.Eval(context);
         }
         public IMNNode<Vector4D> Color1 { get { return color1; } set { color1 = value; } }
         public IMNNode<Vector4D> Color2 { get { return color2; } set { color2 = value; } }

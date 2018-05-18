@@ -856,14 +856,14 @@ namespace RenderToy.WPF.Figures
     {
         public FigureTextureMarbleTile()
         {
-            Source = MaterialBitmapConverter.ConvertToBitmap(StockMaterials.MarbleTile(), 128, 128);
+            Source = MaterialBitmapConverter.ConvertToBitmap(StockMaterials.MarbleTile, 128, 128);
         }
     }
     class FigureTextureGraphMarbleTile : ViewMaterialGraph
     {
         public FigureTextureGraphMarbleTile()
         {
-            Root = StockMaterials.MarbleTile();
+            Root = StockMaterials.MarbleTile;
         }
     }
     class FigureTexturePerlinNoise : Image

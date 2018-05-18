@@ -94,9 +94,15 @@ namespace RenderToy.WPF
                     return buffer;
                 });
                 if (createdvertexbuffer.VertexBuffer == null) continue;
-                var createdtexture = MementoServer.Get(transformedobject.Node.GetMaterial(), GeneratedTextureToken, () =>
+                var nodematerial = transformedobject.Node.GetMaterial();
+                if (nodematerial == null)
                 {
-                    var material = transformedobject.Node.GetMaterial() as IMNNode<Vector4D>;
+                    // The missing material (Purple).
+                    nodematerial = StockMaterials.Missing;
+                }
+                var createdtexture = MementoServer.Get(nodematerial, GeneratedTextureToken, () =>
+                {
+                    var material = nodematerial as IMNNode<Vector4D>;
                     if (material == null) return null;
                     int texturesize = material.IsConstant() ? 8 : 256;
                     var texture = device.CreateTexture((uint)texturesize, (uint)texturesize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);

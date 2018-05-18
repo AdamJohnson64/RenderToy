@@ -20,6 +20,12 @@ namespace RenderToy.Meshes
             Vertices = vertices.ToArray();
             Triangles = triangles.ToArray();
         }
+        public Mesh(IEnumerable<Vector3D> vertices, IEnumerable<int> triangles, IEnumerable<Vector2D> texcoords)
+        {
+            Vertices = vertices.ToArray();
+            Triangles = triangles.ToArray();
+            TexCoords = texcoords.ToArray();
+        }
         public static Mesh CreateMesh(IParametricUV shape, int usteps, int vsteps)
         {
             var vertices = new List<Vector3D>();
@@ -45,7 +51,8 @@ namespace RenderToy.Meshes
             }
             return new Mesh(vertices, indices);
         }
-        public readonly Vector3D[] Vertices;
-        public readonly int[] Triangles;
+        public readonly Vector3D[] Vertices = null;
+        public readonly int[] Triangles = null;
+        public readonly Vector2D[] TexCoords = null;
     }
 }

@@ -39,7 +39,7 @@ namespace RenderToy.WPF
                 if (ofd.ShowDialog() == true)
                 {
                     var scene = new Scene();
-                    scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, StockMaterials.MarbleTile()));
+                    scene.AddChild(new Node("Plane (Ground)", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.LightGray, StockMaterials.MarbleTile));
                     if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".BPT")
                     {
                         foreach (var primitive in LoaderBPT.LoadFromPath(ofd.FileName))
@@ -49,9 +49,9 @@ namespace RenderToy.WPF
                     }
                     else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".OBJ")
                     {
-                        foreach (var primitive in LoaderOBJ.LoadFromPath(ofd.FileName))
+                        foreach (var node in LoaderOBJ.LoadFromPath(ofd.FileName))
                         {
-                            scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite));
+                            scene.AddChild(node);
                         }
                     }
                     else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".PLY")

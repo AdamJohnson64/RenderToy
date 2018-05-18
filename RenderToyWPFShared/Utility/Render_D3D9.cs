@@ -149,7 +149,7 @@ namespace RenderToy.WPF
             var depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 1);
             var texture = device.CreateTexture((uint)TextureSize, (uint)TextureSize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
             D3DLockedRect lockit = texture.LockRect(0);
-            var material = StockMaterials.MarbleTile();
+            var material = StockMaterials.MarbleTile;
             EvalContext context = new EvalContext();
             unsafe
             {
