@@ -36,11 +36,16 @@ namespace RenderToy.TextureFormats
                 if (bitdepth != 24) throw new FileLoadException("Expected 24bpp.");
                 byte imagedescriptor = binaryreader.ReadByte();
                 if (imagedescriptor != 0) throw new FileLoadException("Expected Zero Image Descriptor.");
-                var data = new byte[3 * width * height];
-                for (int y = 0; y < height; ++y)
+                var data = new byte[4 * width * height];
+                for (int y = height - 1; y >= 0; --y)
                 {
-                    var raster = binaryreader.ReadBytes(3 * width);
-                    Array.Copy(raster, 0, data, 3 * width * (height - y - 1), 3 * width);
+                    for (int x = 0; x < width; ++x)
+                    {
+                        data[0 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                        data[1 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                        data[2 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                        data[3 + 4 * x + 4 * width * y] = (byte)255;
+                    }
                 }
                 return new Texture24(Path.GetFileName(path), width, height, data);
             }

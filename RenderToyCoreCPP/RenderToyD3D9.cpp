@@ -77,7 +77,7 @@ namespace RenderToy
 	{
 	public:
 		INT Pitch;
-		void* Bits;
+		System::IntPtr Bits;
 	};
 	ref class Direct3D9Globals
 	{
@@ -165,7 +165,7 @@ namespace RenderToy
 			TRY_D3D(pWrapped->LockRect(&LockedRect, nullptr, D3DLOCK_READONLY));
 			auto result = gcnew D3DLockedRect();
 			result->Pitch = LockedRect.Pitch;
-			result->Bits = LockedRect.pBits;
+			result->Bits = System::IntPtr(LockedRect.pBits);
 			return result;
 		}
 		void UnlockRect()
@@ -186,7 +186,7 @@ namespace RenderToy
 			TRY_D3D(pWrapped->LockRect(Level, &LockedRect, nullptr, D3DLOCK_DISCARD));
 			auto result = gcnew D3DLockedRect();
 			result->Pitch = LockedRect.Pitch;
-			result->Bits = LockedRect.pBits;
+			result->Bits = System::IntPtr(LockedRect.pBits);
 			return result;
 		}
 		void UnlockRect(unsigned int Level)
