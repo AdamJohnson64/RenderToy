@@ -5,6 +5,7 @@
 
 using RenderToy.Materials;
 using RenderToy.PipelineModel;
+using RenderToy.Textures;
 using RenderToy.Utility;
 using System;
 using System.Globalization;
@@ -33,7 +34,11 @@ namespace RenderToy.WPF
         {
             if (node == null) return null;
             System.Type type = node.GetType();
-            if (typeof(IMNNode<double>).IsAssignableFrom(type))
+            if (typeof(ITexture).IsAssignableFrom(type))
+            {
+                return ConvertToBitmap((ITexture)node);
+            }
+            else if (typeof(IMNNode<double>).IsAssignableFrom(type))
             {
                 return ConvertToBitmap((IMNNode<double>)node, bitmapWidth, bitmapHeight);
             }
@@ -42,6 +47,18 @@ namespace RenderToy.WPF
                 return ConvertToBitmap((IMNNode<Vector4D>)node, bitmapWidth, bitmapHeight);
             }
             return null;
+        }
+        public static WriteableBitmap ConvertToBitmap(ITexture node)
+        {
+            if (node == null) return null;
+            int bitmapWidth = node.GetTextureWidth();
+            int bitmapHeight = node.GetTextureHeight();
+            var bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
+            bitmap.Lock();
+            node.CopyTextureTo(bitmap.BackBuffer, bitmapWidth, bitmapHeight, bitmap.BackBufferStride);
+            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapWidth, bitmapHeight));
+            bitmap.Unlock();
+            return bitmap;
         }
         public static WriteableBitmap ConvertToBitmap(IMNNode<double> node, int bitmapWidth, int bitmapHeight)
         {

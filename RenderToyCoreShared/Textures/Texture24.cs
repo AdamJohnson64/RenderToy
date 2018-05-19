@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace RenderToy.Textures
 {
-    interface ITexture
+    public interface ITexture
     {
         int GetTextureWidth();
         int GetTextureHeight();
