@@ -67,13 +67,16 @@ namespace RenderToy
 	public enum class D3DSamplerState
 	{
 		MagFilter = D3DSAMP_MAGFILTER,
+		MinFilter = D3DSAMP_MINFILTER,
 		MipFilter = D3DSAMP_MIPFILTER,
+		MaxAnisotropy = D3DSAMP_MAXANISOTROPY,
 	};
 	public enum class D3DTextureFilter
 	{
 		None = D3DTEXF_NONE,
 		Point = D3DTEXF_POINT,
 		Linear = D3DTEXF_LINEAR,
+		Anisotropic = D3DTEXF_ANISOTROPIC,
 	};
 	public enum class D3DTransformState
 	{
