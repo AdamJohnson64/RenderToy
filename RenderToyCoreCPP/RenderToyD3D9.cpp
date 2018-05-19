@@ -67,6 +67,7 @@ namespace RenderToy
 	public enum class D3DSamplerState
 	{
 		MagFilter = D3DSAMP_MAGFILTER,
+		MipFilter = D3DSAMP_MIPFILTER,
 	};
 	public enum class D3DTextureFilter
 	{

@@ -11,7 +11,7 @@ namespace RenderToy.TextureFormats
 {
     static class LoaderTGA
     {
-        public static Texture24 LoadFromPath(string path)
+        public static ImageBgra32 LoadFromPath(string path)
         {
             using (var streamreader = File.OpenRead(path))
             {
@@ -47,7 +47,7 @@ namespace RenderToy.TextureFormats
                         data[3 + 4 * x + 4 * width * y] = (byte)255;
                     }
                 }
-                return new Texture24(Path.GetFileName(path), width, height, data);
+                return new ImageBgra32(Path.GetFileName(path), width, height, data);
             }
         }
     }

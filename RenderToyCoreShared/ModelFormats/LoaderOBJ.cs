@@ -6,6 +6,7 @@
 using RenderToy.Materials;
 using RenderToy.Meshes;
 using RenderToy.SceneGraph;
+using RenderToy.Textures;
 using RenderToy.TextureFormats;
 using RenderToy.Transforms;
 using RenderToy.Utility;
@@ -273,7 +274,7 @@ namespace RenderToy.ModelFormat
             var mtldir = Path.GetDirectoryName(mtlpath);
             var texfile = Path.Combine(mtldir, texrelative);
             if (!File.Exists(texfile)) return null;
-            return LoaderTGA.LoadFromPath(texfile);
+            return new Texture(texrelative, LoaderTGA.LoadFromPath(texfile), true);
         }
         static IEnumerable<int> GenerateIntegerSequence(int count)
         {

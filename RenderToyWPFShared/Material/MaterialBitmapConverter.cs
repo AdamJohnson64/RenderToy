@@ -38,6 +38,10 @@ namespace RenderToy.WPF
             {
                 return ConvertToBitmap((ITexture)node);
             }
+            if (typeof(IImageBgra32).IsAssignableFrom(type))
+            {
+                return ConvertToBitmap((IImageBgra32)node);
+            }
             else if (typeof(IMNNode<double>).IsAssignableFrom(type))
             {
                 return ConvertToBitmap((IMNNode<double>)node, bitmapWidth, bitmapHeight);
@@ -50,9 +54,13 @@ namespace RenderToy.WPF
         }
         public static WriteableBitmap ConvertToBitmap(ITexture node)
         {
+            return ConvertToBitmap(node.GetTextureLevel(0));
+        }
+        public static WriteableBitmap ConvertToBitmap(IImageBgra32 node)
+        {
             if (node == null) return null;
-            int bitmapWidth = node.GetTextureWidth();
-            int bitmapHeight = node.GetTextureHeight();
+            int bitmapWidth = node.GetImageWidth();
+            int bitmapHeight = node.GetImageHeight();
             var bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
             bitmap.Lock();
             ConvertToBitmap(node, bitmap.BackBuffer, bitmapWidth, bitmapHeight, bitmap.BackBufferStride);
@@ -60,9 +68,9 @@ namespace RenderToy.WPF
             bitmap.Unlock();
             return bitmap;
         }
-        public static void ConvertToBitmap(ITexture node, IntPtr bitmapptr, int bitmapwidth, int bitmapheight, int bitmapstride)
+        public static void ConvertToBitmap(IImageBgra32 node, IntPtr bitmapptr, int bitmapwidth, int bitmapheight, int bitmapstride)
         {
-            node.CopyTextureTo(bitmapptr, bitmapwidth, bitmapheight, bitmapstride);
+            node.CopyImageTo(bitmapptr, bitmapwidth, bitmapheight, bitmapstride);
         }
         public static WriteableBitmap ConvertToBitmap(IMNNode<double> node, int bitmapWidth, int bitmapHeight)
         {

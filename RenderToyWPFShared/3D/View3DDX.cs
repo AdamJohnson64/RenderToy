@@ -63,6 +63,7 @@ namespace RenderToy.WPF
                 device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
                 device.SetRenderState(D3DRenderState.Lighting, 0);
                 device.SetSamplerState(0, D3DSamplerState.MagFilter, (uint)D3DTextureFilter.Linear);
+                device.SetSamplerState(0, D3DSamplerState.MipFilter, (uint)D3DTextureFilter.Linear);
                 var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
                 foreach (var transformedobject in TransformedObject.Enumerate(Scene))
                 {
@@ -109,9 +110,22 @@ namespace RenderToy.WPF
                         var astexture = nodematerial as ITexture;
                         if (astexture != null)
                         {
-                            var texture = device.CreateTexture((uint)astexture.GetTextureWidth(), (uint)astexture.GetTextureHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
+                            var texture = device.CreateTexture((uint)astexture.GetTextureLevel(0).GetImageWidth(), (uint)astexture.GetTextureLevel(0).GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
+                            for (int level = 0; level < astexture.GetTextureLevelCount(); ++level)
+                            {
+                                D3DLockedRect lockit = texture.LockRect((uint)level);
+                                var thislevel = astexture.GetTextureLevel(level);
+                                MaterialBitmapConverter.ConvertToBitmap(thislevel, lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
+                                texture.UnlockRect((uint)level);
+                            }
+                            return texture;
+                        }
+                        var asimage = nodematerial as IImageBgra32;
+                        if (asimage != null)
+                        {
+                            var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
                             D3DLockedRect lockit = texture.LockRect(0);
-                            MaterialBitmapConverter.ConvertToBitmap(astexture, lockit.Bits, astexture.GetTextureWidth(), astexture.GetTextureHeight(), lockit.Pitch);
+                            MaterialBitmapConverter.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
                             texture.UnlockRect(0);
                             return texture;
                         }
