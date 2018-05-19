@@ -110,7 +110,7 @@ namespace RenderToy.WPF
                         {
                             var texture = device.CreateTexture((uint)astexture.GetTextureWidth(), (uint)astexture.GetTextureHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
                             D3DLockedRect lockit = texture.LockRect(0);
-                            astexture.CopyTextureTo(lockit.Bits, astexture.GetTextureWidth(), astexture.GetTextureHeight(), lockit.Pitch);
+                            MaterialBitmapConverter.ConvertToBitmap(astexture, lockit.Bits, astexture.GetTextureWidth(), astexture.GetTextureHeight(), lockit.Pitch);
                             texture.UnlockRect(0);
                             return texture;
                         }
@@ -120,20 +120,8 @@ namespace RenderToy.WPF
                             int texturesize = asmaterial.IsConstant() ? 8 : 256;
                             var texture = device.CreateTexture((uint)texturesize, (uint)texturesize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
                             D3DLockedRect lockit = texture.LockRect(0);
-                            EvalContext context = new EvalContext();
-                            unsafe
-                            {
-                                for (int y = 0; y < texturesize; ++y)
-                                {
-                                    uint* raster = (uint*)((byte*)lockit.Bits + lockit.Pitch * y);
-                                    for (int x = 0; x < texturesize; ++x)
-                                    {
-                                        context.U = x / (double)texturesize;
-                                        context.V = y / (double)texturesize;
-                                        raster[x] = Rasterization.ColorToUInt32(asmaterial.Eval(context));
-                                    }
-                                }
-                            }
+                            MaterialBitmapConverter.ConvertToBitmap(asmaterial, lockit.Bits, texturesize, texturesize, lockit.Pitch);
+                            texture.UnlockRect(0);
                             return texture;
                         }
                         return null;
