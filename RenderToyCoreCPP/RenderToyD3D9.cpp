@@ -64,6 +64,16 @@ namespace RenderToy
 		CullMode = D3DRS_CULLMODE,
 		Lighting = D3DRS_LIGHTING,
 	};
+	public enum class D3DSamplerState
+	{
+		MagFilter = D3DSAMP_MAGFILTER,
+	};
+	public enum class D3DTextureFilter
+	{
+		None = D3DTEXF_NONE,
+		Point = D3DTEXF_POINT,
+		Linear = D3DTEXF_LINEAR,
+	};
 	public enum class D3DTransformState
 	{
 		View = D3DTS_VIEW,
@@ -262,6 +272,10 @@ namespace RenderToy
 		void SetTexture(DWORD Stage, Direct3DTexture9 ^pTexture)
 		{
 			TRY_D3D(pWrapped->SetTexture(Stage, pTexture->Wrapped));
+		}
+		void SetSamplerState(DWORD Sampler, D3DSamplerState Type, DWORD Value)
+		{
+			TRY_D3D(pWrapped->SetSamplerState(Sampler, (D3DSAMPLERSTATETYPE)Type, Value));
 		}
 		void Clear(D3DClear Flags, D3DCOLOR Color, float Z, DWORD Stencil)
 		{

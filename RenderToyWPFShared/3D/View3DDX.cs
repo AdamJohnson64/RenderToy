@@ -62,6 +62,7 @@ namespace RenderToy.WPF
                 device.SetRenderState(D3DRenderState.ZEnable, 1U);
                 device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
                 device.SetRenderState(D3DRenderState.Lighting, 0);
+                device.SetSamplerState(0, D3DSamplerState.MagFilter, (uint)D3DTextureFilter.Linear);
                 var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
                 foreach (var transformedobject in TransformedObject.Enumerate(Scene))
                 {
