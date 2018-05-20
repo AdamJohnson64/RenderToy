@@ -86,24 +86,22 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<VertexDX> CreateTrianglesDX(Mesh mesh)
         {
             var v = mesh.Vertices;
+            var n = mesh.Normals;
             var t = mesh.TexCoords;
-            if (t == null)
+            foreach (var i in TriIndex.ExtractTriangles(mesh.Triangles))
             {
-                foreach (var i in TriIndex.ExtractTriangles(mesh.Triangles))
-                {
-                    yield return new VertexDX { Position = v[i.Index0], Diffuse = 0xFF0000FF };
-                    yield return new VertexDX { Position = v[i.Index1], Diffuse = 0xFF00FF00 };
-                    yield return new VertexDX { Position = v[i.Index2], Diffuse = 0xFFFF0000 };
-                }
-            }
-            else
-            {
-                foreach (var i in TriIndex.ExtractTriangles(mesh.Triangles))
-                {
-                    yield return new VertexDX { Position = v[i.Index0], TexCoord = t[i.Index0], Diffuse = 0xFFFFFFFF };
-                    yield return new VertexDX { Position = v[i.Index1], TexCoord = t[i.Index1], Diffuse = 0xFFFFFFFF };
-                    yield return new VertexDX { Position = v[i.Index2], TexCoord = t[i.Index2], Diffuse = 0xFFFFFFFF };
-                }
+                var v1 = new VertexDX { Position = v[i.Index0], Diffuse = 0xFFFFFFFF };
+                if (t != null) v1.TexCoord = t[i.Index0];
+                if (n != null) v1.Normal = n[i.Index0];
+                yield return v1;
+                var v2 = new VertexDX { Position = v[i.Index1], Diffuse = 0xFFFFFFFF };
+                if (t != null) v2.TexCoord = t[i.Index1];
+                if (n != null) v2.Normal = n[i.Index1];
+                yield return v2;
+                var v3 = new VertexDX { Position = v[i.Index2], Diffuse = 0xFFFFFFFF };
+                if (t != null) v3.TexCoord = t[i.Index2];
+                if (n != null) v3.Normal = n[i.Index2];
+                yield return v3;
             }
         }
         /// <summary>

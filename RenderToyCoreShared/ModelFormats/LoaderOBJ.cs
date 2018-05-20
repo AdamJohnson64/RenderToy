@@ -25,6 +25,7 @@ namespace RenderToy.ModelFormat
             var normals = new List<Vector3D>();
             var texcoords = new List<Vector2D>();
             var collectedfaces = new List<int>();
+            var collectednormalfaces = new List<int>();
             var collectedtexcoordfaces = new List<int>();
             string groupname = null;
             string materialname = null;
@@ -102,14 +103,16 @@ namespace RenderToy.ModelFormat
                         if (materialname != null)
                         {
                             // Flush this mesh to the caller.
-                            var flatvertices = collectedfaces.Select(i => vertices[i]);
-                            var flattexcoords = collectedtexcoordfaces.Select(i => texcoords[i]);
                             var flatindices = GenerateIntegerSequence(collectedfaces.Count);
-                            var primitive = new Mesh(flatvertices, flatindices, flattexcoords);
+                            var flatvertices = collectedfaces.Select(i => vertices[i]);
+                            var flatnormals = collectednormalfaces.Select(i => normals[i]);
+                            var flattexcoords = collectedtexcoordfaces.Select(i => texcoords[i]);
+                            var primitive = new Mesh(flatindices, flatvertices, flatnormals, flattexcoords);
                             yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
                             // Reset our state.
                             materialname = null;
                             collectedfaces.Clear();
+                            collectednormalfaces.Clear();
                             collectedtexcoordfaces.Clear();
                         }
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
@@ -126,13 +129,16 @@ namespace RenderToy.ModelFormat
                         if (!f.All(i => i.Length == f[0].Length)) throw new FileLoadException("Inconsistent face setups '" + line + "'.");
                         if (f[0].Length < 1 || f[0].Length > 3) throw new FileLoadException("Bad face component count '" + line + "'.");
                         int[] idxv = f.Select(i => int.Parse(i[0]) - 1).ToArray();
-                        int[] idxt = f.Select(i => int.Parse(i[1]) - 1).ToArray();
                         int[] idxn = f.Select(i => int.Parse(i[2]) - 1).ToArray();
+                        int[] idxt = f.Select(i => int.Parse(i[1]) - 1).ToArray();
                         if (parts.Length == 4)
                         {
                             collectedfaces.Add(idxv[0]);
                             collectedfaces.Add(idxv[1]);
                             collectedfaces.Add(idxv[2]);
+                            collectednormalfaces.Add(idxn[0]);
+                            collectednormalfaces.Add(idxn[1]);
+                            collectednormalfaces.Add(idxn[2]);
                             collectedtexcoordfaces.Add(idxt[0]);
                             collectedtexcoordfaces.Add(idxt[1]);
                             collectedtexcoordfaces.Add(idxt[2]);
@@ -145,6 +151,12 @@ namespace RenderToy.ModelFormat
                             collectedfaces.Add(idxv[2]);
                             collectedfaces.Add(idxv[3]);
                             collectedfaces.Add(idxv[0]);
+                            collectednormalfaces.Add(idxn[0]);
+                            collectednormalfaces.Add(idxn[1]);
+                            collectednormalfaces.Add(idxn[2]);
+                            collectednormalfaces.Add(idxn[2]);
+                            collectednormalfaces.Add(idxn[3]);
+                            collectednormalfaces.Add(idxn[0]);
                             collectedtexcoordfaces.Add(idxt[0]);
                             collectedtexcoordfaces.Add(idxt[1]);
                             collectedtexcoordfaces.Add(idxt[2]);
@@ -160,11 +172,12 @@ namespace RenderToy.ModelFormat
             if (materialname != null)
             {
                 // Flush this mesh to the caller.
-                var primitive = new Mesh(vertices, collectedfaces);
+                var primitive = new Mesh(collectedfaces, vertices);
                 yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
                 // Reset our state.
                 materialname = null;
                 collectedfaces.Clear();
+                collectednormalfaces.Clear();
                 collectedtexcoordfaces.Clear();
             }
         }

@@ -15,15 +15,16 @@ namespace RenderToy.Meshes
     /// </summary>
     public class Mesh : IPrimitive
     {
-        public Mesh(IEnumerable<Vector3D> vertices, IEnumerable<int> triangles)
+        public Mesh(IEnumerable<int> triangles, IEnumerable<Vector3D> vertices)
         {
-            Vertices = vertices.ToArray();
             Triangles = triangles.ToArray();
+            Vertices = vertices.ToArray();
         }
-        public Mesh(IEnumerable<Vector3D> vertices, IEnumerable<int> triangles, IEnumerable<Vector2D> texcoords)
+        public Mesh(IEnumerable<int> triangles, IEnumerable<Vector3D> vertices, IEnumerable<Vector3D> normals, IEnumerable<Vector2D> texcoords)
         {
-            Vertices = vertices.ToArray();
             Triangles = triangles.ToArray();
+            Vertices = vertices.ToArray();
+            Normals = normals.ToArray();
             TexCoords = texcoords.ToArray();
         }
         public static Mesh CreateMesh(IParametricUV shape, int usteps, int vsteps)
@@ -49,10 +50,11 @@ namespace RenderToy.Meshes
                     indices.Add((u + 0) + (v + 0) * (usteps + 1));
                 }
             }
-            return new Mesh(vertices, indices);
+            return new Mesh(indices, vertices);
         }
-        public readonly Vector3D[] Vertices = null;
         public readonly int[] Triangles = null;
+        public readonly Vector3D[] Vertices = null;
+        public readonly Vector3D[] Normals = null;
         public readonly Vector2D[] TexCoords = null;
     }
 }

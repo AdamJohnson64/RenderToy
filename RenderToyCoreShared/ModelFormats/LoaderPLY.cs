@@ -16,7 +16,7 @@ namespace RenderToy.ModelFormat
     {
         public static IPrimitive LoadFromPath(string path)
         {
-            return LoadFromPath(path, (v,i) => new Mesh(v, i));
+            return LoadFromPath(path, (v,i) => new Mesh(i, v));
         }
         delegate IPrimitive ConditionMesh(IReadOnlyList<Vector3D> vertices, IReadOnlyList<int> triangles);
         static IPrimitive LoadFromPath(string path, ConditionMesh conditioner)
