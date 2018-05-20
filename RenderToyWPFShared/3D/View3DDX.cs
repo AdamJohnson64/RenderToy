@@ -21,6 +21,7 @@ namespace RenderToy.WPF
 {
     public abstract class View3DDXBase : FrameworkElement
     {
+        #region - Section : Dependency Properties -
         public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(IScene), typeof(View3DDXBase), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
         public IScene Scene
         {
@@ -33,6 +34,8 @@ namespace RenderToy.WPF
             get { return (Matrix3D)GetValue(ModelViewProjectionProperty); }
             set { SetValue(ModelViewProjectionProperty, value); }
         }
+        #endregion
+        #region - Section : Direct3D Resource Factory -
         protected View3DDXBase()
         {
             d3dimage = new D3DImage();
@@ -51,7 +54,7 @@ namespace RenderToy.WPF
                 // The missing material (Purple).
                 material = StockMaterials.Missing;
             }
-            return MementoServer.Get(material, GeneratedTextureToken, () =>
+            return deviceboundmemento.Get(material, GeneratedTextureToken, () =>
             {
                 var astexture = material as ITexture;
                 if (astexture != null)
@@ -96,7 +99,7 @@ namespace RenderToy.WPF
         static readonly Token GeneratedVertexBufferToken = new Token();
         protected VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
         {
-            return MementoServer.Get(primitive, GeneratedVertexBufferToken, () =>
+            return deviceboundmemento.Get(primitive, GeneratedVertexBufferToken, () =>
             {
                 var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
                 var verticesout = verticesin.Select(i => new RenderD3D.XYZNorDiffuseTex1
@@ -130,8 +133,8 @@ namespace RenderToy.WPF
         }
         void RecreateDevice()
         {
-            MementoServer.EvictByToken(GeneratedTextureToken);
-            MementoServer.EvictByToken(GeneratedVertexBufferToken);
+            deviceboundmemento.EvictByToken(GeneratedTextureToken);
+            deviceboundmemento.EvictByToken(GeneratedVertexBufferToken);
             device = d3d.CreateDevice();
             RecreateSurfaces();
         }
@@ -144,6 +147,8 @@ namespace RenderToy.WPF
             depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 1);
             InvalidateVisual();
         }
+        #endregion
+        #region - Section : Overrides -
         protected abstract void RenderD3D();
         protected override void OnRender(DrawingContext drawingContext)
         {
@@ -173,6 +178,9 @@ namespace RenderToy.WPF
         {
             RecreateSurfaces();
         }
+        #endregion
+        #region - Section : Private Fields -
+        MementoServer deviceboundmemento = new MementoServer();
         D3DImage d3dimage;
         Direct3D9 d3d;
         protected Direct3DDevice9 device;
@@ -180,6 +188,7 @@ namespace RenderToy.WPF
         Direct3DSurface9 depthstencil;
         int render_width;
         int render_height;
+        #endregion
     }
     public class View3DDX : View3DDXBase
     {

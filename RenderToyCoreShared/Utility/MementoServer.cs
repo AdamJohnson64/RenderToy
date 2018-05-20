@@ -18,11 +18,12 @@ namespace RenderToy.Utility
     /// </summary>
     public class MementoServer
     {
+        public static readonly MementoServer Default = new MementoServer();
         /// <summary>
         /// Evict all cached data constructed with a specific token.
         /// </summary>
         /// <param name="token">The token identity of objects to be evicted.</param>
-        public static void EvictByToken(object token)
+        public void EvictByToken(object token)
         {
             var removethese = Cache.Where(i => i.Key.Token.Target == token).ToArray();
             foreach (var key in removethese)
@@ -42,20 +43,14 @@ namespace RenderToy.Utility
         /// <param name="token">The token identifying this specific record.</param>
         /// <param name="build">A function which will build the data if missing.</param>
         /// <returns></returns>
-        public static T Get<T>(object owner, object token, Func<T> build)
+        public T Get<T>(object owner, object token, Func<T> build)
         {
             return (T)GetBase(owner, token, () => (T)build());
         }
         /// <summary>
-        /// Private constructor to prevent accidental user construction.
-        /// </summary>
-        MementoServer()
-        {
-        }
-        /// <summary>
         /// Static initialization to prepare automatic eviction timers.
         /// </summary>
-        static MementoServer()
+        public MementoServer()
         {
             cleanup = new Timer((o) =>
             {
@@ -70,11 +65,11 @@ namespace RenderToy.Utility
                 }
             }, null, 0, 30000);
         }
-        static object GetBase(object owner, object token, Func<object> build)
+        object GetBase(object owner, object token, Func<object> build)
         {
             return GetBase(new Key(owner, token), build);
         }
-        static object GetBase(Key key, Func<object> build)
+        object GetBase(Key key, Func<object> build)
         {
             object result;
             if (Cache.TryGetValue(key, out result))
@@ -84,8 +79,8 @@ namespace RenderToy.Utility
             }
             return Cache[key] = result = build();
         }
-        static ConcurrentDictionary<Key, object> Cache = new ConcurrentDictionary<Key, object>();
-        static Timer cleanup;
+        ConcurrentDictionary<Key, object> Cache = new ConcurrentDictionary<Key, object>();
+        Timer cleanup;
         /// <summary>
         /// Keys for the cache dictionary comprising owner and token.
         /// </summary>

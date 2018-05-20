@@ -26,12 +26,12 @@ namespace RenderToy.Utility
         public static byte[] CreateFlatMemoryF32(IScene scene)
         {
             Func<byte[]> build = () => new SceneFormatter(scene, false).m.ToArray();
-            return MementoServer.Get(scene, typeof(FlatSceneF32Token), build);
+            return MementoServer.Default.Get(scene, typeof(FlatSceneF32Token), build);
         }
         public static byte[] CreateFlatMemoryF64(IScene scene)
         {
             Func<byte[]> build = () => new SceneFormatter(scene, true).m.ToArray();
-            return MementoServer.Get(scene, typeof(FlatSceneF64Token), build);
+            return MementoServer.Default.Get(scene, typeof(FlatSceneF64Token), build);
         }
         public static byte[] CreateFlatMemoryF32(Matrix3D obj)
         {
@@ -162,7 +162,7 @@ namespace RenderToy.Utility
             }
             else if (primitive is Mesh)
             {
-                var meshbvh = MementoServer.Get(primitive, MeshBVHToken, () =>
+                var meshbvh = MementoServer.Default.Get(primitive, MeshBVHToken, () =>
                 {
                     var mesh = (Mesh)primitive;
                     return MeshBVH.Create(mesh);
@@ -177,7 +177,7 @@ namespace RenderToy.Utility
             }
             else if (primitive is IParametricUV)
             {
-                var meshbvh = MementoServer.Get(primitive, MeshBVHToken, () =>
+                var meshbvh = MementoServer.Default.Get(primitive, MeshBVHToken, () =>
                 {
                     var mesh = (IParametricUV)primitive;
                     var triangles = Split(PrimitiveAssembly.CreateTriangles(mesh), 3).Select(i => new Triangle3D(i[0], i[1], i[2]));
