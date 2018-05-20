@@ -210,7 +210,7 @@
                         <Border DockPanel.Dock="Bottom" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2" Padding="2">
                             <TextBlock x:Name="ShaderErrorsVS" FontFamily="Consolas"/>
                         </Border>
-                        <TextBox x:Name="ShaderCode" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas"/>
+                        <TextBox x:Name="ShaderCode" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas" Background="Black" Foreground="White"/>
                     </DockPanel>
                     <GridSplitter Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="4"/>
                     <rendertoy:View3DDXShader Grid.Column="1" Scene="{Binding}" ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" VertexShader="{Binding ElementName=ShaderCode, Path=Text, Converter={StaticResource CompileVertexShaderConverter}}" PixelShader="{Binding ElementName=ShaderCode, Path=Text, Converter={StaticResource CompilePixelShaderConverter}}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
