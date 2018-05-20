@@ -10,15 +10,59 @@ using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Transforms;
 using RenderToy.Utility;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace RenderToy.WPF
 {
+    public class CompileVertexShaderConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string inputcode = value as string;
+            if (inputcode == null) return null;
+            D3DBlob code = new D3DBlob();
+            Direct3DCompiler.D3DCompile(inputcode, "temp.vs", "vs", "vs_3_0", 0, 0, code, null);
+            var buffer = code.GetBufferPointer();
+            if (buffer == IntPtr.Zero) return null;
+            var buffersize = code.GetBufferSize();
+            byte[] codebytes = new byte[buffersize];
+            Marshal.Copy(buffer, codebytes, 0, (int)buffersize);
+            return codebytes;
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    public class CompilePixelShaderConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string inputcode = value as string;
+            if (inputcode == null) return null;
+            D3DBlob code = new D3DBlob();
+            Direct3DCompiler.D3DCompile(inputcode, "temp.ps", "ps", "ps_3_0", 0, 0, code, null);
+            var buffer = code.GetBufferPointer();
+            if (buffer == IntPtr.Zero) return null;
+            var buffersize = code.GetBufferSize();
+            byte[] codebytes = new byte[buffersize];
+            Marshal.Copy(buffer, codebytes, 0, (int)buffersize);
+            return codebytes;
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
     public partial class MainWindow : Window
     {
         public static RoutedUICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(View3DUser));
@@ -73,6 +117,56 @@ namespace RenderToy.WPF
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
             DataContext = Document.Default;
+            ShaderCode.TextChanged += (s, e) =>
+            {
+                {
+                    D3DBlob code = new D3DBlob();
+                    D3DBlob error = new D3DBlob();
+                    Direct3DCompiler.D3DCompile(ShaderCode.Text, "temp.vs", "vs", "vs_4_0_level_9_3", 0, 0, code, error);
+                    var buffer = error.GetBufferPointer();
+                    var buffersize = error.GetBufferSize();
+                    ShaderErrorsVS.Text = buffer == IntPtr.Zero ? "Vertex Shader Compilation Successful." : Marshal.PtrToStringAnsi(buffer, (int)buffersize - 1);
+                }
+                {
+                    D3DBlob code = new D3DBlob();
+                    D3DBlob error = new D3DBlob();
+                    Direct3DCompiler.D3DCompile(ShaderCode.Text, "temp.ps", "ps", "ps_4_0_level_9_3", 0, 0, code, error);
+                    var buffer = error.GetBufferPointer();
+                    var buffersize = error.GetBufferSize();
+                    ShaderErrorsPS.Text = buffer == IntPtr.Zero ? "Pixel Shader Compilation Successful." : Marshal.PtrToStringAnsi(buffer, (int)buffersize - 1);
+                }
+            };
+            ShaderCode.Text =
+@"float4x4 ModelViewProjection : register(c0);
+texture2D Texture;
+SamplerState Sampler;
+
+struct VS_INPUT {
+    float4 Position : POSITION;
+    float3 Normal : NORMAL;
+    float2 TexCoord : TEXCOORD0;
+};
+
+struct VS_OUTPUT {
+    float4 Position : SV_Position;
+    float3 Normal : NORMAL;
+    float2 TexCoord : TEXCOORD0;
+};
+
+VS_OUTPUT vs(VS_INPUT input) {
+    VS_OUTPUT result;
+    result.Position = mul(ModelViewProjection, input.Position);
+    result.Normal = input.Normal;
+    result.TexCoord = input.TexCoord;
+    return result;
+}
+
+float4 ps(VS_OUTPUT input) : SV_Target {
+    float4 albedo = Texture.Sample(Sampler, input.TexCoord);
+    float light = clamp(dot(input.Normal, normalize(float3(1,1,1))), 0.25, 1);
+    float3 output = light * albedo.rgb;
+    return float4(output, albedo.a);
+}";
         }
     }
     class Document

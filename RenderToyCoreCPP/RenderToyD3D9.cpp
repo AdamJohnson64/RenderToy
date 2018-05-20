@@ -13,11 +13,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <d3d9.h>
+#include <d3dcompiler.h>
+#include "msclr\marshal_cppstd.h"
 
 #define TRY_D3D(D3D9FUNC) if ((D3D9FUNC) != D3D_OK) throw gcnew System::Exception(#D3D9FUNC)
 
 namespace RenderToy
 {
+	#pragma region - Direct3D9 Enumerations -
 	public enum class D3DClear
 	{
 		Target = D3DCLEAR_TARGET,
@@ -87,12 +90,16 @@ namespace RenderToy
 	{
 		WriteOnly = D3DUSAGE_WRITEONLY,
 	};
+	#pragma endregion
+	#pragma region - Direct3D9 Structures -
 	public ref class D3DLockedRect
 	{
 	public:
 		INT Pitch;
 		System::IntPtr Bits;
 	};
+	#pragma endregion
+	#pragma region - Direct3D9 Global Services -
 	ref class Direct3D9Globals
 	{
 	private:
@@ -167,6 +174,17 @@ namespace RenderToy
 	protected:
 		T* pWrapped;
 	};
+	#pragma endregion
+	#pragma region - Direct3DPixelShader9 -
+	public ref class Direct3DPixelShader9 : public Direct3DWrap<IDirect3DPixelShader9>
+	{
+	public:
+		Direct3DPixelShader9(IDirect3DPixelShader9 *pObject) : Direct3DWrap(pObject)
+		{
+		}
+	};
+	#pragma endregion
+	#pragma region - Direct3DSurface9 -
 	public ref class Direct3DSurface9 : public Direct3DWrap<IDirect3DSurface9>
 	{
 	public:
@@ -187,6 +205,8 @@ namespace RenderToy
 			TRY_D3D(pWrapped->UnlockRect());
 		}
 	};
+	#pragma endregion
+	#pragma region - Direct3DTexture9 -
 	public ref class Direct3DTexture9 : public Direct3DWrap<IDirect3DTexture9>
 	{
 	public:
@@ -208,6 +228,8 @@ namespace RenderToy
 			TRY_D3D(pWrapped->UnlockRect(Level));
 		}
 	};
+	#pragma endregion
+	#pragma region - Direct3DVertexBuffer9 -
 	public ref class Direct3DVertexBuffer9 : public Direct3DWrap<IDirect3DVertexBuffer9>
 	{
 	public:
@@ -226,6 +248,17 @@ namespace RenderToy
 			TRY_D3D(pWrapped->Unlock());
 		}
 	};
+	#pragma endregion
+	#pragma region - Direct3DVertexShader9 -
+	public ref class Direct3DVertexShader9 : Direct3DWrap<IDirect3DVertexShader9>
+	{
+	public:
+		Direct3DVertexShader9(IDirect3DVertexShader9 *pWrapped) : Direct3DWrap(pWrapped)
+		{
+		}
+	};
+	#pragma endregion
+	#pragma region - Direct3DDevice9 -
 	public ref class Direct3DDevice9 : public Direct3DWrap<IDirect3DDevice9>
 	{
 	public:
@@ -297,9 +330,35 @@ namespace RenderToy
 		{
 			TRY_D3D(pWrapped->SetFVF((DWORD)FVF));
 		}
+		Direct3DVertexShader9^ CreateVertexShader(array<byte> ^pFunction)
+		{
+			pin_ptr<byte> marshal_pFunction(&pFunction[0]);
+			IDirect3DVertexShader9 *pTemp = nullptr;
+			TRY_D3D(pWrapped->CreateVertexShader(reinterpret_cast<const DWORD*>(marshal_pFunction), &pTemp));
+			return gcnew Direct3DVertexShader9(pTemp);
+		}
+		void SetVertexShader(Direct3DVertexShader9 ^pShader)
+		{
+			TRY_D3D(pWrapped->SetVertexShader(pShader->Wrapped));
+		}
+		void SetVertexShaderConstantF(UINT StartRegister, System::IntPtr pConstantData, UINT Vector4fCount)
+		{
+			TRY_D3D(pWrapped->SetVertexShaderConstantF(StartRegister, (const float*)pConstantData.ToPointer(), Vector4fCount));
+		}
 		void SetStreamSource(UINT StreamNumber, Direct3DVertexBuffer9 ^pStreamData, UINT OffsetInBytes, UINT Stride)
 		{
 			TRY_D3D(pWrapped->SetStreamSource(StreamNumber, pStreamData->Wrapped, OffsetInBytes, Stride));
+		}
+		Direct3DPixelShader9^ CreatePixelShader(array<byte> ^pFunction)
+		{
+			pin_ptr<byte> marshal_pFunction(&pFunction[0]);
+			IDirect3DPixelShader9 *pTemp = nullptr;
+			TRY_D3D(pWrapped->CreatePixelShader(reinterpret_cast<const DWORD*>(marshal_pFunction), &pTemp));
+			return gcnew Direct3DPixelShader9(pTemp);
+		}
+		void SetPixelShader(Direct3DPixelShader9 ^pShader)
+		{
+			TRY_D3D(pWrapped->SetPixelShader(pShader->Wrapped));
 		}
 		void DrawPrimitive(D3DPrimitiveType PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
 		{
@@ -310,6 +369,8 @@ namespace RenderToy
 			TRY_D3D(pWrapped->DrawPrimitiveUP((D3DPRIMITIVETYPE)PrimitiveType, PrimitiveCount, pVertexStreamZeroData->ToPointer(), VertexStreamZeroStride));
 		}
 	};
+	#pragma endregion
+	#pragma region - Direct3D9 -
 	public ref class Direct3D9 : public Direct3DWrap<IDirect3D9>
 	{
 	public:
@@ -332,4 +393,58 @@ namespace RenderToy
 			return gcnew Direct3DDevice9(pReturnedDeviceInterface);
 		}
 	};
+	#pragma endregion
+	#pragma region - Direct3D Compiler -
+	public ref class D3DBlob : Direct3DWrap<ID3DBlob>
+	{
+	public:
+		D3DBlob() : Direct3DWrap(nullptr)
+		{
+		}
+		D3DBlob(ID3DBlob *pWrapped) : Direct3DWrap(pWrapped)
+		{
+		}
+		System::IntPtr GetBufferPointer()
+		{
+			if (pWrapped == nullptr) return System::IntPtr(nullptr);
+			return System::IntPtr(pWrapped->GetBufferPointer());
+		}
+		size_t GetBufferSize()
+		{
+			if (pWrapped == nullptr) return 0;
+			return pWrapped->GetBufferSize();
+		}
+	internal:
+		void SetWrappedPointer(ID3DBlob *pNewWrapped)
+		{
+			if (pWrapped != nullptr)
+			{
+				pWrapped->Release();
+				pWrapped = nullptr;
+			}
+			pWrapped = pNewWrapped;
+		}
+	};
+	public ref class Direct3DCompiler
+	{
+	public:
+		//static void D3DCompile(LPCVOID pSrcData, SIZE_T SrcDataSize, LPCSTR pSourceName, const D3D_SHADER_MACRO *pDefines, ID3DInclude *pInclude, LPCSTR pEntrypoint, LPCSTR pTarget, UINT Flags1, UINT Flags2, ID3DBlob **ppCode, ID3DBlob **ppErrorMsgs)
+		static void D3DCompile(System::String ^pSrcData, System::String ^pSourceName, System::String ^pEntrypoint, System::String ^pTarget, UINT Flags1, UINT Flags2, D3DBlob ^ppCode, D3DBlob ^ppErrorMsgs)
+		{
+			msclr::interop::marshal_context marshalling;
+			auto marshal_pSrcData = marshalling.marshal_as<const char*>(pSrcData);
+			auto marshal_pSourceName = marshalling.marshal_as<const char*>(pSourceName);
+			auto marshal_pEntrypoint = marshalling.marshal_as<const char*>(pEntrypoint);
+			auto marshal_pTarget = marshalling.marshal_as<const char*>(pTarget);
+			auto marshal_pCode = (ID3DBlob*)nullptr;
+			auto marshal_pErrorMsgs = (ID3DBlob*)nullptr;
+			auto marshal_ppCode = ppCode == nullptr ? nullptr : &marshal_pCode;
+			auto marshal_ppErrorMsgs = ppErrorMsgs == nullptr ? nullptr : &marshal_pErrorMsgs;
+			::D3DCompile(marshal_pSrcData, pSrcData->Length, marshal_pSourceName, nullptr, nullptr, marshal_pEntrypoint, marshal_pTarget, Flags1, Flags2, marshal_ppCode, marshal_ppErrorMsgs);
+			if (marshal_ppCode != nullptr) ppCode->SetWrappedPointer(marshal_pCode);
+			if (marshal_ppErrorMsgs != nullptr) ppErrorMsgs->SetWrappedPointer(marshal_pErrorMsgs);
+			if (marshal_pCode == nullptr) return;
+		}
+	};
+	#pragma endregion
 }

@@ -19,21 +19,21 @@ using System.Windows.Media;
 
 namespace RenderToy.WPF
 {
-    public class View3DDX : FrameworkElement
+    public abstract class View3DDXBase : FrameworkElement
     {
-        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(IScene), typeof(View3DDX), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(IScene), typeof(View3DDXBase), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
         public IScene Scene
         {
             get { return (IScene)GetValue(SceneProperty); }
             set { SetValue(SceneProperty, value); }
         }
-        public static DependencyProperty ModelViewProjectionProperty = DependencyProperty.Register("ModelViewProjection", typeof(Matrix3D), typeof(View3DDX), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty ModelViewProjectionProperty = DependencyProperty.Register("ModelViewProjection", typeof(Matrix3D), typeof(View3DDXBase), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
         public Matrix3D ModelViewProjection
         {
             get { return (Matrix3D)GetValue(ModelViewProjectionProperty); }
             set { SetValue(ModelViewProjectionProperty, value); }
         }
-        public View3DDX()
+        protected View3DDXBase()
         {
             d3dimage = new D3DImage();
             d3d = new Direct3D9();
@@ -44,59 +44,13 @@ namespace RenderToy.WPF
             RecreateDevice();
         }
         static readonly Token GeneratedTextureToken = new Token();
-        static readonly Token GeneratedVertexBufferToken = new Token();
-        struct VertexBufferInfo
+        protected Direct3DTexture9 CreateTexture(IMaterial material)
         {
-            public Direct3DVertexBuffer9 VertexBuffer;
-            public int PrimitiveCount;
-        }
-        protected override void OnRender(DrawingContext drawingContext)
-        {
-            if (rendertarget == null || depthstencil == null) return;
-            if (d3dimage.TryLock(new Duration(TimeSpan.FromMilliseconds(500))))
+            if (material == null)
             {
-                device.SetRenderTarget(0, rendertarget);
-                device.SetDepthStencilSurface(depthstencil);
-                device.BeginScene();
-                device.Clear(D3DClear.Target | D3DClear.ZBuffer, 0x00000000, 1.0f, 0);
-                device.SetFVF(D3DFvf.XYZ | D3DFvf.Normal | D3DFvf.Diffuse | D3DFvf.Tex1);
-                device.SetRenderState(D3DRenderState.ZEnable, 1U);
-                device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
-                device.SetRenderState(D3DRenderState.Lighting, 0);
-                device.SetSamplerState(0, D3DSamplerState.MagFilter, (uint)D3DTextureFilter.Anisotropic);
-                device.SetSamplerState(0, D3DSamplerState.MinFilter, (uint)D3DTextureFilter.Anisotropic);
-                device.SetSamplerState(0, D3DSamplerState.MipFilter, (uint)D3DTextureFilter.Linear);
-                device.SetSamplerState(0, D3DSamplerState.MaxAnisotropy, (uint)16);
-                var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-                foreach (var transformedobject in TransformedObject.Enumerate(Scene))
-                {
-                    var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.GetPrimitive());
-                    if (createdvertexbuffer.VertexBuffer == null) continue;
-                    var nodematerial = transformedobject.Node.GetMaterial();
-                    if (nodematerial == null)
-                    {
-                        // The missing material (Purple).
-                        nodematerial = StockMaterials.Missing;
-                    }
-                    var createdtexture = CreateTexture(nodematerial);
-                    device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
-                    device.SetTexture(0, createdtexture);
-                    device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
-                    device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
-                }
-                device.EndScene();
-                d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, rendertarget.ManagedPtr);
-                d3dimage.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
+                // The missing material (Purple).
+                material = StockMaterials.Missing;
             }
-            d3dimage.Unlock();
-            drawingContext.DrawImage(d3dimage, new Rect(0, 0, ActualWidth, ActualHeight));
-        }
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            RecreateSurfaces();
-        }
-        Direct3DTexture9 CreateTexture(IMaterial material)
-        {
             return MementoServer.Get(material, GeneratedTextureToken, () =>
             {
                 var astexture = material as ITexture;
@@ -134,7 +88,13 @@ namespace RenderToy.WPF
                 return null;
             });
         }
-        VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
+        protected struct VertexBufferInfo
+        {
+            public Direct3DVertexBuffer9 VertexBuffer;
+            public int PrimitiveCount;
+        }
+        static readonly Token GeneratedVertexBufferToken = new Token();
+        protected VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
         {
             return MementoServer.Get(primitive, GeneratedVertexBufferToken, () =>
             {
@@ -179,17 +139,100 @@ namespace RenderToy.WPF
         {
             render_width = (int)ActualWidth;
             render_height = (int)ActualHeight;
-            if (render_width == 0 || render_height == 0) return; 
+            if (render_width == 0 || render_height == 0) return;
             rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 1);
             depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 1);
             InvalidateVisual();
         }
+        protected abstract void RenderD3D();
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            if (rendertarget == null || depthstencil == null) return;
+            if (d3dimage.TryLock(new Duration(TimeSpan.FromMilliseconds(500))))
+            {
+                device.SetRenderTarget(0, rendertarget);
+                device.SetDepthStencilSurface(depthstencil);
+                device.BeginScene();
+                device.Clear(D3DClear.Target | D3DClear.ZBuffer, 0x00000000, 1.0f, 0);
+                device.SetRenderState(D3DRenderState.ZEnable, 1U);
+                device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
+                device.SetRenderState(D3DRenderState.Lighting, 0);
+                device.SetSamplerState(0, D3DSamplerState.MagFilter, (uint)D3DTextureFilter.Anisotropic);
+                device.SetSamplerState(0, D3DSamplerState.MinFilter, (uint)D3DTextureFilter.Anisotropic);
+                device.SetSamplerState(0, D3DSamplerState.MipFilter, (uint)D3DTextureFilter.Linear);
+                device.SetSamplerState(0, D3DSamplerState.MaxAnisotropy, (uint)16);
+                RenderD3D();
+                device.EndScene();
+                d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, rendertarget.ManagedPtr);
+                d3dimage.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
+            }
+            d3dimage.Unlock();
+            drawingContext.DrawImage(d3dimage, new Rect(0, 0, ActualWidth, ActualHeight));
+        }
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            RecreateSurfaces();
+        }
         D3DImage d3dimage;
         Direct3D9 d3d;
-        Direct3DDevice9 device;
+        protected Direct3DDevice9 device;
         Direct3DSurface9 rendertarget;
         Direct3DSurface9 depthstencil;
         int render_width;
         int render_height;
+    }
+    public class View3DDX : View3DDXBase
+    {
+        protected override void RenderD3D()
+        {
+            device.SetFVF(D3DFvf.XYZ | D3DFvf.Normal | D3DFvf.Diffuse | D3DFvf.Tex1);
+            var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            foreach (var transformedobject in TransformedObject.Enumerate(Scene))
+            {
+                var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.GetPrimitive());
+                if (createdvertexbuffer.VertexBuffer == null) continue;
+                var createdtexture = CreateTexture(transformedobject.Node.GetMaterial());
+                device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
+                device.SetTexture(0, createdtexture);
+                device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
+                device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
+            }
+        }
+    }
+    public class View3DDXShader : View3DDXBase
+    {
+        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(View3DDXShader), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+        public byte[] VertexShader
+        {
+            get { return (byte[])GetValue(VertexShaderProperty); }
+            set { SetValue(VertexShaderProperty, value); }
+        }
+        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(View3DDXShader), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+        public byte[] PixelShader
+        {
+            get { return (byte[])GetValue(PixelShaderProperty); }
+            set { SetValue(PixelShaderProperty, value); }
+        }
+        protected override void RenderD3D()
+        {
+            if (VertexShader == null || PixelShader == null) return;
+            var vertexshader = device.CreateVertexShader(VertexShader);
+            var pixelshader = device.CreatePixelShader(PixelShader);
+            device.SetVertexShader(vertexshader);
+            device.SetPixelShader(pixelshader);
+            device.SetFVF(D3DFvf.XYZ | D3DFvf.Normal | D3DFvf.Diffuse | D3DFvf.Tex1);
+            var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            foreach (var transformedobject in TransformedObject.Enumerate(Scene))
+            {
+                var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.GetPrimitive());
+                if (createdvertexbuffer.VertexBuffer == null) continue;
+                var createdtexture = CreateTexture(transformedobject.Node.GetMaterial());
+                device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
+                device.SetTexture(0, createdtexture);
+                //device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
+                device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0), 4);
+                device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
+            }
+        }
     }
 }
