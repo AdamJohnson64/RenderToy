@@ -6,6 +6,7 @@
 using RenderToy.Cameras;
 using RenderToy.Materials;
 using RenderToy.PipelineModel;
+using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Textures;
 using RenderToy.Utility;
@@ -69,37 +70,7 @@ namespace RenderToy.WPF
                 var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
                 foreach (var transformedobject in TransformedObject.Enumerate(Scene))
                 {
-                    var createdvertexbuffer = MementoServer.Get(transformedobject.Node.GetPrimitive(), GeneratedVertexBufferToken, () =>
-                    {
-                        var verticesin = PrimitiveAssembly.CreateTrianglesDX(transformedobject.Node.GetPrimitive());
-                        var verticesout = verticesin.Select(i => new RenderD3D.XYZNorDiffuseTex1
-                        {
-                            Xp = (float)i.Position.X,
-                            Yp = (float)i.Position.Y,
-                            Zp = (float)i.Position.Z,
-                            Xn = (float)i.Normal.X,
-                            Yn = (float)i.Normal.Y,
-                            Zn = (float)i.Normal.Z,
-                            Diffuse = i.Diffuse,
-                            U = (float)i.TexCoord.X,
-                            V = (float)i.TexCoord.Y,
-                        });
-                        var data = verticesout.ToArray();
-                        var size = (uint)(Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)) * data.Length);
-                        VertexBufferInfo buffer = new VertexBufferInfo();
-                        if (data.Length > 0)
-                        {
-                            buffer.VertexBuffer = device.CreateVertexBuffer(size, 0, (uint)(D3DFvf.XYZ | D3DFvf.Normal | D3DFvf.Diffuse | D3DFvf.Tex1), D3DPool.Managed);
-                            var locked = buffer.VertexBuffer.Lock(0U, size, 0U);
-                            unsafe
-                            {
-                                Buffer.MemoryCopy(Marshal.UnsafeAddrOfPinnedArrayElement(data, 0).ToPointer(), locked.ToPointer(), size, size);
-                            }
-                            buffer.VertexBuffer.Unlock();
-                        }
-                        buffer.PrimitiveCount = data.Length / 3;
-                        return buffer;
-                    });
+                    var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.GetPrimitive());
                     if (createdvertexbuffer.VertexBuffer == null) continue;
                     var nodematerial = transformedobject.Node.GetMaterial();
                     if (nodematerial == null)
@@ -107,42 +78,7 @@ namespace RenderToy.WPF
                         // The missing material (Purple).
                         nodematerial = StockMaterials.Missing;
                     }
-                    var createdtexture = MementoServer.Get(nodematerial, GeneratedTextureToken, () =>
-                    {
-                        var astexture = nodematerial as ITexture;
-                        if (astexture != null)
-                        {
-                            var texture = device.CreateTexture((uint)astexture.GetTextureLevel(0).GetImageWidth(), (uint)astexture.GetTextureLevel(0).GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
-                            for (int level = 0; level < astexture.GetTextureLevelCount(); ++level)
-                            {
-                                D3DLockedRect lockit = texture.LockRect((uint)level);
-                                var thislevel = astexture.GetTextureLevel(level);
-                                MaterialBitmapConverter.ConvertToBitmap(thislevel, lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
-                                texture.UnlockRect((uint)level);
-                            }
-                            return texture;
-                        }
-                        var asimage = nodematerial as IImageBgra32;
-                        if (asimage != null)
-                        {
-                            var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
-                            D3DLockedRect lockit = texture.LockRect(0);
-                            MaterialBitmapConverter.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
-                            texture.UnlockRect(0);
-                            return texture;
-                        }
-                        var asmaterial = nodematerial as IMNNode<Vector4D>;
-                        if (asmaterial != null)
-                        {
-                            int texturesize = asmaterial.IsConstant() ? 8 : 256;
-                            var texture = device.CreateTexture((uint)texturesize, (uint)texturesize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
-                            D3DLockedRect lockit = texture.LockRect(0);
-                            MaterialBitmapConverter.ConvertToBitmap(asmaterial, lockit.Bits, texturesize, texturesize, lockit.Pitch);
-                            texture.UnlockRect(0);
-                            return texture;
-                        }
-                        return null;
-                    });
+                    var createdtexture = CreateTexture(nodematerial);
                     device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
                     device.SetTexture(0, createdtexture);
                     device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
@@ -158,6 +94,79 @@ namespace RenderToy.WPF
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             RecreateSurfaces();
+        }
+        Direct3DTexture9 CreateTexture(IMaterial material)
+        {
+            return MementoServer.Get(material, GeneratedTextureToken, () =>
+            {
+                var astexture = material as ITexture;
+                if (astexture != null)
+                {
+                    var texture = device.CreateTexture((uint)astexture.GetTextureLevel(0).GetImageWidth(), (uint)astexture.GetTextureLevel(0).GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
+                    for (int level = 0; level < astexture.GetTextureLevelCount(); ++level)
+                    {
+                        D3DLockedRect lockit = texture.LockRect((uint)level);
+                        var thislevel = astexture.GetTextureLevel(level);
+                        MaterialBitmapConverter.ConvertToBitmap(thislevel, lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
+                        texture.UnlockRect((uint)level);
+                    }
+                    return texture;
+                }
+                var asimage = material as IImageBgra32;
+                if (asimage != null)
+                {
+                    var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
+                    D3DLockedRect lockit = texture.LockRect(0);
+                    MaterialBitmapConverter.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
+                    texture.UnlockRect(0);
+                    return texture;
+                }
+                var asmaterial = material as IMNNode<Vector4D>;
+                if (asmaterial != null)
+                {
+                    int texturesize = asmaterial.IsConstant() ? 8 : 256;
+                    var texture = device.CreateTexture((uint)texturesize, (uint)texturesize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
+                    D3DLockedRect lockit = texture.LockRect(0);
+                    MaterialBitmapConverter.ConvertToBitmap(asmaterial, lockit.Bits, texturesize, texturesize, lockit.Pitch);
+                    texture.UnlockRect(0);
+                    return texture;
+                }
+                return null;
+            });
+        }
+        VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
+        {
+            return MementoServer.Get(primitive, GeneratedVertexBufferToken, () =>
+            {
+                var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
+                var verticesout = verticesin.Select(i => new RenderD3D.XYZNorDiffuseTex1
+                {
+                    Xp = (float)i.Position.X,
+                    Yp = (float)i.Position.Y,
+                    Zp = (float)i.Position.Z,
+                    Xn = (float)i.Normal.X,
+                    Yn = (float)i.Normal.Y,
+                    Zn = (float)i.Normal.Z,
+                    Diffuse = i.Diffuse,
+                    U = (float)i.TexCoord.X,
+                    V = (float)i.TexCoord.Y,
+                });
+                var data = verticesout.ToArray();
+                var size = (uint)(Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)) * data.Length);
+                VertexBufferInfo buffer = new VertexBufferInfo();
+                if (data.Length > 0)
+                {
+                    buffer.VertexBuffer = device.CreateVertexBuffer(size, 0, (uint)(D3DFvf.XYZ | D3DFvf.Normal | D3DFvf.Diffuse | D3DFvf.Tex1), D3DPool.Managed);
+                    var locked = buffer.VertexBuffer.Lock(0U, size, 0U);
+                    unsafe
+                    {
+                        Buffer.MemoryCopy(Marshal.UnsafeAddrOfPinnedArrayElement(data, 0).ToPointer(), locked.ToPointer(), size, size);
+                    }
+                    buffer.VertexBuffer.Unlock();
+                }
+                buffer.PrimitiveCount = data.Length / 3;
+                return buffer;
+            });
         }
         void RecreateDevice()
         {
