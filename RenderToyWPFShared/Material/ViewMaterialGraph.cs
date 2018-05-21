@@ -153,6 +153,7 @@ namespace RenderToy.WPF
         }
         static IEnumerable<NodePosition> EnumerateNodes(NodePosition root)
         {
+            if (root == null) yield break;
             yield return root;
             foreach (var child in root.Children)
             {
@@ -222,6 +223,7 @@ namespace RenderToy.WPF
                 if (interfaces == null) continue;
                 foreach (var child in parent.Children)
                 {
+                    if (child == null || child.Target == null) continue;
                     foreach (var origin in child.Origin)
                     {
                         var interfacepoint = interfaces.GetInputHandleLocation(origin);
