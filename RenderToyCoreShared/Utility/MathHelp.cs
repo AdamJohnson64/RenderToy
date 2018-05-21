@@ -30,8 +30,8 @@ namespace RenderToy.Utility
         public static double Length(Vector3D val) { return Math.Sqrt(Dot(val, val)); }
         public static double Length(Vector4D val) { return Math.Sqrt(Dot(val, val)); }
         public static Vector2D Multiply(Vector2D lhs, double rhs) { return new Vector2D(lhs.X * rhs, lhs.Y * rhs); }
-        public static Vector3D Multiply(Vector3D lhs, double rhs) { return new Vector3D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs); }
         public static Vector2D Multiply(double lhs, Vector2D rhs) { return Multiply(rhs, lhs); }
+        public static Vector3D Multiply(Vector3D lhs, double rhs) { return new Vector3D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs); }
         public static Vector3D Multiply(double lhs, Vector3D rhs) { return Multiply(rhs, lhs); }
         public static Vector4D Multiply(Vector4D lhs, double rhs) { return new Vector4D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs, lhs.W * rhs); }
         public static Vector4D Multiply(double lhs, Vector4D rhs) { return Multiply(rhs, lhs); }
@@ -99,9 +99,18 @@ namespace RenderToy.Utility
     }
     public static partial class MathHelp
     {
+        public static double Determinant(Matrix2D val)
+        {
+            return val.M11 * val.M22 - val.M12 * val.M21;
+        }
         public static double Determinant(Matrix3D val)
         {
             return (-val.M14 * (+val.M23 * (val.M31 * val.M42 - val.M32 * val.M41) - val.M33 * (val.M21 * val.M42 - val.M22 * val.M41) + val.M43 * (val.M21 * val.M32 - val.M22 * val.M31)) + val.M24 * (+val.M13 * (val.M31 * val.M42 - val.M32 * val.M41) - val.M33 * (val.M11 * val.M42 - val.M12 * val.M41) + val.M43 * (val.M11 * val.M32 - val.M12 * val.M31)) - val.M34 * (+val.M13 * (val.M21 * val.M42 - val.M22 * val.M41) - val.M23 * (val.M11 * val.M42 - val.M12 * val.M41) + val.M43 * (val.M11 * val.M22 - val.M12 * val.M21)) + val.M44 * (+val.M13 * (val.M21 * val.M32 - val.M22 * val.M31) - val.M23 * (val.M11 * val.M32 - val.M12 * val.M31) + val.M33 * (val.M11 * val.M22 - val.M12 * val.M21)));
+        }
+        public static Matrix2D Invert(Matrix2D val)
+        {
+            double invdet = 1 / Determinant(val);
+            return new Matrix2D(invdet * val.M22, invdet * -val.M12, invdet * -val.M21, invdet * val.M11);
         }
         public static Matrix3D Invert(Matrix3D val)
         {
@@ -124,6 +133,13 @@ namespace RenderToy.Utility
                 invdet * (-(+val.M41 * (val.M12 * val.M23 - val.M22 * val.M13) - val.M42 * (val.M11 * val.M23 - val.M21 * val.M13) + val.M43 * (val.M11 * val.M22 - val.M21 * val.M12))),
                 invdet * (+(+val.M31 * (val.M12 * val.M23 - val.M22 * val.M13) - val.M32 * (val.M11 * val.M23 - val.M21 * val.M13) + val.M33 * (val.M11 * val.M22 - val.M21 * val.M12))));
         }
+        public static Matrix2D Multiply(Matrix2D a, double b)
+        {
+            return new Matrix2D(
+                a.M11 * b, a.M12 * b,
+                a.M21 * b, a.M22 * b);
+        }
+        public static Matrix2D Multiply(double a, Matrix2D b) { return Multiply(b, a); }
         public static Matrix3D Multiply(Matrix3D a, Matrix3D b)
         {
             return new Matrix3D(
@@ -161,6 +177,27 @@ namespace RenderToy.Utility
             }
             */
         }
+        public static Matrix3D Multiply(Matrix3D a, double b)
+        {
+            return new Matrix3D(
+                a.M11 * b, a.M12 * b, a.M13 * b, a.M14 * b,
+                a.M21 * b, a.M22 * b, a.M23 * b, a.M24 * b,
+                a.M31 * b, a.M32 * b, a.M33 * b, a.M34 * b,
+                a.M41 * b, a.M42 * b, a.M43 * b, a.M44 * b);
+        }
+        public static Matrix3D Multiply(double a, Matrix3D b) { return Multiply(b, a); }
+        public static Vector2D Transform(Matrix2D a, Vector2D b)
+        {
+            return new Vector2D(a.M11 * b.X + a.M12 * b.Y, a.M21 * b.X + a.M22 * b.Y);
+        }
+        public static Vector4D Transform(Matrix3D a, Vector4D b)
+        {
+            return new Vector4D(
+                a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z + a.M41 * b.W,
+                a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z + a.M42 * b.W,
+                a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z + a.M43 * b.W,
+                a.M14 * b.X + a.M24 * b.Y + a.M34 * b.Z + a.M44 * b.W);
+        }
         public static Vector3D TransformPoint(Matrix3D a, Vector3D b)
         {
             return new Vector3D(
@@ -174,14 +211,6 @@ namespace RenderToy.Utility
                 a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z,
                 a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z,
                 a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z);
-        }
-        public static Vector4D Transform(Matrix3D a, Vector4D b)
-        {
-            return new Vector4D(
-                a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z + a.M41 * b.W,
-                a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z + a.M42 * b.W,
-                a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z + a.M43 * b.W,
-                a.M14 * b.X + a.M24 * b.Y + a.M34 * b.Z + a.M44 * b.W);
         }
     }
     [DebuggerDisplay("[{X}, {Y}]")]
@@ -217,6 +246,15 @@ namespace RenderToy.Utility
         public static Vector4D operator *(Vector4D a, double b) { return MathHelp.Multiply(a, b); }
         public static Vector4D operator *(double a, Vector4D b) { return MathHelp.Multiply(a, b); }
     }
+    public struct Matrix2D
+    {
+        public double M11, M12;
+        public double M21, M22;
+        public Matrix2D(double m11, double m12, double m21, double m22) { M11 = m11; M12 = m12; M21 = m21; M22 = m22; }
+        public static Matrix2D operator *(Matrix2D a, double b) { return MathHelp.Multiply(a, b); }
+        public static Matrix2D operator *(double a, Matrix2D b) { return MathHelp.Multiply(a, b); }
+        public Matrix2D Transform(Matrix2D a, double b) { return new Matrix2D(a.M11 * b, a.M12 * b, a.M21 * b, a.M22 * b); }
+    };
     public struct Matrix3D
     {
         public double M11, M12, M13, M14;
