@@ -98,7 +98,16 @@ namespace RenderToy
 		INT Pitch;
 		System::IntPtr Bits;
 	};
-	#pragma endregion
+	public value struct D3DVertexElement9
+	{
+		WORD    Stream;     // Stream index
+		WORD    Offset;     // Offset in the stream in bytes
+		BYTE    Type;       // Data type
+		BYTE    Method;     // Processing method
+		BYTE    Usage;      // Semantics
+		BYTE    UsageIndex; // Semantic index
+	};
+#pragma endregion
 	#pragma region - Direct3D9 Global Services -
 	ref class Direct3D9Globals
 	{
@@ -249,6 +258,15 @@ namespace RenderToy
 		}
 	};
 	#pragma endregion
+	#pragma region - Direct3DVertexDeclaration9 -
+	public ref class Direct3DVertexDeclaration9 : Direct3DWrap<IDirect3DVertexDeclaration9>
+	{
+	public:
+		Direct3DVertexDeclaration9(IDirect3DVertexDeclaration9 *pWrapped) : Direct3DWrap(pWrapped)
+		{
+		}
+	};
+	#pragma endregion
 	#pragma region - Direct3DVertexShader9 -
 	public ref class Direct3DVertexShader9 : Direct3DWrap<IDirect3DVertexShader9>
 	{
@@ -325,6 +343,20 @@ namespace RenderToy
 		void SetRenderState(D3DRenderState State, DWORD Value)
 		{
 			TRY_D3D(pWrapped->SetRenderState((D3DRENDERSTATETYPE)State, Value));
+		}
+		Direct3DVertexDeclaration9^ CreateVertexDeclaration(array<D3DVertexElement9> ^pVertexElements)
+		{
+			std::unique_ptr<D3DVERTEXELEMENT9[]> declout(new D3DVERTEXELEMENT9[pVertexElements->Length + 1]);
+			pin_ptr<D3DVertexElement9> declin(&pVertexElements[0]);
+			memcpy(&declout[0], declin, sizeof(D3DVERTEXELEMENT9) * pVertexElements->Length);
+			declout[pVertexElements->Length] = D3DDECL_END();
+			IDirect3DVertexDeclaration9 *pTemp = nullptr;
+			TRY_D3D(pWrapped->CreateVertexDeclaration(&declout[0], &pTemp));
+			return gcnew Direct3DVertexDeclaration9(pTemp);
+		}
+		void SetVertexDeclaration(Direct3DVertexDeclaration9 ^pDecl)
+		{
+			TRY_D3D(pWrapped->SetVertexDeclaration(pDecl->Wrapped));
 		}
 		void SetFVF(D3DFvf FVF)
 		{
