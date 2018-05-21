@@ -94,7 +94,10 @@ namespace RenderToy.WPF
                     return Rasterization.ColorToUInt32(convert.Eval(context));
                 });
             }
-            return null;
+            else
+            {
+                return GetImageConverter(StockMaterials.Missing, ThumbnailSize, ThumbnailSize);
+            }
         }
         class ImageConverterAdaptor : IImageBgra32
         {
