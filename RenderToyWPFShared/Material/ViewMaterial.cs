@@ -6,6 +6,7 @@
 using RenderToy.Materials;
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -39,9 +40,22 @@ namespace RenderToy.WPF
         }
         #endregion
         #region - Section : Image Handling -
-        void InvalidateBitmap()
+        async void InvalidateBitmap()
         {
-            bitmap = MaterialBitmapConverter.ConvertToBitmap(MaterialSource, MaterialWidth, MaterialHeight);
+            bitmap = null;
+            InvalidateVisual();
+            var imageconverter = MaterialBitmapConverter.GetImageConverter(MaterialSource, MaterialWidth, MaterialHeight);
+            var newbitmap = new WriteableBitmap(imageconverter.GetImageWidth(), imageconverter.GetImageHeight(), 0, 0, PixelFormats.Bgra32, null);
+            newbitmap.Lock();
+            var material = MaterialSource;
+            var bitmapptr = newbitmap.BackBuffer;
+            var bitmapwidth = newbitmap.PixelWidth;
+            var bitmapheight = newbitmap.PixelHeight;
+            var bitmapstride = newbitmap.BackBufferStride;
+            await Task.Factory.StartNew(() => MaterialBitmapConverter.ConvertToBitmap(imageconverter, bitmapptr, bitmapwidth, bitmapheight, bitmapstride));
+            newbitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapwidth, bitmapheight));
+            newbitmap.Unlock();
+            bitmap = newbitmap;
             InvalidateVisual();
         }
         WriteableBitmap bitmap = null;

@@ -49,11 +49,7 @@ namespace RenderToy.WPF
         static readonly Token GeneratedTextureToken = new Token();
         protected Direct3DTexture9 CreateTexture(IMaterial material)
         {
-            if (material == null)
-            {
-                // The missing material (Purple).
-                material = StockMaterials.Missing;
-            }
+            if (material == null) material = StockMaterials.Missing;
             return deviceboundmemento.Get(material, GeneratedTextureToken, () =>
             {
                 var astexture = material as ITexture;
@@ -69,26 +65,15 @@ namespace RenderToy.WPF
                     }
                     return texture;
                 }
-                var asimage = material as IImageBgra32;
-                if (asimage != null)
+                else
                 {
+                    var asimage = MaterialBitmapConverter.GetImageConverter(material, 256, 256);
                     var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
                     D3DLockedRect lockit = texture.LockRect(0);
                     MaterialBitmapConverter.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
                     texture.UnlockRect(0);
                     return texture;
                 }
-                var asmaterial = material as IMNNode<Vector4D>;
-                if (asmaterial != null)
-                {
-                    int texturesize = asmaterial.IsConstant() ? 8 : 256;
-                    var texture = device.CreateTexture((uint)texturesize, (uint)texturesize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
-                    D3DLockedRect lockit = texture.LockRect(0);
-                    MaterialBitmapConverter.ConvertToBitmap(asmaterial, lockit.Bits, texturesize, texturesize, lockit.Pitch);
-                    texture.UnlockRect(0);
-                    return texture;
-                }
-                return null;
             });
         }
         protected struct VertexBufferInfo

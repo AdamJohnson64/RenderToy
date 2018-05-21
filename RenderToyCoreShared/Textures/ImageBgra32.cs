@@ -5,18 +5,16 @@
 
 using RenderToy.Materials;
 using RenderToy.Utility;
-using System;
-using System.Runtime.InteropServices;
 
 namespace RenderToy.Textures
 {
-    public interface IImageBgra32
+    public interface IImageBgra32 : IMaterial
     {
         int GetImageWidth();
         int GetImageHeight();
-        void CopyImageTo(IntPtr buffer, int width, int height, int stride);
+        uint GetImagePixel(int x, int y);
     }
-    class ImageBgra32 : IMNNode<Vector4D>, IImageBgra32, INamed
+    class ImageBgra32 : IImageBgra32, INamed
     {
         public ImageBgra32(string name, int width, int height, byte[] data)
         {
@@ -25,45 +23,14 @@ namespace RenderToy.Textures
             Height = height;
             Data = data;
         }
-        public string GetName()
+        public string GetName() { return Name; }
+        public bool IsConstant() { return false; }
+        public int GetImageWidth() { return Width; }
+        public int GetImageHeight() { return Height; }
+        public uint GetImagePixel(int x, int y)
         {
-            return Name;
-        }
-        public bool IsConstant()
-        {
-            return false;
-        }
-        public Vector4D Eval(EvalContext context)
-        {
-            int x = Math.Max(0, Math.Min((int)(context.U * Width), Width - 1));
-            int y = Math.Max(0, Math.Min((int)(context.V * Height), Height - 1));
-            byte r = Data[2 + 4 * x + 4 * Width * y];
-            byte g = Data[1 + 4 * x + 4 * Width * y];
-            byte b = Data[0 + 4 * x + 4 * Width * y];
-            byte a = Data[3 + 4 * x + 4 * Width * y];
-            return new Vector4D(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
-        }
-        public int GetImageWidth()
-        {
-            return Width;
-        }
-        public int GetImageHeight()
-        {
-            return Height;
-        }
-        public void CopyImageTo(IntPtr buffer, int width, int height, int stride)
-        {
-            unsafe
-            {
-                void* bufferin = Marshal.UnsafeAddrOfPinnedArrayElement(Data, 0).ToPointer();
-                void* bufferout = buffer.ToPointer();
-                for (int y = 0; y < height; ++y)
-                {
-                    void* rasterin = (byte*)bufferin + 4 * Width * y;
-                    void* rasterout = (byte*)bufferout + stride * y;
-                    Buffer.MemoryCopy(rasterin, rasterout, 4 * Width, 4 * Width);
-                }
-            }
+            int off = 4 * x + 4 * Width * y;
+            return ((uint)Data[off + 0] << 0) | ((uint)Data[off + 1] << 8) | ((uint)Data[off + 2] << 16) | ((uint)Data[off + 3] << 24);
         }
         public ImageBgra32 BoxFilter()
         {

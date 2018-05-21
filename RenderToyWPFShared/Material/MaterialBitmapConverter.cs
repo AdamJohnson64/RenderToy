@@ -22,7 +22,7 @@ namespace RenderToy.WPF
         {
             if (value is IMaterial)
             {
-                return ConvertToBitmap((IMaterial)value, bitmapWidth, bitmapHeight);
+                return ConvertToBitmap(GetImageConverter((IMaterial)value, 256, 256));
             }
             return null;
         }
@@ -30,105 +30,87 @@ namespace RenderToy.WPF
         {
             throw new NotImplementedException();
         }
-        public static WriteableBitmap ConvertToBitmap(IMaterial node, int bitmapWidth, int bitmapHeight)
+        public static WriteableBitmap ConvertToBitmap(IMaterial node, int suggestedWidth, int suggestedHeight)
         {
-            if (node == null) return null;
-            System.Type type = node.GetType();
-            if (typeof(ITexture).IsAssignableFrom(type))
-            {
-                return ConvertToBitmap((ITexture)node);
-            }
-            if (typeof(IImageBgra32).IsAssignableFrom(type))
-            {
-                return ConvertToBitmap((IImageBgra32)node);
-            }
-            else if (typeof(IMNNode<double>).IsAssignableFrom(type))
-            {
-                return ConvertToBitmap((IMNNode<double>)node, bitmapWidth, bitmapHeight);
-            }
-            else if (typeof(IMNNode<Vector4D>).IsAssignableFrom(type))
-            {
-                return ConvertToBitmap((IMNNode<Vector4D>)node, bitmapWidth, bitmapHeight);
-            }
-            return null;
-        }
-        public static WriteableBitmap ConvertToBitmap(ITexture node)
-        {
-            return ConvertToBitmap(node.GetTextureLevel(0));
+            return ConvertToBitmap(GetImageConverter(node, suggestedWidth, suggestedHeight));
         }
         public static WriteableBitmap ConvertToBitmap(IImageBgra32 node)
         {
             if (node == null) return null;
-            int bitmapWidth = node.GetImageWidth();
-            int bitmapHeight = node.GetImageHeight();
-            var bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
+            var bitmap = new WriteableBitmap(node.GetImageWidth(), node.GetImageHeight(), 0, 0, PixelFormats.Bgra32, null);
             bitmap.Lock();
-            ConvertToBitmap(node, bitmap.BackBuffer, bitmapWidth, bitmapHeight, bitmap.BackBufferStride);
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapWidth, bitmapHeight));
+            ConvertToBitmap(node, bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
+            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
             bitmap.Unlock();
             return bitmap;
         }
-        public static void ConvertToBitmap(IImageBgra32 node, IntPtr bitmapptr, int bitmapwidth, int bitmapheight, int bitmapstride)
+        public static void ConvertToBitmap(IImageBgra32 node, IntPtr bitmapptr, int bitmapWidth, int bitmapHeight, int bitmapstride)
         {
-            node.CopyImageTo(bitmapptr, bitmapwidth, bitmapheight, bitmapstride);
-        }
-        public static WriteableBitmap ConvertToBitmap(IMNNode<double> node, int bitmapWidth, int bitmapHeight)
-        {
-            if (node == null || bitmapWidth == 0 || bitmapHeight == 0) return null;
-            var bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
-            bitmap.Lock();
-            ConvertToBitmap(node, bitmap.BackBuffer, bitmapWidth, bitmapHeight, bitmap.BackBufferStride);
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapWidth, bitmapHeight));
-            bitmap.Unlock();
-            return bitmap;
-        }
-        public static void ConvertToBitmap(IMNNode<double> node, IntPtr bitmapptr, int bitmapwidth, int bitmapheight, int bitmapstride)
-        {
-            var context = new EvalContext();
+            if (node == null || bitmapptr == IntPtr.Zero) return;
             unsafe
             {
-                for (int y = 0; y < bitmapheight; ++y)
+                for (int y = 0; y < bitmapHeight; ++y)
                 {
                     void* raster = (byte*)bitmapptr.ToPointer() + bitmapstride * y;
-                    for (int x = 0; x < bitmapwidth; ++x)
+                    for (int x = 0; x < bitmapWidth; ++x)
                     {
-                        context.U = (x + 0.5) / bitmapwidth;
-                        context.V = (y + 0.5) / bitmapheight;
-                        double v = node.Eval(context);
-                        ((uint*)raster)[x] = Rasterization.ColorToUInt32(new Vector4D(v, v, v, 1));
+                        ((uint*)raster)[x] = node.GetImagePixel(x, y);
                     }
                 }
             }
         }
-        public static WriteableBitmap ConvertToBitmap(IMNNode<Vector4D> node, int bitmapWidth, int bitmapHeight)
+        public static IImageBgra32 GetImageConverter(IMaterial node, int suggestedWidth, int suggestedHeight)
         {
-            if (node == null || bitmapWidth == 0 || bitmapHeight == 0) return null;
-            var bitmap = new WriteableBitmap(bitmapWidth, bitmapHeight, 0, 0, PixelFormats.Bgra32, null);
-            bitmap.Lock();
-            ConvertToBitmap(node, bitmap.BackBuffer, bitmapWidth, bitmapHeight, bitmap.BackBufferStride);
-            bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapWidth, bitmapHeight));
-            bitmap.Unlock();
-            return bitmap;
-        }
-        public static void ConvertToBitmap(IMNNode<Vector4D> node, IntPtr bitmapptr, int bitmapwidth, int bitmapheight, int bitmapstride)
-        {
-            var context = new EvalContext();
-            unsafe
+            if (node == null) return GetImageConverter(StockMaterials.Missing, ThumbnailSize, ThumbnailSize);
+            System.Type type = node.GetType();
+            if (typeof(ITexture).IsAssignableFrom(type))
             {
-                for (int y = 0; y < bitmapheight; ++y)
-                {
-                    void* raster = (byte*)bitmapptr.ToPointer() + bitmapstride * y;
-                    for (int x = 0; x < bitmapwidth; ++x)
-                    {
-                        context.U = (x + 0.5) / bitmapwidth;
-                        context.V = (y + 0.5) / bitmapheight;
-                        ((uint*)raster)[x] = Rasterization.ColorToUInt32(node.Eval(context));
-                    }
-                }
+                return GetImageConverter(((ITexture)node).GetTextureLevel(0), suggestedWidth, suggestedHeight);
             }
+            else if (typeof(IImageBgra32).IsAssignableFrom(type))
+            {
+                return (IImageBgra32)node;
+            }
+            else if (typeof(IMNNode<double>).IsAssignableFrom(type))
+            {
+                var convert = (IMNNode<double>)node;
+                var context = new EvalContext();
+                return new ImageConverterAdaptor(suggestedWidth, suggestedHeight, (x, y) =>
+                {
+                    context.U = (x + 0.5) / suggestedWidth;
+                    context.V = (y + 0.5) / suggestedHeight;
+                    double v = convert.Eval(context);
+                    return Rasterization.ColorToUInt32(new Vector4D(v, v, v, 1));
+                });
+            }
+            else if (typeof(IMNNode<Vector4D>).IsAssignableFrom(type))
+            {
+                var convert = (IMNNode<Vector4D>)node;
+                var context = new EvalContext();
+                return new ImageConverterAdaptor(suggestedWidth, suggestedHeight, (x, y) =>
+                {
+                    context.U = (x + 0.5) / suggestedWidth;
+                    context.V = (y + 0.5) / suggestedHeight;
+                    return Rasterization.ColorToUInt32(convert.Eval(context));
+                });
+            }
+            return null;
         }
-        const int bitmapWidth = 256;
-        const int bitmapHeight = 256;
+        class ImageConverterAdaptor : IImageBgra32
+        {
+            public ImageConverterAdaptor(int width, int height, Func<int, int, uint> sampler)
+            {
+                Width = width;
+                Height = height;
+                Sampler = sampler;
+            }
+            public bool IsConstant() { return false; }
+            public int GetImageWidth() { return Width; }
+            public int GetImageHeight() { return Height; }
+            public uint GetImagePixel(int x, int y) { return Sampler(x, y); }
+            int Width, Height;
+            Func<int, int, uint> Sampler;
+        }
         public static int ThumbnailSize = 32;
     }
 }

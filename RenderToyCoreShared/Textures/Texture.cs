@@ -9,12 +9,12 @@ using System.Collections.Generic;
 
 namespace RenderToy.Textures
 {
-    public interface ITexture
+    public interface ITexture : IMaterial
     {
         int GetTextureLevelCount();
         IImageBgra32 GetTextureLevel(int level);
     }
-    class Texture : IMaterial, ITexture, INamed
+    class Texture : ITexture, INamed
     {
         public Texture(string name, ImageBgra32 level0, bool generateMips)
         {
