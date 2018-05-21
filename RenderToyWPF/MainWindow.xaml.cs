@@ -122,7 +122,7 @@ namespace RenderToy.WPF
                 {
                     D3DBlob code = new D3DBlob();
                     D3DBlob error = new D3DBlob();
-                    Direct3DCompiler.D3DCompile(ShaderCode.Text, "temp.vs", "vs", "vs_4_0_level_9_3", 0, 0, code, error);
+                    Direct3DCompiler.D3DCompile(ShaderCode.Text, "temp.vs", "vs", "vs_3_0", 0, 0, code, error);
                     var buffer = error.GetBufferPointer();
                     var buffersize = error.GetBufferSize();
                     ShaderErrorsVS.Text = buffer == IntPtr.Zero ? "Vertex Shader Compilation Successful." : Marshal.PtrToStringAnsi(buffer, (int)buffersize - 1);
@@ -130,7 +130,7 @@ namespace RenderToy.WPF
                 {
                     D3DBlob code = new D3DBlob();
                     D3DBlob error = new D3DBlob();
-                    Direct3DCompiler.D3DCompile(ShaderCode.Text, "temp.ps", "ps", "ps_4_0_level_9_3", 0, 0, code, error);
+                    Direct3DCompiler.D3DCompile(ShaderCode.Text, "temp.ps", "ps", "ps_3_0", 0, 0, code, error);
                     var buffer = error.GetBufferPointer();
                     var buffersize = error.GetBufferSize();
                     ShaderErrorsPS.Text = buffer == IntPtr.Zero ? "Pixel Shader Compilation Successful." : Marshal.PtrToStringAnsi(buffer, (int)buffersize - 1);
@@ -138,8 +138,8 @@ namespace RenderToy.WPF
             };
             ShaderCode.Text =
 @"float4x4 ModelViewProjection : register(c0);
-texture2D Texture;
-SamplerState Sampler;
+sampler2D SamplerAlbedo : register(s0);
+sampler2D SamplerBump : register(s1);
 
 struct VS_INPUT {
     float4 Position : POSITION;
@@ -162,7 +162,7 @@ VS_OUTPUT vs(VS_INPUT input) {
 }
 
 float4 ps(VS_OUTPUT input) : SV_Target {
-    float4 albedo = Texture.Sample(Sampler, input.TexCoord);
+    float4 albedo = tex2D(SamplerAlbedo, input.TexCoord);
     float light = clamp(dot(input.Normal, normalize(float3(1,1,1))), 0.25, 1);
     float3 output = light * albedo.rgb;
     return float4(output, albedo.a);
