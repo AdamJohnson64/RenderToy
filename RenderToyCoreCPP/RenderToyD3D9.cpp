@@ -33,6 +33,51 @@ namespace RenderToy
 		CW = D3DCULL_CW,
 		CCW = D3DCULL_CCW,
 	};
+	public enum class D3DDeclMethod : byte {
+		Default = D3DDECLMETHOD_DEFAULT,
+		PartialU = D3DDECLMETHOD_PARTIALU,
+		PartialV = D3DDECLMETHOD_PARTIALV,
+		CrossUV = D3DDECLMETHOD_CROSSUV,
+		UV = D3DDECLMETHOD_UV,
+		Lookup = D3DDECLMETHOD_LOOKUP,
+		LookupPresampled = D3DDECLMETHOD_LOOKUPPRESAMPLED,
+	};
+	public enum class D3DDeclType : byte {
+		Float1 = D3DDECLTYPE_FLOAT1,
+		Float2 = D3DDECLTYPE_FLOAT2,
+		Float3 = D3DDECLTYPE_FLOAT3,
+		Float4 = D3DDECLTYPE_FLOAT4,
+		D3DColor = D3DDECLTYPE_D3DCOLOR,
+		UByte4 = D3DDECLTYPE_UBYTE4,
+		Short2 = D3DDECLTYPE_SHORT2,
+		Short4 = D3DDECLTYPE_SHORT4,
+		UByte4N = D3DDECLTYPE_UBYTE4N,
+		Short2N = D3DDECLTYPE_SHORT2N,
+		Short4N = D3DDECLTYPE_SHORT4N,
+		UShort2N = D3DDECLTYPE_USHORT2N,
+		UShort4N = D3DDECLTYPE_USHORT4N,
+		UDec3 = D3DDECLTYPE_UDEC3,
+		Dec3N = D3DDECLTYPE_DEC3N,
+		Float16_2 = D3DDECLTYPE_FLOAT16_2,
+		Float16_4 = D3DDECLTYPE_FLOAT16_4,
+		Unused = D3DDECLTYPE_UNUSED,
+	};
+	public enum class D3DDeclUsage : byte {
+		Position = D3DDECLUSAGE_POSITION,
+		BlendWeight = D3DDECLUSAGE_BLENDWEIGHT,
+		BlendIndices = D3DDECLUSAGE_BLENDINDICES,
+		Normal = D3DDECLUSAGE_NORMAL,
+		PSize = D3DDECLUSAGE_PSIZE,
+		TexCoord = D3DDECLUSAGE_TEXCOORD,
+		Tangent = D3DDECLUSAGE_TANGENT,
+		Binormal = D3DDECLUSAGE_BINORMAL,
+		TessFactor = D3DDECLUSAGE_TESSFACTOR,
+		PositionT = D3DDECLUSAGE_POSITIONT,
+		Color = D3DDECLUSAGE_COLOR,
+		Fog = D3DDECLUSAGE_FOG,
+		Depth = D3DDECLUSAGE_DEPTH,
+		Sample = D3DDECLUSAGE_SAMPLE,
+	};
 	public enum class D3DFormat
 	{
 		A8R8G8B8 = D3DFMT_A8R8G8B8,
@@ -100,14 +145,14 @@ namespace RenderToy
 	};
 	public value struct D3DVertexElement9
 	{
-		WORD    Stream;     // Stream index
-		WORD    Offset;     // Offset in the stream in bytes
-		BYTE    Type;       // Data type
-		BYTE    Method;     // Processing method
-		BYTE    Usage;      // Semantics
-		BYTE    UsageIndex; // Semantic index
+		WORD			Stream;     // Stream index
+		WORD			Offset;     // Offset in the stream in bytes
+		D3DDeclType		Type;       // Data type
+		D3DDeclMethod	Method;     // Processing method
+		D3DDeclUsage	Usage;      // Semantics
+		BYTE			UsageIndex; // Semantic index
 	};
-#pragma endregion
+	#pragma endregion
 	#pragma region - Direct3D9 Global Services -
 	ref class Direct3D9Globals
 	{
