@@ -139,7 +139,8 @@ namespace RenderToy.WPF
             ShaderCode.Text =
 @"float4x4 ModelViewProjection : register(c0);
 sampler2D SamplerAlbedo : register(s0);
-sampler2D SamplerBump : register(s1);
+sampler2D SamplerMask : register(s1);
+sampler2D SamplerBump : register(s2);
 
 struct VS_INPUT {
     float4 Position : POSITION;
@@ -171,15 +172,12 @@ VS_OUTPUT vs(VS_INPUT input) {
 }
 
 float4 ps(VS_OUTPUT input) : SV_Target {
+    if (tex2D(SamplerMask, input.TexCoord).r < 0.5) discard;
     float3x3 tbn = {input.Tangent, input.Bitangent, input.Normal};
     float3 bump = normalize(tex2D(SamplerBump, input.TexCoord).rgb * 2 - 1);
     float3 normal = mul(bump, tbn);
-
-    float4 albedo = tex2D(SamplerAlbedo, input.TexCoord);
     float light = clamp(dot(normal, normalize(float3(1,1,1))), 0, 1);
-    float3 output = light * albedo.rgb;
-
-    return float4(output, albedo.a);
+    return float4(light * tex2D(SamplerAlbedo, input.TexCoord).rgb, 1);
 }";
         }
     }

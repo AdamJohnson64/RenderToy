@@ -165,6 +165,10 @@ namespace RenderToy.WPF
                 device.SetSamplerState(1, D3DSamplerState.MinFilter, (uint)D3DTextureFilter.Anisotropic);
                 device.SetSamplerState(1, D3DSamplerState.MipFilter, (uint)D3DTextureFilter.Linear);
                 device.SetSamplerState(1, D3DSamplerState.MaxAnisotropy, (uint)16);
+                device.SetSamplerState(2, D3DSamplerState.MagFilter, (uint)D3DTextureFilter.Anisotropic);
+                device.SetSamplerState(2, D3DSamplerState.MinFilter, (uint)D3DTextureFilter.Anisotropic);
+                device.SetSamplerState(2, D3DSamplerState.MipFilter, (uint)D3DTextureFilter.Linear);
+                device.SetSamplerState(2, D3DSamplerState.MaxAnisotropy, (uint)16);
                 var vertexdeclaration = device.CreateVertexDeclaration(new D3DVertexElement9[] {
                     new D3DVertexElement9 { Stream = 0, Offset = 0, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Position, UsageIndex = 0 },
                     new D3DVertexElement9 { Stream = 0, Offset = 12, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Normal, UsageIndex = 0 },
@@ -242,11 +246,13 @@ namespace RenderToy.WPF
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.GetPrimitive());
                 if (createdvertexbuffer.VertexBuffer == null) continue;
                 Direct3DTexture9 map_Kd = null;
+                Direct3DTexture9 map_d = null;
                 Direct3DTexture9 map_bump = null;
                 if (transformedobject.Node.GetMaterial() is LoaderOBJ.OBJMaterial)
                 {
                     var objmat = (LoaderOBJ.OBJMaterial)transformedobject.Node.GetMaterial();
                     map_Kd = CreateTexture(objmat.map_Kd, StockMaterials.PlasticWhite);
+                    map_d = CreateTexture(objmat.map_d, StockMaterials.PlasticWhite);
                     map_bump = CreateTexture(objmat.map_bump, StockMaterials.PlasticLightBlue);
                 }
                 else
@@ -255,7 +261,8 @@ namespace RenderToy.WPF
                 }
                 device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
                 if (map_Kd != null) device.SetTexture(0, map_Kd);
-                if (map_bump != null) device.SetTexture(1, map_bump);
+                if (map_Kd != null) device.SetTexture(1, map_d);
+                if (map_bump != null) device.SetTexture(2, map_bump);
                 device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0), 4);
                 device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
             }
