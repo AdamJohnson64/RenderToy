@@ -173,7 +173,8 @@ namespace RenderToy.ModelFormat
         }
         static Dictionary<string, IMaterial> LoadMaterialLibrary(string objpath, string mtlrelative)
         {
-            var result = new Dictionary<string, IMaterial>();
+            var materialbyname = new Dictionary<string, IMaterial>();
+            var texturebyname = new Dictionary<string, IMaterial>();
             var objdir = Path.GetDirectoryName(objpath);
             var mtlfile = Path.Combine(objdir, mtlrelative);
             IMaterial map_Ka = null;
@@ -181,6 +182,13 @@ namespace RenderToy.ModelFormat
             IMaterial map_d = null;
             IMaterial map_bump = null;
             IMaterial bump = null;
+            Func<string, IMaterial> LoadUniqueTexture = (string name) =>
+            {
+                IMaterial found = null;
+                if (texturebyname.TryGetValue(name, out found)) return found;
+                var texfile = Path.Combine(objdir, name);
+                return texturebyname[name] = File.Exists(texfile) ? new Texture(name, LoaderTGA.LoadFromPath(texfile), true) : null;
+            };
             using (var streamreader = File.OpenText(mtlfile))
             {
                 string line;
@@ -188,7 +196,7 @@ namespace RenderToy.ModelFormat
                 Action FLUSHMATERIAL = () =>
                 {
                     if (materialname == null) return;
-                    result.Add(materialname, new OBJMaterial { Name = materialname, map_Ka = map_Ka, map_Kd = map_Kd, map_d = map_d, map_bump = map_bump, bump = bump });
+                    materialbyname.Add(materialname, new OBJMaterial { Name = materialname, map_Ka = map_Ka, map_Kd = map_Kd, map_d = map_d, map_bump = map_bump, bump = bump });
                     materialname = null;
                     map_Ka = null;
                     map_Kd = null;
@@ -255,45 +263,38 @@ namespace RenderToy.ModelFormat
                     if (line.StartsWith("map_Ka "))
                     {
                         int find = line.IndexOf(' ');
-                        map_Ka = LoadTexture(mtlfile, line.Substring(find + 1));
+                        map_Ka = LoadUniqueTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_Kd "))
                     {
                         int find = line.IndexOf(' ');
-                        map_Kd = LoadTexture(mtlfile, line.Substring(find + 1));
+                        map_Kd = LoadUniqueTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_d "))
                     {
                         int find = line.IndexOf(' ');
-                        map_d = LoadTexture(mtlfile, line.Substring(find + 1));
+                        map_d = LoadUniqueTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_bump "))
                     {
                         int find = line.IndexOf(' ');
-                        map_bump = LoadTexture(mtlfile, line.Substring(find + 1));
+                        map_bump = LoadUniqueTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("bump "))
                     {
                         int find = line.IndexOf(' ');
-                        bump = LoadTexture(mtlfile, line.Substring(find + 1));
+                        bump = LoadUniqueTexture(line.Substring(find + 1));
                         continue;
                     }
                     throw new FileLoadException("Unknown tag '" + line + "'.");
                 }
                 FLUSHMATERIAL();
             }
-            return result;
-        }
-        static IMaterial LoadTexture(string mtlpath, string texrelative)
-        {
-            var mtldir = Path.GetDirectoryName(mtlpath);
-            var texfile = Path.Combine(mtldir, texrelative);
-            if (!File.Exists(texfile)) return null;
-            return new Texture(texrelative, LoaderTGA.LoadFromPath(texfile), true);
+            return materialbyname;
         }
         public class OBJMaterial : ITexture, INamed
         {
