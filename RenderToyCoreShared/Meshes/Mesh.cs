@@ -33,6 +33,9 @@ namespace RenderToy.Meshes
     /// </summary>
     public class Mesh : IPrimitive
     {
+        public Mesh()
+        {
+        }
         public Mesh(IEnumerable<int> triangles, IEnumerable<Vector3D> vertices)
         {
             Vertices = new MeshChannel<Vector3D>(vertices.ToArray(), triangles.ToArray());
@@ -71,10 +74,10 @@ namespace RenderToy.Meshes
             }
             return new Mesh(indices, vertices);
         }
-        public readonly MeshChannel<Vector3D> Vertices = null;
-        public readonly MeshChannel<Vector3D> Normals = null;
-        public readonly MeshChannel<Vector2D> TexCoords = null;
-        public readonly MeshChannel<Vector3D> Tangents = null;
-        public readonly MeshChannel<Vector3D> Bitangents = null;
+        public MeshChannel<Vector3D> Vertices = null;
+        public MeshChannel<Vector3D> Normals = null;
+        public MeshChannel<Vector2D> TexCoords = null;
+        public MeshChannel<Vector3D> Tangents = null;
+        public MeshChannel<Vector3D> Bitangents = null;
     }
 }

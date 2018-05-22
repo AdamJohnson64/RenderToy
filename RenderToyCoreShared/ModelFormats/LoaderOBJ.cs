@@ -107,21 +107,20 @@ namespace RenderToy.ModelFormat
                         if (materialname != null)
                         {
                             // Flush this mesh to the caller.
-                            var flatindices = GenerateIntegerSequence(collectedvertexfaces.Count);
-                            var flatvertices = collectedvertexfaces.Select(i => vertices[i]);
-                            var flatnormals = collectednormalfaces.Select(i => normals[i]);
-                            var flattexcoords = collectedtexcoordfaces.Select(i => texcoords[i]);
-                            var flattangents = collectedtangentfaces.Select(i => tangents[i]);
-                            var flatbitangents = collectedbitangentfaces.Select(i => bitangents[i]);
-                            var primitive = new Mesh(flatindices, flatvertices, flatnormals, flattexcoords, flattangents, flatbitangents);
+                            var primitive = new Mesh();
+                            primitive.Vertices = new MeshChannel<Vector3D>(vertices, collectedvertexfaces);
+                            primitive.Normals = new MeshChannel<Vector3D>(normals, collectednormalfaces);
+                            primitive.TexCoords = new MeshChannel<Vector2D>(texcoords, collectedtexcoordfaces);
+                            primitive.Tangents = new MeshChannel<Vector3D>(tangents, collectedtangentfaces);
+                            primitive.Bitangents = new MeshChannel<Vector3D>(bitangents, collectedbitangentfaces);
                             yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
                             // Reset our state.
                             materialname = null;
-                            collectedvertexfaces.Clear();
-                            collectednormalfaces.Clear();
-                            collectedtexcoordfaces.Clear();
-                            collectedtangentfaces.Clear();
-                            collectedbitangentfaces.Clear();
+                            collectedvertexfaces = new List<int>();
+                            collectednormalfaces = new List<int>();
+                            collectedtexcoordfaces = new List<int>();
+                            collectedtangentfaces = new List<int>();
+                            collectedbitangentfaces = new List<int>();
                         }
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
                         if (parts.Length != 2) throw new FileLoadException("Malformed usemtl '" + line + "'.");
@@ -196,11 +195,11 @@ namespace RenderToy.ModelFormat
                 yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
                 // Reset our state.
                 materialname = null;
-                collectedvertexfaces.Clear();
-                collectednormalfaces.Clear();
-                collectedtexcoordfaces.Clear();
-                collectedtangentfaces.Clear();
-                collectedbitangentfaces.Clear();
+                collectedvertexfaces = null;
+                collectednormalfaces = null;
+                collectedtexcoordfaces = null;
+                collectedtangentfaces = null;
+                collectedbitangentfaces = null;
             }
         }
         static Dictionary<string, IMaterial> LoadMaterialLibrary(string objpath, string mtlrelative)
