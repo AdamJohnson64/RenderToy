@@ -20,12 +20,14 @@ namespace RenderToy.Meshes
             Triangles = triangles.ToArray();
             Vertices = vertices.ToArray();
         }
-        public Mesh(IEnumerable<int> triangles, IEnumerable<Vector3D> vertices, IEnumerable<Vector3D> normals, IEnumerable<Vector2D> texcoords)
+        public Mesh(IEnumerable<int> triangles, IEnumerable<Vector3D> vertices, IEnumerable<Vector3D> normals, IEnumerable<Vector2D> texcoords, IEnumerable<Vector3D> tangents, IEnumerable<Vector3D> bitangents)
         {
             Triangles = triangles.ToArray();
             Vertices = vertices.ToArray();
             Normals = normals.ToArray();
             TexCoords = texcoords.ToArray();
+            Tangents = tangents.ToArray();
+            Bitangents = bitangents.ToArray();
         }
         public static Mesh CreateMesh(IParametricUV shape, int usteps, int vsteps)
         {
@@ -56,5 +58,7 @@ namespace RenderToy.Meshes
         public readonly Vector3D[] Vertices = null;
         public readonly Vector3D[] Normals = null;
         public readonly Vector2D[] TexCoords = null;
+        public readonly Vector3D[] Tangents = null;
+        public readonly Vector3D[] Bitangents = null;
     }
 }

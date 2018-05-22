@@ -24,9 +24,13 @@ namespace RenderToy.ModelFormat
             var vertices = new List<Vector3D>();
             var normals = new List<Vector3D>();
             var texcoords = new List<Vector2D>();
-            var collectedfaces = new List<int>();
+            var tangents = new List<Vector3D>();
+            var bitangents = new List<Vector3D>();
+            var collectedvertexfaces = new List<int>();
             var collectednormalfaces = new List<int>();
             var collectedtexcoordfaces = new List<int>();
+            var collectedtangentfaces = new List<int>();
+            var collectedbitangentfaces = new List<int>();
             string groupname = null;
             string materialname = null;
             int smoothinggroup = -1;
@@ -103,17 +107,21 @@ namespace RenderToy.ModelFormat
                         if (materialname != null)
                         {
                             // Flush this mesh to the caller.
-                            var flatindices = GenerateIntegerSequence(collectedfaces.Count);
-                            var flatvertices = collectedfaces.Select(i => vertices[i]);
+                            var flatindices = GenerateIntegerSequence(collectedvertexfaces.Count);
+                            var flatvertices = collectedvertexfaces.Select(i => vertices[i]);
                             var flatnormals = collectednormalfaces.Select(i => normals[i]);
                             var flattexcoords = collectedtexcoordfaces.Select(i => texcoords[i]);
-                            var primitive = new Mesh(flatindices, flatvertices, flatnormals, flattexcoords);
+                            var flattangents = collectedtangentfaces.Select(i => tangents[i]);
+                            var flatbitangents = collectedbitangentfaces.Select(i => bitangents[i]);
+                            var primitive = new Mesh(flatindices, flatvertices, flatnormals, flattexcoords, flattangents, flatbitangents);
                             yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
                             // Reset our state.
                             materialname = null;
-                            collectedfaces.Clear();
+                            collectedvertexfaces.Clear();
                             collectednormalfaces.Clear();
                             collectedtexcoordfaces.Clear();
+                            collectedtangentfaces.Clear();
+                            collectedbitangentfaces.Clear();
                         }
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
                         if (parts.Length != 2) throw new FileLoadException("Malformed usemtl '" + line + "'.");
@@ -131,38 +139,50 @@ namespace RenderToy.ModelFormat
                         int[] idxv = f.Select(i => int.Parse(i[0]) - 1).ToArray();
                         int[] idxn = f.Select(i => int.Parse(i[2]) - 1).ToArray();
                         int[] idxt = f.Select(i => int.Parse(i[1]) - 1).ToArray();
+                        Action<int, int, int> FlushFace = (int i0, int i1, int i2) =>
+                        {
+                            collectedvertexfaces.Add(idxv[i0]);
+                            collectedvertexfaces.Add(idxv[i1]);
+                            collectedvertexfaces.Add(idxv[i2]);
+                            collectednormalfaces.Add(idxn[i0]);
+                            collectednormalfaces.Add(idxn[i1]);
+                            collectednormalfaces.Add(idxn[i2]);
+                            collectedtexcoordfaces.Add(idxt[i0]);
+                            collectedtexcoordfaces.Add(idxt[i1]);
+                            collectedtexcoordfaces.Add(idxt[i2]);
+                            // Compute tangent and bitangent.
+                            var P0 = vertices[idxv[i0]];
+                            var P1 = vertices[idxv[i1]];
+                            var P2 = vertices[idxv[i2]];
+                            var T0 = texcoords[idxt[i0]];
+                            var T1 = texcoords[idxt[i1]];
+                            var T2 = texcoords[idxt[i2]];
+                            var m = MathHelp.Invert(new Matrix2D(T1.X - T0.X, T2.X - T0.X, T1.Y - T0.Y, T2.Y - T0.Y));
+                            //var m = MathHelp.Invert(new Matrix2D(T1.X - T0.X, T1.Y - T0.Y, T2.X - T0.X, T2.Y - T0.Y));
+                            var solve00 = MathHelp.Transform(m, new Vector2D(0 - T0.X, 0 - T0.Y));
+                            var solve10 = MathHelp.Transform(m, new Vector2D(1 - T0.X, 0 - T0.Y));
+                            var solve01 = MathHelp.Transform(m, new Vector2D(0 - T0.X, 1 - T0.Y));
+                            var udir = MathHelp.Normalized(solve10.X * (P1 - P0) + solve10.Y * (P2 - P0));
+                            var vdir = MathHelp.Normalized(solve01.X * (P1 - P0) + solve01.Y * (P2 - P0));
+                            int ti0 = tangents.Count;
+                            tangents.Add(udir);
+                            collectedtangentfaces.Add(ti0);
+                            collectedtangentfaces.Add(ti0);
+                            collectedtangentfaces.Add(ti0);
+                            int bi0 = bitangents.Count;
+                            bitangents.Add(vdir);
+                            collectedbitangentfaces.Add(bi0);
+                            collectedbitangentfaces.Add(bi0);
+                            collectedbitangentfaces.Add(bi0);
+                        };
                         if (parts.Length == 4)
                         {
-                            collectedfaces.Add(idxv[0]);
-                            collectedfaces.Add(idxv[1]);
-                            collectedfaces.Add(idxv[2]);
-                            collectednormalfaces.Add(idxn[0]);
-                            collectednormalfaces.Add(idxn[1]);
-                            collectednormalfaces.Add(idxn[2]);
-                            collectedtexcoordfaces.Add(idxt[0]);
-                            collectedtexcoordfaces.Add(idxt[1]);
-                            collectedtexcoordfaces.Add(idxt[2]);
+                            FlushFace(0, 1, 2);
                         }
                         if (parts.Length == 5)
                         {
-                            collectedfaces.Add(idxv[0]);
-                            collectedfaces.Add(idxv[1]);
-                            collectedfaces.Add(idxv[2]);
-                            collectedfaces.Add(idxv[2]);
-                            collectedfaces.Add(idxv[3]);
-                            collectedfaces.Add(idxv[0]);
-                            collectednormalfaces.Add(idxn[0]);
-                            collectednormalfaces.Add(idxn[1]);
-                            collectednormalfaces.Add(idxn[2]);
-                            collectednormalfaces.Add(idxn[2]);
-                            collectednormalfaces.Add(idxn[3]);
-                            collectednormalfaces.Add(idxn[0]);
-                            collectedtexcoordfaces.Add(idxt[0]);
-                            collectedtexcoordfaces.Add(idxt[1]);
-                            collectedtexcoordfaces.Add(idxt[2]);
-                            collectedtexcoordfaces.Add(idxt[2]);
-                            collectedtexcoordfaces.Add(idxt[3]);
-                            collectedtexcoordfaces.Add(idxt[0]);
+                            FlushFace(0, 1, 2);
+                            FlushFace(0, 2, 3);
                         }
                         continue;
                     }
@@ -172,13 +192,15 @@ namespace RenderToy.ModelFormat
             if (materialname != null)
             {
                 // Flush this mesh to the caller.
-                var primitive = new Mesh(collectedfaces, vertices);
+                var primitive = new Mesh(collectedvertexfaces, vertices);
                 yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
                 // Reset our state.
                 materialname = null;
-                collectedfaces.Clear();
+                collectedvertexfaces.Clear();
                 collectednormalfaces.Clear();
                 collectedtexcoordfaces.Clear();
+                collectedtangentfaces.Clear();
+                collectedbitangentfaces.Clear();
             }
         }
         static Dictionary<string, IMaterial> LoadMaterialLibrary(string objpath, string mtlrelative)
@@ -187,6 +209,10 @@ namespace RenderToy.ModelFormat
             var objdir = Path.GetDirectoryName(objpath);
             var mtlfile = Path.Combine(objdir, mtlrelative);
             IMaterial map_Ka = null;
+            IMaterial map_Kd = null;
+            IMaterial map_d = null;
+            IMaterial map_bump = null;
+            IMaterial bump = null;
             using (var streamreader = File.OpenText(mtlfile))
             {
                 string line;
@@ -194,9 +220,13 @@ namespace RenderToy.ModelFormat
                 Action FLUSHMATERIAL = () =>
                 {
                     if (materialname == null) return;
-                    result.Add(materialname, map_Ka);
+                    result.Add(materialname, new OBJMaterial { Name = materialname, map_Ka = map_Ka, map_Kd = map_Kd, map_d = map_d, map_bump = map_bump, bump = bump });
                     materialname = null;
                     map_Ka = null;
+                    map_Kd = null;
+                    map_d = null;
+                    map_bump = null;
+                    bump = null;
                 };
                 while ((line = streamreader.ReadLine()) != null)
                 {
@@ -262,18 +292,26 @@ namespace RenderToy.ModelFormat
                     }
                     if (line.StartsWith("map_Kd "))
                     {
+                        int find = line.IndexOf(' ');
+                        map_Kd = LoadTexture(mtlfile, line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_d "))
                     {
+                        int find = line.IndexOf(' ');
+                        map_d = LoadTexture(mtlfile, line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_bump "))
                     {
+                        int find = line.IndexOf(' ');
+                        map_bump = LoadTexture(mtlfile, line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("bump "))
                     {
+                        int find = line.IndexOf(' ');
+                        bump = LoadTexture(mtlfile, line.Substring(find + 1));
                         continue;
                     }
                     throw new FileLoadException("Unknown tag '" + line + "'.");
@@ -295,6 +333,68 @@ namespace RenderToy.ModelFormat
             {
                 yield return i;
             }
+        }
+        public class OBJMaterial : ITexture, INamed
+        {
+            public string Name
+            {
+                get { return _name; }
+                set { _name = value; }
+            }
+            public IMaterial map_Ka
+            {
+                get { return _map_Ka; }
+                set { _map_Ka = value; }
+            }
+            public IMaterial map_Kd
+            {
+                get { return _map_Kd; }
+                set { _map_Kd = value; }
+            }
+            public IMaterial map_d
+            {
+                get { return _map_d; }
+                set { _map_d = value; }
+            }
+            public IMaterial map_bump
+            {
+                get { return _map_bump; }
+                set { _map_bump = value; }
+            }
+            public IMaterial bump
+            {
+                get { return _bump; }
+                set { _bump = value; }
+            }
+            public string GetName()
+            {
+                return _name;
+            }
+            public bool IsConstant()
+            {
+                return
+                    (_map_Ka == null ? true : _map_Ka.IsConstant()) &&
+                    (_map_Kd == null ? true : _map_Kd.IsConstant()) &&
+                    (_map_d == null ? true : _map_d.IsConstant()) &&
+                    (_map_bump == null ? true : _map_bump.IsConstant()) &&
+                    (_bump == null ? true : _bump.IsConstant());
+            }
+            public int GetTextureLevelCount()
+            {
+                var kd = _map_Kd as ITexture;
+                return kd == null ? 0 : kd.GetTextureLevelCount();
+            }
+            public IImageBgra32 GetTextureLevel(int level)
+            {
+                var kd = _map_Kd as ITexture;
+                return kd == null ? null : kd.GetTextureLevel(level);
+            }
+            string _name;
+            IMaterial _map_Ka;
+            IMaterial _map_Kd;
+            IMaterial _map_d;
+            IMaterial _map_bump;
+            IMaterial _bump;
         }
     }
 }

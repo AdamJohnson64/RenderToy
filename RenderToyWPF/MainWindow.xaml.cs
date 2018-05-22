@@ -145,12 +145,18 @@ struct VS_INPUT {
     float4 Position : POSITION;
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD0;
+    float4 Color : COLOR;
+    float3 Tangent : TANGENT;
+    float3 Bitangent : BINORMAL;
 };
 
 struct VS_OUTPUT {
     float4 Position : SV_Position;
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD0;
+    float4 Color : COLOR;
+    float3 Tangent : TANGENT;
+    float3 Bitangent : BINORMAL;
 };
 
 VS_OUTPUT vs(VS_INPUT input) {
@@ -158,13 +164,21 @@ VS_OUTPUT vs(VS_INPUT input) {
     result.Position = mul(ModelViewProjection, input.Position);
     result.Normal = input.Normal;
     result.TexCoord = input.TexCoord;
+    result.Color = input.Color;
+    result.Tangent = input.Tangent;
+    result.Bitangent = input.Bitangent;
     return result;
 }
 
 float4 ps(VS_OUTPUT input) : SV_Target {
+    float3x3 tbn = {input.Tangent, input.Bitangent, input.Normal};
+    float3 bump = normalize(tex2D(SamplerBump, input.TexCoord).rgb * 2 - 1);
+    float3 normal = mul(bump, tbn);
+
     float4 albedo = tex2D(SamplerAlbedo, input.TexCoord);
-    float light = clamp(dot(input.Normal, normalize(float3(1,1,1))), 0.25, 1);
+    float light = clamp(dot(normal, normalize(float3(1,1,1))), 0, 1);
     float3 output = light * albedo.rgb;
+
     return float4(output, albedo.a);
 }";
         }

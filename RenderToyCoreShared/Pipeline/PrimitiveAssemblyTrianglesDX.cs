@@ -19,6 +19,8 @@ namespace RenderToy.PipelineModel
             public Vector3D Normal;
             public uint Diffuse;
             public Vector2D TexCoord;
+            public Vector3D Tangent;
+            public Vector3D Bitangent;
         }
         public static IEnumerable<VertexDX> CreateTrianglesDX(IPrimitive prim)
         {
@@ -88,19 +90,27 @@ namespace RenderToy.PipelineModel
             var v = mesh.Vertices;
             var n = mesh.Normals;
             var t = mesh.TexCoords;
+            var tan = mesh.Tangents;
+            var bit = mesh.Bitangents;
             foreach (var i in TriIndex.ExtractTriangles(mesh.Triangles))
             {
                 var v1 = new VertexDX { Position = v[i.Index0], Diffuse = 0xFFFFFFFF };
                 if (t != null) v1.TexCoord = t[i.Index0];
                 if (n != null) v1.Normal = n[i.Index0];
+                if (tan != null) v1.Tangent = tan[i.Index0];
+                if (bit != null) v1.Bitangent = bit[i.Index0];
                 yield return v1;
                 var v2 = new VertexDX { Position = v[i.Index1], Diffuse = 0xFFFFFFFF };
                 if (t != null) v2.TexCoord = t[i.Index1];
                 if (n != null) v2.Normal = n[i.Index1];
+                if (tan != null) v2.Tangent = tan[i.Index1];
+                if (bit != null) v2.Bitangent = bit[i.Index1];
                 yield return v2;
                 var v3 = new VertexDX { Position = v[i.Index2], Diffuse = 0xFFFFFFFF };
                 if (t != null) v3.TexCoord = t[i.Index2];
                 if (n != null) v3.Normal = n[i.Index2];
+                if (tan != null) v3.Tangent = tan[i.Index2];
+                if (bit != null) v3.Bitangent = bit[i.Index2];
                 yield return v3;
             }
         }

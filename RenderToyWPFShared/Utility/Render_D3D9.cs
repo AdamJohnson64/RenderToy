@@ -131,6 +131,8 @@ namespace RenderToy.WPF
             public float Xn, Yn, Zn;
             public uint Diffuse;
             public float U, V;
+            public float Tx, Ty, Tz;
+            public float Bx, By, Bz;
         };
         /// <summary>
         /// Rasterize the scene using textured XYZ+UV 3D triangles and transforming via the hardware pipeline.
