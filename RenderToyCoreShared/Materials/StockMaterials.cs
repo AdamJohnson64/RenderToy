@@ -23,6 +23,7 @@ namespace RenderToy.Materials
         public static Vector4D White = new Vector4D(1, 1, 1, 1);
         public static Vector4D DarkGray = new Vector4D(0.25, 0.25, 0.25, 1);
         public static Vector4D LightGray = new Vector4D(0.75, 0.75, 0.75, 1);
+        public static Vector4D LightBlue = new Vector4D(0.5, 0.5, 1.0, 1);
         public static GenericMaterial PlasticBlack = new GenericMaterial("Black Plastic", Empty, Black, White, Percent50, Percent0, 1);
         public static GenericMaterial PlasticRed = new GenericMaterial("Red Plastic", Empty, Red, White, Percent50, Percent0, 1);
         public static GenericMaterial PlasticGreen = new GenericMaterial("Green Plastic", Empty, Green, White, Percent50, Percent0, 1);
@@ -32,6 +33,7 @@ namespace RenderToy.Materials
         public static GenericMaterial PlasticCyan = new GenericMaterial("Cyan Plastic", Empty, Cyan, White, Percent50, Percent0, 1);
         public static GenericMaterial PlasticWhite = new GenericMaterial("White Plastic", Empty, White, White, Percent50, Percent0, 1);
         public static GenericMaterial Glass = new GenericMaterial("Glass", Empty, Empty, White, Percent0, Percent100, 1.5);
+        public static GenericMaterial PlasticLightBlue = new GenericMaterial("Light Blue Plastic", Empty, LightBlue, White, Percent50, Percent0, 1);
         public static IMNNode<Vector4D> Missing = GenerateMissing();
         public static IMNNode<Vector4D> Brick = GenerateBrick();
         public static IMNNode<Vector4D> MarbleBlack = GenerateMarbleBlack();
