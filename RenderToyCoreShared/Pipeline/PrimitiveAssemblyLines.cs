@@ -119,11 +119,11 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector3D> CreateLines(Mesh mesh)
         {
             var v = mesh.Vertices.GetVertices();
-            foreach (var t in TriIndex.ExtractTriangles(mesh.Vertices.GetIndices()))
+            foreach (var t in SequenceHelp.Split3(mesh.Vertices.GetIndices()))
             {
-                yield return v[t.Index0]; yield return v[t.Index1];
-                yield return v[t.Index1]; yield return v[t.Index2];
-                yield return v[t.Index2]; yield return v[t.Index0];
+                yield return v[t.Item1]; yield return v[t.Item2];
+                yield return v[t.Item2]; yield return v[t.Item3];
+                yield return v[t.Item3]; yield return v[t.Item1];
             }
         }
         /// <summary>

@@ -29,8 +29,6 @@ namespace RenderToy.ModelFormat
             var collectedvertexfaces = new List<int>();
             var collectednormalfaces = new List<int>();
             var collectedtexcoordfaces = new List<int>();
-            var collectedtangentfaces = new List<int>();
-            var collectedbitangentfaces = new List<int>();
             string groupname = null;
             string materialname = null;
             int smoothinggroup = -1;
@@ -111,16 +109,13 @@ namespace RenderToy.ModelFormat
                             primitive.Vertices = new MeshChannel<Vector3D>(vertices, collectedvertexfaces);
                             primitive.Normals = new MeshChannel<Vector3D>(normals, collectednormalfaces);
                             primitive.TexCoords = new MeshChannel<Vector2D>(texcoords, collectedtexcoordfaces);
-                            primitive.Tangents = new MeshChannel<Vector3D>(tangents, collectedtangentfaces);
-                            primitive.Bitangents = new MeshChannel<Vector3D>(bitangents, collectedbitangentfaces);
+                            primitive.GenerateTangentSpace();
                             yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
                             // Reset our state.
                             materialname = null;
                             collectedvertexfaces = new List<int>();
                             collectednormalfaces = new List<int>();
                             collectedtexcoordfaces = new List<int>();
-                            collectedtangentfaces = new List<int>();
-                            collectedbitangentfaces = new List<int>();
                         }
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
                         if (parts.Length != 2) throw new FileLoadException("Malformed usemtl '" + line + "'.");
@@ -149,30 +144,6 @@ namespace RenderToy.ModelFormat
                             collectedtexcoordfaces.Add(idxt[i0]);
                             collectedtexcoordfaces.Add(idxt[i1]);
                             collectedtexcoordfaces.Add(idxt[i2]);
-                            // Compute tangent and bitangent.
-                            var P0 = vertices[idxv[i0]];
-                            var P1 = vertices[idxv[i1]];
-                            var P2 = vertices[idxv[i2]];
-                            var T0 = texcoords[idxt[i0]];
-                            var T1 = texcoords[idxt[i1]];
-                            var T2 = texcoords[idxt[i2]];
-                            var m = MathHelp.Invert(new Matrix2D(T1.X - T0.X, T2.X - T0.X, T1.Y - T0.Y, T2.Y - T0.Y));
-                            //var m = MathHelp.Invert(new Matrix2D(T1.X - T0.X, T1.Y - T0.Y, T2.X - T0.X, T2.Y - T0.Y));
-                            var solve00 = MathHelp.Transform(m, new Vector2D(0 - T0.X, 0 - T0.Y));
-                            var solve10 = MathHelp.Transform(m, new Vector2D(1 - T0.X, 0 - T0.Y));
-                            var solve01 = MathHelp.Transform(m, new Vector2D(0 - T0.X, 1 - T0.Y));
-                            var udir = MathHelp.Normalized(solve10.X * (P1 - P0) + solve10.Y * (P2 - P0));
-                            var vdir = MathHelp.Normalized(solve01.X * (P1 - P0) + solve01.Y * (P2 - P0));
-                            int ti0 = tangents.Count;
-                            tangents.Add(udir);
-                            collectedtangentfaces.Add(ti0);
-                            collectedtangentfaces.Add(ti0);
-                            collectedtangentfaces.Add(ti0);
-                            int bi0 = bitangents.Count;
-                            bitangents.Add(vdir);
-                            collectedbitangentfaces.Add(bi0);
-                            collectedbitangentfaces.Add(bi0);
-                            collectedbitangentfaces.Add(bi0);
                         };
                         if (parts.Length == 4)
                         {
@@ -198,8 +169,6 @@ namespace RenderToy.ModelFormat
                 collectedvertexfaces = null;
                 collectednormalfaces = null;
                 collectedtexcoordfaces = null;
-                collectedtangentfaces = null;
-                collectedbitangentfaces = null;
             }
         }
         static Dictionary<string, IMaterial> LoadMaterialLibrary(string objpath, string mtlrelative)
@@ -325,13 +294,6 @@ namespace RenderToy.ModelFormat
             var texfile = Path.Combine(mtldir, texrelative);
             if (!File.Exists(texfile)) return null;
             return new Texture(texrelative, LoaderTGA.LoadFromPath(texfile), true);
-        }
-        static IEnumerable<int> GenerateIntegerSequence(int count)
-        {
-            for (int i = 0; i < count; ++i)
-            {
-                yield return i;
-            }
         }
         public class OBJMaterial : ITexture, INamed
         {

@@ -143,25 +143,7 @@ namespace RenderToy
         public readonly Vector3D P0, P1, P2;
         public static IEnumerable<Triangle3D> ExtractTriangles(IReadOnlyList<Vector3D> vertices, IEnumerable<int> indices)
         {
-            return TriIndex.ExtractTriangles(indices).Select(t => new Triangle3D(vertices[t.Index0], vertices[t.Index1], vertices[t.Index2]));
-        }
-    }
-    internal struct TriIndex
-    {
-        public TriIndex(int i0, int i1, int i2) { Index0 = i0; Index1 = i1; Index2 = i2; }
-        public readonly int Index0, Index1, Index2;
-        public static IEnumerable<TriIndex> ExtractTriangles(IEnumerable<int> indices)
-        {
-            var iter = indices.GetEnumerator();
-            while (iter.MoveNext())
-            {
-                var i0 = iter.Current;
-                if (!iter.MoveNext()) throw new Exception();
-                var i1 = iter.Current;
-                if (!iter.MoveNext()) throw new Exception();
-                var i2 = iter.Current;
-                yield return new TriIndex(i0, i1, i2);
-            }
+            return SequenceHelp.Split3(indices).Select(i => new Triangle3D(vertices[i.Item1], vertices[i.Item2], vertices[i.Item3]));
         }
     }
     #endregion
