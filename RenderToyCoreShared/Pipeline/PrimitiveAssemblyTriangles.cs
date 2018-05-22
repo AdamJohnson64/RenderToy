@@ -92,8 +92,8 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of triangles describing the surface of this primitive.</returns>
         public static IEnumerable<Vector3D> CreateTriangles(Mesh mesh)
         {
-            var v = mesh.Vertices;
-            foreach (var t in mesh.Triangles)
+            var v = mesh.Vertices.GetVertices();
+            foreach (var t in mesh.Vertices.GetIndices())
             {
                 yield return v[t];
             }

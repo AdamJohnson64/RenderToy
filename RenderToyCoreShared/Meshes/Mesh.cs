@@ -10,6 +10,24 @@ using System.Linq;
 
 namespace RenderToy.Meshes
 {
+    public class MeshChannel<DATATYPE>
+    {
+        public MeshChannel(IReadOnlyList<DATATYPE> vertices, IReadOnlyList<int> indices)
+        {
+            Vertices = vertices;
+            Indices = indices;
+        }
+        public IReadOnlyList<DATATYPE> GetVertices()
+        {
+            return Vertices;
+        }
+        public IReadOnlyList<int> GetIndices()
+        {
+            return Indices;
+        }
+        readonly IReadOnlyList<DATATYPE> Vertices;
+        readonly IReadOnlyList<int> Indices;
+    }
     /// <summary>
     /// Triangle-only mesh.
     /// </summary>
@@ -17,17 +35,16 @@ namespace RenderToy.Meshes
     {
         public Mesh(IEnumerable<int> triangles, IEnumerable<Vector3D> vertices)
         {
-            Triangles = triangles.ToArray();
-            Vertices = vertices.ToArray();
+            Vertices = new MeshChannel<Vector3D>(vertices.ToArray(), triangles.ToArray());
         }
         public Mesh(IEnumerable<int> triangles, IEnumerable<Vector3D> vertices, IEnumerable<Vector3D> normals, IEnumerable<Vector2D> texcoords, IEnumerable<Vector3D> tangents, IEnumerable<Vector3D> bitangents)
         {
-            Triangles = triangles.ToArray();
-            Vertices = vertices.ToArray();
-            Normals = normals.ToArray();
-            TexCoords = texcoords.ToArray();
-            Tangents = tangents.ToArray();
-            Bitangents = bitangents.ToArray();
+            var trianglesarray = triangles.ToArray();
+            Vertices = new MeshChannel<Vector3D>(vertices.ToArray(), trianglesarray);
+            Normals = new MeshChannel<Vector3D>(normals.ToArray(), trianglesarray);
+            TexCoords = new MeshChannel<Vector2D>(texcoords.ToArray(), trianglesarray);
+            Tangents = new MeshChannel<Vector3D>(tangents.ToArray(), trianglesarray);
+            Bitangents = new MeshChannel<Vector3D>(bitangents.ToArray(), trianglesarray);
         }
         public static Mesh CreateMesh(IParametricUV shape, int usteps, int vsteps)
         {
@@ -54,11 +71,10 @@ namespace RenderToy.Meshes
             }
             return new Mesh(indices, vertices);
         }
-        public readonly int[] Triangles = null;
-        public readonly Vector3D[] Vertices = null;
-        public readonly Vector3D[] Normals = null;
-        public readonly Vector2D[] TexCoords = null;
-        public readonly Vector3D[] Tangents = null;
-        public readonly Vector3D[] Bitangents = null;
+        public readonly MeshChannel<Vector3D> Vertices = null;
+        public readonly MeshChannel<Vector3D> Normals = null;
+        public readonly MeshChannel<Vector2D> TexCoords = null;
+        public readonly MeshChannel<Vector3D> Tangents = null;
+        public readonly MeshChannel<Vector3D> Bitangents = null;
     }
 }

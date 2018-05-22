@@ -118,8 +118,8 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of line segments describing the surface of this primitive.</returns>
         public static IEnumerable<Vector3D> CreateLines(Mesh mesh)
         {
-            var v = mesh.Vertices;
-            foreach (var t in TriIndex.ExtractTriangles(mesh.Triangles))
+            var v = mesh.Vertices.GetVertices();
+            foreach (var t in TriIndex.ExtractTriangles(mesh.Vertices.GetIndices()))
             {
                 yield return v[t.Index0]; yield return v[t.Index1];
                 yield return v[t.Index1]; yield return v[t.Index2];

@@ -87,31 +87,26 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of triangles describing the surface of this primitive.</returns>
         public static IEnumerable<VertexDX> CreateTrianglesDX(Mesh mesh)
         {
-            var v = mesh.Vertices;
-            var n = mesh.Normals;
-            var t = mesh.TexCoords;
-            var tan = mesh.Tangents;
-            var bit = mesh.Bitangents;
-            foreach (var i in TriIndex.ExtractTriangles(mesh.Triangles))
+            var vpos = mesh.Vertices?.GetVertices();
+            var ipos = mesh.Vertices?.GetIndices();
+            var vnor = mesh.Normals?.GetVertices();
+            var inor = mesh.Normals?.GetIndices();
+            var vtex = mesh.TexCoords?.GetVertices();
+            var itex = mesh.TexCoords?.GetIndices();
+            var vtan = mesh.Tangents?.GetVertices();
+            var itan = mesh.Tangents?.GetIndices();
+            var vbit = mesh.Bitangents?.GetVertices();
+            var ibit = mesh.Bitangents?.GetIndices();
+            int trianglecount = ipos.Count;
+            for (int i = 0; i < trianglecount; ++i)
             {
-                var v1 = new VertexDX { Position = v[i.Index0], Diffuse = 0xFFFFFFFF };
-                if (t != null) v1.TexCoord = t[i.Index0];
-                if (n != null) v1.Normal = n[i.Index0];
-                if (tan != null) v1.Tangent = tan[i.Index0];
-                if (bit != null) v1.Bitangent = bit[i.Index0];
-                yield return v1;
-                var v2 = new VertexDX { Position = v[i.Index1], Diffuse = 0xFFFFFFFF };
-                if (t != null) v2.TexCoord = t[i.Index1];
-                if (n != null) v2.Normal = n[i.Index1];
-                if (tan != null) v2.Tangent = tan[i.Index1];
-                if (bit != null) v2.Bitangent = bit[i.Index1];
-                yield return v2;
-                var v3 = new VertexDX { Position = v[i.Index2], Diffuse = 0xFFFFFFFF };
-                if (t != null) v3.TexCoord = t[i.Index2];
-                if (n != null) v3.Normal = n[i.Index2];
-                if (tan != null) v3.Tangent = tan[i.Index2];
-                if (bit != null) v3.Bitangent = bit[i.Index2];
-                yield return v3;
+                var v = new VertexDX { Diffuse = 0xFFFFFFFF };
+                if (vpos != null && ipos != null) v.Position = vpos[ipos[i]];
+                if (vnor != null && inor != null) v.Normal = vnor[inor[i]];
+                if (vtex != null && itex != null) v.TexCoord = vtex[itex[i]];
+                if (vtan != null && itan != null) v.Tangent = vtan[itan[i]];
+                if (vbit != null && ibit != null) v.Bitangent = vbit[ibit[i]];
+                yield return v;
             }
         }
         /// <summary>

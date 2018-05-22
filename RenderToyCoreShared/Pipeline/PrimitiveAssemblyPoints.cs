@@ -102,10 +102,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of points describing the surface of this primitive.</returns>
         public static IEnumerable<Vector3D> CreatePoints(Mesh mesh)
         {
-            foreach (var p in mesh.Vertices)
-            {
-                yield return p;
-            }
+            return mesh.Vertices.GetVertices();
         }
         /// <summary>
         /// Create points representing a BVH split mesh.

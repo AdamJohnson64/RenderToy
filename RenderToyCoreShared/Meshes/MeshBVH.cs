@@ -22,7 +22,7 @@ namespace RenderToy.Meshes
         }
         public static MeshBVH Create(Mesh mesh)
         {
-            return Create(Triangle3D.ExtractTriangles(mesh.Vertices, mesh.Triangles).ToArray());
+            return Create(Triangle3D.ExtractTriangles((IReadOnlyList<Vector3D>)mesh.Vertices.GetVertices(), (IEnumerable<int>)mesh.Vertices.GetIndices()).ToArray());
         }
         public static MeshBVH Create(Triangle3D[] triangles)
         {
