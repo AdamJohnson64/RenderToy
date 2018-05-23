@@ -261,7 +261,7 @@ namespace RenderToy.WPF
                 }
                 device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
                 if (map_Kd != null) device.SetTexture(0, map_Kd);
-                if (map_Kd != null) device.SetTexture(1, map_d);
+                if (map_d != null) device.SetTexture(1, map_d);
                 if (map_bump != null) device.SetTexture(2, map_bump);
                 device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0), 4);
                 device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
