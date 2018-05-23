@@ -71,7 +71,7 @@ namespace RenderToy.WPF
                 }
                 else
                 {
-                    var asimage = MaterialBitmapConverter.GetImageConverter(material, 256, 256);
+                    var asimage = MaterialBitmapConverter.GetImageConverter(material, 512, 512);
                     var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
                     D3DLockedRect lockit = texture.LockRect(0);
                     MaterialBitmapConverter.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);

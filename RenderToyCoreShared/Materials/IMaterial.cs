@@ -190,6 +190,26 @@ namespace RenderToy.Materials
         public string GetName() { return "Brick Noise"; }
         public double Eval(EvalContext context) { return Brick.BrickNoise(u.Eval(context), v.Eval(context)); }
     }
+    class BumpGenerate : IMNNode<Vector4D>, INamed
+    {
+        public string GetName() { return "Bump Generate"; }
+        public bool IsConstant() { return displacement.IsConstant(); }
+        public Vector4D Eval(EvalContext context)
+        {
+            double du1 = displacement.Eval(new EvalContext { U = context.U - 0.001, V = context.V });
+            double du2 = displacement.Eval(new EvalContext { U = context.U + 0.001, V = context.V });
+            double dv1 = displacement.Eval(new EvalContext { U = context.U, V = context.V - 0.001 });
+            double dv2 = displacement.Eval(new EvalContext { U = context.U, V = context.V + 0.001 });
+            var normal = MathHelp.Normalized(new Vector3D((du1 - du2) / 0.002, (dv1 - dv2) / 0.002, 1));
+            return new Vector4D(normal.X, -normal.Y, 1, 1);
+        }
+        public IMNNode<double> Displacement
+        {
+            get { return displacement; }
+            set { displacement = value; }
+        }
+        IMNNode<double> displacement;
+    }
     class Checkerboard : MNSample2D<Vector4D>, IMNNode<Vector4D>, INamed
     {
         public string GetName() { return "Checkerboard"; }

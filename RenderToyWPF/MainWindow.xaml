@@ -89,6 +89,7 @@
             <MenuItem Header="File">
                 <MenuItem Header="New" Command="{x:Static rendertoy:MainWindow.CommandSceneNew}"/>
                 <MenuItem Header="Open" Command="{x:Static rendertoy:MainWindow.CommandSceneOpen}"/>
+                <MenuItem Header="Plane" Command="{x:Static rendertoy:MainWindow.CommandScenePlane}"/>
             </MenuItem>
             <MenuItem Header="Debug">
                 <MenuItem Header="Performance Trace" Command="{x:Static rendertoy:MainWindow.CommandDebugToolPerformanceTrace}"/>
@@ -190,7 +191,9 @@
             </TabItem>
             <!-- ==================== Accelerated DirectX Visualizer ==================== -->
             <TabItem Header="DirectX View" DataContext="{Binding Path=Scene}">
-                <rendertoy:View3DDX Scene="{Binding}" ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
+                <Grid Background="Black">
+                    <rendertoy:View3DDX Scene="{Binding}" ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
+                </Grid>
             </TabItem>
             <!-- ==================== Shader Editor ==================== -->
             <TabItem Header="Shader Editor" DataContext="{Binding Path=Scene}">
@@ -198,7 +201,7 @@
                     <rendertoy:CompileVertexShaderConverter x:Key="CompileVertexShaderConverter"/>
                     <rendertoy:CompilePixelShaderConverter x:Key="CompilePixelShaderConverter"/>
                 </TabItem.Resources>
-                <Grid>
+                <Grid Background="Black">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="50*"/>
                         <ColumnDefinition Width="50*"/>

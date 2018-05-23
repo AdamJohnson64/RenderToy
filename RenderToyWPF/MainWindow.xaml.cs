@@ -5,6 +5,7 @@
 
 using Microsoft.Win32;
 using RenderToy.Materials;
+using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
@@ -66,7 +67,8 @@ namespace RenderToy.WPF
     public partial class MainWindow : Window
     {
         public static RoutedUICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(View3DUser));
-        public static RoutedUICommand CommandSceneOpen = new RoutedUICommand("Open Scene (PLY)", "CommandSceneLoad", typeof(View3DUser));
+        public static RoutedUICommand CommandSceneOpen = new RoutedUICommand("Open Scene", "CommandSceneLoad", typeof(View3DUser));
+        public static RoutedUICommand CommandScenePlane = new RoutedUICommand("Open Plane", "CommandScenePlane", typeof(View3DUser));
         public static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(View3DUser));
         public static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(View3DUser));
         public static RoutedUICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(View3DUser));
@@ -105,6 +107,24 @@ namespace RenderToy.WPF
                 }
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandScenePlane, (s, e) =>
+            {
+                var scene = new Scene();
+                var mesh = new Mesh();
+                mesh.Vertices = new MeshChannel<Vector3D>(new Vector3D[] { new Vector3D(-10, 0, 10), new Vector3D(10, 0, 10), new Vector3D(10, 0, -10), new Vector3D(-10, 0, -10) }, new int[] { 0, 1, 2, 0, 2, 3 });
+                mesh.Normals = new MeshChannel<Vector3D>(new Vector3D[] { new Vector3D(0, 1, 0) }, new int[] { 0, 0, 0, 0, 0, 0 });
+                mesh.TexCoords = new MeshChannel<Vector2D>(new Vector2D[] { new Vector2D(0, 0), new Vector2D(1, 0), new Vector2D(1, 1), new Vector2D(0, 1) }, new int[] { 0, 1, 2, 0, 2, 3 });
+                mesh.GenerateTangentSpace();
+                var material = new LoaderOBJ.OBJMaterial();
+                material.map_Kd = StockMaterials.Brick;
+                var displace = new MNAdd {
+                    Lhs = new BrickMask { U = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 4 } }, V = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 4 } } },
+                    Rhs = new MNMultiply { Lhs = new Perlin2D { U = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 512 } }, V = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 512 } } }, Rhs = new MNConstant { Value = 0.001 } }
+                };
+                material.map_bump = new BumpGenerate { Displacement = displace };
+                scene.AddChild(new Node("Plane", new TransformMatrix(Matrix3D.Identity), mesh, StockMaterials.White, material));
+                DataContext = new Document(scene);
+            }));
             CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { ViewPreview.Visibility = ViewPreview.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderWireframeToggle, (s, e) => { ViewWireframe.Visibility = ViewWireframe.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandDebugToolPerformanceTrace, (s, e) => {
