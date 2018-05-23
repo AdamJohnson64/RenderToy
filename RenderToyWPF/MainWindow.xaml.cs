@@ -113,15 +113,16 @@ namespace RenderToy.WPF
                 var mesh = new Mesh();
                 mesh.Vertices = new MeshChannel<Vector3D>(new Vector3D[] { new Vector3D(-10, 0, 10), new Vector3D(10, 0, 10), new Vector3D(10, 0, -10), new Vector3D(-10, 0, -10) }, new int[] { 0, 1, 2, 0, 2, 3 });
                 mesh.Normals = new MeshChannel<Vector3D>(new Vector3D[] { new Vector3D(0, 1, 0) }, new int[] { 0, 0, 0, 0, 0, 0 });
-                mesh.TexCoords = new MeshChannel<Vector2D>(new Vector2D[] { new Vector2D(0, 0), new Vector2D(1, 0), new Vector2D(1, 1), new Vector2D(0, 1) }, new int[] { 0, 1, 2, 0, 2, 3 });
+                mesh.TexCoords = new MeshChannel<Vector2D>(new Vector2D[] { new Vector2D(0, 0), new Vector2D(4, 0), new Vector2D(4, 4), new Vector2D(0, 4) }, new int[] { 0, 1, 2, 0, 2, 3 });
                 mesh.GenerateTangentSpace();
                 var material = new LoaderOBJ.OBJMaterial();
                 material.map_Kd = StockMaterials.Brick;
-                var displace = new MNAdd {
+                var displace = new MNSubtract {
                     Lhs = new BrickMask { U = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 4 } }, V = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 4 } } },
                     Rhs = new MNMultiply { Lhs = new Perlin2D { U = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 512 } }, V = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 512 } } }, Rhs = new MNConstant { Value = 0.001 } }
                 };
                 material.map_bump = new BumpGenerate { Displacement = displace };
+                material.displacement = new MNVector4D { R = displace, G = displace, B = displace, A = new MNConstant { Value = 1 } };
                 scene.AddChild(new Node("Plane", new TransformMatrix(Matrix3D.Identity), mesh, StockMaterials.White, material));
                 DataContext = new Document(scene);
             }));

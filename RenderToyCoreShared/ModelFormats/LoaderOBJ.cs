@@ -328,6 +328,11 @@ namespace RenderToy.ModelFormat
                 get { return _bump; }
                 set { _bump = value; }
             }
+            public IMaterial displacement
+            {
+                get { return _displacement; }
+                set { _displacement = value; }
+            }
             public string GetName()
             {
                 return _name;
@@ -357,6 +362,7 @@ namespace RenderToy.ModelFormat
             IMaterial _map_d;
             IMaterial _map_bump;
             IMaterial _bump;
+            IMaterial _displacement;
         }
     }
 }
