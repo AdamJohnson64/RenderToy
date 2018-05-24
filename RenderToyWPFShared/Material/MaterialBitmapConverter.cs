@@ -75,11 +75,14 @@ namespace RenderToy.WPF
             {
                 var convert = (IMNNode<double>)node;
                 var context = new EvalContext();
+                var param = System.Linq.Expressions.Expression.Parameter(typeof(EvalContext));
+                var body = convert.CreateExpression(param);
+                var lambda = System.Linq.Expressions.Expression.Lambda<Func<EvalContext, double>>(body, param).Compile();
                 return new ImageConverterAdaptor(suggestedWidth, suggestedHeight, (x, y) =>
                 {
                     context.U = (x + 0.5) / suggestedWidth;
                     context.V = (y + 0.5) / suggestedHeight;
-                    double v = convert.Eval(context);
+                    double v = lambda(context);
                     return Rasterization.ColorToUInt32(new Vector4D(v, v, v, 1));
                 });
             }
@@ -87,11 +90,14 @@ namespace RenderToy.WPF
             {
                 var convert = (IMNNode<Vector4D>)node;
                 var context = new EvalContext();
+                var param = System.Linq.Expressions.Expression.Parameter(typeof(EvalContext));
+                var body = convert.CreateExpression(param);
+                var lambda = System.Linq.Expressions.Expression.Lambda<Func<EvalContext, Vector4D>>(body, param).Compile();
                 return new ImageConverterAdaptor(suggestedWidth, suggestedHeight, (x, y) =>
                 {
                     context.U = (x + 0.5) / suggestedWidth;
                     context.V = (y + 0.5) / suggestedHeight;
-                    return Rasterization.ColorToUInt32(convert.Eval(context));
+                    return Rasterization.ColorToUInt32(lambda(context));
                 });
             }
             else
