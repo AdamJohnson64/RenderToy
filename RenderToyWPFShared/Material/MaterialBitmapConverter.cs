@@ -91,7 +91,7 @@ namespace RenderToy.WPF
                 var convert = (IMNNode<Vector4D>)node;
                 var context = new EvalContext();
                 var param = System.Linq.Expressions.Expression.Parameter(typeof(EvalContext));
-                var body = convert.CreateExpression(param);
+                var body = VisitorTest.Reduce(convert.CreateExpression(param));
                 var lambda = System.Linq.Expressions.Expression.Lambda<Func<EvalContext, Vector4D>>(body, param).Compile();
                 return new ImageConverterAdaptor(suggestedWidth, suggestedHeight, (x, y) =>
                 {
