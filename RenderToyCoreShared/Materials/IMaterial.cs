@@ -187,13 +187,21 @@ namespace RenderToy.Materials
         public double Eval(EvalContext context) { double f = factor.Eval(context); return value0.Eval(context) * (1 - f) + value1.Eval(context) * f; }
         public Expression CreateExpression(Expression evalcontext)
         {
-            var temp = Expression.Parameter(typeof(double), "Lerp_TEMP");
+            return Lerp(value0.CreateExpression(evalcontext), value1.CreateExpression(evalcontext), factor.CreateExpression(evalcontext));
+        }
+        public static double Lerp(double value0, double value1, double factor)
+        {
+            return value0 * (1 - factor) + value1 * factor;
+        }
+        public static Expression Lerp(Expression value0, Expression value1, Expression factor)
+        {
+            var temp = Expression.Parameter(typeof(double), "Lerp::Lerp::TEMP");
             return Expression.Block(typeof(double), new ParameterExpression[] { temp }, new Expression[]
             {
-                Expression.Assign(temp, factor.CreateExpression(evalcontext)),
+                Expression.Assign(temp, factor),
                 Expression.Add(
-                    Expression.Multiply(value0.CreateExpression(evalcontext), Expression.Subtract(Expression.Constant(1.0), temp)),
-                    Expression.Multiply(value1.CreateExpression(evalcontext), temp)),
+                    Expression.Multiply(value0, Expression.Subtract(Expression.Constant(1.0), temp)),
+                    Expression.Multiply(value1, temp)),
             });
         }
         public IMNNode<double> Value0 { get { return value0; } set { value0 = value; } }
@@ -229,40 +237,40 @@ namespace RenderToy.Materials
         public Expression CreateExpression(Expression evalcontext)
         {
             const double MortarWidth = 0.025;
-            var tempu1 = Expression.Parameter(typeof(double), "BrickMask_U_TEMP");
-            var tempv1 = Expression.Parameter(typeof(double), "BrickMask_V_TEMP");
-            var tempu = Expression.Parameter(typeof(double), "BrickMask_U_FLOOR");
-            var tempv = Expression.Parameter(typeof(double), "BrickMask_V_FLOOR");
+            var tempu = Expression.Parameter(typeof(double), "BrickMask::CreateExpression(u)");
+            var tempv = Expression.Parameter(typeof(double), "BrickMask::CreateExpression(v)");
+            var tileu = Expression.Parameter(typeof(double), "BrickMask::CreateExpression::U_TILED");
+            var tilev = Expression.Parameter(typeof(double), "BrickMask::CreateExpression::V_TILED");
             return Expression.Block(typeof(double),
-                new ParameterExpression[] { tempu1, tempv1, tempu, tempv },
+                new ParameterExpression[] { tempu, tempv, tileu, tilev },
                 new Expression[]
                 {
-                    Expression.Assign(tempu1, u.CreateExpression(evalcontext)),
-                    Expression.Assign(tempv1, v.CreateExpression(evalcontext)),
-                    Expression.Assign(tempu, Expression.Subtract(tempu1, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu1 }))),
-                    Expression.Assign(tempv, Expression.Subtract(tempv1, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv1 }))),
+                    Expression.Assign(tempu, u.CreateExpression(evalcontext)),
+                    Expression.Assign(tempv, v.CreateExpression(evalcontext)),
+                    Expression.Assign(tileu, Expression.Subtract(tempu, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu }))),
+                    Expression.Assign(tilev, Expression.Subtract(tempv, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }))),
                     Expression.Condition(
-                        Expression.LessThan(tempv, Expression.Constant(MortarWidth)),
+                        Expression.LessThan(tilev, Expression.Constant(MortarWidth)),
                         Expression.Constant(0.0),
                         Expression.Condition(
-                            Expression.LessThan(tempv, Expression.Subtract(Expression.Constant(0.5), Expression.Constant(MortarWidth))),
+                            Expression.LessThan(tilev, Expression.Subtract(Expression.Constant(0.5), Expression.Constant(MortarWidth))),
                             Expression.Condition(
-                                Expression.LessThan(tempu, Expression.Constant(MortarWidth)),
+                                Expression.LessThan(tileu, Expression.Constant(MortarWidth)),
                                 Expression.Constant(0.0),
                                 Expression.Condition(
-                                    Expression.LessThan(tempu, Expression.Subtract(Expression.Constant(1.0), Expression.Constant(MortarWidth))),
+                                    Expression.LessThan(tileu, Expression.Subtract(Expression.Constant(1.0), Expression.Constant(MortarWidth))),
                                     Expression.Constant(1.0),
                                     Expression.Constant(0.0))),
                             Expression.Condition(
-                                Expression.LessThan(tempv, Expression.Add(Expression.Constant(0.5), Expression.Constant(MortarWidth))),
+                                Expression.LessThan(tilev, Expression.Add(Expression.Constant(0.5), Expression.Constant(MortarWidth))),
                                 Expression.Constant(0.0),
                                 Expression.Condition(
-                                    Expression.LessThan(tempv, Expression.Subtract(Expression.Constant(1.0), Expression.Constant(MortarWidth))),
+                                    Expression.LessThan(tilev, Expression.Subtract(Expression.Constant(1.0), Expression.Constant(MortarWidth))),
                                     Expression.Condition(
-                                        Expression.LessThan(tempu, Expression.Subtract(Expression.Constant(0.5), Expression.Constant(MortarWidth))),
+                                        Expression.LessThan(tileu, Expression.Subtract(Expression.Constant(0.5), Expression.Constant(MortarWidth))),
                                         Expression.Constant(1.0),
                                         Expression.Condition(
-                                            Expression.LessThan(tempu, Expression.Add(Expression.Constant(0.5), Expression.Constant(MortarWidth))),
+                                            Expression.LessThan(tileu, Expression.Add(Expression.Constant(0.5), Expression.Constant(MortarWidth))),
                                             Expression.Constant(0.0),
                                             Expression.Constant(1.0))),
                                     Expression.Constant(0.0))))),
@@ -286,8 +294,8 @@ namespace RenderToy.Materials
         public double Eval(EvalContext context) { return Compute(u.Eval(context), v.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
-            var tempu = Expression.Parameter(typeof(double), "BrickNoise_U_TEMP");
-            var tempv = Expression.Parameter(typeof(double), "BrickNoise_V_TEMP");
+            var tempu = Expression.Parameter(typeof(double), "BrickNoise::CreateExpression(u)");
+            var tempv = Expression.Parameter(typeof(double), "BrickNoise::CreateExpression(v)");
             return Expression.Block(typeof(double),
                 new ParameterExpression[] { tempu, tempv },
                 new Expression[]
@@ -300,22 +308,12 @@ namespace RenderToy.Materials
                                 tempv,
                                 Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv })), 
                             Expression.Constant(0.5)),
-                        Expression.Call(
-                            null,
-                            typeof(Perlin2D).GetMethod("PerlinNoise2D"),
-                            new Expression[]
-                            {
+                        Perlin2D.PerlinNoise2D(
                                 Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu }), Expression.Constant(8.0)),
-                                Expression.Multiply(Expression.Add(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }), Expression.Constant(0.5)), Expression.Constant(8.0)),
-                            }),
-                        Expression.Call(
-                            null,
-                            typeof(Perlin2D).GetMethod("PerlinNoise2D"),
-                            new Expression[]
-                            {
+                                Expression.Multiply(Expression.Add(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }), Expression.Constant(0.5)), Expression.Constant(8.0))),
+                        Perlin2D.PerlinNoise2D(
                                 Expression.Multiply(Expression.Add(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu }), Expression.Constant(0.5)), Expression.Constant(8.0)),
-                                Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }), Expression.Constant(8.0)),
-                            }))
+                                Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }), Expression.Constant(8.0))))
                 });
         }
     }
@@ -352,29 +350,29 @@ namespace RenderToy.Materials
         public string GetName() { return "Checkerboard"; }
         public Vector4D Eval(EvalContext context)
         {
-            double uvalue = u.Eval(context);
-            double vvalue = v.Eval(context);
-            int ucheck = (int)((uvalue - Math.Floor(uvalue)) * 2);
-            int vcheck = (int)((vvalue - Math.Floor(vvalue)) * 2);
-            return ((ucheck + vcheck) & 1) == 0 ? Color1.Eval(context) : Color2.Eval(context);
+            double tempu = u.Eval(context);
+            double tempv = v.Eval(context);
+            int intu = (int)((tempu - Math.Floor(tempu)) * 2);
+            int intv = (int)((tempv - Math.Floor(tempv)) * 2);
+            return ((intu + intv) & 1) == 0 ? Color1.Eval(context) : Color2.Eval(context);
         }
         public Expression CreateExpression(Expression evalcontext)
         {
-            var tempu = Expression.Parameter(typeof(double), "CheckerBoard_U_TEMP");
-            var tempv = Expression.Parameter(typeof(double), "CheckerBoard_V_TEMP");
-            var checku = Expression.Parameter(typeof(int), "CheckerBoard_U_INT");
-            var checkv = Expression.Parameter(typeof(int), "CheckerBoard_V_INT");
+            var tempu = Expression.Parameter(typeof(double), "CheckerBoard::CreateExpression(u)");
+            var tempv = Expression.Parameter(typeof(double), "CheckerBoard::CreateExpression(v)");
+            var intu = Expression.Parameter(typeof(int), "CheckerBoard::CreateExpression::U_TILED");
+            var intv = Expression.Parameter(typeof(int), "CheckerBoard::CreateExpression::V_TILED");
             return Expression.Block(
                 typeof(Vector4D),
-                new ParameterExpression[] { tempu, tempv, checku, checkv },
+                new ParameterExpression[] { tempu, tempv, intu, intv },
                 new Expression[]
                 {
                     Expression.Assign(tempu, u.CreateExpression(evalcontext)),
                     Expression.Assign(tempv, v.CreateExpression(evalcontext)),
-                    Expression.Assign(checku, Expression.Convert(Expression.Multiply(Expression.Subtract(tempu, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu })), Expression.Constant(2.0)), typeof(int))),
-                    Expression.Assign(checkv, Expression.Convert(Expression.Multiply(Expression.Subtract(tempv, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv })), Expression.Constant(2.0)), typeof(int))),
+                    Expression.Assign(intu, Expression.Convert(Expression.Multiply(Expression.Subtract(tempu, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu })), Expression.Constant(2.0)), typeof(int))),
+                    Expression.Assign(intv, Expression.Convert(Expression.Multiply(Expression.Subtract(tempv, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv })), Expression.Constant(2.0)), typeof(int))),
                     Expression.Condition(
-                        Expression.Equal(Expression.And(Expression.Add(checku, checkv), Expression.Constant(1)), Expression.Constant(0)),
+                        Expression.Equal(Expression.And(Expression.Add(intu, intv), Expression.Constant(1)), Expression.Constant(0)),
                         color1.CreateExpression(evalcontext),
                         color2.CreateExpression(evalcontext)),
                 });
@@ -386,48 +384,122 @@ namespace RenderToy.Materials
     class Perlin2D : MNSample2D<double>, IMNNode<double>, INamed
     {
         public string GetName() { return "Perlin (2D)"; }
-        static double Interpolate(double a, double b, double x)
-        {
-            return a * (1 - x) + b * x;
-        }
-        static double Noise1(int x, int y)
+        public static double Random2D(int x, int y)
         {
             int n = x + y * 57;
             n = (n << 13) ^ n;
             return 1.0 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0;
         }
-        static double Noise(double x, double y)
+        public static Expression Random2D(Expression x, Expression y)
         {
-            return Noise1((int)x, (int)y);
+            var temp = Expression.Variable(typeof(int), "Perlin2D::Noise2D::TEMP1");
+            var temp2 = Expression.Variable(typeof(int), "Perlin2D::Noise2D::TEMP2");
+            var temp3 = Expression.Variable(typeof(int), "Perlin2D::Noise2D::TEMP3");
+            return Expression.Block(
+                new ParameterExpression[] { temp, temp2, temp3 },
+                new Expression[]
+                {
+                    Expression.Assign(temp, Expression.Add(x, Expression.Multiply(y, Expression.Constant(57)))),
+                    Expression.Assign(temp2, Expression.ExclusiveOr(Expression.LeftShift(temp, Expression.Constant(13)), temp)),
+                    Expression.Assign(temp3,
+                        Expression.And(
+                            Expression.Add(Expression.Multiply(temp2, Expression.Add(Expression.Multiply(temp2, Expression.Multiply(temp2, Expression.Constant(15731))), Expression.Constant(789221))), Expression.Constant(1376312589)),
+                            Expression.Constant(0x7fffffff))),
+                    Expression.Subtract(Expression.Constant(1.0),
+                        Expression.Divide(
+                            Expression.Convert(temp3, typeof(double)),
+                            Expression.Constant(1073741824.0)))
+
+                });
         }
-        static double SmoothNoise(double x, double y)
+        public static double Noise2D(double x, double y)
         {
-            double corners = (Noise(x - 1, y - 1) + Noise(x + 1, y - 1) + Noise(x - 1, y + 1) + Noise(x + 1, y + 1)) / 16;
-            double sides = (Noise(x - 1, y) + Noise(x + 1, y) + Noise(x, y - 1) + Noise(x, y + 1)) / 8;
-            double center = Noise(x, y) / 4;
+            return Random2D((int)x, (int)y);
+        }
+        public static Expression Noise2D(Expression x, Expression y)
+        {
+            return Random2D(Expression.Convert(x, typeof(int)), Expression.Convert(y, typeof(int)));
+        }
+        public static double SmoothNoise(double x, double y)
+        {
+            double corners = (Noise2D(x - 1, y - 1) + Noise2D(x + 1, y - 1) + Noise2D(x - 1, y + 1) + Noise2D(x + 1, y + 1)) / 16;
+            double sides = (Noise2D(x - 1, y) + Noise2D(x + 1, y) + Noise2D(x, y - 1) + Noise2D(x, y + 1)) / 8;
+            double center = Noise2D(x, y) / 4;
             return corners + sides + center;
         }
-        static double InterpolatedNoise(double x, double y)
+        public static Expression SmoothNoise(Expression x, Expression y)
+        {
+            var corners =
+                Expression.Divide(
+                    Expression.Add(
+                        Noise2D(Expression.Subtract(x, Expression.Constant(1.0)), Expression.Subtract(y, Expression.Constant(1.0))),
+                        Expression.Add(
+                            Noise2D(Expression.Add(x, Expression.Constant(1.0)), Expression.Subtract(y, Expression.Constant(1.0))),
+                            Expression.Add(
+                                Noise2D(Expression.Subtract(x, Expression.Constant(1.0)), Expression.Add(y, Expression.Constant(1.0))),
+                                Noise2D(Expression.Add(x, Expression.Constant(1.0)), Expression.Add(y, Expression.Constant(1.0)))))),
+                    Expression.Constant(16.0));
+            var sides =
+                Expression.Divide(
+                    Expression.Add(
+                        Noise2D(Expression.Subtract(x, Expression.Constant(1.0)), y),
+                        Expression.Add(
+                            Noise2D(Expression.Add(x, Expression.Constant(1.0)), y),
+                            Expression.Add(
+                                Noise2D(x, Expression.Subtract(y, Expression.Constant(1.0))),
+                                Noise2D(x, Expression.Add(y, Expression.Constant(1.0)))))),
+                    Expression.Constant(8.0));
+            var center = Expression.Divide(Noise2D(x, y), Expression.Constant(4.0));
+            return Expression.Add(corners, Expression.Add(sides, center));
+        }
+        public static double InterpolatedNoise(double x, double y)
         {
             int ix = (int)x;
             double fx = x - ix;
             int iy = (int)y;
             double fy = y - iy;
-            return Interpolate(
-                Interpolate(SmoothNoise(ix, iy), SmoothNoise(ix + 1, iy), fx),
-                Interpolate(SmoothNoise(ix, iy + 1), SmoothNoise(ix + 1, iy + 1), fx),
+            return MNLerp.Lerp(
+                MNLerp.Lerp(SmoothNoise(ix, iy), SmoothNoise(ix + 1, iy), fx),
+                MNLerp.Lerp(SmoothNoise(ix, iy + 1), SmoothNoise(ix + 1, iy + 1), fx),
                 fy);
+        }
+        public static Expression InterpolatedNoise(Expression x, Expression y)
+        {
+            var tempix = Expression.Parameter(typeof(double), "Perlin2D::InterpolatedNoise::U_TILE");
+            var tempiy = Expression.Parameter(typeof(double), "Perlin2D::InterpolatedNoise::V_TILE");
+            var tempfx = Expression.Parameter(typeof(double), "Perlin2D::InterpolatedNoise::U_TILED");
+            var tempfy = Expression.Parameter(typeof(double), "Perlin2D::InterpolatedNoise::V_TILED");
+            return Expression.Block(
+                new ParameterExpression[] { tempix, tempiy, tempfx, tempfy },
+                new Expression[]
+                {
+                    Expression.Assign(tempix, Expression.Convert(Expression.Convert(x, typeof(int)), typeof(double))),
+                    Expression.Assign(tempiy, Expression.Convert(Expression.Convert(y, typeof(int)), typeof(double))),
+                    Expression.Assign(tempfx, Expression.Subtract(x, tempix)),
+                    Expression.Assign(tempfy, Expression.Subtract(y, tempiy)),
+                    MNLerp.Lerp(
+                        MNLerp.Lerp(SmoothNoise(tempix, tempiy), SmoothNoise(Expression.Add(tempix, Expression.Constant(1.0)), tempiy), tempfx),
+                        MNLerp.Lerp(SmoothNoise(tempix, Expression.Add(tempiy, Expression.Constant(1.0))), SmoothNoise(Expression.Add(tempix, Expression.Constant(1.0)), Expression.Add(tempiy, Expression.Constant(1.0))), tempfx),
+                        tempfy)
+                });
         }
         public static double PerlinNoise2D(double x, double y)
         {
-            double sum = 0;
-            for (int i = 0; i < 4; ++i)
-            {
-                double frequency = Math.Pow(2, i);
-                double amplitude = Math.Pow(0.5, i);
-                sum = sum + InterpolatedNoise(x * frequency, y * frequency) * amplitude;
-            }
-            return sum;
+            return
+                InterpolatedNoise(x * 1.0, y * 1.0) * 1.0 +
+                InterpolatedNoise(x * 2.0, y * 2.0) * 0.5 +
+                InterpolatedNoise(x * 4.0, y * 4.0) * 0.25 +
+                InterpolatedNoise(x * 8.0, y * 8.0) * 0.125;
+        }
+        public static Expression PerlinNoise2D(Expression x, Expression y)
+        {
+            return Expression.Add(
+                Expression.Multiply(InterpolatedNoise(Expression.Multiply(x, Expression.Constant(1.0)), Expression.Multiply(y, Expression.Constant(1.0))), Expression.Constant(1.0)),
+                Expression.Add(
+                    Expression.Multiply(InterpolatedNoise(Expression.Multiply(x, Expression.Constant(2.0)), Expression.Multiply(y, Expression.Constant(2.0))), Expression.Constant(0.5)),
+                    Expression.Add(
+                        Expression.Multiply(InterpolatedNoise(Expression.Multiply(x, Expression.Constant(4.0)), Expression.Multiply(y, Expression.Constant(4.0))), Expression.Constant(0.25)),
+                        Expression.Multiply(InterpolatedNoise(Expression.Multiply(x, Expression.Constant(8.0)), Expression.Multiply(y, Expression.Constant(8.0))), Expression.Constant(0.125)))));
         }
         public Vector4D SampleTexture(double u, double v)
         {
@@ -435,14 +507,18 @@ namespace RenderToy.Materials
             return new Vector4D(p, p, p, 1);
         }
         public double Eval(EvalContext context) { return PerlinNoise2D(u.Eval(context), v.Eval(context)); }
-        // TODO: Fill this in.
         public Expression CreateExpression(Expression evalcontext)
         {
-            return Expression.Call(null, typeof(Perlin2D).GetMethod("PerlinNoise2D"), new Expression[] { u.CreateExpression(evalcontext), v.CreateExpression(evalcontext) });
-            return System.Linq.Expressions.Expression.Call(
-                Expression.Constant(this),
-                typeof(Perlin2D).GetMethod("Eval"),
-                new Expression[] { evalcontext });
+            var tempu = Expression.Parameter(typeof(double), "Perlin2D::CreateExpression(u)");
+            var tempv = Expression.Parameter(typeof(double), "Perlin2D::CreateExpression(v)");
+            return Expression.Block(
+                new ParameterExpression[] { tempu, tempv },
+                new Expression[]
+                {
+                    Expression.Assign(tempu, u.CreateExpression(evalcontext)),
+                    Expression.Assign(tempv, v.CreateExpression(evalcontext)),
+                    PerlinNoise2D(tempu, tempv)
+                });
         }
     }
     public class GenericMaterial : IMNNode<Vector4D>, INamed

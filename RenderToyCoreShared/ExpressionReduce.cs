@@ -33,6 +33,11 @@ namespace RenderToy
                 var cast = (ConstantExpression)expression;
                 return 1;
             }
+            else if (expression.NodeType == ExpressionType.Convert)
+            {
+                var cast = (UnaryExpression)expression;
+                return 1 + Complexity(cast.Operand);
+            }
             else if (expression is MemberExpression)
             {
                 var cast = (MemberExpression)expression;
@@ -103,6 +108,14 @@ namespace RenderToy
             else if (type == ExpressionType.Constant)
             {
                 if (!object.Equals(((ConstantExpression)lhs).Value, ((ConstantExpression)rhs).Value)) return false;
+                return true;
+            }
+            else if (type == ExpressionType.Convert)
+            {
+                var cast1 = (UnaryExpression)lhs;
+                var cast2 = (UnaryExpression)rhs;
+                if (cast1.Method != cast2.Method) return false;
+                if (!MyEquals(cast1.Operand, cast2.Operand)) return false;
                 return true;
             }
             else if (type == ExpressionType.Call)
@@ -225,11 +238,16 @@ namespace RenderToy
             expression = new VisitorExpand().Visit(expression);
             var compare1 = expression;
             var bindthese = new List<VariableBinding>();
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < 8; ++i)
             {
                 var visitor1 = new VisitorTest();
                 expression = visitor1.Visit(expression);
-                var ranking = visitor1.countup.Where(n => n.Value > 1).Where(n => VisitorComparator.Complexity(n.Key) > 2).OrderByDescending(n => n.Value).ThenByDescending(n => VisitorComparator.Complexity(n.Key));
+                var ranking =
+                    visitor1.countup
+                    .Where(n => n.Value > 1)
+                    .Where(n => VisitorComparator.Complexity(n.Key) > 10)
+                    .OrderByDescending(n => n.Value)
+                    .ThenByDescending(n => VisitorComparator.Complexity(n.Key));
                 if (ranking.Count() == 0) break;
                 var worst = ranking.FirstOrDefault();
                 var subst = Expression.Variable(worst.Key.Type, "PASS" + i);
