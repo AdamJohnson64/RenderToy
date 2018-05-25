@@ -187,7 +187,7 @@ namespace RenderToy.WPF
     {
         protected override void RenderD3D()
         {
-            var mvp = View3D.GetModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            var mvp = View3D.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             foreach (var transformedobject in TransformedObject.Enumerate(View3D.GetScene(this)))
             {
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.GetPrimitive());
@@ -221,9 +221,14 @@ namespace RenderToy.WPF
             var pixelshader = device.CreatePixelShader(PixelShader);
             device.SetVertexShader(vertexshader);
             device.SetPixelShader(pixelshader);
-            var mvp = View3D.GetModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            var transformCamera = View3D.GetTransformCamera(this);
+            var transformView = View3D.GetTransformView(this);
+            var transformProjection = View3D.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            var transformViewProjection = transformView * transformProjection;
             foreach (var transformedobject in TransformedObject.Enumerate(View3D.GetScene(this)))
             {
+                var transformModel = transformedobject.Transform;
+                var transformModelViewProjection = transformModel * transformViewProjection;
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.GetPrimitive());
                 if (createdvertexbuffer.VertexBuffer == null) continue;
                 Direct3DTexture9 map_Kd = null;
@@ -247,7 +252,11 @@ namespace RenderToy.WPF
                 if (map_d != null) device.SetTexture(1, map_d);
                 if (map_bump != null) device.SetTexture(2, map_bump);
                 if (displacement != null) device.SetTexture(3, displacement);
-                device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0), 4);
+                device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformCamera), 0), 4);
+                device.SetVertexShaderConstantF(4, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformModel), 0), 4);
+                device.SetVertexShaderConstantF(8, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformView), 0), 4);
+                device.SetVertexShaderConstantF(12, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformProjection), 0), 4);
+                device.SetVertexShaderConstantF(16, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformModelViewProjection), 0), 4);
                 device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
             }
         }

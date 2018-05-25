@@ -12,10 +12,25 @@ namespace RenderToy.WPF
 {
     public class Camera : DependencyObject
     {
-        public static DependencyProperty ModelViewProjectionProperty = DependencyProperty.Register("ModelViewProjection", typeof(Matrix3D), typeof(Camera), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
-        public Matrix3D ModelViewProjection
+        public static DependencyProperty TransformCameraProperty = DependencyProperty.Register("TransformCamera", typeof(Matrix3D), typeof(Camera), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
+        public Matrix3D TransformCamera
         {
-            get { return (Matrix3D)GetValue(ModelViewProjectionProperty); }
+            get { return (Matrix3D)GetValue(TransformCameraProperty); }
+        }
+        public static DependencyProperty TransformViewProperty = DependencyProperty.Register("TransformView", typeof(Matrix3D), typeof(Camera), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
+        public Matrix3D TransformView
+        {
+            get { return (Matrix3D)GetValue(TransformViewProperty); }
+        }
+        public static DependencyProperty TransformProjectionProperty = DependencyProperty.Register("TransformProjection", typeof(Matrix3D), typeof(Camera), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
+        public Matrix3D TransformProjection
+        {
+            get { return (Matrix3D)GetValue(TransformProjectionProperty); }
+        }
+        public static DependencyProperty TransformModelViewProjectionProperty = DependencyProperty.Register("TransformModelViewProjection", typeof(Matrix3D), typeof(Camera), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
+        public Matrix3D TransformModelViewProjection
+        {
+            get { return (Matrix3D)GetValue(TransformModelViewProjectionProperty); }
         }
         public Matrix3D Transform
         {
@@ -42,10 +57,13 @@ namespace RenderToy.WPF
         }
         void UpdateTransform()
         {
-            SetValue(ModelViewProjectionProperty, MathHelp.Invert(Location.Transform) * Projection.Projection);
-            InvalidateProperty(ModelViewProjectionProperty);
+            SetValue(TransformCameraProperty, Location.Transform);
+            SetValue(TransformViewProperty, MathHelp.Invert(Location.Transform));
+            SetValue(TransformProjectionProperty, CameraProjection.Projection);
+            SetValue(TransformModelViewProjectionProperty, MathHelp.Invert(Location.Transform) * CameraProjection.Projection);
+            InvalidateProperty(TransformModelViewProjectionProperty);
         }
         readonly TransformQuaternion Location = new TransformQuaternion(new Vector3D(0, 2, -5));
-        readonly Perspective Projection = new Perspective();
+        readonly Perspective CameraProjection = new Perspective();
     }
 }

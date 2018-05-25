@@ -124,7 +124,7 @@ namespace RenderToy.WPF
             int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / RenderResolution;
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
-            RenderMode.SetCamera(View3D.GetModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+            RenderMode.SetCamera(View3D.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             RenderMode.SetTarget(bitmap.PixelWidth, bitmap.PixelHeight);
             bitmap.Lock();
             RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);

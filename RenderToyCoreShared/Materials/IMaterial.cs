@@ -160,12 +160,16 @@ namespace RenderToy.Materials
     class MNSaturate : MNUnary<double>, IMNNode<double>, INamed
     {
         public string GetName() { return "Saturate"; }
-        public double Eval(EvalContext context) { double v = value.Eval(context); return v < 0 ? 0 : (v < 1 ? v : 1); }
-        public Expression CreateExpression(Expression evalcontext)
+        public double Eval(EvalContext context) { return Saturate(value.Eval(context)); }
+        public static double Saturate(double v)
+        {
+            return v < 0 ? 0 : (v < 1 ? v : 1);
+        }
+        public static Expression Saturate(Expression v)
         {
             var temp = Expression.Parameter(typeof(double), "Saturate_TEMP");
             return Expression.Block(typeof(double), new ParameterExpression[] { temp }, new Expression[] {
-                Expression.Assign(temp, value.CreateExpression(evalcontext)),
+                Expression.Assign(temp, v),
                 Expression.Condition(
                     Expression.LessThan(temp, Expression.Constant(0.0)),
                     Expression.Constant(0.0),
@@ -174,6 +178,10 @@ namespace RenderToy.Materials
                         temp,
                         Expression.Constant(1.0)))
             });
+        }
+        public Expression CreateExpression(Expression evalcontext)
+        {
+            return Saturate(value.CreateExpression(evalcontext));
         }
     }
     class MNSin : MNUnary<double>, IMNNode<double>, INamed
@@ -228,6 +236,39 @@ namespace RenderToy.Materials
         public IMNNode<double> Value1 { get { return value1; } set { value1 = value; } }
         public IMNNode<double> Factor { get { return factor; } set { factor = value; } }
         protected IMNNode<double> value0, value1, factor;
+    }
+    class Spike : MNSample2D<double>, IMNNode<double>, INamed
+    {
+        public string GetName() { return "Spike"; }
+        public double Eval(EvalContext context)
+        {
+            double u = context.U - 0.5;
+            double v = context.V - 0.5;
+            double d = MNSaturate.Saturate(Math.Sqrt(u * u + v * v) * 2);
+            return MNLerp.Lerp(1.0, 0.0, d);
+        }
+        public Expression CreateExpression(Expression evalcontext)
+        {
+            var tempu = Expression.Variable(typeof(double));
+            var tempv = Expression.Variable(typeof(double));
+            return Expression.Block(
+                new ParameterExpression[] { tempu, tempv },
+                new Expression[]
+                {
+                    Expression.Assign(tempu, Expression.Subtract(u.CreateExpression(evalcontext), Expression.Constant(0.5))),
+                    Expression.Assign(tempv, Expression.Subtract(v.CreateExpression(evalcontext), Expression.Constant(0.5))),
+                    MNLerp.Lerp(
+                        Expression.Constant(1.0),
+                        Expression.Constant(0.0),
+                        MNSaturate.Saturate(
+                            Expression.Multiply(
+                                Expression.Call(null, typeof(Math).GetMethod("Sqrt"), new Expression[]
+                                {
+                                    Expression.Add(Expression.Multiply(tempu, tempu), Expression.Multiply(tempv, tempv))
+                                }),
+                                Expression.Constant(2.0))))
+                });
+        }
     }
     class BrickMask : MNSample2D<double>, IMNNode<double>, INamed
     {
@@ -348,7 +389,7 @@ namespace RenderToy.Materials
             double dv1 = displacement.Eval(new EvalContext { U = context.U, V = context.V - 0.001 });
             double dv2 = displacement.Eval(new EvalContext { U = context.U, V = context.V + 0.001 });
             var normal = MathHelp.Normalized(new Vector3D((du1 - du2) / 0.002, (dv1 - dv2) / 0.002, 1));
-            return new Vector4D(normal.X, -normal.Y, 1, 1);
+            return new Vector4D(normal.X * 0.5 + 0.5, -normal.Y * 0.5 + 0.5, normal.Z * 0.5 + 0.5, 1);
         }
         // TODO: Fill this in.
         public Expression CreateExpression(Expression evalcontext)

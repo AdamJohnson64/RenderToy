@@ -158,10 +158,15 @@ namespace RenderToy.WPF
                 }
             };
             ShaderCode.Text =
-@"float4x4 ModelViewProjection : register(c0);
+@"float4x4 TransformCamera : register(c0);
+float4x4 TransformModel : register(c4);
+float4x4 TransformView : register(c8);
+float4x4 TransformProjection : register(c12);
+float4x4 TransformModelViewProjection : register(c16);
 sampler2D SamplerAlbedo : register(s0);
 sampler2D SamplerMask : register(s1);
 sampler2D SamplerBump : register(s2);
+sampler2D SamplerDisplacement : register(s3);
 
 struct VS_INPUT {
     float4 Position : POSITION;
@@ -179,26 +184,63 @@ struct VS_OUTPUT {
     float4 Color : COLOR;
     float3 Tangent : TANGENT;
     float3 Bitangent : BINORMAL;
+    float3 EyeVector : TEXCOORD1;
 };
 
 VS_OUTPUT vs(VS_INPUT input) {
     VS_OUTPUT result;
-    result.Position = mul(ModelViewProjection, input.Position);
+    result.Position = mul(TransformModelViewProjection, input.Position);
     result.Normal = input.Normal;
     result.TexCoord = input.TexCoord;
     result.Color = input.Color;
     result.Tangent = input.Tangent;
     result.Bitangent = input.Bitangent;
+    result.EyeVector = float3(TransformCamera[0].w, TransformCamera[1].w, TransformCamera[2].w) - input.Position.xyz;
     return result;
 }
 
 float4 ps(VS_OUTPUT input) : SV_Target {
+    ////////////////////////////////////////////////////////////////////////////////
+    // Stencil Mask
     if (tex2D(SamplerMask, input.TexCoord).r < 0.5) discard;
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Reconstruct Tangent Basis
     float3x3 tbn = {input.Tangent, input.Bitangent, input.Normal};
-    float3 bump = normalize(tex2D(SamplerBump, input.TexCoord).rgb * 2 - 1);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Displacement Mapping (Steep Parallax)
+    float height = 1.0;
+    float bumpScale = 0.02;
+    float numSteps = 20;
+    float2 offsetCoord = input.TexCoord.xy;
+    float sampledHeight = tex2D(SamplerDisplacement, offsetCoord).r;
+    float3 tangentSpaceEye = mul(input.EyeVector, transpose(tbn));
+    numSteps = lerp(numSteps * 2, numSteps, normalize(tangentSpaceEye).z);
+    float step = 1.0 / numSteps;
+    float2 delta = -float2(tangentSpaceEye.x, tangentSpaceEye.y) * bumpScale / (tangentSpaceEye.z * numSteps);
+    int maxiter = 50;
+    int iter = 0;
+    while (sampledHeight < height && iter < maxiter) {
+        height -= step;
+        offsetCoord += delta;
+        sampledHeight = tex2D(SamplerDisplacement, offsetCoord).r;
+        ++iter;
+    }
+    height = sampledHeight;
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Bump Mapping Normal
+    float3 bump = normalize(tex2D(SamplerBump, offsetCoord).rgb * 2 - 1);
     float3 normal = mul(bump, tbn);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Simple Lighting
     float light = clamp(dot(normal, normalize(float3(1,1,1))), 0, 1);
-    return float4(light * tex2D(SamplerAlbedo, input.TexCoord).rgb, 1);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Final Color
+    return float4(light * tex2D(SamplerAlbedo, offsetCoord).rgb, 1);
 }";
         }
     }

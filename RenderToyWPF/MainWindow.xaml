@@ -113,9 +113,9 @@
                     </Menu>
                     <Grid Background="LightGray">
                         <!-- Main Viewport Layer -->
-                        <rendertoy:View3DUser x:Name="ViewMain" rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
+                        <rendertoy:View3DUser x:Name="ViewMain" rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
                         <!-- Wireframe Layer -->
-                        <rendertoy:View3DWire x:Name="ViewWireframe" IsHitTestVisible="False" rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" Opacity="0.5"/>
+                        <rendertoy:View3DWire x:Name="ViewWireframe" IsHitTestVisible="False" rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" Opacity="0.5"/>
                         <!-- PIP Preview -->
                         <Border x:Name="ViewPreview" HorizontalAlignment="Right" VerticalAlignment="Top" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="8" Margin="8" Padding="4">
                             <Border.Background>
@@ -133,7 +133,7 @@
                             <StackPanel>
                                 <TextBlock HorizontalAlignment="Left" Foreground="DarkGray" Text="Preview"/>
                                 <Border Background="White" BorderBrush="DarkGray" BorderThickness="1" CornerRadius="4" Padding="2">
-                                    <rendertoy:View3DUser Width="192" Height="128" rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}"/>
+                                    <rendertoy:View3DUser Width="192" Height="128" rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}"/>
                                 </Border>
                             </StackPanel>
                         </Border>
@@ -192,7 +192,7 @@
             <!-- ==================== Accelerated DirectX Visualizer ==================== -->
             <TabItem Header="DirectX View" DataContext="{Binding Path=Scene}">
                 <Grid Background="Black">
-                    <rendertoy:View3DDX rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
+                    <rendertoy:View3DDX rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
                 </Grid>
             </TabItem>
             <!-- ==================== Shader Editor ==================== -->
@@ -208,15 +208,15 @@
                     </Grid.ColumnDefinitions>
                     <DockPanel Grid.Column="0">
                         <Border DockPanel.Dock="Bottom" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2" Padding="2">
-                            <TextBlock x:Name="ShaderErrorsPS" FontFamily="Consolas"/>
+                            <TextBlock x:Name="ShaderErrorsPS" FontFamily="Consolas" Foreground="Red"/>
                         </Border>
                         <Border DockPanel.Dock="Bottom" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2" Padding="2">
-                            <TextBlock x:Name="ShaderErrorsVS" FontFamily="Consolas"/>
+                            <TextBlock x:Name="ShaderErrorsVS" FontFamily="Consolas" Foreground="Red"/>
                         </Border>
                         <TextBox x:Name="ShaderCode" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas" Background="Black" Foreground="White"/>
                     </DockPanel>
                     <GridSplitter Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="4"/>
-                    <rendertoy:View3DDXShader Grid.Column="1" rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.ModelViewProjection="{Binding Source={StaticResource Camera}, Path=ModelViewProjection}" VertexShader="{Binding ElementName=ShaderCode, Path=Text, Converter={StaticResource CompileVertexShaderConverter}}" PixelShader="{Binding ElementName=ShaderCode, Path=Text, Converter={StaticResource CompilePixelShaderConverter}}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
+                    <rendertoy:View3DDXShader Grid.Column="1" rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.TransformCamera="{Binding Source={StaticResource Camera}, Path=TransformCamera}" rendertoy:View3D.TransformView="{Binding Source={StaticResource Camera}, Path=TransformView}" rendertoy:View3D.TransformProjection="{Binding Source={StaticResource Camera}, Path=TransformProjection}" rendertoy:View3D.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" VertexShader="{Binding ElementName=ShaderCode, Path=Text, Converter={StaticResource CompileVertexShaderConverter}}" PixelShader="{Binding ElementName=ShaderCode, Path=Text, Converter={StaticResource CompilePixelShaderConverter}}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
                 </Grid>
             </TabItem>
         </TabControl>

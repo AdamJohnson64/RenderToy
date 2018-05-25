@@ -54,7 +54,7 @@ namespace RenderToy.Utility
         {
             cleanup = new Timer((o) =>
             {
-                var removethese = Cache.Where(i => !i.Key.Owner.IsAlive || !i.Key.Token.IsAlive || DateTime.Now.Subtract(i.Key.LastAccess).TotalMinutes > 1).ToArray();
+                var removethese = Cache.Where(i => !i.Key.Owner.IsAlive || !i.Key.Token.IsAlive || DateTime.Now.Subtract(i.Key.LastAccess).TotalMinutes > 10).ToArray();
                 foreach (var key in removethese)
                 {
                     Cache.TryRemove(key.Key, out object value);
