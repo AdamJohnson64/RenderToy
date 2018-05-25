@@ -5,6 +5,8 @@
 
 using RenderToy.Utility;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace RenderToy.Materials
@@ -84,9 +86,27 @@ namespace RenderToy.Materials
         public Vector4D Eval(EvalContext context) { return new Vector4D(r.Eval(context), g.Eval(context), b.Eval(context), a.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
-            return Expression.New(
+            var parts = new IMNNode<double>[] { r, g, b, a }.Distinct().ToArray();
+            Dictionary<IMNNode<double>, Expression> lookup = null;
+            if (parts.Length < 4)
+            {
+                lookup = parts.ToDictionary(k => k, v => (Expression)Expression.Variable(typeof(double)));
+            }
+            else
+            {
+                lookup = parts.ToDictionary(k => k, v => v.CreateExpression(evalcontext));
+            }
+            Expression interior = Expression.New(
                 typeof(Vector4D).GetConstructor(new System.Type[] { typeof(double), typeof(double), typeof(double), typeof(double) }),
-                new Expression[] { R.CreateExpression(evalcontext), G.CreateExpression(evalcontext), B.CreateExpression(evalcontext), A.CreateExpression(evalcontext) });
+                new Expression[] { lookup[r], lookup[b], lookup[b], lookup[a] });
+            if (parts.Length < 4)
+            {
+                interior = Expression.Block(
+                    lookup.Select(i => i.Value).OfType<ParameterExpression>().ToArray(),
+                    lookup.Select(i => Expression.Assign(i.Value, i.Key.CreateExpression(evalcontext))).Concat(new Expression[] { interior }).ToArray());
+
+            }
+            return interior;
         }
         public IMNNode<double> R { get { return r; } set { r = value; } }
         public IMNNode<double> G { get { return g; } set { g = value; } }
@@ -310,9 +330,9 @@ namespace RenderToy.Materials
                             Expression.Constant(0.5)),
                         Perlin2D.PerlinNoise2D(
                                 Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu }), Expression.Constant(8.0)),
-                                Expression.Multiply(Expression.Add(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }), Expression.Constant(0.5)), Expression.Constant(8.0))),
+                                Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { Expression.Add(tempv, Expression.Constant(0.5)) }), Expression.Constant(8.0))),
                         Perlin2D.PerlinNoise2D(
-                                Expression.Multiply(Expression.Add(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu }), Expression.Constant(0.5)), Expression.Constant(8.0)),
+                                Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { Expression.Add(tempu, Expression.Constant(0.5)) }), Expression.Constant(8.0)),
                                 Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }), Expression.Constant(8.0))))
                 });
         }
