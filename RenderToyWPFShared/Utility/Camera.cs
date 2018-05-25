@@ -16,7 +16,6 @@ namespace RenderToy.WPF
         public Matrix3D ModelViewProjection
         {
             get { return (Matrix3D)GetValue(ModelViewProjectionProperty); }
-            set { SetValue(ModelViewProjectionProperty, value); }
         }
         public Matrix3D Transform
         {
