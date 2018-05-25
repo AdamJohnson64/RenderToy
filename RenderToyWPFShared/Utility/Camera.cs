@@ -12,7 +12,7 @@ namespace RenderToy.WPF
 {
     public class Camera : DependencyObject
     {
-        public static DependencyProperty ModelViewProjectionProperty = DependencyProperty.Register("ModelViewProjection", typeof(Matrix3D), typeof(Camera));
+        public static DependencyProperty ModelViewProjectionProperty = DependencyProperty.Register("ModelViewProjection", typeof(Matrix3D), typeof(Camera), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
         public Matrix3D ModelViewProjection
         {
             get { return (Matrix3D)GetValue(ModelViewProjectionProperty); }

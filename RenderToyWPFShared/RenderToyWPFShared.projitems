@@ -9,7 +9,7 @@
     <Import_RootNamespace>RenderToyWPFShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)3D\View3DBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\View3D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3D\View3DDX.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3D\View3DUser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3D\View3DWire.cs" />

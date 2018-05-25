@@ -22,20 +22,6 @@ namespace RenderToy.WPF
 {
     public abstract class View3DDXBase : FrameworkElement
     {
-        #region - Section : Dependency Properties -
-        public static DependencyProperty SceneProperty = DependencyProperty.Register("Scene", typeof(IScene), typeof(View3DDXBase), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
-        public IScene Scene
-        {
-            get { return (IScene)GetValue(SceneProperty); }
-            set { SetValue(SceneProperty, value); }
-        }
-        public static DependencyProperty ModelViewProjectionProperty = DependencyProperty.Register("ModelViewProjection", typeof(Matrix3D), typeof(View3DDXBase), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
-        public Matrix3D ModelViewProjection
-        {
-            get { return (Matrix3D)GetValue(ModelViewProjectionProperty); }
-            set { SetValue(ModelViewProjectionProperty, value); }
-        }
-        #endregion
         #region - Section : Direct3D Resource Factory -
         protected View3DDXBase()
         {
@@ -201,8 +187,8 @@ namespace RenderToy.WPF
     {
         protected override void RenderD3D()
         {
-            var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            foreach (var transformedobject in TransformedObject.Enumerate(Scene))
+            var mvp = View3D.GetModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            foreach (var transformedobject in TransformedObject.Enumerate(View3D.GetScene(this)))
             {
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.GetPrimitive());
                 if (createdvertexbuffer.VertexBuffer == null) continue;
@@ -235,8 +221,8 @@ namespace RenderToy.WPF
             var pixelshader = device.CreatePixelShader(PixelShader);
             device.SetVertexShader(vertexshader);
             device.SetPixelShader(pixelshader);
-            var mvp = ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            foreach (var transformedobject in TransformedObject.Enumerate(Scene))
+            var mvp = View3D.GetModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            foreach (var transformedobject in TransformedObject.Enumerate(View3D.GetScene(this)))
             {
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.GetPrimitive());
                 if (createdvertexbuffer.VertexBuffer == null) continue;

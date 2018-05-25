@@ -21,7 +21,7 @@ using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
-    class View3DUser : View3DBase
+    class View3DUser : FrameworkElement
     {
         static RoutedUICommand CommandResolution100 = new RoutedUICommand("100% Resolution", "CommandResolution100", typeof(View3DUser));
         static RoutedUICommand CommandResolution50 = new RoutedUICommand("50% Resolution", "CommandResolution50", typeof(View3DUser));
@@ -30,10 +30,6 @@ namespace RenderToy.WPF
         public View3DUser()
         {
             RenderCall = RenderCallCommands.Calls[0];
-            IsVisibleChanged += (s, e) =>
-            {
-                SetVisible((bool)e.NewValue);
-            };
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
             Focusable = true;
             CommandBindings.Add(new CommandBinding(CommandResolution100, (s, e) => { RenderResolution = 1; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -81,7 +77,15 @@ namespace RenderToy.WPF
             set
             {
                 renderCall = value;
-                SetVisible(IsVisible);
+                if (!renderCall.IsMultipass)
+                {
+                    renderMode = new SinglePassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
+                }
+                else
+                {
+                    renderMode = new MultiPassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
+                }
+                renderMode.SetScene(View3D.GetScene(this));
                 InvalidateVisual();
             }
         }
@@ -94,24 +98,6 @@ namespace RenderToy.WPF
             }
         }
         IMultiPass renderMode;
-        void SetVisible(bool visible)
-        {
-            if (visible) {
-                if (!renderCall.IsMultipass)
-                {
-                    renderMode = new SinglePassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
-                }
-                else
-                {
-                    renderMode = new MultiPassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
-                }
-                renderMode.SetScene(Scene);
-                InvalidateVisual();
-            }
-            else {
-                renderMode = null;
-            }
-        }
         #endregion
         #region - Section : RenderResolution Option -
         int RenderResolution
@@ -122,20 +108,23 @@ namespace RenderToy.WPF
         int renderResolution = 2;
         #endregion
         #region - Overrides : RenderViewportBase -
-        protected override void OnSceneChanged(IScene scene)
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            base.OnSceneChanged(scene);
-            if (RenderMode == null) return;
-            RenderMode.SetScene(scene);
+            base.OnPropertyChanged(e);
+            if (e.Property == View3D.SceneProperty)
+            {
+                if (RenderMode == null) return;
+                RenderMode.SetScene((IScene)e.NewValue);
+            }
         }
-        protected override void OnRenderToy(DrawingContext drawingContext)
+        protected override void OnRender(DrawingContext drawingContext)
         {
             if (RenderMode == null) return;
             int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / RenderResolution;
             int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / RenderResolution;
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
-            RenderMode.SetCamera(ModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+            RenderMode.SetCamera(View3D.GetModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             RenderMode.SetTarget(bitmap.PixelWidth, bitmap.PixelHeight);
             bitmap.Lock();
             RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
