@@ -18,7 +18,7 @@ namespace RenderToy.Textures
     {
         public Texture(string name, ImageBgra32 level0, bool generateMips)
         {
-            Name = name;
+            this.name = name;
             var levels = new List<ImageBgra32>();
             levels.Add(level0);
             if (generateMips)
@@ -33,9 +33,12 @@ namespace RenderToy.Textures
             }
             Levels = levels.ToArray();
         }
-        public string GetName()
+        public string Name
         {
-            return Name;
+            get
+            {
+                return name;
+            }
         }
         public bool IsConstant()
         {
@@ -49,7 +52,7 @@ namespace RenderToy.Textures
         {
             return Levels[level];
         }
-        string Name;
+        string name;
         ImageBgra32[] Levels;
     }
 }

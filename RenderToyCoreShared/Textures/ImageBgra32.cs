@@ -18,26 +18,26 @@ namespace RenderToy.Textures
     {
         public ImageBgra32(string name, int width, int height, byte[] data)
         {
-            Name = name;
-            Width = width;
-            Height = height;
-            Data = data;
+            this.name = name;
+            this.width = width;
+            this.height = height;
+            this.data = data;
         }
-        public string GetName() { return Name; }
+        public string Name { get { return name; } }
         public bool IsConstant() { return false; }
-        public int GetImageWidth() { return Width; }
-        public int GetImageHeight() { return Height; }
+        public int GetImageWidth() { return width; }
+        public int GetImageHeight() { return height; }
         public uint GetImagePixel(int x, int y)
         {
-            int off = 4 * x + 4 * Width * y;
-            return ((uint)Data[off + 0] << 0) | ((uint)Data[off + 1] << 8) | ((uint)Data[off + 2] << 16) | ((uint)Data[off + 3] << 24);
+            int off = 4 * x + 4 * width * y;
+            return ((uint)data[off + 0] << 0) | ((uint)data[off + 1] << 8) | ((uint)data[off + 2] << 16) | ((uint)data[off + 3] << 24);
         }
         public ImageBgra32 BoxFilter()
         {
             // If we have an odd size texture then we can't box filter; skip with null.
-            if ((Width & 1) == 1 || (Height & 1) == 1) return null;
-            int newwidth = Width >> 1;
-            int newheight = Height >> 1;
+            if ((width & 1) == 1 || (height & 1) == 1) return null;
+            int newwidth = width >> 1;
+            int newheight = height >> 1;
             byte[] newdata = new byte[4 * newwidth * newheight];
             for (int y = 0; y < newheight; ++y)
             {
@@ -51,10 +51,10 @@ namespace RenderToy.Textures
                         {
                             int xs = x * 2 + xb;
                             int ys = y * 2 + yb;
-                            byte r = Data[0 + 4 * xs + 4 * Width * ys];
-                            byte g = Data[1 + 4 * xs + 4 * Width * ys];
-                            byte b = Data[2 + 4 * xs + 4 * Width * ys];
-                            byte a = Data[3 + 4 * xs + 4 * Width * ys];
+                            byte r = data[0 + 4 * xs + 4 * width * ys];
+                            byte g = data[1 + 4 * xs + 4 * width * ys];
+                            byte b = data[2 + 4 * xs + 4 * width * ys];
+                            byte a = data[3 + 4 * xs + 4 * width * ys];
                             sum = sum + new Vector4D(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
                         }
                     }
@@ -72,9 +72,9 @@ namespace RenderToy.Textures
             }
             return new ImageBgra32(null, newwidth, newheight, newdata);
         }
-        public readonly string Name;
-        public readonly int Width;
-        public readonly int Height;
-        public readonly byte[] Data;
+        public readonly string name;
+        public readonly int width;
+        public readonly int height;
+        public readonly byte[] data;
     }
 }

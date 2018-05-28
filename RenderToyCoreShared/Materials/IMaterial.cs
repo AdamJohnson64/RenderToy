@@ -49,7 +49,7 @@ namespace RenderToy.Materials
     }
     class MNTexCoordU : IMNNode<double>, INamed
     {
-        public string GetName() { return "U"; }
+        public string Name { get { return "U"; } }
         public bool IsConstant() { return false; }
         public double Eval(EvalContext context) { return context.U; }
         public Expression CreateExpression(Expression evalcontext)
@@ -59,7 +59,7 @@ namespace RenderToy.Materials
     }
     class MNTexCoordV : IMNNode<double>, INamed
     {
-        public string GetName() { return "V"; }
+        public string Name { get { return "V"; } }
         public bool IsConstant() { return false; }
         public double Eval(EvalContext context) { return context.V; }
         public Expression CreateExpression(Expression evalcontext)
@@ -69,7 +69,7 @@ namespace RenderToy.Materials
     }
     class MNConstant : IMNNode<double>, INamed
     {
-        public string GetName() { return value.ToString(); }
+        public string Name { get { return value.ToString(); } }
         public bool IsConstant() { return true; }
         public double Eval(EvalContext context) { return value; }
         public Expression CreateExpression(Expression evalcontext)
@@ -81,7 +81,7 @@ namespace RenderToy.Materials
     }
     class MNVector4D : IMNNode<Vector4D>, INamed
     {
-        public string GetName() { return "RGBA"; }
+        public string Name { get { return "RGBA"; } }
         public bool IsConstant() { return r.IsConstant() && g.IsConstant() && b.IsConstant() && a.IsConstant(); }
         public Vector4D Eval(EvalContext context) { return new Vector4D(r.Eval(context), g.Eval(context), b.Eval(context), a.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
@@ -116,7 +116,7 @@ namespace RenderToy.Materials
     }
     class MNAdd : MNBinary<double>, IMNNode<double>, INamed
     {
-        public string GetName() { return "+"; }
+        public string Name { get { return "+"; } }
         public double Eval(EvalContext context) { return lhs.Eval(context) + rhs.Eval(context); }
         public Expression CreateExpression(Expression evalcontext)
         {
@@ -125,7 +125,7 @@ namespace RenderToy.Materials
     }
     class MNSubtract : MNBinary<double>, IMNNode<double>, INamed
     {
-        public string GetName() { return "-"; }
+        public string Name { get { return "-"; } }
         public double Eval(EvalContext context) { return lhs.Eval(context) - rhs.Eval(context); }
         public Expression CreateExpression(Expression evalcontext)
         {
@@ -134,7 +134,7 @@ namespace RenderToy.Materials
     }
     class MNMultiply : MNBinary<double>, IMNNode<double>, INamed
     {
-        public string GetName() { return "X"; }
+        public string Name { get { return "X"; } }
         public double Eval(EvalContext context) { return lhs.Eval(context) * rhs.Eval(context); }
         public Expression CreateExpression(Expression evalcontext)
         {
@@ -143,7 +143,7 @@ namespace RenderToy.Materials
     }
     class MNPower : IMNNode<double>, INamed
     {
-        public string GetName() { return "Power"; }
+        public string Name { get { return "Power"; } }
         public bool IsConstant() { return value.IsConstant() && exponent.IsConstant(); }
         public double Eval(EvalContext context) { return Math.Pow(value.Eval(context), exponent.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
@@ -159,7 +159,7 @@ namespace RenderToy.Materials
     }
     class MNSaturate : MNUnary<double>, IMNNode<double>, INamed
     {
-        public string GetName() { return "Saturate"; }
+        public string Name { get { return "Saturate"; } }
         public double Eval(EvalContext context) { return Saturate(value.Eval(context)); }
         public static double Saturate(double v)
         {
@@ -186,7 +186,7 @@ namespace RenderToy.Materials
     }
     class MNSin : MNUnary<double>, IMNNode<double>, INamed
     {
-        public string GetName() { return "Sin"; }
+        public string Name { get { return "Sin"; } }
         public double Eval(EvalContext context) { return Math.Sin(value.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
@@ -198,7 +198,7 @@ namespace RenderToy.Materials
     }
     class MNThreshold : MNUnary<double>, IMNNode<double>, INamed
     {
-        public string GetName() { return "Threshold"; }
+        public string Name { get { return "Threshold"; } }
         public double Eval(EvalContext context) { return value.Eval(context) < 0.5 ? 0 : 1; }
         public Expression CreateExpression(Expression evalcontext)
         {
@@ -210,7 +210,7 @@ namespace RenderToy.Materials
     }
     class MNLerp : IMNNode<double>, INamed
     {
-        public string GetName() { return "Lerp"; }
+        public string Name { get { return "Lerp"; } }
         public bool IsConstant() { return value0.IsConstant() && value1.IsConstant() && factor.IsConstant(); }
         public double Eval(EvalContext context) { double f = factor.Eval(context); return value0.Eval(context) * (1 - f) + value1.Eval(context) * f; }
         public Expression CreateExpression(Expression evalcontext)
@@ -239,7 +239,7 @@ namespace RenderToy.Materials
     }
     class Spike : MNSample2D<double>, IMNNode<double>, INamed
     {
-        public string GetName() { return "Spike"; }
+        public string Name { get { return "Spike"; } }
         public double Eval(EvalContext context)
         {
             double u = context.U - 0.5;
@@ -293,7 +293,7 @@ namespace RenderToy.Materials
             }
             else return 0;
         }
-        public string GetName() { return "Brick Mask"; }
+        public string Name { get { return "Brick Mask"; } }
         public double Eval(EvalContext context) { return Compute(u.Eval(context), v.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
@@ -351,7 +351,7 @@ namespace RenderToy.Materials
                 return Perlin2D.PerlinNoise2D(Math.Floor(u + 0.5) * 8, Math.Floor(v) * 8);
             }
         }
-        public string GetName() { return "Brick Noise"; }
+        public string Name { get { return "Brick Noise"; } }
         public double Eval(EvalContext context) { return Compute(u.Eval(context), v.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
@@ -380,7 +380,7 @@ namespace RenderToy.Materials
     }
     class BumpGenerate : IMNNode<Vector4D>, INamed
     {
-        public string GetName() { return "Bump Generate"; }
+        public string Name { get { return "Bump Generate"; } }
         public bool IsConstant() { return displacement.IsConstant(); }
         public Vector4D Eval(EvalContext context)
         {
@@ -408,7 +408,7 @@ namespace RenderToy.Materials
     }
     class Checkerboard : MNSample2D<Vector4D>, IMNNode<Vector4D>, INamed
     {
-        public string GetName() { return "Checkerboard"; }
+    public string Name { get { return "Checkerboard"; } }
         public Vector4D Eval(EvalContext context)
         {
             double tempu = u.Eval(context);
@@ -444,7 +444,7 @@ namespace RenderToy.Materials
     }
     class Perlin2D : MNSample2D<double>, IMNNode<double>, INamed
     {
-        public string GetName() { return "Perlin (2D)"; }
+        public string Name { get { return "Perlin (2D)"; } }
         public static double Random2D(int x, int y)
         {
             int n = x + y * 57;
@@ -586,7 +586,7 @@ namespace RenderToy.Materials
     {
         public GenericMaterial(string name, Vector4D ambient, Vector4D diffuse, Vector4D specular, Vector4D reflect, Vector4D refract, double ior)
         {
-            Name = name;
+            this.name = name;
             Ambient = ambient;
             Diffuse = diffuse;
             Specular = specular;
@@ -594,9 +594,12 @@ namespace RenderToy.Materials
             Refract = refract;
             Ior = ior;
         }
-        public string GetName()
+        public string Name
         {
-            return Name;
+            get
+            { 
+                return name;
+            }
         }
         public bool IsConstant()
         {
@@ -610,7 +613,7 @@ namespace RenderToy.Materials
         {
             return Expression.Constant(Diffuse);
         }
-        public readonly string Name;
+        public readonly string name;
         public readonly Vector4D Ambient;
         public readonly Vector4D Diffuse;
         public readonly Vector4D Specular;
