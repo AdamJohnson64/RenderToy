@@ -125,7 +125,7 @@ namespace RenderToy.WPF.Figures
         public Figure3DBase()
         {
             var scene = new Scene();
-            scene.AddChild(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Red, StockMaterials.PlasticRed));
+            scene.children.Add(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), new Plane(), StockMaterials.Red, StockMaterials.PlasticRed));
             View3D.SetScene(this, scene);
             this.SetBinding(View3D.TransformModelViewProjectionProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.Self), Path = new PropertyPath("(0).(1)", CameraController.CameraProperty, Camera.TransformModelViewProjectionProperty) });
             ClipToBounds = true;

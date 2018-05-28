@@ -18,11 +18,11 @@ namespace RenderToy.SceneGraph
     /// </summary>
     public interface INode : IScene
     {
-        string GetName();
-        ITransform GetTransform();
-        IPrimitive GetPrimitive();
-        Vector4D GetWireColor();
-        IMaterial GetMaterial();
+        string Name { get; }
+        ITransform Transform { get; }
+        IPrimitive Primitive { get; }
+        Vector4D WireColor { get; }
+        IMaterial Material { get; }
     }
     public class Node : INode
     {
@@ -34,17 +34,17 @@ namespace RenderToy.SceneGraph
             this.wirecolor = wirecolor;
             this.material = material;
         }
-        public string GetName() { return name; }
-        public ITransform GetTransform() { return transform; }
-        public IPrimitive GetPrimitive() { return primitive; }
-        public Vector4D GetWireColor() { return wirecolor; }
-        public IMaterial GetMaterial() { return material; }
-        public IReadOnlyList<INode> GetChildren() { return children; }
+        public string Name { get { return name; } }
+        public ITransform Transform { get { return transform; } }
+        public IPrimitive Primitive { get { return primitive; } }
+        public Vector4D WireColor { get { return wirecolor; } }
+        public IMaterial Material { get { return material; } }
+        public IReadOnlyList<INode> Children { get { return children; } }
         readonly string name;
         readonly ITransform transform;
         readonly IPrimitive primitive;
         readonly Vector4D wirecolor;
         readonly IMaterial material;
-        readonly List<INode> children = new List<INode>();
+        public readonly List<INode> children = new List<INode>();
     }
 }

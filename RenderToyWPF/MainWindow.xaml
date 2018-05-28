@@ -90,6 +90,7 @@
                 <MenuItem Header="New" Command="{x:Static rendertoy:MainWindow.CommandSceneNew}"/>
                 <MenuItem Header="Open" Command="{x:Static rendertoy:MainWindow.CommandSceneOpen}"/>
                 <MenuItem Header="Plane" Command="{x:Static rendertoy:MainWindow.CommandScenePlane}"/>
+                <MenuItem Header="Add Sphere" Command="{x:Static rendertoy:MainWindow.CommandSceneAddSphere}"/>
             </MenuItem>
             <MenuItem Header="Debug">
                 <MenuItem Header="Performance Trace" Command="{x:Static rendertoy:MainWindow.CommandDebugToolPerformanceTrace}"/>
@@ -104,6 +105,19 @@
             </TabItem>
             <TabItem Header="Interactive View" DataContext="{Binding Path=Scene}">
                 <DockPanel>
+                    <!-- Scene Graph -->
+                    <TreeView DockPanel.Dock="Left" ItemsSource="{Binding Path=Children}" Width="256">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <TextBlock Text="{Binding Name}"/>
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
                     <!-- Menu -->
                     <Menu DockPanel.Dock="Top">
                         <MenuItem Header="View">
@@ -111,6 +125,7 @@
                             <MenuItem Header="Wireframe" Command="{x:Static rendertoy:MainWindow.CommandRenderWireframeToggle}"/>
                         </MenuItem>
                     </Menu>
+                    <!-- View Area -->
                     <Grid Background="LightGray">
                         <!-- Main Viewport Layer -->
                         <rendertoy:View3DUser x:Name="ViewMain" rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>

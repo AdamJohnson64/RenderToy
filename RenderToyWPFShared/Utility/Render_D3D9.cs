@@ -75,12 +75,12 @@ namespace RenderToy.WPF
             device.SetRenderState(D3DRenderState.Lighting, 0);
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
-                var A = PrimitiveAssembly.CreateTriangles(transformedobject.Node.GetPrimitive());
+                var A = PrimitiveAssembly.CreateTriangles(transformedobject.Node.Primitive);
                 var B = Transformation.Vector3ToVector4(A);
                 var C = Transformation.Transform(B, transformedobject.Transform * mvp);
                 var D = Clipping.ClipTriangle(C);
                 var E = Transformation.HomogeneousDivide(D);
-                var F = E.Select(i => new XYZWDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, W = (float)i.W, Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.GetWireColor()) });
+                var F = E.Select(i => new XYZWDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, W = (float)i.W, Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.WireColor) });
                 var vertexbuffer = F.ToArray();
                 device.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZWDiffuse)));
             }
@@ -116,8 +116,8 @@ namespace RenderToy.WPF
             device.SetRenderState(D3DRenderState.Lighting, 0);
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
-                var A = PrimitiveAssembly.CreateTriangles(transformedobject.Node.GetPrimitive());
-                var B = A.Select(i => new XYZDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.GetWireColor()) });
+                var A = PrimitiveAssembly.CreateTriangles(transformedobject.Node.Primitive);
+                var B = A.Select(i => new XYZDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.WireColor) });
                 var vertexbuffer = B.ToArray();
                 device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
                 device.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZDiffuse)));
@@ -178,11 +178,11 @@ namespace RenderToy.WPF
             device.SetTexture(0, texture);
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
-                var A = PrimitiveAssembly.CreateTrianglesDX(transformedobject.Node.GetPrimitive());
+                var A = PrimitiveAssembly.CreateTrianglesDX(transformedobject.Node.Primitive);
                 var B = A.Select(i => new XYZNorDiffuseTex1 {
                     Xp = (float)i.Position.X, Yp = (float)i.Position.Y, Zp = (float)i.Position.Z,
                     Xn = (float)i.Normal.X, Yn = (float)i.Normal.Y, Zn = (float)i.Normal.Z,
-                    Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.GetWireColor()),
+                    Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.WireColor),
                     U = (float)i.TexCoord.X, V = (float)i.TexCoord.Y,
                 });
                 var vertexbuffer = B.ToArray();

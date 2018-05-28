@@ -69,6 +69,7 @@ namespace RenderToy.WPF
         public static RoutedUICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(View3DUser));
         public static RoutedUICommand CommandSceneOpen = new RoutedUICommand("Open Scene", "CommandSceneLoad", typeof(View3DUser));
         public static RoutedUICommand CommandScenePlane = new RoutedUICommand("Open Plane", "CommandScenePlane", typeof(View3DUser));
+        public static RoutedUICommand CommandSceneAddSphere = new RoutedUICommand("Add Sphere", "CommandSceneAddSphere", typeof(View3DUser));
         public static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(View3DUser));
         public static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(View3DUser));
         public static RoutedUICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(View3DUser));
@@ -87,21 +88,23 @@ namespace RenderToy.WPF
                     var scene = new Scene();
                     if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".BPT")
                     {
+                        var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
                         foreach (var primitive in LoaderBPT.LoadFromPath(ofd.FileName))
                         {
-                            scene.AddChild(new Node("Bezier Patch", new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite));
+                            root.children.Add(new Node("Bezier Patch", new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite));
                         }
+                        scene.children.Add(root);
                     }
                     else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".OBJ")
                     {
                         foreach (var node in LoaderOBJ.LoadFromPath(ofd.FileName))
                         {
-                            scene.AddChild(node);
+                            scene.children.Add(node);
                         }
                     }
                     else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".PLY")
                     {
-                        scene.AddChild(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.White, StockMaterials.PlasticWhite));
+                        scene.children.Add(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.White, StockMaterials.PlasticWhite));
                     }
                     DataContext = new Document(scene);
                 }
@@ -123,8 +126,14 @@ namespace RenderToy.WPF
                 };
                 material.map_bump = new BumpGenerate { Displacement = displace };
                 material.displacement = new MNVector4D { R = displace, G = displace, B = displace, A = new MNConstant { Value = 1 } };
-                scene.AddChild(new Node("Plane", new TransformMatrix(Matrix3D.Identity), mesh, StockMaterials.White, material));
+                scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), mesh, StockMaterials.White, material));
                 DataContext = new Document(scene);
+            }));
+            CommandBindings.Add(new CommandBinding(CommandSceneAddSphere, (s, e) => 
+            {
+                var root = ((Document)DataContext).Scene as Scene;
+                if (root == null) return;
+                root.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), new Sphere(), StockMaterials.White, StockMaterials.Brick));
             }));
             CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { ViewPreview.Visibility = ViewPreview.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandRenderWireframeToggle, (s, e) => { ViewWireframe.Visibility = ViewWireframe.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -253,7 +262,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
         {
             Scene = scene;
             var materials = EnumerateSceneRoot(scene)
-                .Select(i => i.GetMaterial())
+                .Select(i => i.Material)
                 .OfType<IMaterial>()
                 .Distinct();
             //.SelectMany(i => EnumerateNodes(i));
@@ -262,7 +271,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
         static IEnumerable<INode> EnumerateSceneRoot(IScene root)
         {
             if (root == null) yield break;
-            foreach (var child in root.GetChildren())
+            foreach (var child in root.Children)
             {
                 foreach (var next in EnumerateSceneGraph(child))
                 {

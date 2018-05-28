@@ -52,7 +52,7 @@ namespace RenderToy.WPF
                 menu.Items.Add(menu_group);
             }
             var scene = new Scene();
-            scene.AddChild(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), new Sphere(), StockMaterials.Red, StockMaterials.PlasticRed));
+            scene.children.Add(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), new Sphere(), StockMaterials.Red, StockMaterials.PlasticRed));
             foreach (var group in RenderCallCommands.Calls.GroupBy(x => RenderCall.GetDisplayNameBare(x.MethodInfo.Name)))
             {
                 var menu_group = new MenuItem { Header = group.Key };
