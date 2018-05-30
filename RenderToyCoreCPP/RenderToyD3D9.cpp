@@ -16,7 +16,21 @@
 #include <d3dcompiler.h>
 #include "msclr\marshal_cppstd.h"
 
-#define TRY_D3D(D3D9FUNC) if ((D3D9FUNC) != D3D_OK) throw gcnew System::Exception(#D3D9FUNC)
+System::String^ DXErrorString(HRESULT error)
+{
+	switch (error)
+	{
+	case D3D_OK: return "D3D_OK";
+	case D3DERR_DEVICELOST: return "D3DERR_DEVICELOST";
+	case D3DERR_DEVICEREMOVED: return "D3DERR_DEVICEREMOVED";
+	case D3DERR_DRIVERINTERNALERROR: return "D3DERR_DRIVERINTERNALERROR";
+	case D3DERR_OUTOFVIDEOMEMORY: return "D3DERR_OUTOFVIDEOMEMORY";
+	case D3DERR_INVALIDCALL: return "D3DERR_INVALIDCALL";
+	default: return "0x" + error.ToString("X8");
+	}
+}
+
+#define TRY_D3D(D3D9FUNC) { HRESULT result = D3D9FUNC; if (result != D3D_OK) throw gcnew System::Exception("Direct3D 9 Error: " + DXErrorString(result) + "\n" + #D3D9FUNC); }
 
 namespace RenderToy
 {
