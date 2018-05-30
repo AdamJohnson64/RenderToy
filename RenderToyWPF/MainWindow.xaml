@@ -205,9 +205,15 @@
                 </DockPanel>
             </TabItem>
             <!-- ==================== Accelerated DirectX Visualizer ==================== -->
-            <TabItem Header="DirectX View" DataContext="{Binding Path=Scene}">
+            <TabItem Header="DX9" DataContext="{Binding Path=Scene}">
                 <Grid Background="Black">
                     <rendertoy:View3DDX rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
+                </Grid>
+            </TabItem>
+            <!-- ==================== Accelerated DirectX12 Visualizer ==================== -->
+            <TabItem Header="DX12" DataContext="{Binding Path=Scene}">
+                <Grid Background="Black">
+                    <rendertoy:View3DDX12 rendertoy:View3D.Scene="{Binding}" rendertoy:View3D.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:CameraController.Camera="{StaticResource Camera}"/>
                 </Grid>
             </TabItem>
             <!-- ==================== Shader Editor ==================== -->
