@@ -87,7 +87,7 @@ More formally we're looking for:
 <!-- ====================================================================== -->
 <!-- MAJOR SECTION : Warm Up - Introduce Common Features -->
 <!-- ====================================================================== -->
-<Paragraph BreakPageBefore="True" FontSize="24">Warm Up</Paragraph>
+<Paragraph FontSize="24">Warm Up</Paragraph>
 
 <Paragraph>
 Before we dive in to the actual rendering process we're going to need some things to draw. We're not going to package any amazing artist-defined models in here because we're aiming for a compact application. I'm also not much of an artist so we'll need something else.
@@ -143,7 +143,7 @@ Whoa, wait, back up a bit. We’ve skipped over several steps while we created t
 <!-- ====================================================================== -->
 <!-- MAJOR SECTION : Point Rendering -->
 <!-- ====================================================================== -->
-<Paragraph BreakPageBefore="True" FontSize="24">Level One - Points</Paragraph>
+<Paragraph FontSize="24">Level One - Points</Paragraph>
 
 <Paragraph>
 We introduce two physical concepts to allow us to describe how the view is made - informally we’ll call them the <Italic>camera</Italic> and the <Italic>lens</Italic>. Armed with both of these we can describe both where the camera is in space and how perspective happens (informally, perspective is a quality of the lens). Let’s set these terms aside for now and focus on the maths.<LineBreak/>
@@ -333,7 +333,7 @@ This is the bulk of what we need to know to get things into 3D space:
 <!-- ====================================================================== -->
 <!-- MAJOR SECTION : Wireframes -->
 <!-- ====================================================================== -->
-<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Wireframes</Paragraph>
+<Paragraph FontSize="24">Level Up - Wireframes</Paragraph>
 <Paragraph>
 It’s not much harder to go from points to lines. If we do this we end up with a <Italic>wireframe view</Italic> which is the mainstay of many 3D tools.
 </Paragraph>
@@ -524,7 +524,7 @@ Here's what we now know for wireframes:
 <!-- ====================================================================== -->
 <!-- MAJOR SECTION : Triangles -->
 <!-- ====================================================================== -->
-<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Unfilled Triangles</Paragraph>
+<Paragraph FontSize="24">Level Up - Unfilled Triangles</Paragraph>
 <BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTriangleIntro Width="320" Height="240"/></Border></BlockUIContainer>
 <Paragraph>
 <Italic>Note: In this section we're starting to talk about filled shapes but we'll keep going with wireframes because this shows the next steps more clearly. Triangles will be depicted as a sequence of three lines.</Italic><LineBreak/>
@@ -617,7 +617,7 @@ Here's what we know for triangles:
 <!-- ====================================================================== -->
 <!-- MAJOR SECTION : Rasterizing -->
 <!-- ====================================================================== -->
-<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Rasterizing</Paragraph>
+<Paragraph FontSize="24">Level Up - Rasterizing</Paragraph>
 <Paragraph>
 Up to now we've been cheating quite a lot since we're using our native graphics API to draw all these diagrams. Often you'll find yourself in a position where you can't do this, for example:
 </Paragraph>
@@ -696,7 +696,7 @@ Here's what we now know for wireframes:
 <!-- ====================================================================== -->
 <!-- MAJOR SECTION : Interpolating -->
 <!-- ====================================================================== -->
-<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Interpolating</Paragraph>
+<Paragraph FontSize="24">Level Up - Interpolating</Paragraph>
 <Paragraph>
 So far we've been filling triangles with solid colors but this is a bit boring. It'd be nice if we could define three colors for the vertices of a triangle and gradiate the colors across the triangle as we render. The process of deriving these interior blended values for the triangle is called <Italic>interpolation</Italic> and this method is used for everything from coloring to texturing and phong lighting. We'll come back to these other parts later but let's concentrate on blending colors for now.
 </Paragraph>
@@ -774,11 +774,11 @@ Another thing worth noting is that this is the way your GPU <Italic>actually</It
 <!-- ====================================================================== -->
 <!-- MAJOR SECTION : Texturing -->
 <!-- ====================================================================== -->
-<Paragraph BreakPageBefore="True" FontSize="24">Level Up - Texturing</Paragraph>
+<Paragraph FontSize="24">Level Up - Texturing</Paragraph>
 <Paragraph>
 So far we've been drawing all of our triangles with either a flat color or a simple RGB gradient. This is adequate to demonstrate filling and interpolating but it doesn't look particularly inspiring. To improve on this we introduce textures. Specifically we're going to concentrate on <Italic>Procedural Textures</Italic> as these are compact and easy to work with at multiple resolutions. With a bit of simple mathematics you can get some interesting results...
 </Paragraph>
-<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTextureMarbleTile/></Border></BlockUIContainer>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTextureMarbleTile Width="256" Height="256"/></Border></BlockUIContainer>
 <Paragraph>
 Let's look at how this works:
 </Paragraph>
@@ -798,7 +798,7 @@ Looks complicated but it's quite simple once it's broken down. The node on the l
 <Paragraph>
 The humble <Italic>Perlin Noise</Italic> is a mainstay for many procedural textures owing to the fact that it's relatively fast to evaluate and produces interesting features that can make images look more natural. We generate this noise pattern by interpolating values inside a regular grid and overlaying multiple smaller grids with different amplitudes (i.e. fractal). Each of these summed signals is called an <Italic>octave</Italic> and with enough of them we get some quite detailed patterns.
 </Paragraph>
-<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTexturePerlinNoise/></Border></BlockUIContainer>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><local:FigureTexturePerlinNoise Width="256" Height="256"/></Border></BlockUIContainer>
 <BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8">
     <rendertoy:ViewZoom  Width="256" Height="256">
         <local:FigureTextureGraphPerlinNoise NodeTemplate="{StaticResource MaterialGraphNode}"/>
