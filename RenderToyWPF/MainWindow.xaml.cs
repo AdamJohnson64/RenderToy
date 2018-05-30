@@ -15,10 +15,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Xps.Packaging;
+using System.Windows.Xps.Serialization;
 
 namespace RenderToy.WPF
 {
@@ -31,6 +35,7 @@ namespace RenderToy.WPF
         public static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(View3DUser));
         public static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(View3DUser));
         public static RoutedUICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(View3DUser));
+        public static RoutedUICommand CommandDocumentExport = new RoutedUICommand("Export the RenderToy document to XPS.", "CommandDocumentExport", typeof(MainWindow));
         public MainWindow()
         {
             InitializeComponent();
@@ -100,6 +105,36 @@ namespace RenderToy.WPF
                 window.ShowDialog();
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandDocumentExport, (s, e) =>
+            {
+                var savefiledialog = new SaveFileDialog();
+                savefiledialog.Filter = "*.XPS|XPS Document";
+                savefiledialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                if (savefiledialog.ShowDialog() == true)
+                {
+                    string xpsfilename = savefiledialog.FileName;
+                    if (String.IsNullOrWhiteSpace(Path.GetExtension(xpsfilename)))
+                    {
+                        xpsfilename = Path.ChangeExtension(xpsfilename, "xps");
+                    }
+                    using (var stream = File.Open(xpsfilename, FileMode.Create))
+                    {
+                        using (var package = Package.Open(stream, FileMode.Create, FileAccess.ReadWrite))
+                        {
+                            using (var xpsDoc = new XpsDocument(package, CompressionOption.Maximum))
+                            {
+                                var flowdocument = (FlowDocument)Application.Current.Resources["RenderToyDocument"];
+                                flowdocument.ColumnWidth = 512;
+                                var rsm = new XpsSerializationManager(new XpsPackagingPolicy(xpsDoc), false);
+                                var paginator = ((IDocumentPaginatorSource)flowdocument).DocumentPaginator;
+                                paginator.PageSize = new System.Windows.Size(1024, 1280);
+                                rsm.SaveAsXaml(paginator);
+                                rsm.Commit();
+                            }
+                        }
+                    }
+                }
+            }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));

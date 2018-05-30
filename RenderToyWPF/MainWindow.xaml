@@ -95,6 +95,9 @@
             <MenuItem Header="Debug">
                 <MenuItem Header="Performance Trace" Command="{x:Static rendertoy:MainWindow.CommandDebugToolPerformanceTrace}"/>
             </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="Export RenderToy Document" Command="{x:Static rendertoy:MainWindow.CommandDocumentExport}"/>
+            </MenuItem>
         </Menu>
         <TabControl>
             <!-- ==================== RenderToy Inspiration & History ==================== -->
