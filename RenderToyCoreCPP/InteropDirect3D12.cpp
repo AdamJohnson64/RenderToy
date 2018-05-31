@@ -742,6 +742,11 @@ namespace RenderToy
 			}
 			pWrapped->SetDescriptorHeaps(ppDescriptorHeaps->Length, ppDescriptorHeapsM.get());
 		}
+		void SetGraphicsRoot32BitConstants(UINT RootParameterIndex, UINT Num32BitValuesToSet, cli::array<float> ^pSrcData, UINT DestOffsetIn32BitValues)
+		{
+			pin_ptr<float> pSrcDataM = &pSrcData[0];
+			pWrapped->SetGraphicsRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, &pSrcDataM[0], DestOffsetIn32BitValues);
+		}
 		void SetGraphicsRootSignature(D3D12RootSignature ^pRootSignature)
 		{
 			pWrapped->SetGraphicsRootSignature(pRootSignature == nullptr ? nullptr : pRootSignature->Wrapped);
