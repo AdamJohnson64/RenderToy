@@ -9,12 +9,12 @@
     <Import_RootNamespace>RenderToyWPFShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)3D\View3D.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\View3DDX.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\View3DDX12.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\View3DUser.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\View3DWire.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\CameraController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\AttachedView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewDirectX9.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewDirectX12.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewSoftwareCustomizable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewSoftwareWireframe.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\AttachedCamera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Direct3D\CompilePixelShaderConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Direct3D\CompileVertexShaderConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Document\Figures.cs" />

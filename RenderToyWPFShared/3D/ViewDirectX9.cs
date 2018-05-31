@@ -20,10 +20,10 @@ using System.Windows.Media;
 
 namespace RenderToy.WPF
 {
-    public abstract class View3DDXBase : FrameworkElement
+    public abstract class ViewDirectX9Base : FrameworkElement
     {
         #region - Section : Direct3D Resource Factory -
-        protected View3DDXBase()
+        protected ViewDirectX9Base()
         {
             d3dimage = new D3DImage();
             d3d = new Direct3D9();
@@ -184,12 +184,12 @@ namespace RenderToy.WPF
         int render_height;
         #endregion
     }
-    public class View3DDX : View3DDXBase
+    public class ViewDirectX9FixedFunction : ViewDirectX9Base
     {
         protected override void RenderD3D()
         {
-            var mvp = View3D.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            foreach (var transformedobject in TransformedObject.Enumerate(View3D.GetScene(this)))
+            var mvp = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            foreach (var transformedobject in TransformedObject.Enumerate(AttachedView.GetScene(this)))
             {
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (createdvertexbuffer.VertexBuffer == null) continue;
@@ -201,15 +201,15 @@ namespace RenderToy.WPF
             }
         }
     }
-    public class View3DDXShader : View3DDXBase
+    public class ViewDirectX9 : ViewDirectX9Base
     {
-        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(View3DDXShader), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX9), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
         public byte[] VertexShader
         {
             get { return (byte[])GetValue(VertexShaderProperty); }
             set { SetValue(VertexShaderProperty, value); }
         }
-        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(View3DDXShader), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX9), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
         public byte[] PixelShader
         {
             get { return (byte[])GetValue(PixelShaderProperty); }
@@ -222,11 +222,11 @@ namespace RenderToy.WPF
             var pixelshader = device.CreatePixelShader(PixelShader);
             device.SetVertexShader(vertexshader);
             device.SetPixelShader(pixelshader);
-            var transformCamera = View3D.GetTransformCamera(this);
-            var transformView = View3D.GetTransformView(this);
-            var transformProjection = View3D.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            var transformCamera = AttachedView.GetTransformCamera(this);
+            var transformView = AttachedView.GetTransformView(this);
+            var transformProjection = AttachedView.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             var transformViewProjection = transformView * transformProjection;
-            foreach (var transformedobject in TransformedObject.Enumerate(View3D.GetScene(this)))
+            foreach (var transformedobject in TransformedObject.Enumerate(AttachedView.GetScene(this)))
             {
                 if (transformedobject?.Node?.Primitive == null) continue;
                 var transformModel = transformedobject.Transform;

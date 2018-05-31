@@ -9,9 +9,9 @@ using System.Windows.Input;
 
 namespace RenderToy.WPF
 {
-    public static class CameraController
+    public static class AttachedCamera
     {
-        public static DependencyProperty CameraProperty = DependencyProperty.RegisterAttached("Camera", typeof(Camera), typeof(CameraController), new FrameworkPropertyMetadata(null, OnCameraChange));
+        public static DependencyProperty CameraProperty = DependencyProperty.RegisterAttached("Camera", typeof(Camera), typeof(AttachedCamera), new FrameworkPropertyMetadata(null, OnCameraChange));
         public static Camera GetCamera(DependencyObject on)
         {
             return (Camera)on.GetValue(CameraProperty);

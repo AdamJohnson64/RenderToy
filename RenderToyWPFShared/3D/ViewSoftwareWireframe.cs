@@ -14,9 +14,9 @@ using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
-    class View3DWire : FrameworkElement
+    class ViewSoftwareWireframe : FrameworkElement
     {
-        public View3DWire()
+        public ViewSoftwareWireframe()
         {
             render = new SinglePassAsyncAdaptor(RenderCall.Generate(typeof(RenderModeCS).GetMethod("WireframeCPUF64")), () => Dispatcher.Invoke(InvalidateVisual));
         }
@@ -25,7 +25,7 @@ namespace RenderToy.WPF
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
-            if (e.Property == View3D.SceneProperty)
+            if (e.Property == AttachedView.SceneProperty)
             {
                 render.SetScene((IScene)e.NewValue);
             }
@@ -35,7 +35,7 @@ namespace RenderToy.WPF
             if (render == null) return;
             int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
             int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
-            render.SetCamera(View3D.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+            render.SetCamera(AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             render.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);

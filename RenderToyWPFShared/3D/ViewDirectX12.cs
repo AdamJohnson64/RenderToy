@@ -6,7 +6,7 @@ using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
-    class View3DDX12 : FrameworkElement
+    class ViewDirectX12 : FrameworkElement
     {
         protected override void OnRender(DrawingContext drawingContext)
         {

@@ -21,13 +21,13 @@ using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
-    class View3DUser : FrameworkElement
+    class ViewSoftwareCustomizable : FrameworkElement
     {
-        static RoutedUICommand CommandResolution100 = new RoutedUICommand("100% Resolution", "CommandResolution100", typeof(View3DUser));
-        static RoutedUICommand CommandResolution50 = new RoutedUICommand("50% Resolution", "CommandResolution50", typeof(View3DUser));
-        static RoutedUICommand CommandResolution25 = new RoutedUICommand("25% Resolution", "CommandResolution25", typeof(View3DUser));
-        static RoutedUICommand CommandResolution10 = new RoutedUICommand("10% Resolution", "CommandResolution10", typeof(View3DUser));
-        public View3DUser()
+        static RoutedUICommand CommandResolution100 = new RoutedUICommand("100% Resolution", "CommandResolution100", typeof(ViewSoftwareCustomizable));
+        static RoutedUICommand CommandResolution50 = new RoutedUICommand("50% Resolution", "CommandResolution50", typeof(ViewSoftwareCustomizable));
+        static RoutedUICommand CommandResolution25 = new RoutedUICommand("25% Resolution", "CommandResolution25", typeof(ViewSoftwareCustomizable));
+        static RoutedUICommand CommandResolution10 = new RoutedUICommand("10% Resolution", "CommandResolution10", typeof(ViewSoftwareCustomizable));
+        public ViewSoftwareCustomizable()
         {
             RenderCall = RenderCallCommands.Calls[0];
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.NearestNeighbor);
@@ -85,7 +85,7 @@ namespace RenderToy.WPF
                 {
                     renderMode = new MultiPassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
                 }
-                renderMode.SetScene(View3D.GetScene(this));
+                renderMode.SetScene(AttachedView.GetScene(this));
                 InvalidateVisual();
             }
         }
@@ -111,7 +111,7 @@ namespace RenderToy.WPF
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
-            if (e.Property == View3D.SceneProperty)
+            if (e.Property == AttachedView.SceneProperty)
             {
                 if (RenderMode == null) return;
                 RenderMode.SetScene((IScene)e.NewValue);
@@ -124,7 +124,7 @@ namespace RenderToy.WPF
             int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / RenderResolution;
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
-            RenderMode.SetCamera(View3D.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+            RenderMode.SetCamera(AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             RenderMode.SetTarget(bitmap.PixelWidth, bitmap.PixelHeight);
             bitmap.Lock();
             RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
