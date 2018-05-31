@@ -1,9 +1,15 @@
-#include <memory>
-#include "d3d9.h"
-#include "d3d12.h"
-#include "DXGIFormat.h"
+////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
 
-#define TRY_D3D(D3D12FUNC) if (D3D12FUNC != S_OK) throw gcnew System::Exception(#D3D12FUNC);
+#include <memory>
+#include <d3d9.h>
+#include <d3d12.h>
+#include <DXGIFormat.h>
+#include "InteropCommon.h"
+
+#define TRY_D3D(FUNCTION) if (FUNCTION != S_OK) throw gcnew System::Exception(#FUNCTION);
 
 namespace RenderToy
 {
@@ -590,53 +596,6 @@ namespace RenderToy
 		FLOAT Height;
 		FLOAT MinDepth;
 		FLOAT MaxDepth;
-	};
-	#pragma endregion
-	#pragma region - Direct3DWrap -
-	template <typename T>
-	public ref class Direct3DWrap
-	{
-	public:
-		Direct3DWrap()
-		{
-			this->pWrapped = nullptr;
-		}
-		Direct3DWrap(T* pWrapped)
-		{
-			this->pWrapped = pWrapped;
-		}
-		!Direct3DWrap()
-		{
-			Destroy();
-		}
-		~Direct3DWrap()
-		{
-			Destroy();
-		}
-		void Destroy()
-		{
-			if (pWrapped != nullptr)
-			{
-				pWrapped->Release();
-				pWrapped = nullptr;
-			}
-		}
-		property T* Wrapped
-		{
-			T* get()
-			{
-				return pWrapped;
-			}
-		}
-		property System::IntPtr ManagedPtr
-		{
-			System::IntPtr get()
-			{
-				return System::IntPtr(pWrapped);
-			}
-		}
-	protected:
-		T * pWrapped;
 	};
 	#pragma endregion
 	#pragma region - D3D12CommandAllocator -
