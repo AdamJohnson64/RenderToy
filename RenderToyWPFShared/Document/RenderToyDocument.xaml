@@ -20,6 +20,22 @@
             </rendertoy:ViewMaterialNode.ContentTemplate>
         </rendertoy:ViewMaterialNode>
     </DataTemplate>
+    <DataTemplate x:Key="HeaderTemplate">
+        <FlowDocument>
+            <Paragraph Background="Black" Foreground="White" TextAlignment="Center" BorderBrush="LightGray" BorderThickness="2" Padding="4">
+                <Run FontSize="24">RenderToy</Run><LineBreak/>
+                <Run FontSize="16">A bit of history that's now a bit of silicon...</Run>
+            </Paragraph>
+        </FlowDocument>
+    </DataTemplate>
+    <DataTemplate x:Key="FooterTemplate">
+        <FlowDocument>
+            <Paragraph Background="Black" Foreground="White" TextAlignment="Right" BorderBrush="LightGray" BorderThickness="2" Padding="4">
+                <Run>Page </Run>
+                <Run Text="{Binding RelativeSource={RelativeSource Mode=Self}, Path=(rendertoy:DocumentPaginatorWrapper.PageNumber)}"/>
+            </Paragraph>
+        </FlowDocument>
+    </DataTemplate>
 </FlowDocument.Resources>
 <!-- ====================================================================== -->
 <!-- MAJOR SECTION : Title, Introduction and Inspiration -->
