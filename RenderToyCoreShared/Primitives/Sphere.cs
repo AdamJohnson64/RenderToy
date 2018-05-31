@@ -31,5 +31,13 @@ namespace RenderToy.Primitives
             // For a unit sphere the normal is the same as the surface point.
             return GetPointUV(u, v);
         }
+        public Vector3D GetTangentUV(double u, double v)
+        {
+            return new Vector3D(0, 0, 0);
+        }
+        public Vector3D GetBitangentUV(double u, double v)
+        {
+            return new Vector3D(0, 0, 0);
+        }
     }
 }

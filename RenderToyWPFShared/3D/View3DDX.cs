@@ -227,6 +227,7 @@ namespace RenderToy.WPF
             var transformViewProjection = transformView * transformProjection;
             foreach (var transformedobject in TransformedObject.Enumerate(View3D.GetScene(this)))
             {
+                if (transformedobject?.Node?.Primitive == null) continue;
                 var transformModel = transformedobject.Transform;
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);

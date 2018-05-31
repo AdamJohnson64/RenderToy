@@ -39,6 +39,14 @@ namespace RenderToy.Primitives
             Vector3D DPbyDV = BernsteinSum(Bernstein(u), BernsteinDerivative(v));
             return MathHelp.Normalized(MathHelp.Cross(DPbyDU, DPbyDV));
         }
+        public Vector3D GetTangentUV(double u, double v)
+        {
+            return BernsteinSum(BernsteinDerivative(u), Bernstein(v));
+        }
+        public Vector3D GetBitangentUV(double u, double v)
+        {
+            return BernsteinSum(Bernstein(u), BernsteinDerivative(v));
+        }
         static double[] Bernstein(double u)
         {
             double nu = 1 - u;

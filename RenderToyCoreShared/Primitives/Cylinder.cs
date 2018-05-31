@@ -26,5 +26,13 @@ namespace RenderToy.Primitives
             double usin = Math.Sin(u * Math.PI * 2);
             return new Vector3D(-usin, 0, ucos);
         }
+        public Vector3D GetTangentUV(double u, double v)
+        {
+            return new Vector3D(0, 0, 0);
+        }
+        public Vector3D GetBitangentUV(double u, double v)
+        {
+            return new Vector3D(0, 0, 0);
+        }
     }
 }

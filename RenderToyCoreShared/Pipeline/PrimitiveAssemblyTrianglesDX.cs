@@ -61,10 +61,18 @@ namespace RenderToy.PipelineModel
                     Vector3D n310 = uv.GetNormalUV(uv10.X, uv10.Y);
                     Vector3D n301 = uv.GetNormalUV(uv01.X, uv01.Y);
                     Vector3D n311 = uv.GetNormalUV(uv11.X, uv11.Y);
-                    VertexDX v00 = new VertexDX { Position = p300, Normal = n300, TexCoord = uv00, Diffuse = NormalColor(n300) };
-                    VertexDX v10 = new VertexDX { Position = p310, Normal = n310, TexCoord = uv10, Diffuse = NormalColor(n310) };
-                    VertexDX v01 = new VertexDX { Position = p301, Normal = n301, TexCoord = uv01, Diffuse = NormalColor(n301) };
-                    VertexDX v11 = new VertexDX { Position = p311, Normal = n311, TexCoord = uv11, Diffuse = NormalColor(n311) };
+                    Vector3D t300 = uv.GetTangentUV(uv00.X, uv00.Y);
+                    Vector3D t310 = uv.GetTangentUV(uv10.X, uv10.Y);
+                    Vector3D t301 = uv.GetTangentUV(uv01.X, uv01.Y);
+                    Vector3D t311 = uv.GetTangentUV(uv11.X, uv11.Y);
+                    Vector3D b300 = uv.GetBitangentUV(uv00.X, uv00.Y);
+                    Vector3D b310 = uv.GetBitangentUV(uv10.X, uv10.Y);
+                    Vector3D b301 = uv.GetBitangentUV(uv01.X, uv01.Y);
+                    Vector3D b311 = uv.GetBitangentUV(uv11.X, uv11.Y);
+                    VertexDX v00 = new VertexDX { Position = p300, Normal = n300, TexCoord = uv00, Diffuse = NormalColor(n300), Tangent = t300, Bitangent = b300 };
+                    VertexDX v10 = new VertexDX { Position = p310, Normal = n310, TexCoord = uv10, Diffuse = NormalColor(n310), Tangent = t310, Bitangent = b310 };
+                    VertexDX v01 = new VertexDX { Position = p301, Normal = n301, TexCoord = uv01, Diffuse = NormalColor(n301), Tangent = t301, Bitangent = b301 };
+                    VertexDX v11 = new VertexDX { Position = p311, Normal = n311, TexCoord = uv11, Diffuse = NormalColor(n311), Tangent = t311, Bitangent = b311 };
                     yield return v00; yield return v10; yield return v11;
                     yield return v11; yield return v01; yield return v00;
                 }

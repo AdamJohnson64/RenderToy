@@ -150,11 +150,6 @@ namespace RenderToy.WPF
             CommandBindings.Add(new CommandBinding(CommandScenePlane, (s, e) =>
             {
                 var scene = new Scene();
-                var mesh = new Mesh();
-                mesh.Vertices = new MeshChannel<Vector3D>(new Vector3D[] { new Vector3D(-10, 0, 10), new Vector3D(10, 0, 10), new Vector3D(10, 0, -10), new Vector3D(-10, 0, -10) }, new int[] { 0, 1, 2, 0, 2, 3 });
-                mesh.Normals = new MeshChannel<Vector3D>(new Vector3D[] { new Vector3D(0, 1, 0) }, new int[] { 0, 0, 0, 0, 0, 0 });
-                mesh.TexCoords = new MeshChannel<Vector2D>(new Vector2D[] { new Vector2D(0, 0), new Vector2D(4, 0), new Vector2D(4, 4), new Vector2D(0, 4) }, new int[] { 0, 1, 2, 0, 2, 3 });
-                mesh.GenerateTangentSpace();
                 var material = new LoaderOBJ.OBJMaterial();
                 material.map_Kd = StockMaterials.Brick;
                 var displace = new MNSubtract {
@@ -163,7 +158,7 @@ namespace RenderToy.WPF
                 };
                 material.map_bump = new BumpGenerate { Displacement = displace };
                 material.displacement = new MNVector4D { R = displace, G = displace, B = displace, A = new MNConstant { Value = 1 } };
-                scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), mesh, StockMaterials.White, material));
+                scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), new Plane(), StockMaterials.White, material));
                 DataContext = new Document(scene);
             }));
             CommandBindings.Add(new CommandBinding(CommandSceneAddSphere, (s, e) => 

@@ -22,5 +22,13 @@ namespace RenderToy.Primitives
         {
             return new Vector3D(0, 1, 0);
         }
+        public Vector3D GetTangentUV(double u, double v)
+        {
+            return new Vector3D(1, 0, 0);
+        }
+        public Vector3D GetBitangentUV(double u, double v)
+        {
+            return new Vector3D(0, 0, 1);
+        }
     }
 }
