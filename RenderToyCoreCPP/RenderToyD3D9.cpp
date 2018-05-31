@@ -35,6 +35,29 @@ System::String^ DXErrorString(HRESULT error)
 namespace RenderToy
 {
 	#pragma region - Direct3D9 Enumerations -
+	public enum struct D3DBlobPart
+	{
+		InputSignatureBlob = D3D_BLOB_INPUT_SIGNATURE_BLOB,
+		OutputSignatureBlob = D3D_BLOB_OUTPUT_SIGNATURE_BLOB,
+		InputAndOutputSignatureBlob = D3D_BLOB_INPUT_AND_OUTPUT_SIGNATURE_BLOB,
+		PatchConstantSignatureBlob = D3D_BLOB_PATCH_CONSTANT_SIGNATURE_BLOB,
+		AllSignatureBlob = D3D_BLOB_ALL_SIGNATURE_BLOB,
+		DebugInfo = D3D_BLOB_DEBUG_INFO,
+		LegacyShader = D3D_BLOB_LEGACY_SHADER,
+		XNAPrepassShader = D3D_BLOB_XNA_PREPASS_SHADER,
+		XNAShader = D3D_BLOB_XNA_SHADER,
+		PDB = D3D_BLOB_PDB,
+		PrivateData = D3D_BLOB_PRIVATE_DATA,
+		RootSignature = D3D_BLOB_ROOT_SIGNATURE,
+		DebugName = D3D_BLOB_DEBUG_NAME,
+
+		// Test parts are only produced by special compiler versions and so
+		// are usually not present in shaders.
+		TestAlternateShader = D3D_BLOB_TEST_ALTERNATE_SHADER,
+		CompileDetails = D3D_BLOB_TEST_COMPILE_DETAILS,
+		CompilePerf = D3D_BLOB_TEST_COMPILE_PERF,
+		CompileReport = D3D_BLOB_TEST_COMPILE_REPORT,
+	};
 	public enum class D3DClear
 	{
 		Target = D3DCLEAR_TARGET,
@@ -535,6 +558,13 @@ namespace RenderToy
 			if (marshal_ppCode != nullptr) ppCode->SetWrappedPointer(marshal_pCode);
 			if (marshal_ppErrorMsgs != nullptr) ppErrorMsgs->SetWrappedPointer(marshal_pErrorMsgs);
 			if (marshal_pCode == nullptr) return;
+		}
+		static D3DBlob^ D3DGetBlobPart(cli::array<byte> ^pSrcData, D3DBlobPart Part, UINT Flags)
+		{
+			ID3DBlob *ppPart = nullptr;
+			pin_ptr<byte> pSrcDataM = &pSrcData[0];
+			TRY_D3D(::D3DGetBlobPart(pSrcDataM, pSrcData->Length, (D3D_BLOB_PART)Part, Flags, &ppPart));
+			return gcnew D3DBlob(ppPart);
 		}
 	};
 	#pragma endregion
