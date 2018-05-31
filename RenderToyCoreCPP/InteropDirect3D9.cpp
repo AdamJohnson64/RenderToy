@@ -190,19 +190,19 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - Direct3DPixelShader9 -
-	public ref class Direct3DPixelShader9 : public Direct3DWrap<IDirect3DPixelShader9>
+	public ref class Direct3DPixelShader9 : public COMWrapper<IDirect3DPixelShader9>
 	{
 	public:
-		Direct3DPixelShader9(IDirect3DPixelShader9 *pObject) : Direct3DWrap(pObject)
+		Direct3DPixelShader9(IDirect3DPixelShader9 *pObject) : COMWrapper(pObject)
 		{
 		}
 	};
 	#pragma endregion
 	#pragma region - Direct3DSurface9 -
-	public ref class Direct3DSurface9 : public Direct3DWrap<IDirect3DSurface9>
+	public ref class Direct3DSurface9 : public COMWrapper<IDirect3DSurface9>
 	{
 	public:
-		Direct3DSurface9(IDirect3DSurface9* pObject) : Direct3DWrap(pObject)
+		Direct3DSurface9(IDirect3DSurface9* pObject) : COMWrapper(pObject)
 		{
 		}
 		D3DLockedRect^ LockRect()
@@ -221,7 +221,7 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - Direct3DTexture9 -
-	public ref class Direct3DTexture9 : public Direct3DWrap<IDirect3DTexture9>
+	public ref class Direct3DTexture9 : public COMWrapper<IDirect3DTexture9>
 	{
 	public:
 		Direct3DTexture9(IDirect3DTexture9 *pObject)
@@ -244,7 +244,7 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - Direct3DVertexBuffer9 -
-	public ref class Direct3DVertexBuffer9 : public Direct3DWrap<IDirect3DVertexBuffer9>
+	public ref class Direct3DVertexBuffer9 : public COMWrapper<IDirect3DVertexBuffer9>
 	{
 	public:
 		Direct3DVertexBuffer9(IDirect3DVertexBuffer9 *pObject)
@@ -264,25 +264,25 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - Direct3DVertexDeclaration9 -
-	public ref class Direct3DVertexDeclaration9 : Direct3DWrap<IDirect3DVertexDeclaration9>
+	public ref class Direct3DVertexDeclaration9 : COMWrapper<IDirect3DVertexDeclaration9>
 	{
 	public:
-		Direct3DVertexDeclaration9(IDirect3DVertexDeclaration9 *pWrapped) : Direct3DWrap(pWrapped)
+		Direct3DVertexDeclaration9(IDirect3DVertexDeclaration9 *pWrapped) : COMWrapper(pWrapped)
 		{
 		}
 	};
 	#pragma endregion
 	#pragma region - Direct3DVertexShader9 -
-	public ref class Direct3DVertexShader9 : Direct3DWrap<IDirect3DVertexShader9>
+	public ref class Direct3DVertexShader9 : COMWrapper<IDirect3DVertexShader9>
 	{
 	public:
-		Direct3DVertexShader9(IDirect3DVertexShader9 *pWrapped) : Direct3DWrap(pWrapped)
+		Direct3DVertexShader9(IDirect3DVertexShader9 *pWrapped) : COMWrapper(pWrapped)
 		{
 		}
 	};
 	#pragma endregion
 	#pragma region - Direct3DDevice9 -
-	public ref class Direct3DDevice9 : public Direct3DWrap<IDirect3DDevice9>
+	public ref class Direct3DDevice9 : public COMWrapper<IDirect3DDevice9>
 	{
 	public:
 		Direct3DDevice9(IDirect3DDevice9 *pObject)
@@ -408,7 +408,7 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - Direct3D9 -
-	public ref class Direct3D9 : public Direct3DWrap<IDirect3D9>
+	public ref class Direct3D9 : public COMWrapper<IDirect3D9>
 	{
 	public:
 		Direct3D9()

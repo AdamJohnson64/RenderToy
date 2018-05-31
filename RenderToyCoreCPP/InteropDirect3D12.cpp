@@ -599,10 +599,10 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - D3D12CommandAllocator -
-	public ref class D3D12CommandAllocator : public Direct3DWrap<ID3D12CommandAllocator>
+	public ref class D3D12CommandAllocator : public COMWrapper<ID3D12CommandAllocator>
 	{
 	public:
-		D3D12CommandAllocator(ID3D12CommandAllocator *obj) : Direct3DWrap(obj)
+		D3D12CommandAllocator(ID3D12CommandAllocator *obj) : COMWrapper(obj)
 		{
 		}
 		void Reset()
@@ -612,10 +612,10 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - D3D12DescriptorHeap -
-	public ref class D3D12DescriptorHeap : public Direct3DWrap<ID3D12DescriptorHeap>
+	public ref class D3D12DescriptorHeap : public COMWrapper<ID3D12DescriptorHeap>
 	{
 	public:
-		D3D12DescriptorHeap(ID3D12DescriptorHeap *pObj) : Direct3DWrap(pObj)
+		D3D12DescriptorHeap(ID3D12DescriptorHeap *pObj) : COMWrapper(pObj)
 		{
 		}
 		D3D12CPUDescriptorHandle GetCPUDescriptorHandleForHeapStart()
@@ -628,28 +628,28 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - D3D12Fence -
-	public ref class D3D12Fence : public Direct3DWrap<ID3D12Fence>
+	public ref class D3D12Fence : public COMWrapper<ID3D12Fence>
 	{
 	public:
-		D3D12Fence(ID3D12Fence *pObj) : Direct3DWrap(pObj)
+		D3D12Fence(ID3D12Fence *pObj) : COMWrapper(pObj)
 		{
 		}
 	};
 	#pragma endregion
 	#pragma region - D3D12PipelineState -
-	public ref class D3D12PipelineState : public Direct3DWrap<ID3D12PipelineState>
+	public ref class D3D12PipelineState : public COMWrapper<ID3D12PipelineState>
 	{
 	public:
-		D3D12PipelineState(ID3D12PipelineState *pObj) : Direct3DWrap(pObj)
+		D3D12PipelineState(ID3D12PipelineState *pObj) : COMWrapper(pObj)
 		{
 		}
 	};
 	#pragma endregion
 	#pragma region - D3D12Resource -
-	public ref class D3D12Resource : public Direct3DWrap<ID3D12Resource>
+	public ref class D3D12Resource : public COMWrapper<ID3D12Resource>
 	{
 	public:
-		D3D12Resource(ID3D12Resource *obj) : Direct3DWrap(obj)
+		D3D12Resource(ID3D12Resource *obj) : COMWrapper(obj)
 		{
 		}
 		D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress()
@@ -673,19 +673,19 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - D3D12RootSignature -
-	public ref class D3D12RootSignature : public Direct3DWrap<ID3D12RootSignature>
+	public ref class D3D12RootSignature : public COMWrapper<ID3D12RootSignature>
 	{
 	public:
-		D3D12RootSignature(ID3D12RootSignature *pObj) : Direct3DWrap(pObj)
+		D3D12RootSignature(ID3D12RootSignature *pObj) : COMWrapper(pObj)
 		{
 		}
 	};
 	#pragma endregion
 	#pragma region - D3D12GraphicsCommandList1 -
-	public ref class D3D12GraphicsCommandList1 : public Direct3DWrap<ID3D12GraphicsCommandList1>
+	public ref class D3D12GraphicsCommandList1 : public COMWrapper<ID3D12GraphicsCommandList1>
 	{
 	public:
-		D3D12GraphicsCommandList1(ID3D12GraphicsCommandList1 *pObj) : Direct3DWrap(pObj)
+		D3D12GraphicsCommandList1(ID3D12GraphicsCommandList1 *pObj) : COMWrapper(pObj)
 		{
 		}
 		void ClearRenderTargetView(D3D12CPUDescriptorHandle RenderTargetView, float R, float G, float B, float A)
@@ -767,10 +767,10 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - D3D12CommandQueue -
-	public ref class D3D12CommandQueue : public Direct3DWrap<ID3D12CommandQueue>
+	public ref class D3D12CommandQueue : public COMWrapper<ID3D12CommandQueue>
 	{
 	public:
-		D3D12CommandQueue(ID3D12CommandQueue *pObj) : Direct3DWrap(pObj)
+		D3D12CommandQueue(ID3D12CommandQueue *pObj) : COMWrapper(pObj)
 		{
 		}
 		void ExecuteCommandLists(cli::array<D3D12GraphicsCommandList1^> ^ppCommandLists)
@@ -790,10 +790,10 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - D3D12Device -
-	public ref class D3D12Device : public Direct3DWrap<ID3D12Device3>
+	public ref class D3D12Device : public COMWrapper<ID3D12Device3>
 	{
 	public:
-		D3D12Device(ID3D12Device3 *obj) : Direct3DWrap(obj)
+		D3D12Device(ID3D12Device3 *obj) : COMWrapper(obj)
 		{
 		}
 		D3D12CommandAllocator^ CreateCommandAllocator(D3D12CommandListType type)
@@ -900,10 +900,10 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - D3D12Debug -
-	public ref class D3D12Debug : public Direct3DWrap<ID3D12Debug>
+	public ref class D3D12Debug : public COMWrapper<ID3D12Debug>
 	{
 	public:
-		D3D12Debug(ID3D12Debug *obj) : Direct3DWrap(obj)
+		D3D12Debug(ID3D12Debug *obj) : COMWrapper(obj)
 		{
 		}
 		void EnableDebugLayer()

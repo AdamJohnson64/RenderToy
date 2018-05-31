@@ -37,13 +37,13 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - Direct3D Compiler -
-	public ref class D3DBlob : Direct3DWrap<ID3DBlob>
+	public ref class D3DBlob : COMWrapper<ID3DBlob>
 	{
 	public:
-		D3DBlob() : Direct3DWrap(nullptr)
+		D3DBlob() : COMWrapper(nullptr)
 		{
 		}
-		D3DBlob(ID3DBlob *pWrapped) : Direct3DWrap(pWrapped)
+		D3DBlob(ID3DBlob *pWrapped) : COMWrapper(pWrapped)
 		{
 		}
 		System::IntPtr GetBufferPointer()

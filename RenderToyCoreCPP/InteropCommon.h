@@ -7,22 +7,22 @@
 namespace RenderToy
 {
 	template <typename T>
-	public ref class Direct3DWrap
+	public ref class COMWrapper
 	{
 	public:
-		Direct3DWrap()
+		COMWrapper()
 		{
 			this->pWrapped = nullptr;
 		}
-		Direct3DWrap(T* pWrapped)
+		COMWrapper(T* pWrapped)
 		{
 			this->pWrapped = pWrapped;
 		}
-		!Direct3DWrap()
+		!COMWrapper()
 		{
 			Destroy();
 		}
-		~Direct3DWrap()
+		~COMWrapper()
 		{
 			Destroy();
 		}
