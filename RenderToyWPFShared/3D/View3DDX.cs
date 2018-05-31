@@ -74,6 +74,7 @@ namespace RenderToy.WPF
         static readonly Token GeneratedVertexBufferToken = new Token();
         protected VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
         {
+            if (primitive == null) return new VertexBufferInfo { PrimitiveCount = 0, VertexBuffer = null };
             return deviceboundmemento.Get(primitive, GeneratedVertexBufferToken, () =>
             {
                 var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
