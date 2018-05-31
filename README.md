@@ -26,3 +26,12 @@ Software goals are:
 - Reusability.
   - Parts of this can be a tooling platform for trying other things.
   - Split out controls (etc) for the express purpose of simple reuse.
+
+## License
+This software is 100% written and maintained by myself (Adam Johnson) in my
+free time. I claim and maintain full copyright in this software. You may
+download, compile, modify and use the software for personal education or
+curiosity. You may not release compiled versions of this software, nor
+may you release modified versions of this code. You MAY NOT use any of this
+code (neither text nor binary) for any commercial purposes or interests, nor
+any commercial product.
