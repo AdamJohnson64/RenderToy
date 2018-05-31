@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -86,6 +87,8 @@ namespace RenderToy.WPF
             ////////////////////////////////////////////////////////////////////////////////
             // Create Fence for end of frame.
             var d3d12Fence = d3d12Device.CreateFence(0, D3D12FenceFlags.None);
+            var eventEndFrame = new AutoResetEvent(false);
+            d3d12Fence.SetEventOnCompletion(1, eventEndFrame.GetSafeWaitHandle().DangerousGetHandle());
             ////////////////////////////////////////////////////////////////////////////////
             // Create a simple command list.
             var d3d12CommandList = d3d12Device.CreateCommandList(0U, D3D12CommandListType.Direct, d3d12CommandAllocator, d3d12GraphicsPipelineState);
@@ -145,7 +148,7 @@ namespace RenderToy.WPF
             var d3d12CommandQueue = d3d12Device.CreateCommandQueue(new D3D12CommandQueueDesc { Type = D3D12CommandListType.Direct });
             d3d12CommandQueue.ExecuteCommandLists(new[] { d3d12CommandList });
             d3d12CommandQueue.Signal(d3d12Fence, 1);
-            d3d12CommandQueue.Wait(d3d12Fence, 1);
+            eventEndFrame.WaitOne(100);
             ////////////////////////////////////////////////////////////////////////////////
             // Copy back the contents of the Render Target to WPF.
             wpfFrontBuffer.Lock();

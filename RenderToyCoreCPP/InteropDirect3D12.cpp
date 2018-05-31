@@ -634,6 +634,10 @@ namespace RenderToy
 		D3D12Fence(ID3D12Fence *pObj) : COMWrapper(pObj)
 		{
 		}
+		void SetEventOnCompletion(UINT64 Value, System::IntPtr hEvent)
+		{
+			TRY_D3D(pWrapped->SetEventOnCompletion(Value, hEvent.ToPointer()));
+		}
 	};
 	#pragma endregion
 	#pragma region - D3D12PipelineState -
