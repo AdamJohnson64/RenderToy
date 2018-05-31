@@ -1,3 +1,4 @@
+#include <memory>
 #include "d3d9.h"
 #include "d3d12.h"
 #include "DXGIFormat.h"
@@ -9,6 +10,7 @@ namespace RenderToy
 	#pragma region - Direct3D12 Enumerations -
 	public enum struct DXGIFormat
 	{
+		Unknown = DXGI_FORMAT_UNKNOWN,
 		R32G32B32_Float = DXGI_FORMAT_R32G32B32_FLOAT,
 		R8G8B8A8_Unorm = DXGI_FORMAT_R8G8B8A8_UNORM,
 		B8G8R8A8_Unorm = DXGI_FORMAT_B8G8R8A8_UNORM,
@@ -177,6 +179,103 @@ namespace RenderToy
 		None = D3D12_PIPELINE_STATE_FLAG_NONE,
 		ToolDebug = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG,
 	};
+	public enum struct D3D12PrimitiveTopology
+	{
+		Undefined = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,
+		PointList = D3D_PRIMITIVE_TOPOLOGY_POINTLIST,
+		LineList = D3D_PRIMITIVE_TOPOLOGY_LINELIST,
+		LineStrip = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP,
+		TriangleList = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		TriangleStrip = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+		LineListAdj = D3D_PRIMITIVE_TOPOLOGY_LINELIST_ADJ,
+		LineStripAdj = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ,
+		TriangleListAdj = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ,
+		TriangleStripAdj = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ,
+		PatchList1 = D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST,
+		PatchList2 = D3D_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST,
+		PatchList3 = D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST,
+		PatchList4 = D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST,
+		PatchList5 = D3D_PRIMITIVE_TOPOLOGY_5_CONTROL_POINT_PATCHLIST,
+		PatchList6 = D3D_PRIMITIVE_TOPOLOGY_6_CONTROL_POINT_PATCHLIST,
+		PatchList7 = D3D_PRIMITIVE_TOPOLOGY_7_CONTROL_POINT_PATCHLIST,
+		PatchList8 = D3D_PRIMITIVE_TOPOLOGY_8_CONTROL_POINT_PATCHLIST,
+		PatchList9 = D3D_PRIMITIVE_TOPOLOGY_9_CONTROL_POINT_PATCHLIST,
+		PatchList10 = D3D_PRIMITIVE_TOPOLOGY_10_CONTROL_POINT_PATCHLIST,
+		PatchList11 = D3D_PRIMITIVE_TOPOLOGY_11_CONTROL_POINT_PATCHLIST,
+		PatchList12 = D3D_PRIMITIVE_TOPOLOGY_12_CONTROL_POINT_PATCHLIST,
+		PatchList13 = D3D_PRIMITIVE_TOPOLOGY_13_CONTROL_POINT_PATCHLIST,
+		PatchList14 = D3D_PRIMITIVE_TOPOLOGY_14_CONTROL_POINT_PATCHLIST,
+		PatchList15 = D3D_PRIMITIVE_TOPOLOGY_15_CONTROL_POINT_PATCHLIST,
+		PatchList16 = D3D_PRIMITIVE_TOPOLOGY_16_CONTROL_POINT_PATCHLIST,
+		PatchList17 = D3D_PRIMITIVE_TOPOLOGY_17_CONTROL_POINT_PATCHLIST,
+		PatchList18 = D3D_PRIMITIVE_TOPOLOGY_18_CONTROL_POINT_PATCHLIST,
+		PatchList19 = D3D_PRIMITIVE_TOPOLOGY_19_CONTROL_POINT_PATCHLIST,
+		PatchList20 = D3D_PRIMITIVE_TOPOLOGY_20_CONTROL_POINT_PATCHLIST,
+		PatchList21 = D3D_PRIMITIVE_TOPOLOGY_21_CONTROL_POINT_PATCHLIST,
+		PatchList22 = D3D_PRIMITIVE_TOPOLOGY_22_CONTROL_POINT_PATCHLIST,
+		PatchList23 = D3D_PRIMITIVE_TOPOLOGY_23_CONTROL_POINT_PATCHLIST,
+		PatchList24 = D3D_PRIMITIVE_TOPOLOGY_24_CONTROL_POINT_PATCHLIST,
+		PatchList25 = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST,
+		PatchList26 = D3D_PRIMITIVE_TOPOLOGY_26_CONTROL_POINT_PATCHLIST,
+		PatchList27 = D3D_PRIMITIVE_TOPOLOGY_27_CONTROL_POINT_PATCHLIST,
+		PatchList28 = D3D_PRIMITIVE_TOPOLOGY_28_CONTROL_POINT_PATCHLIST,
+		PatchList29 = D3D_PRIMITIVE_TOPOLOGY_29_CONTROL_POINT_PATCHLIST,
+		PatchList30 = D3D_PRIMITIVE_TOPOLOGY_30_CONTROL_POINT_PATCHLIST,
+		PatchList31 = D3D_PRIMITIVE_TOPOLOGY_31_CONTROL_POINT_PATCHLIST,
+		PatchList32 = D3D_PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST,
+		D3D10Undefined = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED,
+		D3D10PointList = D3D10_PRIMITIVE_TOPOLOGY_POINTLIST,
+		D3D10LineList = D3D10_PRIMITIVE_TOPOLOGY_LINELIST,
+		D3D10LineStrip = D3D10_PRIMITIVE_TOPOLOGY_LINESTRIP,
+		D3D10TriangleList = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		D3D10TriangleStrip = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+		D3D10LineListAdj = D3D10_PRIMITIVE_TOPOLOGY_LINELIST_ADJ,
+		D3D10LineStripAdj = D3D10_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ,
+		D3D10TriangleListAdj = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ,
+		D3D10TriangleStripAdj = D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ,
+		D3D11Unknown = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED,
+		D3D11PointList = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST,
+		D3D11LineList = D3D11_PRIMITIVE_TOPOLOGY_LINELIST,
+		D3D11LineStrip = D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP,
+		D3D11TriangleList = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+		D3D11TriangleStrip = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+		D3D11LineListAdj = D3D11_PRIMITIVE_TOPOLOGY_LINELIST_ADJ,
+		D3D11LineStripAdj = D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ,
+		D3D11TriangleListAdj = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ,
+		D3D11TriangleStripAdj = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ,
+		D3D11PatchList1 = D3D11_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList2 = D3D11_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList3 = D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList4 = D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList5 = D3D11_PRIMITIVE_TOPOLOGY_5_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList6 = D3D11_PRIMITIVE_TOPOLOGY_6_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList7 = D3D11_PRIMITIVE_TOPOLOGY_7_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList8 = D3D11_PRIMITIVE_TOPOLOGY_8_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList9 = D3D11_PRIMITIVE_TOPOLOGY_9_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList10 = D3D11_PRIMITIVE_TOPOLOGY_10_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList11 = D3D11_PRIMITIVE_TOPOLOGY_11_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList12 = D3D11_PRIMITIVE_TOPOLOGY_12_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList13 = D3D11_PRIMITIVE_TOPOLOGY_13_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList14 = D3D11_PRIMITIVE_TOPOLOGY_14_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList15 = D3D11_PRIMITIVE_TOPOLOGY_15_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList16 = D3D11_PRIMITIVE_TOPOLOGY_16_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList17 = D3D11_PRIMITIVE_TOPOLOGY_17_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList18 = D3D11_PRIMITIVE_TOPOLOGY_18_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList19 = D3D11_PRIMITIVE_TOPOLOGY_19_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList20 = D3D11_PRIMITIVE_TOPOLOGY_20_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList21 = D3D11_PRIMITIVE_TOPOLOGY_21_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList22 = D3D11_PRIMITIVE_TOPOLOGY_22_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList23 = D3D11_PRIMITIVE_TOPOLOGY_23_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList24 = D3D11_PRIMITIVE_TOPOLOGY_24_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList25 = D3D11_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList26 = D3D11_PRIMITIVE_TOPOLOGY_26_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList27 = D3D11_PRIMITIVE_TOPOLOGY_27_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList28 = D3D11_PRIMITIVE_TOPOLOGY_28_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList29 = D3D11_PRIMITIVE_TOPOLOGY_29_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList30 = D3D11_PRIMITIVE_TOPOLOGY_30_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList31 = D3D11_PRIMITIVE_TOPOLOGY_31_CONTROL_POINT_PATCHLIST,
+		D3D11PatchList32 = D3D11_PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST,
+	};
 	public enum struct D3D12PrimitiveTopologyType
 	{
 		Undefined = D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED,
@@ -184,6 +283,18 @@ namespace RenderToy
 		Line = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,
 		Triangle = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
 		Patch = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH,
+	};
+	public enum struct D3D12ResourceBarrierFlags
+	{
+		None = D3D12_RESOURCE_BARRIER_FLAG_NONE,
+		BeginOnly = D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY,
+		EndOnly = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY,
+	};
+	public enum struct D3D12ResourceBarrierType
+	{
+		Transition = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
+		Aliasing = D3D12_RESOURCE_BARRIER_TYPE_ALIASING,
+		UAV = D3D12_RESOURCE_BARRIER_TYPE_UAV,
 	};
 	public enum struct D3D12ResourceDimension
 	{
@@ -309,7 +420,7 @@ namespace RenderToy
 		D3D12BlendOp	BlendOp;
 		D3D12Blend		SrcBlendAlpha;
 		D3D12Blend		DestBlendAlpha;
-		D3D12Blend		BlendOpAlpha;
+		D3D12BlendOp    BlendOpAlpha;
 		D3D12LogicOp	LogicOp;
 		UINT8			RenderTargetWriteMask;
 	};
@@ -323,6 +434,20 @@ namespace RenderToy
 		DXGIFormat			Format;
 		D3D12RtvDimension	ViewDimension;
 		D3D12Tex2DRtv		Texture2D;
+	};
+	ref class D3D12Resource;
+	public value struct D3D12ResourceTransitionBarrier
+	{
+		D3D12Resource^			pResource;
+		UINT					Subresource;
+		D3D12ResourceStates		StateBefore;
+		D3D12ResourceStates		StateAfter;
+	};
+	public value struct D3D12ResourceBarrier
+	{
+		D3D12ResourceBarrierType Type;
+		D3D12ResourceBarrierFlags Flags;
+		D3D12ResourceTransitionBarrier Transition;
 	};
 	public value struct D3D12BlendDesc
 	{
@@ -431,6 +556,13 @@ namespace RenderToy
 		D3D12CachedPipelineState		CachedPSO;
 		D3D12PipelineStateFlags			Flags;
 	};
+	public value struct D3D12Rect
+	{
+		LONG    left;
+		LONG    top;
+		LONG    right;
+		LONG    bottom;
+	};
 	public value struct D3D12ResourceDesc
 	{
 		D3D12ResourceDimension Dimension;
@@ -443,6 +575,21 @@ namespace RenderToy
 		DXGISampleDesc         SampleDesc;
 		D3D12TextureLayout     Layout;
 		D3D12ResourceFlags     Flags;
+	};
+	public value struct D3D12VertexBufferView
+	{
+		D3D12_GPU_VIRTUAL_ADDRESS	BufferLocation;
+		UINT						SizeInBytes;
+		UINT						StrideInBytes;
+	};
+	public value struct D3D12Viewport
+	{
+		FLOAT TopLeftX;
+		FLOAT TopLeftY;
+		FLOAT Width;
+		FLOAT Height;
+		FLOAT MinDepth;
+		FLOAT MaxDepth;
 	};
 	#pragma endregion
 	#pragma region - Direct3DWrap -
@@ -530,6 +677,51 @@ namespace RenderToy
 		}
 	};
 	#pragma endregion
+	#pragma region - D3D12PipelineState -
+	public ref class D3D12PipelineState : public Direct3DWrap<ID3D12PipelineState>
+	{
+	public:
+		D3D12PipelineState(ID3D12PipelineState *pObj) : Direct3DWrap(pObj)
+		{
+		}
+	};
+	#pragma endregion
+	#pragma region - D3D12Resource -
+	public ref class D3D12Resource : public Direct3DWrap<ID3D12Resource>
+	{
+	public:
+		D3D12Resource(ID3D12Resource *obj) : Direct3DWrap(obj)
+		{
+		}
+		D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress()
+		{
+			return pWrapped->GetGPUVirtualAddress();
+		}
+		System::IntPtr Map(UINT Subresource)
+		{
+			void *ppData = nullptr;
+			TRY_D3D(pWrapped->Map(Subresource, nullptr, &ppData));
+			return System::IntPtr(ppData);
+		}
+		void ReadFromSubresource(System::IntPtr pDstData, UINT DstRowPitch, UINT DstDepthPitch, UINT SrcSubresource)
+		{
+			TRY_D3D(pWrapped->ReadFromSubresource(pDstData.ToPointer(), DstRowPitch, DstDepthPitch, SrcSubresource, nullptr));
+		}
+		void Unmap(UINT Subresource)
+		{
+			pWrapped->Unmap(Subresource, nullptr);
+		}
+	};
+	#pragma endregion
+	#pragma region - D3D12RootSignature -
+	public ref class D3D12RootSignature : public Direct3DWrap<ID3D12RootSignature>
+	{
+	public:
+		D3D12RootSignature(ID3D12RootSignature *pObj) : Direct3DWrap(pObj)
+		{
+		}
+	};
+	#pragma endregion
 	#pragma region - D3D12GraphicsCommandList1 -
 	public ref class D3D12GraphicsCommandList1 : public Direct3DWrap<ID3D12GraphicsCommandList1>
 	{
@@ -547,6 +739,71 @@ namespace RenderToy
 		void Close()
 		{
 			TRY_D3D(pWrapped->Close());
+		}
+		void DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation)
+		{
+			pWrapped->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
+		}
+		void IASetPrimitiveTopology(D3D12PrimitiveTopology PrimitiveTopology)
+		{
+			pWrapped->IASetPrimitiveTopology((D3D12_PRIMITIVE_TOPOLOGY)PrimitiveTopology);
+		}
+		void IASetVertexBuffers(UINT StartSlot, cli::array<D3D12VertexBufferView> ^pViews)
+		{
+			pin_ptr<D3D12VertexBufferView> pViewsM = &pViews[0];
+			pWrapped->IASetVertexBuffers(StartSlot, pViews->Length, (D3D12_VERTEX_BUFFER_VIEW*)&pViewsM[0]);
+		}
+		void OMSetRenderTargets(cli::array<D3D12CPUDescriptorHandle> ^pRenderTargetDescriptors, BOOL RTsSingleHandleToDescriptorRange, System::Nullable<D3D12CPUDescriptorHandle> pDepthStencilDescriptor)
+		{
+			std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> pRenderTargetDescriptorsM(new D3D12_CPU_DESCRIPTOR_HANDLE[pRenderTargetDescriptors->Length]);
+			for (int i = 0; i < pRenderTargetDescriptors->Length; ++i)
+			{
+				pRenderTargetDescriptorsM[i].ptr = (SIZE_T)pRenderTargetDescriptors[i].ptr.ToPointer();
+			}
+			D3D12_CPU_DESCRIPTOR_HANDLE pDepthStencilDescriptorM;
+			pDepthStencilDescriptorM.ptr = (SIZE_T)(pDepthStencilDescriptor.HasValue ? pDepthStencilDescriptor.Value.ptr.ToPointer() : nullptr);
+			pWrapped->OMSetRenderTargets(pRenderTargetDescriptors->Length, pRenderTargetDescriptorsM.get(), RTsSingleHandleToDescriptorRange, pDepthStencilDescriptor.HasValue ? &pDepthStencilDescriptorM : nullptr);
+		}
+		void RSSetScissorRects(cli::array<D3D12Rect> ^pRects)
+		{
+			pin_ptr<D3D12Rect> pRectsM = &pRects[0];
+			pWrapped->RSSetScissorRects(pRects->Length, reinterpret_cast<D3D12_RECT*>(&pRectsM[0]));
+		}
+		void RSSetViewports(cli::array<D3D12Viewport> ^pViewports)
+		{
+			pin_ptr<D3D12Viewport> pViewportsM = &pViewports[0];
+			pWrapped->RSSetViewports(pViewports->Length, reinterpret_cast<D3D12_VIEWPORT*>(&pViewportsM[0]));
+		}
+		void SetDescriptorHeaps(cli::array<D3D12DescriptorHeap^> ^ppDescriptorHeaps)
+		{
+			std::unique_ptr<ID3D12DescriptorHeap*[]> ppDescriptorHeapsM(new ID3D12DescriptorHeap*[ppDescriptorHeaps->Length]);
+			for (int i = 0; i < ppDescriptorHeaps->Length; ++i)
+			{
+				ppDescriptorHeapsM[i] = ppDescriptorHeaps[i]->Wrapped;
+			}
+			pWrapped->SetDescriptorHeaps(ppDescriptorHeaps->Length, ppDescriptorHeapsM.get());
+		}
+		void SetGraphicsRootSignature(D3D12RootSignature ^pRootSignature)
+		{
+			pWrapped->SetGraphicsRootSignature(pRootSignature == nullptr ? nullptr : pRootSignature->Wrapped);
+		}
+		void SetPipelineState(D3D12PipelineState ^pPipelineState)
+		{
+			pWrapped->SetPipelineState(pPipelineState == nullptr ? nullptr : pPipelineState->Wrapped);
+		}
+		void ResourceBarrier(cli::array<D3D12ResourceBarrier> ^pBarriers)
+		{
+			std::unique_ptr<D3D12_RESOURCE_BARRIER[]> pBarriersM(new D3D12_RESOURCE_BARRIER[pBarriers->Length]);
+			for (int i = 0; i < pBarriers->Length; ++i)
+			{
+				pBarriersM[i].Type = (D3D12_RESOURCE_BARRIER_TYPE)pBarriers[i].Type;
+				pBarriersM[i].Flags = (D3D12_RESOURCE_BARRIER_FLAGS)pBarriers[i].Flags;
+				pBarriersM[i].Transition.pResource = pBarriers[i].Transition.pResource->Wrapped;
+				pBarriersM[i].Transition.Subresource = pBarriers[i].Transition.Subresource;
+				pBarriersM[i].Transition.StateBefore = (D3D12_RESOURCE_STATES)pBarriers[i].Transition.StateBefore;
+				pBarriersM[i].Transition.StateAfter = (D3D12_RESOURCE_STATES)pBarriers[i].Transition.StateAfter;
+			}
+			pWrapped->ResourceBarrier(pBarriers->Length, pBarriersM.get());
 		}
 	};
 	#pragma endregion
@@ -570,36 +827,6 @@ namespace RenderToy
 		void Wait(D3D12Fence ^pFence, UINT64 Value)
 		{
 			TRY_D3D(pWrapped->Wait(pFence->Wrapped, Value));
-		}
-	};
-	#pragma endregion
-	#pragma region - D3D12PipelineState -
-	public ref class D3D12PipelineState : public Direct3DWrap<ID3D12PipelineState>
-	{
-	public:
-		D3D12PipelineState(ID3D12PipelineState *pObj) : Direct3DWrap(pObj)
-		{
-		}
-	};
-	#pragma endregion
-	#pragma region - D3D12Resource -
-	public ref class D3D12Resource : public Direct3DWrap<ID3D12Resource>
-	{
-	public:
-		D3D12Resource(ID3D12Resource *obj) : Direct3DWrap(obj)
-		{
-		}
-		void ReadFromSubresource(System::IntPtr pDstData, UINT DstRowPitch, UINT DstDepthPitch, UINT SrcSubresource)
-		{
-			TRY_D3D(pWrapped->ReadFromSubresource(pDstData.ToPointer(), DstRowPitch, DstDepthPitch, SrcSubresource, nullptr));
-		}
-	};
-	#pragma endregion
-	#pragma region - D3D12RootSignature -
-	public ref class D3D12RootSignature : public Direct3DWrap<ID3D12RootSignature>
-	{
-		D3D12RootSignature(ID3D12RootSignature *pObj) : Direct3DWrap(pObj)
-		{
 		}
 	};
 	#pragma endregion
@@ -628,10 +855,10 @@ namespace RenderToy
 			TRY_D3D(pWrapped->CreateCommandQueue((D3D12_COMMAND_QUEUE_DESC*)&pDesc, __uuidof(ID3D12CommandQueue), &ppCommandQueue));
 			return gcnew D3D12CommandQueue(reinterpret_cast<ID3D12CommandQueue*>(ppCommandQueue));
 		}
-		D3D12Resource^ CreateCommittedResource(D3D12HeapProperties pHeapProperties, D3D12HeapFlags HeapFlags, D3D12ResourceDesc pDesc, D3D12ResourceStates InitialResourceState, D3D12ClearValue pOptimizedClearValue)
+		D3D12Resource^ CreateCommittedResource(D3D12HeapProperties pHeapProperties, D3D12HeapFlags HeapFlags, D3D12ResourceDesc pDesc, D3D12ResourceStates InitialResourceState, System::Nullable<D3D12ClearValue> pOptimizedClearValue)
 		{
 			void *ppvResource = nullptr;
-			TRY_D3D(pWrapped->CreateCommittedResource(reinterpret_cast<D3D12_HEAP_PROPERTIES*>(&pHeapProperties), (D3D12_HEAP_FLAGS)HeapFlags, reinterpret_cast<D3D12_RESOURCE_DESC*>(&pDesc), (D3D12_RESOURCE_STATES)InitialResourceState, reinterpret_cast<D3D12_CLEAR_VALUE*>(&pOptimizedClearValue), __uuidof(ID3D12Resource), &ppvResource));
+			TRY_D3D(pWrapped->CreateCommittedResource(reinterpret_cast<D3D12_HEAP_PROPERTIES*>(&pHeapProperties), (D3D12_HEAP_FLAGS)HeapFlags, reinterpret_cast<D3D12_RESOURCE_DESC*>(&pDesc), (D3D12_RESOURCE_STATES)InitialResourceState, pOptimizedClearValue.HasValue ? reinterpret_cast<D3D12_CLEAR_VALUE*>(&pOptimizedClearValue.Value) : nullptr, __uuidof(ID3D12Resource), &ppvResource));
 			return gcnew D3D12Resource(reinterpret_cast<ID3D12Resource*>(ppvResource));
 		}
 		D3D12DescriptorHeap^ CreateDescriptorHeap(D3D12DescriptorHeapDesc pDescriptorHeapDesc)
@@ -654,13 +881,29 @@ namespace RenderToy
 			pin_ptr<byte> vs(&pDesc.VS[0]);
 			pDesc2.VS.pShaderBytecode = vs;
 			pDesc2.VS.BytecodeLength = pDesc.VS == nullptr ? 0 : pDesc.VS->Length;
+			pin_ptr<byte> ps(&pDesc.PS[0]);
+			pDesc2.PS.pShaderBytecode = ps;
 			pDesc2.PS.BytecodeLength = pDesc.PS == nullptr ? 0 : pDesc.PS->Length;
 			pDesc2.DS.BytecodeLength = pDesc.DS == nullptr ? 0 : pDesc.DS->Length;
 			pDesc2.HS.BytecodeLength = pDesc.HS == nullptr ? 0 : pDesc.HS->Length;
 			pDesc2.GS.BytecodeLength = pDesc.GS == nullptr ? 0 : pDesc.GS->Length;
+			pDesc2.BlendState.AlphaToCoverageEnable = pDesc.BlendState.AlphaToCoverageEnable;
+			pDesc2.BlendState.IndependentBlendEnable = pDesc.BlendState.IndependentBlendEnable;
+			pDesc2.BlendState.RenderTarget[0].BlendEnable = pDesc.BlendState.RenderTarget0.BlendEnable;
+			pDesc2.BlendState.RenderTarget[0].LogicOpEnable = pDesc.BlendState.RenderTarget0.LogicOpEnable;
+			pDesc2.BlendState.RenderTarget[0].SrcBlend = (D3D12_BLEND)pDesc.BlendState.RenderTarget0.SrcBlend;
+			pDesc2.BlendState.RenderTarget[0].DestBlend = (D3D12_BLEND)pDesc.BlendState.RenderTarget0.DestBlend;
+			pDesc2.BlendState.RenderTarget[0].BlendOp = (D3D12_BLEND_OP)pDesc.BlendState.RenderTarget0.BlendOp;
+			pDesc2.BlendState.RenderTarget[0].SrcBlendAlpha = (D3D12_BLEND)pDesc.BlendState.RenderTarget0.SrcBlendAlpha;
+			pDesc2.BlendState.RenderTarget[0].DestBlendAlpha = (D3D12_BLEND)pDesc.BlendState.RenderTarget0.DestBlendAlpha;
+			pDesc2.BlendState.RenderTarget[0].BlendOpAlpha = (D3D12_BLEND_OP)pDesc.BlendState.RenderTarget0.BlendOpAlpha;
+			pDesc2.BlendState.RenderTarget[0].LogicOp = (D3D12_LOGIC_OP)pDesc.BlendState.RenderTarget0.LogicOp;
+			pDesc2.BlendState.RenderTarget[0].RenderTargetWriteMask = pDesc.BlendState.RenderTarget0.RenderTargetWriteMask;
+			pDesc2.SampleMask = pDesc.SampleMask;
 			pDesc2.RasterizerState.CullMode = (D3D12_CULL_MODE)pDesc.RasterizerState.CullMode;
 			pDesc2.RasterizerState.FillMode = (D3D12_FILL_MODE)pDesc.RasterizerState.FillMode;
-			pDesc2.InputLayout.NumElements = pDesc.InputLayout.pInputElementDescs->Length;
+			pDesc2.SampleDesc.Count = pDesc.SampleDesc.Count;
+			pDesc2.SampleDesc.Quality = pDesc.SampleDesc.Quality;
 			D3D12_INPUT_ELEMENT_DESC inputlayout;
 			inputlayout.SemanticName = "POSITION";
 			inputlayout.SemanticIndex = pDesc.InputLayout.pInputElementDescs[0].SemanticIndex;
@@ -670,7 +913,10 @@ namespace RenderToy
 			inputlayout.InputSlotClass = (D3D12_INPUT_CLASSIFICATION)pDesc.InputLayout.pInputElementDescs[0].InputSlotClass;
 			inputlayout.InstanceDataStepRate = pDesc.InputLayout.pInputElementDescs[0].InstanceDataStepRate;
 			pDesc2.InputLayout.pInputElementDescs = &inputlayout;
+			pDesc2.InputLayout.NumElements = pDesc.InputLayout.pInputElementDescs->Length;
 			pDesc2.PrimitiveTopologyType = (D3D12_PRIMITIVE_TOPOLOGY_TYPE)pDesc.PrimitiveTopologyType;
+			pDesc2.NumRenderTargets = pDesc.NumRenderTargets;
+			pDesc2.RTVFormats[0] = (DXGI_FORMAT)pDesc.RTVFormats0;
 			TRY_D3D(pWrapped->CreateGraphicsPipelineState(&pDesc2, __uuidof(ID3D12PipelineState), &ppPipelineState));
 			return gcnew D3D12PipelineState(reinterpret_cast<ID3D12PipelineState*>(ppPipelineState));
 		}
@@ -684,6 +930,13 @@ namespace RenderToy
 			D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor2;
 			DestDescriptor2.ptr = (SIZE_T)DestDescriptor.ptr.ToPointer();
 			pWrapped->CreateRenderTargetView(pResource->Wrapped, &pDesc2, DestDescriptor2);
+		}
+		D3D12RootSignature^ CreateRootSignature(UINT nodeMask, cli::array<byte> ^pBlobWithRootSignature)
+		{
+			void* ppvRootSignature = nullptr;
+			pin_ptr<byte> pBlobWithRootSignatureM = &pBlobWithRootSignature[0];
+			TRY_D3D(pWrapped->CreateRootSignature(nodeMask, pBlobWithRootSignatureM, pBlobWithRootSignature->Length, __uuidof(ID3D12RootSignature), &ppvRootSignature));
+			return gcnew D3D12RootSignature(reinterpret_cast<ID3D12RootSignature*>(ppvRootSignature));
 		}
 	};
 	#pragma endregion
