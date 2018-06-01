@@ -79,7 +79,7 @@ namespace RenderToy.WPF
         }
         void RenderDX()
         {
-            if (wpfFrontBuffer == null) return;
+            if (wpfFrontBuffer == null || !IsVisible) return;
             ////////////////////////////////////////////////////////////////////////////////
             // Create Render Target View.
             var d3d12DescriptorHeap_Rtv = d3d12Device.CreateDescriptorHeap(new D3D12DescriptorHeapDesc { Type = D3D12DescriptorHeapType.Rtv, NumDescriptors = 1, Flags = D3D12DescriptorHeapFlags.None });
@@ -95,7 +95,7 @@ namespace RenderToy.WPF
             d3d12CommandList.ClearRenderTargetView(d3d12DescriptorHeap_Rtv.GetCPUDescriptorHandleForHeapStart(), 1.0f, 0.0f, 0.0f, 1.0f);
             d3d12CommandList.SetGraphicsRootSignature(d3d12RootSignature);
             d3d12CommandList.SetPipelineState(d3d12GraphicsPipelineState);
-            d3d12CommandList.IASetPrimitiveTopology(D3D12PrimitiveTopology.TriangleList);
+            d3d12CommandList.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
             d3d12CommandList.RSSetScissorRects(new[] { new D3D12Rect { left = 0, top = 0, right = wpfFrontBuffer.PixelWidth, bottom = wpfFrontBuffer.PixelHeight } });
             d3d12CommandList.RSSetViewports(new[] { new D3D12Viewport { TopLeftX = 0, TopLeftY = 0, Width = wpfFrontBuffer.PixelWidth, Height = wpfFrontBuffer.PixelHeight, MinDepth = 0, MaxDepth = 1 } });
             d3d12CommandList.OMSetRenderTargets(new[] { d3d12DescriptorHeap_Rtv.GetCPUDescriptorHandleForHeapStart() }, 0, null);
@@ -200,7 +200,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             public int length;
             public uint size;
         }
-        object Token = "";
+        object Token = "DX12VertexBuffer";
         VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
         {
             if (primitive == null) return null;
@@ -249,14 +249,12 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             d3d12ResourceDesc_RenderTarget.Flags = D3D12ResourceFlags.AllowRenderTarget;
             var d3d12ClearValue_RenderTarget = new D3D12ClearValue { Format = DXGIFormat.B8G8R8A8_Unorm, R = 1.0f, G = 0.0f, B = 0.0f, A = 1.0f };
             d3d12Resource_RenderTarget = d3d12Device.CreateCommittedResource(d3d12HeapProperties_Writeback, D3D12HeapFlags.AllowAllBuffersAndTextures, d3d12ResourceDesc_RenderTarget, D3D12ResourceStates.RenderTarget, d3d12ClearValue_RenderTarget);
-            ////////////////////////////////////////////////////////////////////////////////
-            // Render.
-            RenderDX();
-            RenderDX();
             return base.MeasureOverride(availableSize);
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
+            if (wpfFrontBuffer == null) return;
+            RenderDX();
             drawingContext.DrawImage(wpfFrontBuffer, new Rect(0, 0, ActualWidth, ActualHeight));
         }
         WriteableBitmap wpfFrontBuffer;

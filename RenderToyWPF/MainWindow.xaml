@@ -213,6 +213,12 @@
                     <rendertoy:ViewDirectX9FixedFunction rendertoy:AttachedView.Scene="{Binding}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}"/>
                 </Grid>
             </TabItem>
+            <!-- ==================== Accelerated DirectX11 Visualizer ==================== -->
+            <TabItem Header="DX11" DataContext="{Binding Path=Scene}">
+                <Grid Background="Black">
+                    <rendertoy:ViewDirectX11 rendertoy:AttachedView.Scene="{Binding}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}"/>
+                </Grid>
+            </TabItem>
             <!-- ==================== Accelerated DirectX12 Visualizer ==================== -->
             <TabItem Header="DX12" DataContext="{Binding Path=Scene}">
                 <Grid Background="Black">

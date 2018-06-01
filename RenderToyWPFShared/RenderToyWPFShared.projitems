@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)3D\AttachedView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewDirectX11.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3D\ViewDirectX9.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3D\ViewDirectX12.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)3D\ViewSoftwareCustomizable.cs" />
