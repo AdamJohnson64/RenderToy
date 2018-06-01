@@ -1,6 +1,8 @@
 ﻿using RenderToy.Cameras;
 using RenderToy.PipelineModel;
+using RenderToy.Primitives;
 using RenderToy.SceneGraph;
+using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,41 +20,33 @@ namespace RenderToy.WPF
         {
             public float Xp, Yp, Zp;
         };
-        protected override void OnRender(DrawingContext drawingContext)
+        static ViewDirectX12()
         {
-            if (wpfFrontBuffer == null) return;
-            ////////////////////////////////////////////////////////////////////////////////
-            // Create the device if necessary.
-            if (d3d12Device == null)
+            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewDirectX12), new FrameworkPropertyMetadata(null, (s, e) =>
             {
-                Direct3D12.D3D12GetDebugInterface().EnableDebugLayer();
-                d3d12Device = Direct3D12.D3D12CreateDevice();
-            }
-            ////////////////////////////////////////////////////////////////////////////////
-            // Create RenderTarget.
-            var d3d12HeapProperties_Writeback = new D3D12HeapProperties { Type = D3D12HeapType.Custom, CPUPageProperty = D3D12CPUPageProperty.WriteBack, MemoryPoolPreference = D3D12MemoryPool.L0 };
-            var d3d12ResourceDesc_RenderTarget = new D3D12ResourceDesc();
-            d3d12ResourceDesc_RenderTarget.Dimension = D3D12ResourceDimension.Texture2D;
-            d3d12ResourceDesc_RenderTarget.Width = (ulong)wpfFrontBuffer.PixelWidth;
-            d3d12ResourceDesc_RenderTarget.Height = (uint)wpfFrontBuffer.PixelHeight;
-            d3d12ResourceDesc_RenderTarget.DepthOrArraySize = 1;
-            d3d12ResourceDesc_RenderTarget.SampleDesc.Count = 1;
-            d3d12ResourceDesc_RenderTarget.Format = DXGIFormat.B8G8R8A8_Unorm;
-            d3d12ResourceDesc_RenderTarget.Layout = D3D12TextureLayout.Unknown;
-            d3d12ResourceDesc_RenderTarget.Flags = D3D12ResourceFlags.AllowRenderTarget;
-            var d3d12ClearValue_RenderTarget = new D3D12ClearValue { Format = DXGIFormat.B8G8R8A8_Unorm, R = 1.0f, G = 0.0f, B = 0.0f, A = 1.0f };
-            var d3d12Resource_RenderTarget = d3d12Device.CreateCommittedResource(d3d12HeapProperties_Writeback, D3D12HeapFlags.AllowAllBuffersAndTextures, d3d12ResourceDesc_RenderTarget, D3D12ResourceStates.RenderTarget, d3d12ClearValue_RenderTarget);
+                ((ViewDirectX12)s).RenderDX();
+            }));
+            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewDirectX12), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>
+            {
+                ((ViewDirectX12)s).RenderDX();
+            }));
+        }
+        public ViewDirectX12()
+        {
+            Direct3D12.D3D12GetDebugInterface().EnableDebugLayer();
+            d3d12Device = Direct3D12.D3D12CreateDevice();
+            d3d12CommandQueue = d3d12Device.CreateCommandQueue(new D3D12CommandQueueDesc { Type = D3D12CommandListType.Direct });
+            d3d12CommandAllocator = d3d12Device.CreateCommandAllocator(D3D12CommandListType.Direct);
             ////////////////////////////////////////////////////////////////////////////////
             // Create the Vertex Shader and Pixel Shader
-            var bytecode_VertexShader = CompileVertexShader();
-            var bytecode_PixelShader = CompilePixelShader();
+            var bytecode_VertexShader = CompileShader(GetShaderCode(), "vs", "vs_5_0");
+            var bytecode_PixelShader = CompileShader(GetShaderCode(), "ps", "ps_5_0");
             ////////////////////////////////////////////////////////////////////////////////
             // Extract the Root Signature
-            byte[] bytecode_RootSignature = ExtractRootSignature(CompileVertexShader());
-            var d3d12RootSignature = d3d12Device.CreateRootSignature(0, bytecode_RootSignature);
+            byte[] bytecode_RootSignature = ExtractRootSignature(bytecode_VertexShader);
+            d3d12RootSignature = d3d12Device.CreateRootSignature(0, bytecode_RootSignature);
             ////////////////////////////////////////////////////////////////////////////////
             // Create Pipeline State.
-            d3d12CommandAllocator = d3d12Device.CreateCommandAllocator(D3D12CommandListType.Direct);
             var d3d12GraphicsPipelineStateDesc = new D3D12GraphicsPipelineStateDesc();
             d3d12GraphicsPipelineStateDesc.pRootSignature = d3d12RootSignature;
             d3d12GraphicsPipelineStateDesc.VS = bytecode_VertexShader;
@@ -78,7 +72,14 @@ namespace RenderToy.WPF
             d3d12GraphicsPipelineStateDesc.RTVFormats0 = DXGIFormat.B8G8R8A8_Unorm;
             d3d12GraphicsPipelineStateDesc.SampleDesc.Count = 1;
             d3d12GraphicsPipelineStateDesc.SampleDesc.Quality = 0;
-            var d3d12GraphicsPipelineState = d3d12Device.CreateGraphicsPipelineState(d3d12GraphicsPipelineStateDesc);
+            d3d12GraphicsPipelineState = d3d12Device.CreateGraphicsPipelineState(d3d12GraphicsPipelineStateDesc);
+            ////////////////////////////////////////////////////////////////////////////////
+            // Create Command List.
+            d3d12CommandList = d3d12Device.CreateCommandList(0U, D3D12CommandListType.Direct, d3d12CommandAllocator, d3d12GraphicsPipelineState);
+        }
+        void RenderDX()
+        {
+            if (wpfFrontBuffer == null) return;
             ////////////////////////////////////////////////////////////////////////////////
             // Create Render Target View.
             var d3d12DescriptorHeap_Rtv = d3d12Device.CreateDescriptorHeap(new D3D12DescriptorHeapDesc { Type = D3D12DescriptorHeapType.Rtv, NumDescriptors = 1, Flags = D3D12DescriptorHeapFlags.None });
@@ -91,7 +92,6 @@ namespace RenderToy.WPF
             d3d12Fence.SetEventOnCompletion(1, eventEndFrame.GetSafeWaitHandle().DangerousGetHandle());
             ////////////////////////////////////////////////////////////////////////////////
             // Create a simple command list.
-            var d3d12CommandList = d3d12Device.CreateCommandList(0U, D3D12CommandListType.Direct, d3d12CommandAllocator, d3d12GraphicsPipelineState);
             d3d12CommandList.ClearRenderTargetView(d3d12DescriptorHeap_Rtv.GetCPUDescriptorHandleForHeapStart(), 1.0f, 0.0f, 0.0f, 1.0f);
             d3d12CommandList.SetGraphicsRootSignature(d3d12RootSignature);
             d3d12CommandList.SetPipelineState(d3d12GraphicsPipelineState);
@@ -101,36 +101,14 @@ namespace RenderToy.WPF
             d3d12CommandList.OMSetRenderTargets(new[] { d3d12DescriptorHeap_Rtv.GetCPUDescriptorHandleForHeapStart() }, 0, null);
             ////////////////////////////////////////////////////////////////////////////////
             // Create a vertex buffer to draw.
-            var d3d12HeapProperties_Upload = new D3D12HeapProperties { Type = D3D12HeapType.Upload, CPUPageProperty = D3D12CPUPageProperty.Unknown, MemoryPoolPreference = D3D12MemoryPool.Unknown };
             var maintainBuffers = new List<D3D12Resource>();
             var transformViewProjection = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             foreach (var transformedobject in TransformedObject.Enumerate(AttachedView.GetScene(this)))
             {
-                if (transformedobject?.Node?.Primitive == null) continue;
                 var transformModel = transformedobject.Transform;
                 var transformModelViewProjection = transformModel * transformViewProjection;
-                var verticesin = PrimitiveAssembly.CreateTrianglesDX(transformedobject.Node.Primitive);
-                var verticesout = verticesin.Select(i => new XYZ { Xp = (float)i.Position.X, Yp = (float)i.Position.Y, Zp = (float)i.Position.Z }).ToArray();
-                if (verticesout.Length == 0) continue;
-                var size = (uint)(Marshal.SizeOf(typeof(XYZ)) * verticesout.Length);
-                var d3d12ResourceDesc_Buffer = new D3D12ResourceDesc();
-                d3d12ResourceDesc_Buffer.Dimension = D3D12ResourceDimension.Buffer;
-                d3d12ResourceDesc_Buffer.Width = size;
-                d3d12ResourceDesc_Buffer.Height = 1;
-                d3d12ResourceDesc_Buffer.DepthOrArraySize = 1;
-                d3d12ResourceDesc_Buffer.MipLevels = 1;
-                d3d12ResourceDesc_Buffer.SampleDesc.Count = 1;
-                d3d12ResourceDesc_Buffer.Format = DXGIFormat.Unknown;
-                d3d12ResourceDesc_Buffer.Layout = D3D12TextureLayout.RowMajor;
-                d3d12ResourceDesc_Buffer.Flags = D3D12ResourceFlags.None;
-                var d3d12Resource_Buffer = d3d12Device.CreateCommittedResource(d3d12HeapProperties_Upload, D3D12HeapFlags.AllowAllBuffersAndTextures, d3d12ResourceDesc_Buffer, D3D12ResourceStates.GenericRead, null);
-                maintainBuffers.Add(d3d12Resource_Buffer);
-                IntPtr fillvertex = d3d12Resource_Buffer.Map(0);
-                unsafe
-                {
-                    Buffer.MemoryCopy(Marshal.UnsafeAddrOfPinnedArrayElement(verticesout, 0).ToPointer(), fillvertex.ToPointer(), size, size);
-                }
-                d3d12Resource_Buffer.Unmap(0);
+                var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
+                if (vertexbuffer == null) continue;
                 float[] mvp = new float[16]
                 {
                     (float)transformModelViewProjection.M11, (float)transformModelViewProjection.M12, (float)transformModelViewProjection.M13, (float)transformModelViewProjection.M14,
@@ -139,25 +117,22 @@ namespace RenderToy.WPF
                     (float)transformModelViewProjection.M41, (float)transformModelViewProjection.M42, (float)transformModelViewProjection.M43, (float)transformModelViewProjection.M44,
                 };
                 d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, mvp, 0);
-                d3d12CommandList.IASetVertexBuffers(0, new[] { new D3D12VertexBufferView { BufferLocation = d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = size, StrideInBytes = 12 } });
-                d3d12CommandList.DrawInstanced((uint)verticesout.Length, 1, 0, 0);
+                d3d12CommandList.IASetVertexBuffers(0, new[] { new D3D12VertexBufferView { BufferLocation = vertexbuffer.d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = vertexbuffer.size, StrideInBytes = 12 } });
+                d3d12CommandList.DrawInstanced((uint)vertexbuffer.length, 1, 0, 0);
             }
             d3d12CommandList.Close();
             ////////////////////////////////////////////////////////////////////////////////
             // Create a command queue, submit the command list, and wait for completion.
-            var d3d12CommandQueue = d3d12Device.CreateCommandQueue(new D3D12CommandQueueDesc { Type = D3D12CommandListType.Direct });
             d3d12CommandQueue.ExecuteCommandLists(new[] { d3d12CommandList });
             d3d12CommandQueue.Signal(d3d12Fence, 1);
             eventEndFrame.WaitOne(100);
+            d3d12CommandList.Reset(d3d12CommandAllocator, d3d12GraphicsPipelineState);
             ////////////////////////////////////////////////////////////////////////////////
             // Copy back the contents of the Render Target to WPF.
             wpfFrontBuffer.Lock();
             d3d12Resource_RenderTarget.ReadFromSubresource(wpfFrontBuffer.BackBuffer, (uint)wpfFrontBuffer.BackBufferStride, (uint)(wpfFrontBuffer.BackBufferStride * wpfFrontBuffer.PixelHeight), 0);
             wpfFrontBuffer.AddDirtyRect(new Int32Rect(0, 0, wpfFrontBuffer.PixelWidth, wpfFrontBuffer.PixelHeight));
             wpfFrontBuffer.Unlock();
-            ////////////////////////////////////////////////////////////////////////////////
-            // Draw the image.
-            drawingContext.DrawImage(wpfFrontBuffer, new Rect(0, 0, ActualWidth, ActualHeight));
         }
         byte[] CompileShader(string shader, string entrypoint, string profile)
         {
@@ -210,16 +185,6 @@ float4 ps(VS_OUTPUT input) : SV_Target {
 }
 ";
         }
-        byte[] CompileVertexShader()
-        {
-            if (bytecode_CachedVS != null) return bytecode_CachedVS;
-            return bytecode_CachedVS = CompileShader(GetShaderCode(), "vs", "vs_5_0");
-        }
-        byte[] CompilePixelShader()
-        {
-            if (bytecode_CachedPS != null) return bytecode_CachedPS;
-            return bytecode_CachedPS = CompileShader(GetShaderCode(), "ps", "ps_5_0");
-        }
         byte[] ExtractRootSignature(byte[] shader)
         {
             var rootsignature = Direct3DCompiler.D3DGetBlobPart(shader, D3DBlobPart.RootSignature, 0);
@@ -229,14 +194,77 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             Marshal.Copy(buffer, bytes, 0, (int)buffersize);
             return bytes;
         }
+        class VertexBufferInfo
+        {
+            public D3D12Resource d3d12Resource_Buffer;
+            public int length;
+            public uint size;
+        }
+        object Token = "";
+        VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
+        {
+            if (primitive == null) return null;
+            return MementoServer.Default.Get(primitive, Token, () =>
+            {
+                var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
+                var verticesout = verticesin.Select(i => new XYZ { Xp = (float)i.Position.X, Yp = (float)i.Position.Y, Zp = (float)i.Position.Z }).ToArray();
+                if (verticesout.Length == 0) return null;
+                var size = (uint)(Marshal.SizeOf(typeof(XYZ)) * verticesout.Length);
+                var d3d12ResourceDesc_Buffer = new D3D12ResourceDesc();
+                d3d12ResourceDesc_Buffer.Dimension = D3D12ResourceDimension.Buffer;
+                d3d12ResourceDesc_Buffer.Width = size;
+                d3d12ResourceDesc_Buffer.Height = 1;
+                d3d12ResourceDesc_Buffer.DepthOrArraySize = 1;
+                d3d12ResourceDesc_Buffer.MipLevels = 1;
+                d3d12ResourceDesc_Buffer.SampleDesc.Count = 1;
+                d3d12ResourceDesc_Buffer.Format = DXGIFormat.Unknown;
+                d3d12ResourceDesc_Buffer.Layout = D3D12TextureLayout.RowMajor;
+                d3d12ResourceDesc_Buffer.Flags = D3D12ResourceFlags.None;
+                var d3d12HeapProperties_Upload = new D3D12HeapProperties { Type = D3D12HeapType.Upload, CPUPageProperty = D3D12CPUPageProperty.Unknown, MemoryPoolPreference = D3D12MemoryPool.Unknown };
+                var d3d12Resource_Buffer = d3d12Device.CreateCommittedResource(d3d12HeapProperties_Upload, D3D12HeapFlags.AllowAllBuffersAndTextures, d3d12ResourceDesc_Buffer, D3D12ResourceStates.GenericRead, null);
+                IntPtr fillvertex = d3d12Resource_Buffer.Map(0);
+                unsafe
+                {
+                    Buffer.MemoryCopy(Marshal.UnsafeAddrOfPinnedArrayElement(verticesout, 0).ToPointer(), fillvertex.ToPointer(), size, size);
+                }
+                d3d12Resource_Buffer.Unmap(0);
+                return new VertexBufferInfo { d3d12Resource_Buffer = d3d12Resource_Buffer, length = verticesout.Length, size = size };
+            });
+        }
         protected override Size MeasureOverride(Size availableSize)
         {
             wpfFrontBuffer = new WriteableBitmap((int)availableSize.Width, (int)availableSize.Height, 0, 0, PixelFormats.Bgra32, null);
+            ////////////////////////////////////////////////////////////////////////////////
+            // Create RenderTarget.
+            var d3d12HeapProperties_Writeback = new D3D12HeapProperties { Type = D3D12HeapType.Custom, CPUPageProperty = D3D12CPUPageProperty.WriteBack, MemoryPoolPreference = D3D12MemoryPool.L0 };
+            var d3d12ResourceDesc_RenderTarget = new D3D12ResourceDesc();
+            d3d12ResourceDesc_RenderTarget.Dimension = D3D12ResourceDimension.Texture2D;
+            d3d12ResourceDesc_RenderTarget.Width = (ulong)wpfFrontBuffer.PixelWidth;
+            d3d12ResourceDesc_RenderTarget.Height = (uint)wpfFrontBuffer.PixelHeight;
+            d3d12ResourceDesc_RenderTarget.DepthOrArraySize = 1;
+            d3d12ResourceDesc_RenderTarget.SampleDesc.Count = 1;
+            d3d12ResourceDesc_RenderTarget.Format = DXGIFormat.B8G8R8A8_Unorm;
+            d3d12ResourceDesc_RenderTarget.Layout = D3D12TextureLayout.Unknown;
+            d3d12ResourceDesc_RenderTarget.Flags = D3D12ResourceFlags.AllowRenderTarget;
+            var d3d12ClearValue_RenderTarget = new D3D12ClearValue { Format = DXGIFormat.B8G8R8A8_Unorm, R = 1.0f, G = 0.0f, B = 0.0f, A = 1.0f };
+            d3d12Resource_RenderTarget = d3d12Device.CreateCommittedResource(d3d12HeapProperties_Writeback, D3D12HeapFlags.AllowAllBuffersAndTextures, d3d12ResourceDesc_RenderTarget, D3D12ResourceStates.RenderTarget, d3d12ClearValue_RenderTarget);
+            ////////////////////////////////////////////////////////////////////////////////
+            // Render.
+            RenderDX();
+            RenderDX();
             return base.MeasureOverride(availableSize);
+        }
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            drawingContext.DrawImage(wpfFrontBuffer, new Rect(0, 0, ActualWidth, ActualHeight));
         }
         WriteableBitmap wpfFrontBuffer;
         D3D12Device d3d12Device;
+        D3D12CommandQueue d3d12CommandQueue;
         D3D12CommandAllocator d3d12CommandAllocator;
-        static byte[] bytecode_CachedVS, bytecode_CachedPS;
+        D3D12RootSignature d3d12RootSignature;
+        D3D12PipelineState d3d12GraphicsPipelineState;
+        D3D12GraphicsCommandList1 d3d12CommandList;
+        D3D12Resource d3d12Resource_RenderTarget;
     }
 }

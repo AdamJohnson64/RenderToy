@@ -759,6 +759,10 @@ namespace RenderToy
 		{
 			pWrapped->SetPipelineState(pPipelineState == nullptr ? nullptr : pPipelineState->Wrapped);
 		}
+		void Reset(D3D12CommandAllocator ^pAllocator, D3D12PipelineState ^pInitialState)
+		{
+			TRY_D3D(pWrapped->Reset(pAllocator->Wrapped, pInitialState->Wrapped));
+		}
 		void ResourceBarrier(cli::array<D3D12ResourceBarrier> ^pBarriers)
 		{
 			std::unique_ptr<D3D12_RESOURCE_BARRIER[]> pBarriersM(new D3D12_RESOURCE_BARRIER[pBarriers->Length]);
