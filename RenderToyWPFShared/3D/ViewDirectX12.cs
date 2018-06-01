@@ -242,6 +242,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             d3d12ResourceDesc_RenderTarget.Width = (ulong)wpfFrontBuffer.PixelWidth;
             d3d12ResourceDesc_RenderTarget.Height = (uint)wpfFrontBuffer.PixelHeight;
             d3d12ResourceDesc_RenderTarget.DepthOrArraySize = 1;
+            d3d12ResourceDesc_RenderTarget.MipLevels = 1;
             d3d12ResourceDesc_RenderTarget.SampleDesc.Count = 1;
             d3d12ResourceDesc_RenderTarget.Format = DXGIFormat.B8G8R8A8_Unorm;
             d3d12ResourceDesc_RenderTarget.Layout = D3D12TextureLayout.Unknown;
