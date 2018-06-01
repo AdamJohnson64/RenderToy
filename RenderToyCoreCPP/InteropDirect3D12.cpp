@@ -703,6 +703,10 @@ namespace RenderToy
 		{
 			TRY_D3D(pWrapped->Close());
 		}
+		void CopyResource(D3D12Resource ^pDstResource, D3D12Resource ^pSrcResource)
+		{
+			pWrapped->CopyResource(pDstResource->Wrapped, pSrcResource->Wrapped);
+		}
 		void DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation)
 		{
 			pWrapped->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
