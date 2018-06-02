@@ -54,7 +54,7 @@ namespace RenderToy.Materials
         public double Eval(EvalContext context) { return context.U; }
         public Expression CreateExpression(Expression evalcontext)
         {
-            return Expression.Field(evalcontext, typeof(EvalContext).GetField("U"));
+            return Expression.Field(evalcontext, evalcontext.Type.GetField("U"));
         }
     }
     class MNTexCoordV : IMNNode<double>, INamed
@@ -64,7 +64,7 @@ namespace RenderToy.Materials
         public double Eval(EvalContext context) { return context.V; }
         public Expression CreateExpression(Expression evalcontext)
         {
-            return Expression.Field(evalcontext, typeof(EvalContext).GetField("V"));
+            return Expression.Field(evalcontext, evalcontext.Type.GetField("V"));
         }
     }
     class MNConstant : IMNNode<double>, INamed
@@ -86,15 +86,15 @@ namespace RenderToy.Materials
         public Vector4D Eval(EvalContext context) { return new Vector4D(r.Eval(context), g.Eval(context), b.Eval(context), a.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
-            var parts = new IMNNode<double>[] { r, g, b, a }.Distinct().ToArray();
+            var parts = new IMNNode<double>[] { r, g, b, a }.Distinct().Select((v,i) => new { Node = v, Index = i }).ToArray();
             Dictionary<IMNNode<double>, Expression> lookup = null;
             if (parts.Length < 4)
             {
-                lookup = parts.ToDictionary(k => k, v => (Expression)Expression.Variable(typeof(double)));
+                lookup = parts.ToDictionary(k => k.Node, v => (Expression)Expression.Variable(typeof(double), "V4Part" + v.Index));
             }
             else
             {
-                lookup = parts.ToDictionary(k => k, v => v.CreateExpression(evalcontext));
+                lookup = parts.ToDictionary(k => k.Node, v => v.Node.CreateExpression(evalcontext));
             }
             Expression interior = Expression.New(
                 typeof(Vector4D).GetConstructor(new System.Type[] { typeof(double), typeof(double), typeof(double), typeof(double) }),
@@ -167,7 +167,7 @@ namespace RenderToy.Materials
         }
         public static Expression Saturate(Expression v)
         {
-            var temp = Expression.Parameter(typeof(double), "Saturate_TEMP");
+            var temp = Expression.Parameter(typeof(double), "Temp");
             return Expression.Block(typeof(double), new ParameterExpression[] { temp }, new Expression[] {
                 Expression.Assign(temp, v),
                 Expression.Condition(
@@ -223,7 +223,7 @@ namespace RenderToy.Materials
         }
         public static Expression Lerp(Expression value0, Expression value1, Expression factor)
         {
-            var temp = Expression.Parameter(typeof(double), "Lerp::Lerp::TEMP");
+            var temp = Expression.Parameter(typeof(double), "Factor");
             return Expression.Block(typeof(double), new ParameterExpression[] { temp }, new Expression[]
             {
                 Expression.Assign(temp, factor),
@@ -298,10 +298,10 @@ namespace RenderToy.Materials
         public Expression CreateExpression(Expression evalcontext)
         {
             const double MortarWidth = 0.025;
-            var tempu = Expression.Parameter(typeof(double), "BrickMask::CreateExpression(u)");
-            var tempv = Expression.Parameter(typeof(double), "BrickMask::CreateExpression(v)");
-            var tileu = Expression.Parameter(typeof(double), "BrickMask::CreateExpression::U_TILED");
-            var tilev = Expression.Parameter(typeof(double), "BrickMask::CreateExpression::V_TILED");
+            var tempu = Expression.Parameter(typeof(double), "SampleU");
+            var tempv = Expression.Parameter(typeof(double), "SampleV");
+            var tileu = Expression.Parameter(typeof(double), "TiledU");
+            var tilev = Expression.Parameter(typeof(double), "TiledV");
             return Expression.Block(typeof(double),
                 new ParameterExpression[] { tempu, tempv, tileu, tilev },
                 new Expression[]
@@ -355,8 +355,8 @@ namespace RenderToy.Materials
         public double Eval(EvalContext context) { return Compute(u.Eval(context), v.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
-            var tempu = Expression.Parameter(typeof(double), "BrickNoise::CreateExpression(u)");
-            var tempv = Expression.Parameter(typeof(double), "BrickNoise::CreateExpression(v)");
+            var tempu = Expression.Parameter(typeof(double), "SampleU");
+            var tempv = Expression.Parameter(typeof(double), "SampleV");
             return Expression.Block(typeof(double),
                 new ParameterExpression[] { tempu, tempv },
                 new Expression[]
@@ -419,10 +419,10 @@ namespace RenderToy.Materials
         }
         public Expression CreateExpression(Expression evalcontext)
         {
-            var tempu = Expression.Parameter(typeof(double), "CheckerBoard::CreateExpression(u)");
-            var tempv = Expression.Parameter(typeof(double), "CheckerBoard::CreateExpression(v)");
-            var intu = Expression.Parameter(typeof(int), "CheckerBoard::CreateExpression::U_TILED");
-            var intv = Expression.Parameter(typeof(int), "CheckerBoard::CreateExpression::V_TILED");
+            var tempu = Expression.Parameter(typeof(double), "SampleU");
+            var tempv = Expression.Parameter(typeof(double), "SampleV");
+            var intu = Expression.Parameter(typeof(int), "TiledU");
+            var intv = Expression.Parameter(typeof(int), "TiledV");
             return Expression.Block(
                 typeof(Vector4D),
                 new ParameterExpression[] { tempu, tempv, intu, intv },
@@ -453,9 +453,9 @@ namespace RenderToy.Materials
         }
         public static Expression Random2D(Expression x, Expression y)
         {
-            var temp = Expression.Variable(typeof(int), "Perlin2D::Noise2D::TEMP1");
-            var temp2 = Expression.Variable(typeof(int), "Perlin2D::Noise2D::TEMP2");
-            var temp3 = Expression.Variable(typeof(int), "Perlin2D::Noise2D::TEMP3");
+            var temp = Expression.Variable(typeof(int), "Temp1");
+            var temp2 = Expression.Variable(typeof(int), "Temp2");
+            var temp3 = Expression.Variable(typeof(int), "Temp3");
             return Expression.Block(
                 new ParameterExpression[] { temp, temp2, temp3 },
                 new Expression[]
@@ -526,10 +526,10 @@ namespace RenderToy.Materials
         }
         public static Expression InterpolatedNoise(Expression x, Expression y)
         {
-            var tempix = Expression.Parameter(typeof(double), "Perlin2D::InterpolatedNoise::U_TILE");
-            var tempiy = Expression.Parameter(typeof(double), "Perlin2D::InterpolatedNoise::V_TILE");
-            var tempfx = Expression.Parameter(typeof(double), "Perlin2D::InterpolatedNoise::U_TILED");
-            var tempfy = Expression.Parameter(typeof(double), "Perlin2D::InterpolatedNoise::V_TILED");
+            var tempix = Expression.Parameter(typeof(double), "SampleURounded");
+            var tempiy = Expression.Parameter(typeof(double), "SampleVRounded");
+            var tempfx = Expression.Parameter(typeof(double), "TiledU");
+            var tempfy = Expression.Parameter(typeof(double), "TiledV");
             return Expression.Block(
                 new ParameterExpression[] { tempix, tempiy, tempfx, tempfy },
                 new Expression[]
@@ -570,8 +570,8 @@ namespace RenderToy.Materials
         public double Eval(EvalContext context) { return PerlinNoise2D(u.Eval(context), v.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
-            var tempu = Expression.Parameter(typeof(double), "Perlin2D::CreateExpression(u)");
-            var tempv = Expression.Parameter(typeof(double), "Perlin2D::CreateExpression(v)");
+            var tempu = Expression.Parameter(typeof(double), "SampleU");
+            var tempv = Expression.Parameter(typeof(double), "SampleV");
             return Expression.Block(
                 new ParameterExpression[] { tempu, tempv },
                 new Expression[]
