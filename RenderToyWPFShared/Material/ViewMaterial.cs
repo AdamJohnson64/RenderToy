@@ -80,8 +80,10 @@ namespace RenderToy.WPF
             }
             else if (MaterialSource is IMNNode<double> && MaterialSource.IsConstant())
             {
-                EvalContext context = new EvalContext();
-                double value = ((IMNNode<double>)MaterialSource).Eval(context);
+                var param = System.Linq.Expressions.Expression.Parameter(typeof(EvalContext));
+                var body = ((IMNNode<double>)MaterialSource).CreateExpression(param);
+                var lambda = System.Linq.Expressions.Expression.Lambda<Func<EvalContext, double>>(body, param).Compile();
+                double value = lambda(new EvalContext());
                 var formattedtext = new FormattedText(value.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.Black);
                 drawingContext.DrawText(formattedtext, new Point((ActualWidth - formattedtext.Width) / 2, (ActualHeight - formattedtext.Height) / 2));
             }
