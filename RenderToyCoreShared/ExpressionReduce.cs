@@ -8,7 +8,51 @@ using System.Linq.Expressions;
 
 namespace RenderToy
 {
-    class VisitorComparator : IEqualityComparer<Expression>
+    public static class ExpressionReducer
+    {
+        public static Expression<TDelegate> Reduce<TDelegate>(Expression<TDelegate> expression)
+        {
+            return expression.Update(Reduce(expression.Body), expression.Parameters);
+        }
+        public static Expression Reduce(Expression expression)
+        {
+            var termcounter = new TermCounter();
+            termcounter.Visit(expression);
+            var replace = termcounter.Found.Where(i => i.Value > 1).Select((x, i) => new KeyValuePair<Expression, Expression>(x.Key, Expression.Parameter(x.Key.Type, "TEMP" + i))).ToArray();
+            if (replace.Length == 0) return expression;
+            var termreplacer = new TermReplacer(replace);
+            return Expression.Block(
+                replace.Select(i => i.Value).OfType<ParameterExpression>(),
+                replace.Where(i => i.Value is ParameterExpression).Select(i => Expression.Assign(i.Value, i.Key)).Concat(new[] { termreplacer.Visit(expression) }));
+        }
+        class TermCounter : ExpressionVisitor
+        {
+            public override Expression Visit(Expression node)
+            {
+                if (node != null)
+                {
+                    if (!Found.ContainsKey(node)) Found[node] = 0;
+                    Found[node] += 1;
+                }
+                return base.Visit(node);
+            }
+            public Dictionary<Expression, int> Found = new Dictionary<Expression, int>();
+        }
+        class TermReplacer : ExpressionVisitor
+        {
+            public TermReplacer(IEnumerable<KeyValuePair<Expression, Expression>> replacements)
+            {
+                Replacements = replacements.ToDictionary(k => k.Key, v => v.Value);
+            }
+            public override Expression Visit(Expression node)
+            {
+                if (node != null && Replacements.ContainsKey(node)) return Replacements[node];
+                return base.Visit(node);
+            }
+            public Dictionary<Expression, Expression> Replacements;
+        }
+    }
+    public class VisitorComparator : IEqualityComparer<Expression>
     {
         public static int Complexity(Expression expression)
         {
