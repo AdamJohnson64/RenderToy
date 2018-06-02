@@ -153,6 +153,9 @@ namespace RenderToy.WPF
             D3DLockedRect lockit = texture.LockRect(0);
             var material = StockMaterials.MarbleTile;
             EvalContext context = new EvalContext();
+            var param = System.Linq.Expressions.Expression.Parameter(typeof(EvalContext));
+            var body = material.CreateExpression(param);
+            var lambda = System.Linq.Expressions.Expression.Lambda<Func<EvalContext, Vector4D>>(body, param).Compile();
             unsafe
             {
                 for (int y = 0; y < TextureSize; ++y)
@@ -162,7 +165,7 @@ namespace RenderToy.WPF
                     {
                         context.U = x / (double)TextureSize;
                         context.V = y / (double)TextureSize;
-                        raster[x] = Rasterization.ColorToUInt32(material.Eval(context));
+                        raster[x] = Rasterization.ColorToUInt32(lambda(context));
                     }
                 }
             }
