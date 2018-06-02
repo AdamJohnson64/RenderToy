@@ -310,52 +310,6 @@ namespace RenderToy
             //var iseq = VisitorComparator.MyEquals(compare1, compare2);
             return expression;
         }
-        public static void Test()
-        {
-            var material = StockMaterials.Brick;
-            var param = Expression.Parameter(typeof(EvalContext), "EvalContext");
-            var body = material.CreateExpression(param);
-            var original = body;
-            var lambdaoriginal = Expression.Lambda<Func<EvalContext, Vector4D>>(original, param).Compile();
-            var reduced = Reduce(body);
-            var lambdareduced = Expression.Lambda<Func<EvalContext, Vector4D>>(reduced, param).Compile();
-
-            var evalcontext = new EvalContext { U = 0.5, V = 0.5 };
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            for (int i = 0; i < 10000; ++i)
-            {
-                var evalnormal = material.Eval(evalcontext);
-            }
-            stopwatch.Stop();
-            Debug.WriteLine("Classic Took " + stopwatch.ElapsedMilliseconds);
-            stopwatch.Restart();
-            for (int i = 0; i < 10000; ++i)
-            {
-                var evallambda = lambdaoriginal(evalcontext);
-            }
-            stopwatch.Stop();
-            Debug.WriteLine("Lambda Original Took " + stopwatch.ElapsedMilliseconds);
-            stopwatch.Restart();
-            for (int i = 0; i < 10000; ++i)
-            {
-                var evallambda = lambdareduced(evalcontext);
-            }
-            stopwatch.Stop();
-            Debug.WriteLine("Lambda Reduced Took " + stopwatch.ElapsedMilliseconds);
-            for (int y = 0; y < 100; ++y)
-            {
-                for (int x = 0; x < 100; ++x)
-                {
-                    evalcontext.U = (x + 0.5) / 100.0;
-                    evalcontext.V = (y + 0.5) / 100.0;
-                    var test1 = material.Eval(evalcontext);
-                    var test2 = lambdaoriginal(evalcontext);
-                    var test3 = lambdareduced(evalcontext);
-                    int test = 0;
-                }
-            }
-        }
         List<Expression> found = new List<Expression>();
         Dictionary<Expression, int> countup = new Dictionary<Expression, int>(new VisitorComparator());
     }
