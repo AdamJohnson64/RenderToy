@@ -53,7 +53,6 @@ namespace RenderToy.Materials
     }
     public interface IMNNode<T> : IMNNode
     {
-        T Eval(EvalContext context);
     }
     abstract class MNUnary<T> : ExpressionBase
     {
@@ -79,7 +78,6 @@ namespace RenderToy.Materials
     {
         public string Name { get { return "U"; } }
         public bool IsConstant() { return false; }
-        public double Eval(EvalContext context) { return context.U; }
         public Expression CreateExpression(Expression evalcontext)
         {
             return Expression.Field(evalcontext, evalcontext.Type.GetField("U"));
@@ -89,7 +87,6 @@ namespace RenderToy.Materials
     {
         public string Name { get { return "V"; } }
         public bool IsConstant() { return false; }
-        public double Eval(EvalContext context) { return context.V; }
         public Expression CreateExpression(Expression evalcontext)
         {
             return Expression.Field(evalcontext, evalcontext.Type.GetField("V"));
@@ -99,7 +96,6 @@ namespace RenderToy.Materials
     {
         public string Name { get { return value.ToString(); } }
         public bool IsConstant() { return true; }
-        public double Eval(EvalContext context) { return value; }
         public Expression CreateExpression(Expression evalcontext)
         {
             return Expression.Constant(value);
@@ -111,7 +107,6 @@ namespace RenderToy.Materials
     {
         public string Name { get { return "RGBA"; } }
         public bool IsConstant() { return r.IsConstant() && g.IsConstant() && b.IsConstant() && a.IsConstant(); }
-        public Vector4D Eval(EvalContext context) { return new Vector4D(r.Eval(context), g.Eval(context), b.Eval(context), a.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
             var parts = new IMNNode<double>[] { r, g, b, a }.Distinct().Select((v,i) => new { Node = v, Index = i }).ToArray();
@@ -145,7 +140,6 @@ namespace RenderToy.Materials
     sealed class MNAdd : MNBinary<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "+"; } }
-        public double Eval(EvalContext context) { return lhs.Eval(context) + rhs.Eval(context); }
         public Expression CreateExpression(Expression evalcontext)
         {
             return Expression.Add(Lhs.CreateExpression(evalcontext), Rhs.CreateExpression(evalcontext));
@@ -154,7 +148,6 @@ namespace RenderToy.Materials
     sealed class MNSubtract : MNBinary<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "-"; } }
-        public double Eval(EvalContext context) { return lhs.Eval(context) - rhs.Eval(context); }
         public Expression CreateExpression(Expression evalcontext)
         {
             return Expression.Subtract(Lhs.CreateExpression(evalcontext), Rhs.CreateExpression(evalcontext));
@@ -163,7 +156,6 @@ namespace RenderToy.Materials
     sealed class MNMultiply : MNBinary<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "X"; } }
-        public double Eval(EvalContext context) { return lhs.Eval(context) * rhs.Eval(context); }
         public Expression CreateExpression(Expression evalcontext)
         {
             return Expression.Multiply(Lhs.CreateExpression(evalcontext), Rhs.CreateExpression(evalcontext));
@@ -173,7 +165,6 @@ namespace RenderToy.Materials
     {
         public string Name { get { return "Power"; } }
         public bool IsConstant() { return value.IsConstant() && exponent.IsConstant(); }
-        public double Eval(EvalContext context) { return Math.Pow(value.Eval(context), exponent.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
             return Expression.Invoke(PowFn, Value.CreateExpression(evalcontext), Exponent.CreateExpression(evalcontext));
@@ -185,7 +176,6 @@ namespace RenderToy.Materials
     sealed class MNSaturate : MNUnary<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "Saturate"; } }
-        public double Eval(EvalContext context) { return Saturate(value.Eval(context)); }
         public static Expression CreateSaturate(Expression v)
         {
             var temp = Expression.Parameter(typeof(double), "Temp");
@@ -203,21 +193,18 @@ namespace RenderToy.Materials
     {
         public static Expression<Func<double, double>> Sin = (f) => Math.Sin(f);
         public string Name { get { return "Sin"; } }
-        public double Eval(EvalContext context) { return Math.Sin(value.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(Sin, Value.CreateExpression(evalcontext)); }
     }
     sealed class MNThreshold : MNUnary<double>, IMNNode<double>, INamed
     {
         public static Expression<Func<double, double>> Threshold = (f) => f < 0.5 ? 0 : 1;
         public string Name { get { return "Threshold"; } }
-        public double Eval(EvalContext context) { return value.Eval(context) < 0.5 ? 0 : 1; }
         public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(Threshold, Value.CreateExpression(evalcontext)); }
     }
     sealed class MNLerp : ExpressionBase, IMNNode<double>, INamed
     {
         public string Name { get { return "Lerp"; } }
         public bool IsConstant() { return value0.IsConstant() && value1.IsConstant() && factor.IsConstant(); }
-        public double Eval(EvalContext context) { double f = factor.Eval(context); return value0.Eval(context) * (1 - f) + value1.Eval(context) * f; }
         public Expression CreateExpression(Expression evalcontext)
         {
             return InvokeLerp(value0.CreateExpression(evalcontext), value1.CreateExpression(evalcontext), factor.CreateExpression(evalcontext));
@@ -230,13 +217,6 @@ namespace RenderToy.Materials
     sealed class Spike : MNSample2D<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "Spike"; } }
-        public double Eval(EvalContext context)
-        {
-            double u = context.U - 0.5;
-            double v = context.V - 0.5;
-            double d = MNSaturate.Saturate(Math.Sqrt(u * u + v * v) * 2);
-            return Lerp(1.0, 0.0, d);
-        }
         public Expression CreateExpression(Expression evalcontext)
         {
             var tempu = Expression.Variable(typeof(double));
@@ -270,7 +250,6 @@ namespace RenderToy.Materials
             return CallTemp(u - Math.Floor(u), v - Math.Floor(v)); 
         }
         public string Name { get { return "Brick Mask"; } }
-        public double Eval(EvalContext context) { return Compute(u.Eval(context), v.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
             const double MortarWidth = 0.025;
@@ -304,7 +283,6 @@ namespace RenderToy.Materials
             }
         }
         public string Name { get { return "Brick Noise"; } }
-        public double Eval(EvalContext context) { return Compute(u.Eval(context), v.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
             var tempu = Expression.Parameter(typeof(double), "SampleU");
@@ -356,18 +334,6 @@ namespace RenderToy.Materials
             return Expression.Lambda(_ReconstructSampler2(ec, du, dv), new ParameterExpression[] { ec, du, dv});
         }
         static LambdaExpression ReconstructSampler = _ReconstructSampler();
-        public Vector4D Eval(EvalContext context)
-        {
-            double u = U.Eval(context);
-            double v = V.Eval(context);
-            double du1 = displacement.Eval(new EvalContext { U = u - 0.001, V = v });
-            double du2 = displacement.Eval(new EvalContext { U = u + 0.001, V = v });
-            double dv1 = displacement.Eval(new EvalContext { U = u, V = v - 0.001 });
-            double dv2 = displacement.Eval(new EvalContext { U = u, V = v + 0.001 });
-            var normal = MathHelp.Normalized(new Vector3D((du1 - du2) / 0.002, (dv1 - dv2) / 0.002, 1));
-            return new Vector4D(normal.X * 0.5 + 0.5, -normal.Y * 0.5 + 0.5, normal.Z * 0.5 + 0.5, 1);
-        }
-        // TODO: Fill this in.
         public Expression CreateExpression(Expression evalcontext)
         {
             var u = Expression.Parameter(typeof(double), "SampleU");
@@ -409,14 +375,6 @@ namespace RenderToy.Materials
     sealed class Checkerboard : MNSample2D<Vector4D>, IMNNode<Vector4D>, INamed
     {
         public string Name { get { return "Checkerboard"; } }
-        public Vector4D Eval(EvalContext context)
-        {
-            double tempu = u.Eval(context);
-            double tempv = v.Eval(context);
-            int intu = (int)((tempu - Math.Floor(tempu)) * 2);
-            int intv = (int)((tempv - Math.Floor(tempv)) * 2);
-            return ((intu + intv) & 1) == 0 ? Color1.Eval(context) : Color2.Eval(context);
-        }
         public Expression CreateExpression(Expression evalcontext)
         {
             var tempu = Expression.Parameter(typeof(double), "SampleU");
@@ -590,7 +548,6 @@ namespace RenderToy.Materials
             double p = PerlinNoise2D(u, v);
             return new Vector4D(p, p, p, 1);
         }
-        public double Eval(EvalContext context) { return PerlinNoise2D(u.Eval(context), v.Eval(context)); }
         public Expression CreateExpression(Expression evalcontext)
         {
             var tempu = Expression.Parameter(typeof(double), "SampleU");
@@ -627,10 +584,6 @@ namespace RenderToy.Materials
         public bool IsConstant()
         {
             return true;
-        }
-        public Vector4D Eval(EvalContext context)
-        {
-            return Diffuse;
         }
         public Expression CreateExpression(Expression evalcontext)
         {
