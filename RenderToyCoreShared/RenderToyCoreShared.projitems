@@ -14,6 +14,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\OctreeREF.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\Octree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ExpressionReduce.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Materials\BrickMask.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Materials\BrickNoise.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Materials\BumpGenerate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Materials\Checkerboard.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Materials\Perlin2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Materials\Spike.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModelFormats\LoaderBPT.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModelFormats\LoaderOBJ.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModelFormats\LoaderPLY.cs" />
@@ -33,7 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Pipeline\RenderModeCS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Cameras\Perspective.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Cameras\IProjection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Materials\IMaterial.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Materials\Basic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Materials\StockMaterials.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Meshes\Mesh.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Meshes\MeshBVH.cs" />
