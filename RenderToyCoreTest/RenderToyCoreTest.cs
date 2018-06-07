@@ -5,6 +5,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RenderToy.BoundingVolumeHierarchy;
+using RenderToy.Materials;
 using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.PipelineModel;
@@ -14,6 +15,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace RenderToy
@@ -158,6 +161,45 @@ namespace RenderToy
         static bool Vector3DEqual(Vector3D lhs, Vector3D rhs)
         {
             return lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z;
+        }
+    }
+    [TestClass]
+    public class ExpressionTests
+    {
+        [TestMethod]
+        public void GenerateBrickHLSL()
+        {
+            var material = StockMaterials.Brick;
+            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
+            var expressionbody = material.CreateExpression(parametercontext);
+            var expressionhlsl = HLSLGenerator.Emit(expressionbody);
+            Console.WriteLine(expressionhlsl);
+        }
+        [TestMethod]
+        public void CompileBrickHLSL()
+        {
+            var material = StockMaterials.Brick;
+            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
+            var expressionbody = material.CreateExpression(parametercontext);
+            var expressionhlsl = HLSLGenerator.Emit(expressionbody);
+            var ppCode = new D3DBlob();
+            var ppErrorMsgs = new D3DBlob();
+            Direct3DCompiler.D3DCompile(expressionhlsl, "temp", "ps", "ps_5_0", 0, 0, ppCode, ppErrorMsgs);
+            if (ppErrorMsgs != null && ppErrorMsgs.GetBufferPointer() != IntPtr.Zero)
+            {
+                var errors = Marshal.PtrToStringAnsi(ppErrorMsgs.GetBufferPointer(), (int)ppErrorMsgs.GetBufferSize() - 1);
+                throw new Exception("Shader compilation error:\n\n" + errors);
+            }
+        }
+        [TestMethod]
+        public void CompileBrickMSIL()
+        {
+            var material = StockMaterials.Brick;
+            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
+            var expressionbody = material.CreateExpression(parametercontext);
+            var expressionlambda = Expression.Lambda<Func<EvalContext, Vector4D>>(expressionbody, parametercontext);
+            var expressioncompiled = expressionlambda.Compile();
+            var expressionresult = expressioncompiled(new EvalContext());
         }
     }
     [TestClass]
