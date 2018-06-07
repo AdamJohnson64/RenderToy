@@ -1,4 +1,9 @@
-﻿using RenderToy.Utility;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
+
+using RenderToy.Utility;
 using System;
 using System.Linq.Expressions;
 
@@ -24,16 +29,16 @@ namespace RenderToy.Materials
         }
         static LambdaExpression _ReconstructSampler()
         {
-            var ec = Expression.Parameter(typeof(EvalContext));
-            var du = Expression.Parameter(typeof(double));
-            var dv = Expression.Parameter(typeof(double));
+            var ec = Expression.Parameter(typeof(EvalContext), "Context");
+            var du = Expression.Parameter(typeof(double), "NewU");
+            var dv = Expression.Parameter(typeof(double), "NewV");
             return Expression.Lambda(_ReconstructSampler2(ec, du, dv), new ParameterExpression[] { ec, du, dv });
         }
         static LambdaExpression ReconstructSampler = _ReconstructSampler();
         public Expression CreateExpression(Expression evalcontext)
         {
-            var u = Expression.Parameter(typeof(double), "SampleU");
-            var v = Expression.Parameter(typeof(double), "SampleV");
+            var u = Expression.Parameter(typeof(double), "u");
+            var v = Expression.Parameter(typeof(double), "v");
             var du1 = Expression.Parameter(typeof(double), "NegU");
             var du2 = Expression.Parameter(typeof(double), "PosU");
             var dv1 = Expression.Parameter(typeof(double), "NegV");

@@ -1,58 +1,16 @@
-﻿using RenderToy.Materials;
-using RenderToy.Utility;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace RenderToy
 {
-    public static class ExpressionReducer
-    {
-        public static Expression<TDelegate> Reduce<TDelegate>(Expression<TDelegate> expression)
-        {
-            return expression.Update(Reduce(expression.Body), expression.Parameters);
-        }
-        public static Expression Reduce(Expression expression)
-        {
-            var termcounter = new TermCounter();
-            termcounter.Visit(expression);
-            var replace = termcounter.Found.Where(i => i.Value > 1).Select((x, i) => new KeyValuePair<Expression, Expression>(x.Key, Expression.Parameter(x.Key.Type, "TEMP" + i))).ToArray();
-            if (replace.Length == 0) return expression;
-            var termreplacer = new TermReplacer(replace);
-            return Expression.Block(
-                replace.Select(i => i.Value).OfType<ParameterExpression>(),
-                replace.Where(i => i.Value is ParameterExpression).Select(i => Expression.Assign(i.Value, i.Key)).Concat(new[] { termreplacer.Visit(expression) }));
-        }
-        class TermCounter : ExpressionVisitor
-        {
-            public override Expression Visit(Expression node)
-            {
-                if (node != null)
-                {
-                    if (!Found.ContainsKey(node)) Found[node] = 0;
-                    Found[node] += 1;
-                }
-                return base.Visit(node);
-            }
-            public Dictionary<Expression, int> Found = new Dictionary<Expression, int>();
-        }
-        class TermReplacer : ExpressionVisitor
-        {
-            public TermReplacer(IEnumerable<KeyValuePair<Expression, Expression>> replacements)
-            {
-                Replacements = replacements.ToDictionary(k => k.Key, v => v.Value);
-            }
-            public override Expression Visit(Expression node)
-            {
-                if (node != null && Replacements.ContainsKey(node)) return Replacements[node];
-                return base.Visit(node);
-            }
-            public Dictionary<Expression, Expression> Replacements;
-        }
-    }
-    public class VisitorComparator : IEqualityComparer<Expression>
+    public class ExpressionComparator : IEqualityComparer<Expression>
     {
         public static int Complexity(Expression expression)
         {
@@ -214,103 +172,5 @@ namespace RenderToy
         {
             return obj.GetType().GetHashCode();
         }
-    }
-    class VisitorExpand : ExpressionVisitor
-    {
-        protected override Expression VisitBlock(BlockExpression node)
-        {
-            if (node == null) return base.VisitBlock(node);
-            for (int iter = 0; iter < 100; ++iter)
-            {
-                var assign = node.Expressions.Where(i => i.NodeType == ExpressionType.Assign).OfType<BinaryExpression>().FirstOrDefault();
-                if (assign == null) break;
-                node = Expression.Block(
-                    node.Type,
-                    node.Variables.Where(i => !VisitorComparator.MyEquals(i, assign.Left)).ToArray(),
-                    node.Expressions.Where(i => !VisitorComparator.MyEquals(i, assign)).Select(i => new VisitorReplace(assign.Left, assign.Right).Visit(i)).ToArray());
-            }
-            return node.Expressions.Count == 1 ? base.Visit(node.Expressions[0]) : base.VisitBlock(node);
-        }
-    }
-    class VisitorReplace : ExpressionVisitor
-    {
-        public VisitorReplace(Expression oldexpression, Expression newexpression)
-        {
-            _oldexpression = oldexpression;
-            _newexpression = newexpression;
-        }
-        public override Expression Visit(Expression node)
-        {
-            if (node == null) return base.Visit(node);
-            return VisitorComparator.MyEquals(node, _oldexpression) ? base.Visit(_newexpression) : base.Visit(node);
-        }
-        Expression _oldexpression;
-        Expression _newexpression;
-    }
-    class VisitorTest : ExpressionVisitor
-    {
-        public override Expression Visit(Expression node)
-        {
-            if (node != null)
-            {
-                if (countup.ContainsKey(node))
-                {
-                    countup[node] = countup[node] + 1;
-                }
-                else
-                {
-                    countup[node] = 1;
-                }
-            }
-            if (node is ParameterExpression)
-            {
-                found.Add(node);
-                return base.Visit(node);
-            }
-            var find = found.FirstOrDefault(i => VisitorComparator.MyEquals(node, i));
-            if (find != null) return find;
-            found.Add(node);
-            return base.Visit(node);
-        }
-        class VariableBinding
-        {
-            public ParameterExpression Variable;
-            public Expression Value;
-        }
-        public static Expression Reduce(Expression expression)
-        {
-            expression = new VisitorExpand().Visit(expression);
-            var compare1 = expression;
-            var bindthese = new List<VariableBinding>();
-            for (int i = 0; i < 8; ++i)
-            {
-                var visitor1 = new VisitorTest();
-                expression = visitor1.Visit(expression);
-                var ranking =
-                    visitor1.countup
-                    .Where(n => n.Value > 1)
-                    .Where(n => VisitorComparator.Complexity(n.Key) > 10)
-                    .OrderByDescending(n => n.Value)
-                    .ThenByDescending(n => VisitorComparator.Complexity(n.Key));
-                if (ranking.Count() == 0) break;
-                var worst = ranking.FirstOrDefault();
-                var subst = Expression.Variable(worst.Key.Type, "PASS" + i);
-                var visitor2 = new VisitorReplace(worst.Key, subst);
-                var inner = visitor2.Visit(expression);
-                expression = inner;
-                bindthese.Add(new VariableBinding { Variable = subst, Value = worst.Key });
-            }
-            expression = Expression.Block(
-                expression.Type,
-                bindthese.Select(i => i.Variable).ToArray(),
-                bindthese.Select(i => Expression.Assign(i.Variable, i.Value)).Concat(new Expression[] { expression }).ToArray()
-                );
-            //expression = new VisitorExpand().Visit(expression);
-            //var compare2 = expression;
-            //var iseq = VisitorComparator.MyEquals(compare1, compare2);
-            return expression;
-        }
-        List<Expression> found = new List<Expression>();
-        Dictionary<Expression, int> countup = new Dictionary<Expression, int>(new VisitorComparator());
     }
 }

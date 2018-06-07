@@ -1,4 +1,9 @@
-﻿using RenderToy.Utility;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
+
+using RenderToy.Utility;
 using System;
 using System.Linq.Expressions;
 
@@ -32,8 +37,8 @@ namespace RenderToy.Materials
         }
         public static Expression _Noise2D()
         {
-            var xp = Expression.Parameter(typeof(double));
-            var yp = Expression.Parameter(typeof(double));
+            var xp = Expression.Parameter(typeof(double), "u");
+            var yp = Expression.Parameter(typeof(double), "v");
             return Expression.Lambda(_Noise2D(xp, yp), "Noise2D", new[] { xp, yp });
         }
         public static Expression Noise2DFn = _Noise2D();
@@ -67,8 +72,8 @@ namespace RenderToy.Materials
         }
         public static Expression _SmoothNoise()
         {
-            var xp = Expression.Parameter(typeof(double));
-            var yp = Expression.Parameter(typeof(double));
+            var xp = Expression.Parameter(typeof(double), "u");
+            var yp = Expression.Parameter(typeof(double), "v");
             return Expression.Lambda(_SmoothNoise(xp, yp), "SmoothNoise", new[] { xp, yp });
         }
         public static Expression SmoothNoiseFn = _SmoothNoise();
@@ -109,8 +114,8 @@ namespace RenderToy.Materials
         }
         public static Expression _InterpolatedNoise()
         {
-            var x = Expression.Parameter(typeof(double));
-            var y = Expression.Parameter(typeof(double));
+            var x = Expression.Parameter(typeof(double), "u");
+            var y = Expression.Parameter(typeof(double), "v");
             return Expression.Lambda(_InterpolatedNoise(x, y), "InterpolatedNoise", new[] { x, y });
         }
         public static Expression InterpolatedNoiseFn = _InterpolatedNoise();
@@ -138,8 +143,8 @@ namespace RenderToy.Materials
         }
         public static Expression _PerlinNoise2D()
         {
-            var x = Expression.Parameter(typeof(double));
-            var y = Expression.Parameter(typeof(double));
+            var x = Expression.Parameter(typeof(double), "u");
+            var y = Expression.Parameter(typeof(double), "v");
             return Expression.Lambda(_PerlinNoise2D(x, y), "PerlinNoise2D", new[] { x, y });
         }
         public static Expression PerlinNoiseFn = _PerlinNoise2D();
@@ -154,16 +159,7 @@ namespace RenderToy.Materials
         }
         public Expression CreateExpression(Expression evalcontext)
         {
-            var tempu = Expression.Parameter(typeof(double), "SampleU");
-            var tempv = Expression.Parameter(typeof(double), "SampleV");
-            return Expression.Block(
-                new ParameterExpression[] { tempu, tempv },
-                new Expression[]
-                {
-                    Expression.Assign(tempu, u.CreateExpression(evalcontext)),
-                    Expression.Assign(tempv, v.CreateExpression(evalcontext)),
-                    PerlinNoise2D(tempu, tempv)
-                });
+            return PerlinNoise2D(u.CreateExpression(evalcontext), v.CreateExpression(evalcontext));
         }
     }
 }

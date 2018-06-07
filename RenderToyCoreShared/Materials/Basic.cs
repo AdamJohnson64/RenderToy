@@ -13,7 +13,7 @@ namespace RenderToy.Materials
 {
     public class ExpressionBase
     {
-        static Expression<Func<double, double, double, double>> LerpFn2 = (value0, value1, factor) => value0 * (1 - factor) + value1 * factor;
+        static Expression<Func<double, double, double, double>> LerpFn2 = (a, b, x) => a * (1 - x) + b * x;
         public static Expression<Func<double, double, double, double>> LerpFn = ExpressionReducer.Reduce(LerpFn2);
         public static Func<double, double, double, double> Lerp = LerpFn.Compile();
         public static Expression<Func<double, double, double>> PowFn = (mantissa, exponent) => Math.Pow(mantissa, exponent);
@@ -178,11 +178,7 @@ namespace RenderToy.Materials
         public string Name { get { return "Saturate"; } }
         public static Expression CreateSaturate(Expression v)
         {
-            var temp = Expression.Parameter(typeof(double), "Temp");
-            return Expression.Block(typeof(double), new ParameterExpression[] { temp }, new Expression[] {
-                Expression.Assign(temp, v),
-                Expression.Invoke(SaturateFn, temp)
-            });
+            return Expression.Invoke(SaturateFn, v);
         }
         public Expression CreateExpression(Expression evalcontext)
         {

@@ -1,4 +1,10 @@
-﻿using RenderToy.Utility;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
+
+using RenderToy.Utility;
+using System;
 using System.Linq.Expressions;
 
 namespace RenderToy.Materials
@@ -8,10 +14,10 @@ namespace RenderToy.Materials
         public string Name { get { return "Checkerboard"; } }
         public Expression CreateExpression(Expression evalcontext)
         {
-            var tempu = Expression.Parameter(typeof(double), "SampleU");
-            var tempv = Expression.Parameter(typeof(double), "SampleV");
-            var intu = Expression.Parameter(typeof(int), "TiledU");
-            var intv = Expression.Parameter(typeof(int), "TiledV");
+            var tempu = Expression.Parameter(typeof(double), "u");
+            var tempv = Expression.Parameter(typeof(double), "v");
+            var intu = Expression.Parameter(typeof(int), "nu");
+            var intv = Expression.Parameter(typeof(int), "nv");
             return Expression.Block(
                 typeof(Vector4D),
                 new ParameterExpression[] { tempu, tempv, intu, intv },

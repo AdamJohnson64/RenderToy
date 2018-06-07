@@ -13,7 +13,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\KDTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\OctreeREF.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BoundingVolumeHierarchy\Octree.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ExpressionReduce.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shader\ExpressionComparator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shader\ExpressionCounter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Materials\BrickMask.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Materials\BrickNoise.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Materials\BumpGenerate.cs" />
@@ -54,6 +55,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Primitives\Sphere.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\Scene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SceneGraph\TransformedObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shader\ExpressionReducer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shader\ExpressionSubstitution.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shader\FieldExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shader\HLSLGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextureFormats\LoaderTGA.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Textures\ImageBgra32.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Textures\Texture.cs" />
