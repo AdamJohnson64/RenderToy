@@ -1,4 +1,5 @@
 ﻿using RenderToy.Cameras;
+using RenderToy.DirectX;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
@@ -108,14 +109,7 @@ namespace RenderToy.WPF
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (vertexbuffer == null) continue;
-                float[] mvp = new float[16]
-                {
-                    (float)transformModelViewProjection.M11, (float)transformModelViewProjection.M12, (float)transformModelViewProjection.M13, (float)transformModelViewProjection.M14,
-                    (float)transformModelViewProjection.M21, (float)transformModelViewProjection.M22, (float)transformModelViewProjection.M23, (float)transformModelViewProjection.M24,
-                    (float)transformModelViewProjection.M31, (float)transformModelViewProjection.M32, (float)transformModelViewProjection.M33, (float)transformModelViewProjection.M34,
-                    (float)transformModelViewProjection.M41, (float)transformModelViewProjection.M42, (float)transformModelViewProjection.M43, (float)transformModelViewProjection.M44,
-                };
-                d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, mvp, 0);
+                d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, D3DMatrix.Convert(transformModelViewProjection), 0);
                 d3d12CommandList.IASetVertexBuffers(0, new[] { new D3D12VertexBufferView { BufferLocation = vertexbuffer.d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = vertexbuffer.size, StrideInBytes = 12 } });
                 d3d12CommandList.DrawInstanced((uint)vertexbuffer.length, 1, 0, 0);
             }

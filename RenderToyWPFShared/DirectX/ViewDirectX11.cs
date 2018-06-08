@@ -1,4 +1,5 @@
 using RenderToy.Cameras;
+using RenderToy.DirectX;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
@@ -87,14 +88,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (vertexbuffer == null) continue;
-                float[] mvp = new float[16]
-                {
-                    (float)transformModelViewProjection.M11, (float)transformModelViewProjection.M12, (float)transformModelViewProjection.M13, (float)transformModelViewProjection.M14,
-                    (float)transformModelViewProjection.M21, (float)transformModelViewProjection.M22, (float)transformModelViewProjection.M23, (float)transformModelViewProjection.M24,
-                    (float)transformModelViewProjection.M31, (float)transformModelViewProjection.M32, (float)transformModelViewProjection.M33, (float)transformModelViewProjection.M34,
-                    (float)transformModelViewProjection.M41, (float)transformModelViewProjection.M42, (float)transformModelViewProjection.M43, (float)transformModelViewProjection.M44,
-                };
-                var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = 4 * 16, Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16}, new D3D11SubresourceData { pSysMem = mvp, SysMemPitch = 0, SysMemSlicePitch = 0 });
+                var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = 4 * 16, Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16}, new D3D11SubresourceData { pSysMem = D3DMatrix.Convert(transformModelViewProjection), SysMemPitch = 0, SysMemSlicePitch = 0 });
                 context.VSSetConstantBuffers(0, new[] { d3d11ConstantBuffer });
                 context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { 12U }, new[] { 0U });
                 context.Draw(vertexbuffer.vertexCount, 0);
