@@ -3,13 +3,11 @@ using RenderToy.DirectX;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
-using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
@@ -109,7 +107,7 @@ namespace RenderToy.WPF
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (vertexbuffer == null) continue;
-                d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, D3DMatrix.Convert(transformModelViewProjection), 0);
+                d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0);
                 d3d12CommandList.IASetVertexBuffers(0, new[] { new D3D12VertexBufferView { BufferLocation = vertexbuffer.d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = vertexbuffer.size, StrideInBytes = 12 } });
                 d3d12CommandList.DrawInstanced((uint)vertexbuffer.length, 1, 0, 0);
             }
@@ -181,8 +179,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             if (primitive == null) return null;
             return MementoServer.Default.Get(primitive, Token, () =>
             {
-                var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
-                var verticesout = verticesin.Select(i => new XYZ { Xp = (float)i.Position.X, Yp = (float)i.Position.Y, Zp = (float)i.Position.Z }).ToArray();
+                var verticesout = DirectXHelper.ConvertToXYZ(primitive);
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZ)) * verticesout.Length);
                 var d3d12ResourceDesc_Buffer = new D3D12ResourceDesc();

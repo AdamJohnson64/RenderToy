@@ -8,6 +8,7 @@ using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.PipelineModel;
+using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using System;
 using System.Linq;
@@ -15,9 +16,9 @@ using System.Runtime.InteropServices;
 
 namespace RenderToy.DirectX
 {
-    public struct D3DMatrix
+    public struct DirectXHelper
     {
-        public static float[] Convert(Matrix3D matrix)
+        public static float[] ConvertToD3DMatrix(Matrix3D matrix)
         {
             return new float[16]
             {
@@ -26,6 +27,39 @@ namespace RenderToy.DirectX
                 (float)matrix.M31, (float)matrix.M32, (float)matrix.M33, (float)matrix.M34,
                 (float)matrix.M41, (float)matrix.M42, (float)matrix.M43, (float)matrix.M44,
             };
+        }
+        public static XYZ[] ConvertToXYZ(IPrimitive primitive)
+        {
+            var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
+            var verticesout = verticesin.Select(i => new XYZ
+            {
+                Xp = (float)i.Position.X,
+                Yp = (float)i.Position.Y,
+                Zp = (float)i.Position.Z });
+            return verticesout.ToArray();
+        }
+        public static XYZNorDiffuseTex1[] ConvertToXYZNorDiffuseTex1(IPrimitive primitive)
+        {
+            var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
+            var verticesout = verticesin.Select(i => new XYZNorDiffuseTex1
+            {
+                Xp = (float)i.Position.X,
+                Yp = (float)i.Position.Y,
+                Zp = (float)i.Position.Z,
+                Xn = (float)i.Normal.X,
+                Yn = (float)i.Normal.Y,
+                Zn = (float)i.Normal.Z,
+                Diffuse = i.Diffuse,
+                U = (float)i.TexCoord.X,
+                V = (float)i.TexCoord.Y,
+                Tx = (float)i.Tangent.X,
+                Ty = (float)i.Tangent.Y,
+                Tz = (float)i.Tangent.Z,
+                Bx = (float)i.Bitangent.X,
+                By = (float)i.Bitangent.Y,
+                Bz = (float)i.Bitangent.Z,
+            });
+            return verticesout.ToArray();
         }
     }
 }
@@ -115,7 +149,7 @@ namespace RenderToy.RenderMode
                 var A = PrimitiveAssembly.CreateTriangles(transformedobject.Node.Primitive);
                 var B = A.Select(i => new XYZDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.WireColor) });
                 var vertexbuffer = B.ToArray();
-                device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
+                device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * mvp), 0));
                 device.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZDiffuse)));
             }
             device.EndScene();
@@ -174,7 +208,7 @@ namespace RenderToy.RenderMode
                     U = (float)i.TexCoord.X, V = (float)i.TexCoord.Y,
                 });
                 var vertexbuffer = B.ToArray();
-                device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
+                device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * mvp), 0));
                 device.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
             }
             device.EndScene();

@@ -3,11 +3,9 @@ using RenderToy.DirectX;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
-using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Utility;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
@@ -88,7 +86,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (vertexbuffer == null) continue;
-                var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = 4 * 16, Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16}, new D3D11SubresourceData { pSysMem = D3DMatrix.Convert(transformModelViewProjection), SysMemPitch = 0, SysMemSlicePitch = 0 });
+                var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = 4 * 16, Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16}, new D3D11SubresourceData { pSysMem = DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), SysMemPitch = 0, SysMemSlicePitch = 0 });
                 context.VSSetConstantBuffers(0, new[] { d3d11ConstantBuffer });
                 context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { 12U }, new[] { 0U });
                 context.Draw(vertexbuffer.vertexCount, 0);
@@ -131,8 +129,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             if (primitive == null) return null;
             return MementoServer.Default.Get(primitive, Token, () =>
             {
-                var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
-                var verticesout = verticesin.Select(i => new XYZ { Xp = (float)i.Position.X, Yp = (float)i.Position.Y, Zp = (float)i.Position.Z }).ToArray();
+                var verticesout = DirectXHelper.ConvertToXYZ(primitive);
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZ)) * verticesout.Length);
                 var d3d11Buffer = d3d11Device.CreateBuffer(
