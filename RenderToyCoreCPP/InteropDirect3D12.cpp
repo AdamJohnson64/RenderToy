@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <memory>
+#include <msclr\marshal_cppstd.h>
 #include <d3d9.h>
 #include <d3d12.h>
 #include "InteropCommon.h"
@@ -770,15 +771,19 @@ namespace RenderToy
 			pDesc2.RasterizerState.FillMode = (D3D12_FILL_MODE)pDesc.RasterizerState.FillMode;
 			pDesc2.SampleDesc.Count = pDesc.SampleDesc.Count;
 			pDesc2.SampleDesc.Quality = pDesc.SampleDesc.Quality;
-			D3D12_INPUT_ELEMENT_DESC inputlayout;
-			inputlayout.SemanticName = "POSITION";
-			inputlayout.SemanticIndex = pDesc.InputLayout.pInputElementDescs[0].SemanticIndex;
-			inputlayout.Format = (DXGI_FORMAT)pDesc.InputLayout.pInputElementDescs[0].Format;
-			inputlayout.InputSlot = pDesc.InputLayout.pInputElementDescs[0].InputSlot;
-			inputlayout.AlignedByteOffset = pDesc.InputLayout.pInputElementDescs[0].AlignedByteOffset;
-			inputlayout.InputSlotClass = (D3D12_INPUT_CLASSIFICATION)pDesc.InputLayout.pInputElementDescs[0].InputSlotClass;
-			inputlayout.InstanceDataStepRate = pDesc.InputLayout.pInputElementDescs[0].InstanceDataStepRate;
-			pDesc2.InputLayout.pInputElementDescs = &inputlayout;
+			std::unique_ptr<D3D12_INPUT_ELEMENT_DESC[]> pInputElementDescsM(new D3D12_INPUT_ELEMENT_DESC[pDesc.InputLayout.pInputElementDescs->Length]);
+			msclr::interop::marshal_context ctx;
+			for (int i = 0; i < pDesc.InputLayout.pInputElementDescs->Length; ++i)
+			{
+				pInputElementDescsM[i].SemanticName = ctx.marshal_as<LPCSTR>(pDesc.InputLayout.pInputElementDescs[i].SemanticName);
+				pInputElementDescsM[i].SemanticIndex = pDesc.InputLayout.pInputElementDescs[i].SemanticIndex;
+				pInputElementDescsM[i].Format = (DXGI_FORMAT)pDesc.InputLayout.pInputElementDescs[i].Format;
+				pInputElementDescsM[i].InputSlot = pDesc.InputLayout.pInputElementDescs[i].InputSlot;
+				pInputElementDescsM[i].AlignedByteOffset = pDesc.InputLayout.pInputElementDescs[i].AlignedByteOffset;
+				pInputElementDescsM[i].InputSlotClass = (D3D12_INPUT_CLASSIFICATION)pDesc.InputLayout.pInputElementDescs[i].InputSlotClass;
+				pInputElementDescsM[i].InstanceDataStepRate = pDesc.InputLayout.pInputElementDescs[i].InstanceDataStepRate;
+			}
+			pDesc2.InputLayout.pInputElementDescs = &pInputElementDescsM[0];
 			pDesc2.InputLayout.NumElements = pDesc.InputLayout.pInputElementDescs->Length;
 			pDesc2.PrimitiveTopologyType = (D3D12_PRIMITIVE_TOPOLOGY_TYPE)pDesc.PrimitiveTopologyType;
 			pDesc2.NumRenderTargets = pDesc.NumRenderTargets;
