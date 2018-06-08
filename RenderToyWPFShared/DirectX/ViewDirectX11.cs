@@ -88,7 +88,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
                 if (vertexbuffer == null) continue;
                 var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = 4 * 16, Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16}, new D3D11SubresourceData { pSysMem = DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), SysMemPitch = 0, SysMemSlicePitch = 0 });
                 context.VSSetConstantBuffers(0, new[] { d3d11ConstantBuffer });
-                context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { 12U }, new[] { 0U });
+                context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZ)) }, new[] { 0U });
                 context.Draw(vertexbuffer.vertexCount, 0);
             }
             ////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZ)) * verticesout.Length);
                 var d3d11Buffer = d3d11Device.CreateBuffer(
-                    new D3D11BufferDesc { ByteWidth = size, Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.VertexBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 12 },
+                    new D3D11BufferDesc { ByteWidth = size, Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.VertexBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = (uint)Marshal.SizeOf(typeof(XYZ)) },
                     new D3D11SubresourceData { pSysMem = verticesout, SysMemPitch = 0, SysMemSlicePitch = 0 });
                 return new VertexBufferInfo { d3d11Buffer = d3d11Buffer, vertexCount = (uint)verticesout.Length };
             });

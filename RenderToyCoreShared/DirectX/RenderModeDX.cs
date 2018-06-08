@@ -117,7 +117,7 @@ namespace RenderToy.RenderMode
                 var E = Transformation.HomogeneousDivide(D);
                 var F = E.Select(i => new XYZWDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, W = (float)i.W, Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.WireColor) });
                 var vertexbuffer = F.ToArray();
-                device.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZWDiffuse)));
+                device.DrawPrimitiveUP(D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZWDiffuse)));
             }
             device.EndScene();
             D3DHelper.CopySurface(rendertarget, bitmap_ptr, render_width, render_height, bitmap_stride);
@@ -150,7 +150,7 @@ namespace RenderToy.RenderMode
                 var B = A.Select(i => new XYZDiffuse { X = (float)i.X, Y = (float)i.Y, Z = (float)i.Z, Diffuse = Rasterization.ColorToUInt32(transformedobject.Node.WireColor) });
                 var vertexbuffer = B.ToArray();
                 device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * mvp), 0));
-                device.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZDiffuse)));
+                device.DrawPrimitiveUP(D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZDiffuse)));
             }
             device.EndScene();
             D3DHelper.CopySurface(rendertarget, bitmap_ptr, render_width, render_height, bitmap_stride);
@@ -209,7 +209,7 @@ namespace RenderToy.RenderMode
                 });
                 var vertexbuffer = B.ToArray();
                 device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * mvp), 0));
-                device.DrawPrimitiveUP(RenderToy.D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
+                device.DrawPrimitiveUP(D3DPrimitiveType.TriangleList, (uint)(vertexbuffer.Length / 3), Marshal.UnsafeAddrOfPinnedArrayElement(vertexbuffer, 0), (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
             }
             device.EndScene();
             D3DHelper.CopySurface(rendertarget, bitmap_ptr, render_width, render_height, bitmap_stride);
