@@ -141,11 +141,22 @@ namespace RenderToy
 	{
 		UINT MipSlice;
 	};
+	public value struct D3D11Tex2DSrv
+	{
+		UINT MostDetailedMip;
+		UINT MipLevels;
+	};
 	public value struct D3D11RenderTargetViewDesc
 	{
 		DXGIFormat			Format;
 		D3D11RtvDimension	ViewDimension;
 		D3D11Tex2DRtv       Texture2D;
+	};
+	public value struct D3D11ShaderResourceViewDesc
+	{
+		DXGIFormat		Format;
+		D3DSrvDimension	ViewDimension;
+		D3D11Tex2DSrv	Texture2D;
 	};
 	public value struct D3D11SubresourceData
 	{
@@ -212,6 +223,13 @@ namespace RenderToy
 	{
 	public:
 		D3D11RenderTargetView(ID3D11RenderTargetView *pObj) : COMWrapper(pObj)
+		{
+		}
+	};
+	public ref class D3D11ShaderResourceView : COMWrapper<ID3D11ShaderResourceView>
+	{
+	public:
+		D3D11ShaderResourceView(ID3D11ShaderResourceView *pObj) : COMWrapper(pObj)
 		{
 		}
 	};
@@ -298,9 +316,18 @@ namespace RenderToy
 			std::unique_ptr<ID3D11RenderTargetView*[]> ppRenderTargetViewsM(new ID3D11RenderTargetView*[ppRenderTargetViews->Length]);
 			for (int i = 0; i < ppRenderTargetViews->Length; ++i)
 			{
-				ppRenderTargetViewsM[i] = ppRenderTargetViews[i]->Wrapped;
+				ppRenderTargetViewsM[i] = ppRenderTargetViews[i] == nullptr ? nullptr : ppRenderTargetViews[i]->Wrapped;
 			}
 			pWrapped->OMSetRenderTargets(ppRenderTargetViews->Length, &ppRenderTargetViewsM[0], nullptr);
+		}
+		void PSSetShaderResources(UINT StartSlot, cli::array<D3D11ShaderResourceView^> ^ppShaderResourceViews)
+		{
+			std::unique_ptr<ID3D11ShaderResourceView*[]> ppShaderResourceViewsM(new ID3D11ShaderResourceView*[ppShaderResourceViews->Length]);
+			for (int i = 0; i < ppShaderResourceViews->Length; ++i)
+			{
+				ppShaderResourceViewsM[i] = ppShaderResourceViews[i] == nullptr ? nullptr : ppShaderResourceViews[i]->Wrapped;
+			}
+			pWrapped->PSSetShaderResources(StartSlot, ppShaderResourceViews->Length, &ppShaderResourceViewsM[0]);
 		}
 		void PSSetShader(D3D11PixelShader ^pPixelShader)
 		{
@@ -410,6 +437,17 @@ namespace RenderToy
 			pDescM.Texture2D.MipSlice = pDesc.Texture2D.MipSlice;
 			TRY_D3D(pWrapped->CreateRenderTargetView(pResource->GetResource(), &pDescM, &ppRTView));
 			return gcnew D3D11RenderTargetView(ppRTView);
+		}
+		D3D11ShaderResourceView^ CreateShaderResourceView(D3D11Resource ^pResource, D3D11ShaderResourceViewDesc pDesc)
+		{
+			ID3D11ShaderResourceView *ppSRView = nullptr;
+			D3D11_SHADER_RESOURCE_VIEW_DESC pDescM;
+			pDescM.Format = (DXGI_FORMAT)pDesc.Format;
+			pDescM.ViewDimension = (D3D11_SRV_DIMENSION)pDesc.ViewDimension;
+			pDescM.Texture2D.MipLevels = pDesc.Texture2D.MipLevels;
+			pDescM.Texture2D.MostDetailedMip = pDesc.Texture2D.MostDetailedMip;
+			TRY_D3D(pWrapped->CreateShaderResourceView(pResource->GetResource(), &pDescM, &ppSRView));
+			return gcnew D3D11ShaderResourceView(ppSRView);
 		}
 		D3D11Texture2D^ CreateTexture2D(D3D11Texture2DDesc pDesc, System::Nullable<D3D11SubresourceData> pInitialData)
 		{
