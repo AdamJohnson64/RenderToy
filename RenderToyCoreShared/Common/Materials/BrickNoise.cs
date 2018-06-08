@@ -13,13 +13,13 @@ namespace RenderToy.Materials
     {
         public static double Compute(double u, double v)
         {
-            if (v - Math.Floor(v) < 0.5)
+            if (v - System.Math.Floor(v) < 0.5)
             {
-                return Perlin2D.PerlinNoise2D(Math.Floor(u) * 8, Math.Floor(v + 0.5) * 8);
+                return Perlin2D.PerlinNoise2D(System.Math.Floor(u) * 8, System.Math.Floor(v + 0.5) * 8);
             }
             else
             {
-                return Perlin2D.PerlinNoise2D(Math.Floor(u + 0.5) * 8, Math.Floor(v) * 8);
+                return Perlin2D.PerlinNoise2D(System.Math.Floor(u + 0.5) * 8, System.Math.Floor(v) * 8);
             }
         }
         public string Name { get { return "Brick Noise"; } }
@@ -36,14 +36,14 @@ namespace RenderToy.Materials
                     Expression.LessThan(
                         Expression.Subtract(
                             tempv,
-                            Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv })),
+                            Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv })),
                         Expression.Constant(0.5)),
                     Perlin2D.PerlinNoise2D(
-                            Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu }), Expression.Constant(8.0)),
-                            Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { Expression.Add(tempv, Expression.Constant(0.5)) }), Expression.Constant(8.0))),
+                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu }), Expression.Constant(8.0)),
+                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { Expression.Add(tempv, Expression.Constant(0.5)) }), Expression.Constant(8.0))),
                     Perlin2D.PerlinNoise2D(
-                            Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { Expression.Add(tempu, Expression.Constant(0.5)) }), Expression.Constant(8.0)),
-                            Expression.Multiply(Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }), Expression.Constant(8.0)))),
+                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { Expression.Add(tempu, Expression.Constant(0.5)) }), Expression.Constant(8.0)),
+                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }), Expression.Constant(8.0)))),
                 "BrickNoise",
                 new ParameterExpression[] { tempu, tempv });
         }

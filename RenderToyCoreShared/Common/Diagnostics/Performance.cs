@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RenderToy.Utility
+namespace RenderToy.Diagnostics
 {
     public static class Performance
     {

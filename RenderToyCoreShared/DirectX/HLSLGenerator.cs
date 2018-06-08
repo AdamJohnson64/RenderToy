@@ -3,7 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.Utility;
+using RenderToy.Math;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -347,9 +347,9 @@ struct VS_INPUT
         }
         static string EmitMethod(MethodInfo method)
         {
-            if (method.DeclaringType == typeof(Math) && method.Name == "Floor") return "floor";
-            if (method.DeclaringType == typeof(Math) && method.Name == "Pow") return "pow";
-            if (method.DeclaringType == typeof(Math) && method.Name == "Sin") return "sin";
+            if (method.DeclaringType == typeof(System.Math) && method.Name == "Floor") return "floor";
+            if (method.DeclaringType == typeof(System.Math) && method.Name == "Pow") return "pow";
+            if (method.DeclaringType == typeof(System.Math) && method.Name == "Sin") return "sin";
             else throw new NotSupportedException("Don't know how to generate HLSL for method '" + method + "'.");
         }
         static string EmitType(Type type)
@@ -377,7 +377,7 @@ struct VS_INPUT
                 }
                 else if (c == '}')
                 {
-                    indent = Math.Max(0, indent - 1);
+                    indent = System.Math.Max(0, indent - 1);
                     WriteLine();
                     Writer.Write(c);
                     WriteLine();

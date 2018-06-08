@@ -3,8 +3,8 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Math;
 using RenderToy.SceneGraph;
-using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -116,7 +116,7 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of pixels to be written to the framebuffer.</returns>
         public static IEnumerable<PixelBgra32> RasterizeLine(Vector4D P0, Vector4D P1, uint color)
         {
-            if (Math.Abs(P1.X - P0.X) > Math.Abs(P1.Y - P0.Y))
+            if (System.Math.Abs(P1.X - P0.X) > System.Math.Abs(P1.Y - P0.Y))
             {
                 // X spanning line; this line is longer in the X axis.
                 // Scan in the X direction plotting Y points.
@@ -223,8 +223,8 @@ namespace RenderToy.PipelineModel
                 new { Org = P2, Dir = P0 - P2 }
             };
             // Scan in the range of the triangle.
-            int yscanmin = (int)Math.Floor(edges.Min(p => p.Org.Y));
-            int yscanmax = (int)Math.Ceiling(edges.Max(p => p.Org.Y));
+            int yscanmin = (int)System.Math.Floor(edges.Min(p => p.Org.Y));
+            int yscanmax = (int)System.Math.Ceiling(edges.Max(p => p.Org.Y));
             for (int y = yscanmin; y <= yscanmax; ++y)
             {
                 double yline = y + 0.5;
@@ -331,10 +331,10 @@ namespace RenderToy.PipelineModel
                     Vector4D project = v * (1 / v.W);
                     double px = (project.X + 1) / 2 * pixelWidth;
                     double py = (1 - project.Y) / 2 * pixelHeight;
-                    minx = Math.Min(minx, (int)px - 1);
-                    maxx = Math.Max(maxx, (int)px + 1);
-                    miny = Math.Min(miny, (int)py - 1);
-                    maxy = Math.Max(maxy, (int)py + 1);
+                    minx = System.Math.Min(minx, (int)px - 1);
+                    maxx = System.Math.Max(maxx, (int)px + 1);
+                    miny = System.Math.Min(miny, (int)py - 1);
+                    maxy = System.Math.Max(maxy, (int)py + 1);
                 }
                 else
                 {
@@ -344,10 +344,10 @@ namespace RenderToy.PipelineModel
                     if (v.Y < 0) maxy = int.MaxValue;
                 }
             }
-            minx = Math.Max(minx, 0);
-            maxx = Math.Min(maxx, pixelWidth);
-            miny = Math.Max(miny, 0);
-            maxy = Math.Min(maxy, pixelHeight);
+            minx = System.Math.Max(minx, 0);
+            maxx = System.Math.Min(maxx, pixelWidth);
+            miny = System.Math.Max(miny, 0);
+            maxy = System.Math.Min(maxy, pixelHeight);
             // Perform the rasterization within these bounds.
             Matrix3D Minv = MathHelp.Invert(
                 new Matrix3D(

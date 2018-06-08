@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Math;
 using RenderToy.Utility;
 using System;
 using System.Linq.Expressions;
@@ -25,8 +26,8 @@ namespace RenderToy.Materials
                 {
                     Expression.Assign(tempu, u.CreateExpression(evalcontext)),
                     Expression.Assign(tempv, v.CreateExpression(evalcontext)),
-                    Expression.Assign(intu, Expression.Convert(Expression.Multiply(Expression.Subtract(tempu, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu })), Expression.Constant(2.0)), typeof(int))),
-                    Expression.Assign(intv, Expression.Convert(Expression.Multiply(Expression.Subtract(tempv, Expression.Call(null, typeof(Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv })), Expression.Constant(2.0)), typeof(int))),
+                    Expression.Assign(intu, Expression.Convert(Expression.Multiply(Expression.Subtract(tempu, Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu })), Expression.Constant(2.0)), typeof(int))),
+                    Expression.Assign(intv, Expression.Convert(Expression.Multiply(Expression.Subtract(tempv, Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv })), Expression.Constant(2.0)), typeof(int))),
                     Expression.Condition(
                         Expression.Equal(Expression.And(Expression.Add(intu, intv), Expression.Constant(1)), Expression.Constant(0)),
                         color1.CreateExpression(evalcontext),
@@ -35,6 +36,6 @@ namespace RenderToy.Materials
         }
         public IMNNode<Vector4D> Color1 { get { return color1; } set { color1 = value; } }
         public IMNNode<Vector4D> Color2 { get { return color2; } set { color2 = value; } }
-        protected IMNNode<Vector4D> color1, color2;
+        IMNNode<Vector4D> color1, color2;
     }
 }

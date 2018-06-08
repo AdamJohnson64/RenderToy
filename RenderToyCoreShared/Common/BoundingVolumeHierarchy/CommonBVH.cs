@@ -3,8 +3,8 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Math;
 using RenderToy.Utility;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,12 +23,12 @@ namespace RenderToy.BoundingVolumeHierarchy
             Vector3D max = new Vector3D(double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity);
             foreach (var v in vertices)
             {
-                min.X = Math.Min(min.X, v.X);
-                min.Y = Math.Min(min.Y, v.Y);
-                min.Z = Math.Min(min.Z, v.Z);
-                max.X = Math.Max(max.X, v.X);
-                max.Y = Math.Max(max.Y, v.Y);
-                max.Z = Math.Max(max.Z, v.Z);
+                min.X = System.Math.Min(min.X, v.X);
+                min.Y = System.Math.Min(min.Y, v.Y);
+                min.Z = System.Math.Min(min.Z, v.Z);
+                max.X = System.Math.Max(max.X, v.X);
+                max.Y = System.Math.Max(max.Y, v.Y);
+                max.Z = System.Math.Max(max.Z, v.Z);
             }
             return new Bound3D(min, max);
         }

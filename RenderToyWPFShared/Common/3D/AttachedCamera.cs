@@ -3,7 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.Utility;
+using RenderToy.Math;
 using System.Windows;
 using System.Windows.Input;
 

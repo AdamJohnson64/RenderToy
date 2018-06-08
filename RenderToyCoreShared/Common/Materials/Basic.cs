@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Math;
 using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
@@ -16,12 +17,12 @@ namespace RenderToy.Materials
         static Expression<Func<double, double, double, double>> LerpFn2 = (a, b, x) => a * (1 - x) + b * x;
         public static Expression<Func<double, double, double, double>> LerpFn = ExpressionReducer.Reduce(LerpFn2);
         public static Func<double, double, double, double> Lerp = LerpFn.Compile();
-        public static Expression<Func<double, double, double>> PowFn = (mantissa, exponent) => Math.Pow(mantissa, exponent);
+        public static Expression<Func<double, double, double>> PowFn = (mantissa, exponent) => System.Math.Pow(mantissa, exponent);
         public static Func<double, double, double> Pow = PowFn.Compile();
         static Expression<Func<double, double>> SaturateFn2 = (f) => f < 0 ? 0 : (f < 1 ? f : 1);
         public static Expression<Func<double, double>> SaturateFn = ExpressionReducer.Reduce(SaturateFn2);
         public static Func<double, double> Saturate = SaturateFn.Compile();
-        static Expression<Func<double, double>> TileFn2 = (f) => f - Math.Floor(f);
+        static Expression<Func<double, double>> TileFn2 = (f) => f - System.Math.Floor(f);
         public static Expression<Func<double, double>> TileFn = ExpressionReducer.Reduce(TileFn2);
         public static Func<double, double> Tile = TileFn.Compile();
         public static Expression InvokeLerp(Expression value0, Expression value1, Expression factor)
@@ -187,7 +188,7 @@ namespace RenderToy.Materials
     }
     sealed class MNSin : MNUnary<double>, IMNNode<double>, INamed
     {
-        public static Expression<Func<double, double>> Sin = (f) => Math.Sin(f);
+        public static Expression<Func<double, double>> Sin = (f) => System.Math.Sin(f);
         public string Name { get { return "Sin"; } }
         public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(Sin, Value.CreateExpression(evalcontext)); }
     }

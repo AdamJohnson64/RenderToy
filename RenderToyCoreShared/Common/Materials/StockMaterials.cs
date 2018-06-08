@@ -3,7 +3,8 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.Utility;
+
+using RenderToy.Math;
 
 namespace RenderToy.Materials
 {

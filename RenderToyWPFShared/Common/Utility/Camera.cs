@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Cameras;
+using RenderToy.Math;
 using RenderToy.Transforms;
-using RenderToy.Utility;
 using System.Windows;
 
 namespace RenderToy.WPF

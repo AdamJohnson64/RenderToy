@@ -7,8 +7,6 @@ using RenderToy.Cameras;
 using RenderToy.RenderControl;
 using RenderToy.RenderMode;
 using RenderToy.SceneGraph;
-using RenderToy.Utility;
-using System;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -34,8 +32,8 @@ namespace RenderToy.WPF
         protected override void OnRender(DrawingContext drawingContext)
         {
             if (render == null) return;
-            int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth);
-            int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight);
+            int RENDER_WIDTH = (int)System.Math.Ceiling(ActualWidth);
+            int RENDER_HEIGHT = (int)System.Math.Ceiling(ActualHeight);
             render.SetCamera(AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             render.SetTarget(RENDER_WIDTH, RENDER_HEIGHT);
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;

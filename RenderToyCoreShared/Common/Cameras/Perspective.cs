@@ -3,8 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.Utility;
-using System;
+using RenderToy.Math;
 
 namespace RenderToy.Cameras
 {
@@ -14,7 +13,7 @@ namespace RenderToy.Cameras
         {
             get
             {
-                return CreateProjection(0.1, 10000.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0);
+                return CreateProjection(0.1, 10000.0, 60.0 * System.Math.PI / 180.0, 60.0 * System.Math.PI / 180.0);
             }
         }
         public static Matrix3D AspectCorrectFit(double width, double height)
@@ -31,8 +30,8 @@ namespace RenderToy.Cameras
         }
         public static Matrix3D CreateProjection(double near_plane, double far_plane, double fov_horiz, double fov_vert)
         {
-            double w = 1 / Math.Tan(fov_horiz * 0.5);  // 1/tan(x) == cot(x)
-            double h = 1 / Math.Tan(fov_vert * 0.5);   // 1/tan(x) == cot(x)
+            double w = 1 / System.Math.Tan(fov_horiz * 0.5);  // 1/tan(x) == cot(x)
+            double h = 1 / System.Math.Tan(fov_vert * 0.5);   // 1/tan(x) == cot(x)
             double Q = far_plane / (far_plane - near_plane);
             Matrix3D result = new Matrix3D(
                 w, 0, 0, 0,

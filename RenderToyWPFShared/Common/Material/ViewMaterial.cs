@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Materials;
-using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows;
@@ -63,7 +62,7 @@ namespace RenderToy.WPF
         #region - Section : UIElement Overrides -
         protected override Size MeasureOverride(Size availableSize)
         {
-            return new Size(Math.Min(availableSize.Width, MaterialWidth), Math.Min(availableSize.Height, MaterialHeight));
+            return new Size(System.Math.Min(availableSize.Width, MaterialWidth), System.Math.Min(availableSize.Height, MaterialHeight));
         }
         protected override void OnRender(DrawingContext drawingContext)
         {

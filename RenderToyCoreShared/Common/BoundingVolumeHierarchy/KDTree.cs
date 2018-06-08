@@ -3,8 +3,8 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Math;
 using RenderToy.Meshes;
-using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 

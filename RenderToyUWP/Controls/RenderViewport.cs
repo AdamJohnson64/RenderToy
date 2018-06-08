@@ -6,7 +6,6 @@
 using RenderToy.Cameras;
 using RenderToy.SceneGraph;
 using RenderToy.Transforms;
-using RenderToy.Utility;
 using System;
 using System.IO;
 using System.Linq;

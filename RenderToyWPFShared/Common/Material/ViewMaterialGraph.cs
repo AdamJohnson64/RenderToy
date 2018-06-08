@@ -114,7 +114,7 @@ namespace RenderToy.WPF
             if (ui == null) return 0;
             double myheight = ui.DesiredSize.Height;
             double nextheight = node.Children.Sum(i => CalculateBranchHeight(i.Target));
-            return Math.Max(myheight, nextheight);
+            return System.Math.Max(myheight, nextheight);
         }
         NodePosition GenerateVisualTree(IMaterial node)
         {
@@ -207,13 +207,13 @@ namespace RenderToy.WPF
             {
                 var visual = node.Visual as UIElement;
                 if (visual == null) continue;
-                minx = Math.Min(minx, node.X);
-                miny = Math.Min(miny, node.Y);
-                maxx = Math.Max(maxx, node.X + visual.DesiredSize.Width);
-                maxy = Math.Max(maxy, node.Y + visual.DesiredSize.Height);
+                minx = System.Math.Min(minx, node.X);
+                miny = System.Math.Min(miny, node.Y);
+                maxx = System.Math.Max(maxx, node.X + visual.DesiredSize.Width);
+                maxy = System.Math.Max(maxy, node.Y + visual.DesiredSize.Height);
             }
             // Request enough size for the whole graph.
-            return new Size(Math.Max(0, maxx), Math.Max(0, maxy));
+            return new Size(System.Math.Max(0, maxx), System.Math.Max(0, maxy));
         }
         protected override void OnRender(DrawingContext drawingContext)
         {

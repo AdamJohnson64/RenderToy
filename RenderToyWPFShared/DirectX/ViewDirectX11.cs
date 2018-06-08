@@ -1,5 +1,6 @@
 using RenderToy.Cameras;
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;

@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using RenderToy.Math;
 
 namespace RenderToy.ModelFormat
 {

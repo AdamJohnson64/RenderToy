@@ -5,11 +5,11 @@
 
 using RenderToy.Cameras;
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Transforms;
-using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

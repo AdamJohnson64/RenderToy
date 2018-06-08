@@ -5,10 +5,10 @@
 
 using RenderToy.DirectX;
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.PipelineModel;
 using RenderToy.SceneGraph;
-using RenderToy.Utility;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -49,7 +49,7 @@ namespace RenderToy.RenderMode
             surface.UnlockRect();
         }
     }
-    public static class RenderD3D
+    public static class RenderModeDX
     {
         #region - Section : Phase 3 - Rasterized Rendering (Direct3D 9) -
         /// <summary>

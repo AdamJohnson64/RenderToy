@@ -3,8 +3,9 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Diagnostics;
+using RenderToy.Math;
 using RenderToy.Primitives;
-using RenderToy.Utility;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;

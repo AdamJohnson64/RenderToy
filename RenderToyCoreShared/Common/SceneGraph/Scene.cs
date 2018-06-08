@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.Primitives;
 using RenderToy.Transforms;
-using RenderToy.Utility;
 using System.Collections.Generic;
 
 namespace RenderToy.SceneGraph

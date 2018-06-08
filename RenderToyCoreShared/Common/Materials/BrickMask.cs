@@ -16,7 +16,7 @@ namespace RenderToy.Materials
         public static Func<double, double, double> CallTemp = Temp.Compile();
         public static double Compute(double u, double v)
         {
-            return CallTemp(u - Math.Floor(u), v - Math.Floor(v));
+            return CallTemp(u - System.Math.Floor(u), v - System.Math.Floor(v));
         }
         public string Name { get { return "Brick Mask"; } }
         public Expression CreateExpression(Expression evalcontext)

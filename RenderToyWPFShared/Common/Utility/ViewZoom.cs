@@ -3,7 +3,6 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -38,7 +37,7 @@ namespace RenderToy.WPF
             double contentheight = visual.DesiredSize.Height;
             double zoomwidth = windowwidth / contentwidth;
             double zoomheight = windowheight / contentheight;
-            double zoombest = Math.Min(zoomwidth, zoomheight) * zoom;
+            double zoombest = System.Math.Min(zoomwidth, zoomheight) * zoom;
             var transform = new TransformGroup();
             transform.Children.Add(new TranslateTransform(-contentwidth / 2, -contentheight / 2));
             transform.Children.Add(new TranslateTransform(-contentwidth * offsetx, -contentheight * offsety));

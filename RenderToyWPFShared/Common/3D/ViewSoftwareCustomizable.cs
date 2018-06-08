@@ -5,13 +5,12 @@
 
 using RenderToy.Cameras;
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.Primitives;
 using RenderToy.RenderControl;
 using RenderToy.RenderMode;
 using RenderToy.SceneGraph;
 using RenderToy.Transforms;
-using RenderToy.Utility;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -58,7 +57,7 @@ namespace RenderToy.WPF
             {
                 var menu_group = new MenuItem { Header = group.Key };
                 Matrix3D mvp = MathHelp.Invert(MathHelp.CreateMatrixLookAt(new Vector3D(0, 0, -2), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0)));
-                mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * Math.PI / 180.0, 60.0 * Math.PI / 180.0));
+                mvp = MathHelp.Multiply(mvp, Perspective.CreateProjection(0.01, 100.0, 60.0 * System.Math.PI / 180.0, 60.0 * System.Math.PI / 180.0));
                 foreach (var call in group)
                 {
                     WriteableBitmap bitmap = new WriteableBitmap(64, 64, 0, 0, PixelFormats.Bgra32, null);
@@ -121,8 +120,8 @@ namespace RenderToy.WPF
         protected override void OnRender(DrawingContext drawingContext)
         {
             if (RenderMode == null) return;
-            int RENDER_WIDTH = (int)Math.Ceiling(ActualWidth) / RenderResolution;
-            int RENDER_HEIGHT = (int)Math.Ceiling(ActualHeight) / RenderResolution;
+            int RENDER_WIDTH = (int)System.Math.Ceiling(ActualWidth) / RenderResolution;
+            int RENDER_HEIGHT = (int)System.Math.Ceiling(ActualHeight) / RenderResolution;
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
             RenderMode.SetCamera(AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
@@ -146,7 +145,7 @@ namespace RenderToy.WPF
     {
         static RenderCallCommands()
         {
-            Calls = RenderCall.Generate(new[] { typeof(RenderModeCS), typeof(RenderD3D), typeof(RenderToyCLI) }).ToArray();
+            Calls = RenderCall.Generate(new[] { typeof(RenderModeCS), typeof(RenderModeDX), typeof(RenderToyCLI) }).ToArray();
             Commands = Calls.ToDictionary(x => x, y => new RoutedUICommand(RenderCall.GetDisplayNameFull(y.MethodInfo.Name), y.MethodInfo.Name, typeof(RenderCallCommands)));
         }
         public static readonly RenderCall[] Calls;

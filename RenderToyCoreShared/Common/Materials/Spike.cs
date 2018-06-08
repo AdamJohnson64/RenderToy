@@ -1,5 +1,4 @@
 ﻿using RenderToy.Utility;
-using System;
 using System.Linq.Expressions;
 
 namespace RenderToy.Materials
@@ -22,7 +21,7 @@ namespace RenderToy.Materials
                         Expression.Constant(0.0),
                         MNSaturate.CreateSaturate(
                             Expression.Multiply(
-                                Expression.Call(null, typeof(Math).GetMethod("Sqrt"), new Expression[]
+                                Expression.Call(null, typeof(System.Math).GetMethod("Sqrt"), new Expression[]
                                 {
                                     Expression.Add(Expression.Multiply(tempu, tempu), Expression.Multiply(tempv, tempv))
                                 }),

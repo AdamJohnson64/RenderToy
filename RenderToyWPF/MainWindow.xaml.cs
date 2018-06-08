@@ -5,11 +5,11 @@
 
 using Microsoft.Win32;
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.ModelFormat;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Transforms;
-using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

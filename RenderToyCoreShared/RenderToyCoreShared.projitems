@@ -38,7 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\RenderControl\MultiPassAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\RenderControl\SinglePassAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\RenderControl\SinglePassSync.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\RenderModeCS.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\RenderMode\RenderModeCS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Cameras\Perspective.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Cameras\IProjection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\Basic.cs" />
@@ -67,16 +67,20 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Transforms\ITransform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Transforms\TransformMatrix.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Transforms\TransformQuaternion.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\CallHelp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\RenderMode\CallHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\Clipping.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\INamed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\SequenceHelp.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\Teapot.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\Interop.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\MathHelp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\RenderMode\SceneSerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Math\MathHelp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\MementoServer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\Performance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\Performance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\WorkQueue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\RenderModeDX.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Common\Math\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Common\Diagnostics\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Common\RenderMode\" />
   </ItemGroup>
 </Project>

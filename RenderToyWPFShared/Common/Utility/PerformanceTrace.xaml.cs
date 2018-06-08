@@ -3,8 +3,8 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Diagnostics;
 using RenderToy.Linq;
-using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -195,14 +195,14 @@ namespace RenderToy.WPF
                 double rulertimemin = (double)(timemin - TraceTimeBase) / TraceTimeFrequency;
                 double rulertimemax = (double)(timemax - TraceTimeBase) / TraceTimeFrequency;
                 // Determine an appropriate log10 timebase for a good number of ticks.
-                double rulertick_log10 = Math.Log10(rulertimemax - rulertimemin) - 1;
-                double rulertick_log10round = Math.Floor(rulertick_log10);
-                double rulertick_decimal = Math.Pow(10, rulertick_log10round);
+                double rulertick_log10 = System.Math.Log10(rulertimemax - rulertimemin) - 1;
+                double rulertick_log10round = System.Math.Floor(rulertick_log10);
+                double rulertick_decimal = System.Math.Pow(10, rulertick_log10round);
                 // Round down rulermin and round up rulermax to the nearest division of timetick.
-                double rulerroundmin = Math.Floor(rulertimemin / rulertick_decimal) * rulertick_decimal;
-                double rulerroundmax = Math.Ceiling(rulertimemax / rulertick_decimal) * rulertick_decimal;
+                double rulerroundmin = System.Math.Floor(rulertimemin / rulertick_decimal) * rulertick_decimal;
+                double rulerroundmax = System.Math.Ceiling(rulertimemax / rulertick_decimal) * rulertick_decimal;
                 // Generate ticks in this range and plot them.
-                int maxticks = (int)Math.Ceiling((rulerroundmax - rulerroundmin) / rulertick_decimal);
+                int maxticks = (int)System.Math.Ceiling((rulerroundmax - rulerroundmin) / rulertick_decimal);
                 for (int i = 0; i < maxticks; ++i)
                 {
                     // Calculate a time that should be in scale.
@@ -282,7 +282,7 @@ namespace RenderToy.Linq
             long? found = null;
             foreach (var t in data)
             {
-                found = Math.Max(found ?? t, t);
+                found = System.Math.Max(found ?? t, t);
             }
             return found ?? 0;
         }
@@ -291,7 +291,7 @@ namespace RenderToy.Linq
             long? found = null;
             foreach (var t in data)
             {
-                found = Math.Min(found ?? t, t);
+                found = System.Math.Min(found ?? t, t);
             }
             return found ?? 0;
         }

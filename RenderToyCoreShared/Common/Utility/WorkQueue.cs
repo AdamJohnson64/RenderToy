@@ -8,6 +8,7 @@
 //
 // We use this design as a means for investigating large-scale threading models in RenderToy.
 
+using RenderToy.Diagnostics;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

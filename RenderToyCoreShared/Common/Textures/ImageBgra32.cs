@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.Utility;
 
 namespace RenderToy.Textures

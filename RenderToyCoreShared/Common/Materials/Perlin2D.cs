@@ -152,11 +152,6 @@ namespace RenderToy.Materials
         {
             return Expression.Invoke(PerlinNoiseFn, x, y);
         }
-        public Vector4D SampleTexture(double u, double v)
-        {
-            double p = PerlinNoise2D(u, v);
-            return new Vector4D(p, p, p, 1);
-        }
         public Expression CreateExpression(Expression evalcontext)
         {
             return PerlinNoise2D(u.CreateExpression(evalcontext), v.CreateExpression(evalcontext));

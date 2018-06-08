@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.PipelineModel;
 using RenderToy.Textures;
-using RenderToy.Utility;
 using System;
 using System.Globalization;
 using System.Windows;

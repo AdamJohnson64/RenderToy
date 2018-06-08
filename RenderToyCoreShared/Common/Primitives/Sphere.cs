@@ -3,8 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.Utility;
-using System;
+using RenderToy.Math;
 
 namespace RenderToy.Primitives
 {
@@ -20,10 +19,10 @@ namespace RenderToy.Primitives
             // The central axis of the sphere points through world Y.
             // The U direction defines latitude and sweeps a full circle for 0 <= u <= 1.
             // The V direction defines longitude ans sweeps a half circle for 0 <= v <= 1.
-            double ucos = Math.Cos(u * Math.PI * 2);
-            double usin = Math.Sin(u * Math.PI * 2);
-            double vcos = Math.Cos(v * Math.PI);
-            double vsin = Math.Sin(v * Math.PI);
+            double ucos = System.Math.Cos(u * System.Math.PI * 2);
+            double usin = System.Math.Sin(u * System.Math.PI * 2);
+            double vcos = System.Math.Cos(v * System.Math.PI);
+            double vsin = System.Math.Sin(v * System.Math.PI);
             return new Vector3D(-usin * vsin, vcos, ucos * vsin);
         }
         public Vector3D GetNormalUV(double u, double v)

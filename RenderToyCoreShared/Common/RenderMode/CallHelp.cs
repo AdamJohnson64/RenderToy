@@ -14,7 +14,9 @@
 // This helper will automatically collect and convert parameters to match the signature of a renderer.
 // Overridable defaults will be provided for arguments outside the normal FillFunction signature.
 
+using RenderToy.Math;
 using RenderToy.SceneGraph;
+using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,7 +24,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace RenderToy.Utility
+namespace RenderToy.RenderMode
 {
     [DebuggerDisplay("{MethodInfo.Name}")]
     public class RenderCall
@@ -66,18 +68,18 @@ namespace RenderToy.Utility
                 }
                 else if (param.ParameterType == typeof(byte[]) && param.Name == SCENE)
                 {
-                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneFormatter.CreateFlatMemoryF32((IScene)args[SCENE])));
-                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneFormatter.CreateFlatMemoryF64((IScene)args[SCENE])));
+                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF32((IScene)args[SCENE])));
+                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF64((IScene)args[SCENE])));
                 }
                 else if (param.ParameterType == typeof(byte[]) && param.Name == MVP)
                 {
-                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneFormatter.CreateFlatMemoryF32((Matrix3D)args[MVP])));
-                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneFormatter.CreateFlatMemoryF64((Matrix3D)args[MVP])));
+                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF32((Matrix3D)args[MVP])));
+                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF64((Matrix3D)args[MVP])));
                 }
                 else if (param.ParameterType == typeof(byte[]) && param.Name == INVERSE_MVP)
                 {
-                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneFormatter.CreateFlatMemoryF32(MathHelp.Invert((Matrix3D)args[MVP]))));
-                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneFormatter.CreateFlatMemoryF64(MathHelp.Invert((Matrix3D)args[MVP]))));
+                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF32(MathHelp.Invert((Matrix3D)args[MVP]))));
+                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF64(MathHelp.Invert((Matrix3D)args[MVP]))));
                 }
                 else if (param.ParameterType == typeof(byte[]) && param.Name == ACCUMULATOR_PTR)
                 {

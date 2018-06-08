@@ -4,18 +4,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
+using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace RenderToy.Utility
+namespace RenderToy.RenderMode
 {
-    public class SceneFormatter
+    public class SceneSerializer
     {
         struct FlatSceneF32Token
         {
@@ -25,12 +27,12 @@ namespace RenderToy.Utility
         }
         public static byte[] CreateFlatMemoryF32(IScene scene)
         {
-            Func<byte[]> build = () => new SceneFormatter(scene, false).m.ToArray();
+            Func<byte[]> build = () => new SceneSerializer(scene, false).m.ToArray();
             return MementoServer.Default.Get(scene, typeof(FlatSceneF32Token), build);
         }
         public static byte[] CreateFlatMemoryF64(IScene scene)
         {
-            Func<byte[]> build = () => new SceneFormatter(scene, true).m.ToArray();
+            Func<byte[]> build = () => new SceneSerializer(scene, true).m.ToArray();
             return MementoServer.Default.Get(scene, typeof(FlatSceneF64Token), build);
         }
         public static byte[] CreateFlatMemoryF32(Matrix3D obj)
@@ -51,7 +53,7 @@ namespace RenderToy.Utility
             }
             return memory.ToArray();
         }
-        SceneFormatter(IScene scene, bool use_f64)
+        SceneSerializer(IScene scene, bool use_f64)
         {
             UseF64 = use_f64;
             // Prepare the scene definition for the renderer.

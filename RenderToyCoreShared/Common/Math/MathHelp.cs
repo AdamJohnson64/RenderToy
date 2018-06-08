@@ -3,10 +3,9 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Diagnostics;
 
-namespace RenderToy.Utility
+namespace RenderToy.Math
 {
     public static partial class MathHelp
     {
@@ -26,9 +25,9 @@ namespace RenderToy.Utility
         public static double Dot(Vector2D lhs, Vector2D rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y; }
         public static double Dot(Vector3D lhs, Vector3D rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z; }
         public static double Dot(Vector4D lhs, Vector4D rhs) { return lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z + lhs.W * rhs.W; }
-        public static double Length(Vector2D val) { return Math.Sqrt(Dot(val, val)); }
-        public static double Length(Vector3D val) { return Math.Sqrt(Dot(val, val)); }
-        public static double Length(Vector4D val) { return Math.Sqrt(Dot(val, val)); }
+        public static double Length(Vector2D val) { return System.Math.Sqrt(Dot(val, val)); }
+        public static double Length(Vector3D val) { return System.Math.Sqrt(Dot(val, val)); }
+        public static double Length(Vector4D val) { return System.Math.Sqrt(Dot(val, val)); }
         public static Vector2D Multiply(Vector2D lhs, double rhs) { return new Vector2D(lhs.X * rhs, lhs.Y * rhs); }
         public static Vector2D Multiply(double lhs, Vector2D rhs) { return Multiply(rhs, lhs); }
         public static Vector3D Multiply(Vector3D lhs, double rhs) { return new Vector3D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs); }
@@ -72,14 +71,14 @@ namespace RenderToy.Utility
         }
         public static Quaternion CreateQuaternionRotation(Vector3D axis, double angle)
         {
-            double radians_over_2 = (angle * Math.PI / 180) / 2;
-            double sin = Math.Sin(radians_over_2);
+            double radians_over_2 = (angle * System.Math.PI / 180) / 2;
+            double sin = System.Math.Sin(radians_over_2);
             Vector3D normalized_axis = MathHelp.Normalized(axis);
-            return new Quaternion(normalized_axis.X * sin, normalized_axis.Y * sin, normalized_axis.Z * sin, Math.Cos(radians_over_2));
+            return new Quaternion(normalized_axis.X * sin, normalized_axis.Y * sin, normalized_axis.Z * sin, System.Math.Cos(radians_over_2));
         }
         public static Quaternion CreateQuaternionRotation(Matrix3D orthonormal)
         {
-            double w = Math.Sqrt(1 + orthonormal.M11 + orthonormal.M22 + orthonormal.M33) / 2;
+            double w = System.Math.Sqrt(1 + orthonormal.M11 + orthonormal.M22 + orthonormal.M33) / 2;
             double x = (orthonormal.M23 - orthonormal.M32) / (4 * w);
             double y = (orthonormal.M31 - orthonormal.M13) / (4 * w);
             double z = (orthonormal.M12 - orthonormal.M21) / (4 * w);
@@ -91,7 +90,7 @@ namespace RenderToy.Utility
             double t1 = b.W * a.X + b.X * a.W - b.Y * a.Z + b.Z * a.Y;
             double t2 = b.W * a.Y + b.X * a.Z + b.Y * a.W - b.Z * a.X;
             double t3 = b.W * a.Z - b.X * a.Y + b.Y * a.X + b.Z * a.W;
-            double ln = 1 / Math.Sqrt(t0 * t0 + t1 * t1 + t2 * t2 + t3 * t3);
+            double ln = 1 / System.Math.Sqrt(t0 * t0 + t1 * t1 + t2 * t2 + t3 * t3);
             t0 *= ln; t1 *= ln; t2 *= ln; t3 *= ln;
             return new Quaternion(t1, t2, t3, t0);
         }
