@@ -124,7 +124,7 @@ namespace RenderToy.RenderMode
                 binarywriter.Write((int)length);
             }
         }
-        static Token MeshBVHToken = new Token();
+        static readonly string MeshBVHToken = "MeshBVH";
         static IEnumerable<T[]> Split<T>(IEnumerable<T> elements, int group)
         {
             var iter = elements.GetEnumerator();

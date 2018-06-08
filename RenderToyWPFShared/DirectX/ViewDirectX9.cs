@@ -35,7 +35,7 @@ namespace RenderToy.WPF
             };
             RecreateDevice();
         }
-        static readonly Token GeneratedTextureToken = new Token();
+        static readonly string GeneratedTextureToken = "DirectX9Texture";
         protected Direct3DTexture9 CreateTexture(IMaterial material, IMaterial missing)
         {
             if (material == null) material = missing;
@@ -73,7 +73,7 @@ namespace RenderToy.WPF
             public Direct3DVertexBuffer9 VertexBuffer;
             public int PrimitiveCount;
         }
-        static readonly Token GeneratedVertexBufferToken = new Token();
+        static readonly string GeneratedVertexBufferToken = "DirectX9VertexBuffer";
         protected VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
         {
             if (primitive == null) return new VertexBufferInfo { PrimitiveCount = 0, VertexBuffer = null };
