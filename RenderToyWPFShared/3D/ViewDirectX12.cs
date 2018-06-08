@@ -1,4 +1,5 @@
 ﻿using RenderToy.Cameras;
+using RenderToy.Materials;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
@@ -39,8 +40,8 @@ namespace RenderToy.WPF
             d3d12CommandAllocator = d3d12Device.CreateCommandAllocator(D3D12CommandListType.Direct);
             ////////////////////////////////////////////////////////////////////////////////
             // Create the Vertex Shader and Pixel Shader
-            var bytecode_VertexShader = CompileShader(GetShaderCode(), "vs", "vs_5_0");
-            var bytecode_PixelShader = CompileShader(GetShaderCode(), "ps", "ps_5_0");
+            var bytecode_VertexShader = HLSLExtension.CompileHLSL(GetShaderCode(), "vs", "vs_5_0");
+            var bytecode_PixelShader = HLSLExtension.CompileHLSL(GetShaderCode(), "ps", "ps_5_0");
             ////////////////////////////////////////////////////////////////////////////////
             // Extract the Root Signature
             byte[] bytecode_RootSignature = ExtractRootSignature(bytecode_VertexShader);
@@ -133,24 +134,6 @@ namespace RenderToy.WPF
             d3d12Resource_RenderTarget.ReadFromSubresource(wpfFrontBuffer.BackBuffer, (uint)wpfFrontBuffer.BackBufferStride, (uint)(wpfFrontBuffer.BackBufferStride * wpfFrontBuffer.PixelHeight), 0);
             wpfFrontBuffer.AddDirtyRect(new Int32Rect(0, 0, wpfFrontBuffer.PixelWidth, wpfFrontBuffer.PixelHeight));
             wpfFrontBuffer.Unlock();
-        }
-        byte[] CompileShader(string shader, string entrypoint, string profile)
-        {
-            D3DBlob code = new D3DBlob();
-            D3DBlob error = new D3DBlob();
-            Direct3DCompiler.D3DCompile(shader, "temp", entrypoint, profile, 0, 0, code, error);
-            var errorblobsize = error.GetBufferSize();
-            var errorblob = error.GetBufferPointer();
-            if (errorblobsize > 0 && errorblob != IntPtr.Zero)
-            {
-                var errors = Marshal.PtrToStringAnsi(errorblob, (int)errorblobsize - 1);
-                throw new Exception("Shader compilation error:\n\n" + errors);
-            }
-            var buffer = code.GetBufferPointer();
-            var buffersize = code.GetBufferSize();
-            byte[] bytecode = new byte[buffersize];
-            Marshal.Copy(buffer, bytecode, 0, (int)buffersize);
-            return bytecode;
         }
         string GetShaderCode()
         {

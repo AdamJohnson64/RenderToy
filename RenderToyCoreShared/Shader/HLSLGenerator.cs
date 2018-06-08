@@ -3,7 +3,6 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.Materials;
 using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
@@ -11,9 +10,43 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
-namespace RenderToy
+namespace RenderToy.Materials
 {
+    public static class HLSLExtension
+    {
+        public static string GenerateHLSL(this IMNNode material)
+        {
+            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
+            var expressionbody = material.CreateExpression(parametercontext);
+            return HLSLGenerator.Emit(expressionbody);
+        }
+        public static byte[] CompileHLSL(string code, string entrypoint, string target)
+        {
+            var ppCode = new D3DBlob();
+            var ppErrorMsgs = new D3DBlob();
+            Direct3DCompiler.D3DCompile(code, "temp", entrypoint, target, 0, 0, ppCode, ppErrorMsgs);
+            if (ppCode != null && ppCode.GetBufferPointer() != IntPtr.Zero)
+            {
+                var buffer = ppCode.GetBufferPointer();
+                var buffersize = ppCode.GetBufferSize();
+                byte[] bytecode = new byte[buffersize];
+                Marshal.Copy(buffer, bytecode, 0, (int)buffersize);
+                return bytecode;
+            }
+            if (ppErrorMsgs != null && ppErrorMsgs.GetBufferPointer() != IntPtr.Zero)
+            {
+                var errors = Marshal.PtrToStringAnsi(ppErrorMsgs.GetBufferPointer(), (int)ppErrorMsgs.GetBufferSize() - 1);
+                throw new Exception("Shader compilation error:\n\n" + errors);
+            }
+            throw new Exception("Shader compilation error.");
+        }
+        public static byte[] CompileHLSL(this IMNNode<Vector4D> material, string entrypoint, string target)
+        {
+            return CompileHLSL(GenerateHLSL(material), entrypoint, target);
+        }
+    }
     public class HLSLGenerator
     {
         public static string Emit(Expression expr)

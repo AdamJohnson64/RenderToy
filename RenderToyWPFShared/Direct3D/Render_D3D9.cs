@@ -152,10 +152,8 @@ namespace RenderToy.WPF
             var texture = device.CreateTexture((uint)TextureSize, (uint)TextureSize, 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
             D3DLockedRect lockit = texture.LockRect(0);
             var material = StockMaterials.MarbleTile;
+            var lambda = material.CompileMSIL();
             EvalContext context = new EvalContext();
-            var param = System.Linq.Expressions.Expression.Parameter(typeof(EvalContext));
-            var body = material.CreateExpression(param);
-            var lambda = System.Linq.Expressions.Expression.Lambda<Func<EvalContext, Vector4D>>(body, param).Compile();
             unsafe
             {
                 for (int y = 0; y < TextureSize; ++y)

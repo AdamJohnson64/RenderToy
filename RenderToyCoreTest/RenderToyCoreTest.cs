@@ -15,8 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace RenderToy
@@ -169,72 +167,32 @@ namespace RenderToy
         [TestMethod]
         public void GenerateBrickHLSL()
         {
-            var material = StockMaterials.Brick;
-            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
-            var expressionbody = material.CreateExpression(parametercontext);
-            var expressionhlsl = HLSLGenerator.Emit(expressionbody);
-            Console.WriteLine(expressionhlsl);
+            Console.WriteLine(StockMaterials.Brick.GenerateHLSL());
         }
         [TestMethod]
         public void CompileBrickHLSL()
         {
-            var material = StockMaterials.Brick;
-            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
-            var expressionbody = material.CreateExpression(parametercontext);
-            var expressionhlsl = HLSLGenerator.Emit(expressionbody);
-            var ppCode = new D3DBlob();
-            var ppErrorMsgs = new D3DBlob();
-            Direct3DCompiler.D3DCompile(expressionhlsl, "temp", "ps", "ps_5_0", 0, 0, ppCode, ppErrorMsgs);
-            if (ppErrorMsgs != null && ppErrorMsgs.GetBufferPointer() != IntPtr.Zero)
-            {
-                var errors = Marshal.PtrToStringAnsi(ppErrorMsgs.GetBufferPointer(), (int)ppErrorMsgs.GetBufferSize() - 1);
-                throw new Exception("Shader compilation error:\n\n" + errors);
-            }
+            StockMaterials.Brick.CompileHLSL("ps", "ps_5_0");
         }
         [TestMethod]
         public void CompileBrickMSIL()
         {
-            var material = StockMaterials.Brick;
-            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
-            var expressionbody = material.CreateExpression(parametercontext);
-            var expressionlambda = Expression.Lambda<Func<EvalContext, Vector4D>>(expressionbody, parametercontext);
-            var expressioncompiled = expressionlambda.Compile();
-            var expressionresult = expressioncompiled(new EvalContext());
+            StockMaterials.Brick.CompileMSIL();
         }
         [TestMethod]
         public void GenerateMarbleTileHLSL()
         {
-            var material = StockMaterials.MarbleTile;
-            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
-            var expressionbody = material.CreateExpression(parametercontext);
-            var expressionhlsl = HLSLGenerator.Emit(expressionbody);
-            Console.WriteLine(expressionhlsl);
+            Console.WriteLine(StockMaterials.MarbleTile.GenerateHLSL());
         }
         [TestMethod]
         public void CompileMarbleTileHLSL()
         {
-            var material = StockMaterials.MarbleTile;
-            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
-            var expressionbody = material.CreateExpression(parametercontext);
-            var expressionhlsl = HLSLGenerator.Emit(expressionbody);
-            var ppCode = new D3DBlob();
-            var ppErrorMsgs = new D3DBlob();
-            Direct3DCompiler.D3DCompile(expressionhlsl, "temp", "ps", "ps_5_0", 0, 0, ppCode, ppErrorMsgs);
-            if (ppErrorMsgs != null && ppErrorMsgs.GetBufferPointer() != IntPtr.Zero)
-            {
-                var errors = Marshal.PtrToStringAnsi(ppErrorMsgs.GetBufferPointer(), (int)ppErrorMsgs.GetBufferSize() - 1);
-                throw new Exception("Shader compilation error:\n\n" + errors);
-            }
+            StockMaterials.MarbleTile.CompileHLSL("ps", "ps_5_0");
         }
         [TestMethod]
         public void CompileMarbleTileMSIL()
         {
-            var material = StockMaterials.MarbleTile;
-            var parametercontext = Expression.Parameter(typeof(EvalContext), "EvalContext");
-            var expressionbody = material.CreateExpression(parametercontext);
-            var expressionlambda = Expression.Lambda<Func<EvalContext, Vector4D>>(expressionbody, parametercontext);
-            var expressioncompiled = expressionlambda.Compile();
-            var expressionresult = expressioncompiled(new EvalContext());
+            StockMaterials.MarbleTile.CompileMSIL();
         }
     }
     [TestClass]

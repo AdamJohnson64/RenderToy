@@ -63,21 +63,18 @@ namespace RenderToy.WPF
         {
             if (node == null) return GetImageConverter(StockMaterials.Missing, ThumbnailSize, ThumbnailSize);
             System.Type type = node.GetType();
-            if (typeof(ITexture).IsAssignableFrom(type))
+            if (node is ITexture)
             {
                 return GetImageConverter(((ITexture)node).GetTextureLevel(0), suggestedWidth, suggestedHeight);
             }
-            else if (typeof(IImageBgra32).IsAssignableFrom(type))
+            else if (node is IImageBgra32)
             {
                 return (IImageBgra32)node;
             }
-            else if (typeof(IMNNode<double>).IsAssignableFrom(type))
+            else if (node is IMNNode<double>)
             {
-                var convert = (IMNNode<double>)node;
+                var lambda = ((IMNNode<double>)node).CompileMSIL();
                 var context = new EvalContext();
-                var param = System.Linq.Expressions.Expression.Parameter(typeof(EvalContext));
-                var body = convert.CreateExpression(param);
-                var lambda = System.Linq.Expressions.Expression.Lambda<Func<EvalContext, double>>(body, param).Compile();
                 return new ImageConverterAdaptor(suggestedWidth, suggestedHeight, (x, y) =>
                 {
                     context.U = (x + 0.5) / suggestedWidth;
@@ -86,13 +83,10 @@ namespace RenderToy.WPF
                     return Rasterization.ColorToUInt32(new Vector4D(v, v, v, 1));
                 });
             }
-            else if (typeof(IMNNode<Vector4D>).IsAssignableFrom(type))
+            else if (node is IMNNode<Vector4D>)
             {
-                var convert = (IMNNode<Vector4D>)node;
+                var lambda = ((IMNNode<Vector4D>)node).CompileMSIL();
                 var context = new EvalContext();
-                var param = System.Linq.Expressions.Expression.Parameter(typeof(EvalContext));
-                var body = convert.CreateExpression(param);
-                var lambda = System.Linq.Expressions.Expression.Lambda<Func<EvalContext, Vector4D>>(body, param).Compile();
                 return new ImageConverterAdaptor(suggestedWidth, suggestedHeight, (x, y) =>
                 {
                     context.U = (x + 0.5) / suggestedWidth;

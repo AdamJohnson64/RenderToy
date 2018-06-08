@@ -3,9 +3,9 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Materials;
 using System;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Windows.Data;
 
 namespace RenderToy.WPF
@@ -16,14 +16,14 @@ namespace RenderToy.WPF
         {
             string inputcode = value as string;
             if (inputcode == null) return null;
-            D3DBlob code = new D3DBlob();
-            Direct3DCompiler.D3DCompile(inputcode, "temp.ps", "ps", "ps_3_0", 0, 0, code, null);
-            var buffer = code.GetBufferPointer();
-            if (buffer == IntPtr.Zero) return null;
-            var buffersize = code.GetBufferSize();
-            byte[] codebytes = new byte[buffersize];
-            Marshal.Copy(buffer, codebytes, 0, (int)buffersize);
-            return codebytes;
+            try
+            {
+                return HLSLExtension.CompileHLSL(inputcode, "ps", "ps_3_0");
+            }
+            catch (Exception exception)
+            {
+                return null;
+            }
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {

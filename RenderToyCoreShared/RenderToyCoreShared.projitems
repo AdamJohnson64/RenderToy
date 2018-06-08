@@ -59,6 +59,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Shader\ExpressionSubstitution.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Shader\FieldExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Shader\HLSLGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Shader\MSILGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextureFormats\LoaderTGA.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Textures\ImageBgra32.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Textures\Texture.cs" />

@@ -1,9 +1,9 @@
 using RenderToy.Cameras;
+using RenderToy.Materials;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Utility;
-using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -53,38 +53,12 @@ float4 ps(VS_OUTPUT input) : SV_Target {
 }";
             d3d11Device = Direct3D11.D3D11CreateDevice();
             {
-                D3DBlob code = new D3DBlob();
-                D3DBlob error = new D3DBlob();
-                Direct3DCompiler.D3DCompile(hlsl, "temp", "vs", "vs_5_0", 0, 0, code, error);
-                var errorblobsize = error.GetBufferSize();
-                var errorblob = error.GetBufferPointer();
-                if (errorblobsize > 0 && errorblob != IntPtr.Zero)
-                {
-                    var errors = Marshal.PtrToStringAnsi(errorblob, (int)errorblobsize - 1);
-                    throw new Exception("Shader compilation error:\n\n" + errors);
-                }
-                var buffer = code.GetBufferPointer();
-                var buffersize = code.GetBufferSize();
-                byte[] bytecode = new byte[buffersize];
-                Marshal.Copy(buffer, bytecode, 0, (int)buffersize);
+                var bytecode = HLSLExtension.CompileHLSL(hlsl, "vs", "vs_5_0");
                 d3d11InputLayout = d3d11Device.CreateInputLayout(new[] { new D3D11InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 }, }, bytecode);
                 d3d11VertexShader = d3d11Device.CreateVertexShader(bytecode);
             }
             {
-                D3DBlob code = new D3DBlob();
-                D3DBlob error = new D3DBlob();
-                Direct3DCompiler.D3DCompile(hlsl, "temp", "ps", "ps_5_0", 0, 0, code, error);
-                var errorblobsize = error.GetBufferSize();
-                var errorblob = error.GetBufferPointer();
-                if (errorblobsize > 0 && errorblob != IntPtr.Zero)
-                {
-                    var errors = Marshal.PtrToStringAnsi(errorblob, (int)errorblobsize - 1);
-                    throw new Exception("Shader compilation error:\n\n" + errors);
-                }
-                var buffer = code.GetBufferPointer();
-                var buffersize = code.GetBufferSize();
-                byte[] bytecode = new byte[buffersize];
-                Marshal.Copy(buffer, bytecode, 0, (int)buffersize);
+                var bytecode = HLSLExtension.CompileHLSL(hlsl, "ps", "ps_5_0");
                 d3d11PixelShader = d3d11Device.CreatePixelShader(bytecode);
             }
             d3d11RasterizerState = d3d11Device.CreateRasterizerState(new D3D11RasterizerDesc { FillMode = D3D11FillMode.Solid, CullMode = D3D11CullMode.None });

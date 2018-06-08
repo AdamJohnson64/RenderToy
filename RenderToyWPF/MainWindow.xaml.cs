@@ -5,7 +5,6 @@
 
 using Microsoft.Win32;
 using RenderToy.Materials;
-using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
@@ -17,7 +16,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -213,20 +211,26 @@ namespace RenderToy.WPF
             ShaderCode.TextChanged += (s, e) =>
             {
                 {
-                    D3DBlob code = new D3DBlob();
-                    D3DBlob error = new D3DBlob();
-                    Direct3DCompiler.D3DCompile(ShaderCode.Text, "temp.vs", "vs", "vs_3_0", 0, 0, code, error);
-                    var buffer = error.GetBufferPointer();
-                    var buffersize = error.GetBufferSize();
-                    ShaderErrorsVS.Text = buffer == IntPtr.Zero ? "Vertex Shader Compilation Successful." : Marshal.PtrToStringAnsi(buffer, (int)buffersize - 1);
+                    try
+                    {
+                        HLSLExtension.CompileHLSL(ShaderCode.Text, "vs", "vs_3_0");
+                        ShaderErrorsVS.Text = "Vertex Shader Compilation Successful.";
+                    }
+                    catch (Exception exception)
+                    {
+                        ShaderErrorsVS.Text = exception.ToString();
+                    }
                 }
                 {
-                    D3DBlob code = new D3DBlob();
-                    D3DBlob error = new D3DBlob();
-                    Direct3DCompiler.D3DCompile(ShaderCode.Text, "temp.ps", "ps", "ps_3_0", 0, 0, code, error);
-                    var buffer = error.GetBufferPointer();
-                    var buffersize = error.GetBufferSize();
-                    ShaderErrorsPS.Text = buffer == IntPtr.Zero ? "Pixel Shader Compilation Successful." : Marshal.PtrToStringAnsi(buffer, (int)buffersize - 1);
+                    try
+                    {
+                        HLSLExtension.CompileHLSL(ShaderCode.Text, "ps", "ps_3_0");
+                        ShaderErrorsPS.Text = "Pixel Shader Compilation Successful.";
+                    }
+                    catch (Exception exception)
+                    {
+                        ShaderErrorsPS.Text = exception.ToString();
+                    }
                 }
             };
             ShaderCode.Text =
