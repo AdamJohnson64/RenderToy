@@ -55,7 +55,15 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             d3d11Device = Direct3D11.D3D11CreateDevice();
             {
                 var bytecode = HLSLExtensions.CompileHLSL(hlsl, "vs", "vs_5_0");
-                d3d11InputLayout = d3d11Device.CreateInputLayout(new[] { new D3D11InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 }, }, bytecode);
+                d3d11InputLayout = d3d11Device.CreateInputLayout(new[]
+                {
+                    new D3D11InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                    new D3D11InputElementDesc { SemanticName = "NORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 12, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                    new D3D11InputElementDesc { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 24, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                    new D3D11InputElementDesc { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 28, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                    new D3D11InputElementDesc { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 36, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                    new D3D11InputElementDesc { SemanticName = "BITANGENT", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 48, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                }, bytecode);
                 d3d11VertexShader = d3d11Device.CreateVertexShader(bytecode);
             }
             {
@@ -88,7 +96,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
                 if (vertexbuffer == null) continue;
                 var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = 4 * 16, Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16}, new D3D11SubresourceData { pSysMem = DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), SysMemPitch = 0, SysMemSlicePitch = 0 });
                 context.VSSetConstantBuffers(0, new[] { d3d11ConstantBuffer });
-                context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZ)) }, new[] { 0U });
+                context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
                 context.Draw(vertexbuffer.vertexCount, 0);
             }
             ////////////////////////////////////////////////////////////////////////////////
@@ -129,9 +137,9 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             if (primitive == null) return null;
             return MementoServer.Default.Get(primitive, Token, () =>
             {
-                var verticesout = DirectXHelper.ConvertToXYZ(primitive);
+                var verticesout = DirectXHelper.ConvertToXYZNorDiffuseTex1(primitive);
                 if (verticesout.Length == 0) return null;
-                var size = (uint)(Marshal.SizeOf(typeof(XYZ)) * verticesout.Length);
+                var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * verticesout.Length);
                 var d3d11Buffer = d3d11Device.CreateBuffer(
                     new D3D11BufferDesc { ByteWidth = size, Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.VertexBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = (uint)Marshal.SizeOf(typeof(XYZ)) },
                     new D3D11SubresourceData { pSysMem = verticesout, SysMemPitch = 0, SysMemSlicePitch = 0 });
