@@ -1,5 +1,6 @@
 using RenderToy.Cameras;
 using RenderToy.Materials;
+using RenderToy.Meshes;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
@@ -124,10 +125,6 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             wpfFrontBuffer.Unlock();
             context.Unmap(d3d11Texture2D_Copyback, 0);
         }
-        public struct XYZ
-        {
-            public float Xp, Yp, Zp;
-        };
         class VertexBufferInfo
         {
             public D3D11Buffer d3d11Buffer;

@@ -7,6 +7,7 @@ using RenderToy.Cameras;
 using RenderToy.Materials;
 using RenderToy.Primitives;
 using RenderToy.RenderControl;
+using RenderToy.RenderMode;
 using RenderToy.SceneGraph;
 using RenderToy.Transforms;
 using RenderToy.Utility;

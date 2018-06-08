@@ -8,9 +8,9 @@ using RenderToy.SceneGraph;
 using RenderToy.Utility;
 using System;
 
-namespace RenderToy
+namespace RenderToy.RenderMode
 {
-    public static partial class RenderModeCS
+    public static class RenderModeCS
     {
         public static void PointCPUF64(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {

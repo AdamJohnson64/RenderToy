@@ -4,7 +4,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Cameras;
+using RenderToy.DirectX;
 using RenderToy.Materials;
+using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
@@ -78,7 +80,7 @@ namespace RenderToy.WPF
             return deviceboundmemento.Get(primitive, GeneratedVertexBufferToken, () =>
             {
                 var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
-                var verticesout = verticesin.Select(i => new RenderD3D.XYZNorDiffuseTex1
+                var verticesout = verticesin.Select(i => new XYZNorDiffuseTex1
                 {
                     Xp = (float)i.Position.X,
                     Yp = (float)i.Position.Y,
@@ -97,7 +99,7 @@ namespace RenderToy.WPF
                     Bz = (float)i.Bitangent.Z,
                 });
                 var data = verticesout.ToArray();
-                var size = (uint)(Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)) * data.Length);
+                var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * data.Length);
                 VertexBufferInfo buffer = new VertexBufferInfo();
                 if (data.Length > 0)
                 {
@@ -194,7 +196,7 @@ namespace RenderToy.WPF
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (createdvertexbuffer.VertexBuffer == null) continue;
                 var createdtexture = CreateTexture(transformedobject.Node.Material, null);
-                device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
+                device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
                 if (createdtexture != null) device.SetTexture(0, createdtexture);
                 device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(D3DMatrix.Convert(transformedobject.Transform * mvp), 0));
                 device.DrawPrimitive(RenderToy.D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
@@ -249,7 +251,7 @@ namespace RenderToy.WPF
                 {
                     map_Kd = CreateTexture(transformedobject.Node.Material, StockMaterials.PlasticWhite);
                 }
-                device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(RenderD3D.XYZNorDiffuseTex1)));
+                device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
                 if (map_Kd != null) device.SetTexture(0, map_Kd);
                 if (map_d != null) device.SetTexture(1, map_d);
                 if (map_bump != null) device.SetTexture(2, map_bump);

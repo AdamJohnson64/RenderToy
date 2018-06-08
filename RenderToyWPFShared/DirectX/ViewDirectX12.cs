@@ -1,5 +1,6 @@
 ﻿using RenderToy.Cameras;
 using RenderToy.Materials;
+using RenderToy.Meshes;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
@@ -17,10 +18,6 @@ namespace RenderToy.WPF
 {
     class ViewDirectX12 : FrameworkElement
     {
-        public struct XYZ
-        {
-            public float Xp, Yp, Zp;
-        };
         static ViewDirectX12()
         {
             AttachedView.SceneProperty.OverrideMetadata(typeof(ViewDirectX12), new FrameworkPropertyMetadata(null, (s, e) =>

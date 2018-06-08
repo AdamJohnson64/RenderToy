@@ -4,14 +4,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Materials;
-using RenderToy.Utility;
-using System;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media;
 
 namespace RenderToy.WPF

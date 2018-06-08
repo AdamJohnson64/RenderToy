@@ -5,7 +5,7 @@
 
 using System.Windows;
 
-namespace RenderBoxUI
+namespace RenderToy.WPF
 {
     public partial class App : Application
     {

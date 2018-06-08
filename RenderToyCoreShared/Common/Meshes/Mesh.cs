@@ -5,7 +5,6 @@
 
 using RenderToy.Primitives;
 using RenderToy.Utility;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 

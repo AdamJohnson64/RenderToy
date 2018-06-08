@@ -5,6 +5,7 @@
 
 using RenderToy.Cameras;
 using RenderToy.RenderControl;
+using RenderToy.RenderMode;
 using RenderToy.SceneGraph;
 using RenderToy.Utility;
 using System;

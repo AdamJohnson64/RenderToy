@@ -9,36 +9,38 @@
     <Import_RootNamespace>RenderToyWPFShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)3D\AttachedView.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewDirectX11.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewDirectX9.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewDirectX12.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewSoftwareCustomizable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\ViewSoftwareWireframe.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)3D\AttachedCamera.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Direct3D\CompilePixelShaderConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Direct3D\CompileVertexShaderConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Document\Figures.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Material\MaterialBitmapConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterialGraph.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterialNode.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Material\ViewMaterial.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\Camera.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\NamedConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\PerformanceTrace.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Common\3D\AttachedView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX11.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX9.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX12.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\3D\ViewSoftwareCustomizable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\3D\ViewSoftwareWireframe.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\3D\AttachedCamera.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\CompilePixelShaderConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\CompileVertexShaderConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Document\Figures.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Material\MaterialBitmapConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Material\ViewMaterialGraph.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Material\ViewMaterialNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Material\ViewMaterial.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\Camera.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\NamedConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\PerformanceTrace.xaml.cs">
       <DependentUpon>PerformanceTrace.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Direct3D\Render_D3D9.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\ViewZoom.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\ViewZoom.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)Document\RenderToyDocument.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\Document\RenderToyDocument.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Utility\PerformanceTrace.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Common\Utility\PerformanceTrace.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Common\" />
   </ItemGroup>
 </Project>

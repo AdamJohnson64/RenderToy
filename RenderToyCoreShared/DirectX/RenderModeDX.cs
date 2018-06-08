@@ -3,7 +3,9 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.DirectX;
 using RenderToy.Materials;
+using RenderToy.Meshes;
 using RenderToy.PipelineModel;
 using RenderToy.SceneGraph;
 using RenderToy.Utility;
@@ -11,7 +13,7 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace RenderToy.WPF
+namespace RenderToy.DirectX
 {
     public struct D3DMatrix
     {
@@ -26,6 +28,10 @@ namespace RenderToy.WPF
             };
         }
     }
+}
+
+namespace RenderToy.RenderMode
+{
     public static class D3DHelper
     {
         public static void CopySurface(Direct3DSurface9 surface, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
@@ -46,11 +52,6 @@ namespace RenderToy.WPF
     public static class RenderD3D
     {
         #region - Section : Phase 3 - Rasterized Rendering (Direct3D 9) -
-        public struct XYZWDiffuse
-        {
-            public float X, Y, Z, W;
-            public uint Diffuse;
-        };
         /// <summary>
         /// Rasterize the scene using XYZW homogeneous triangles and transforming via our software pipeline.
         /// </summary>
@@ -87,11 +88,6 @@ namespace RenderToy.WPF
             device.EndScene();
             D3DHelper.CopySurface(rendertarget, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
-        public struct XYZDiffuse
-        {
-            public float X, Y, Z;
-            public uint Diffuse;
-        };
         /// <summary>
         /// Rasterize the scene using XYZ 3D triangles and transforming via the hardware pipeline.
         /// </summary>
@@ -125,15 +121,6 @@ namespace RenderToy.WPF
             device.EndScene();
             D3DHelper.CopySurface(rendertarget, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
-        public struct XYZNorDiffuseTex1
-        {
-            public float Xp, Yp, Zp;
-            public float Xn, Yn, Zn;
-            public uint Diffuse;
-            public float U, V;
-            public float Tx, Ty, Tz;
-            public float Bx, By, Bz;
-        };
         /// <summary>
         /// Rasterize the scene using textured XYZ+UV 3D triangles and transforming via the hardware pipeline.
         /// </summary>
