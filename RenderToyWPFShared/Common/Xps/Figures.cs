@@ -21,7 +21,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace RenderToy.WPF.Figures
+namespace RenderToy.WPF.Xps
 {
     #region - Section : Document Figures -
     static class FigureBase
