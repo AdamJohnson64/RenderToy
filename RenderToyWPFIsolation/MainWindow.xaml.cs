@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Materials;
+using RenderToy.WPF.Xps;
 using System.Windows;
 
 namespace RenderToyWPFIsolation
@@ -17,6 +18,7 @@ namespace RenderToyWPFIsolation
         {
             InitializeComponent();
             Material.Root = StockMaterials.Brick;
+            Reference.Document = RenderToyReference.CreateDocument();
         }
     }
 }

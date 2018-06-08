@@ -9,31 +9,38 @@
     <Window.Resources>
         <rendertoy:MaterialBitmapConverter x:Key="MaterialBitmapConverter"/>
     </Window.Resources>
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoom}"/>>
-        </Menu>
-        <rendertoy:ViewZoom x:Name="ViewZoom">
-            <!--
-            <Image x:Name="Material" Source="{Binding Converter={StaticResource MaterialBitmapConverter}}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-            -->
-            <rendertoy:ViewMaterialGraph x:Name="Material">
-                <rendertoy:ViewMaterialGraph.NodeTemplate>
-                    <DataTemplate>
-                        <rendertoy:ViewMaterialNode>
-                            <rendertoy:ViewMaterialNode.ContentTemplate>
-                                <DataTemplate>
-                                    <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2">
-                                        <StackPanel Orientation="Horizontal">
-                                            <rendertoy:ViewMaterial MaterialSource="{Binding}" VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </rendertoy:ViewMaterialNode.ContentTemplate>
-                        </rendertoy:ViewMaterialNode>
-                    </DataTemplate>
-                </rendertoy:ViewMaterialGraph.NodeTemplate>
-            </rendertoy:ViewMaterialGraph>
-        </rendertoy:ViewZoom>
-    </DockPanel>
+    <TabControl>
+        <TabItem Header="Reference Guide">
+            <FlowDocumentReader x:Name="Reference"/>
+        </TabItem>
+        <TabItem Header="Zoom Control">
+            <DockPanel>
+                <Menu DockPanel.Dock="Top">
+                    <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoom}"/>>
+                </Menu>
+                <rendertoy:ViewZoom x:Name="ViewZoom">
+                    <!--
+                    <Image x:Name="Material" Source="{Binding Converter={StaticResource MaterialBitmapConverter}}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                    -->
+                    <rendertoy:ViewMaterialGraph x:Name="Material">
+                        <rendertoy:ViewMaterialGraph.NodeTemplate>
+                            <DataTemplate>
+                                <rendertoy:ViewMaterialNode>
+                                    <rendertoy:ViewMaterialNode.ContentTemplate>
+                                        <DataTemplate>
+                                            <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <rendertoy:ViewMaterial MaterialSource="{Binding}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </rendertoy:ViewMaterialNode.ContentTemplate>
+                                </rendertoy:ViewMaterialNode>
+                            </DataTemplate>
+                        </rendertoy:ViewMaterialGraph.NodeTemplate>
+                    </rendertoy:ViewMaterialGraph>
+                </rendertoy:ViewZoom>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
 </Window>
