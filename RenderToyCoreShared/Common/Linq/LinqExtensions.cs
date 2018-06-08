@@ -1,10 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RenderToy.Utility
+namespace RenderToy.Linq
 {
-    static class SequenceHelp
+    public static class LinqExtensions
     {
+        public static long MaxOrDefault(this IEnumerable<long> data)
+        {
+            long? found = null;
+            foreach (var t in data)
+            {
+                found = System.Math.Max(found ?? t, t);
+            }
+            return found ?? 0;
+        }
+        public static long MinOrDefault(this IEnumerable<long> data)
+        {
+            long? found = null;
+            foreach (var t in data)
+            {
+                found = System.Math.Min(found ?? t, t);
+            }
+            return found ?? 0;
+        }
         public static IEnumerable<int> GenerateIntegerSequence(int count)
         {
             for (int i = 0; i < count; ++i) yield return i;

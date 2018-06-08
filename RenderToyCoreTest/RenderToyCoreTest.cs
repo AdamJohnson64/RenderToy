@@ -6,6 +6,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RenderToy.BoundingVolumeHierarchy;
 using RenderToy.Diagnostics;
+using RenderToy.Expressions;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;

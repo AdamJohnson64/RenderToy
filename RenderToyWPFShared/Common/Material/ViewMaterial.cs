@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Expressions;
 using RenderToy.Materials;
 using System.Globalization;
 using System.Threading.Tasks;

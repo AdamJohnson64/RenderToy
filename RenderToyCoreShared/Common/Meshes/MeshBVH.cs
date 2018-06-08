@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.BoundingVolumeHierarchy;
 using RenderToy.Diagnostics;
 using RenderToy.Math;
 using RenderToy.Primitives;

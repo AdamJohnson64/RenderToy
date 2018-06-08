@@ -3,10 +3,11 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Materials;
 using System;
 using System.Linq.Expressions;
 
-namespace RenderToy.Materials
+namespace RenderToy.Expressions
 {
     public static class MSILExtensions
     {

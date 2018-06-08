@@ -4,22 +4,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 
-namespace RenderToy
+namespace RenderToy.Expressions
 {
-    class ExpressionSubstitution : ExpressionVisitor
+    class ExpressionCounter : ExpressionVisitor
     {
-        public ExpressionSubstitution(IEnumerable<KeyValuePair<Expression, Expression>> replacements)
-        {
-            Replacements = replacements.ToDictionary(k => k.Key, v => v.Value);
-        }
         public override Expression Visit(Expression node)
         {
-            if (node != null && Replacements.ContainsKey(node)) return Replacements[node];
+            if (node != null)
+            {
+                if (!Found.ContainsKey(node)) Found[node] = 0;
+                Found[node] += 1;
+            }
             return base.Visit(node);
         }
-        public Dictionary<Expression, Expression> Replacements;
+        public Dictionary<Expression, int> Found = new Dictionary<Expression, int>();
     }
 }

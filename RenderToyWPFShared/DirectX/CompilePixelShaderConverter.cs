@@ -3,7 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.Materials;
+using RenderToy.Expressions;
 using System;
 using System.Globalization;
 using System.Windows.Data;
@@ -18,7 +18,7 @@ namespace RenderToy.WPF
             if (inputcode == null) return null;
             try
             {
-                return HLSLExtension.CompileHLSL(inputcode, "ps", "ps_3_0");
+                return HLSLExtensions.CompileHLSL(inputcode, "ps", "ps_3_0");
             }
             catch (Exception)
             {

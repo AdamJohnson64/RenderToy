@@ -1,6 +1,6 @@
 using RenderToy.Cameras;
 using RenderToy.DirectX;
-using RenderToy.Materials;
+using RenderToy.Expressions;
 using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.Primitives;
@@ -54,12 +54,12 @@ float4 ps(VS_OUTPUT input) : SV_Target {
 }";
             d3d11Device = Direct3D11.D3D11CreateDevice();
             {
-                var bytecode = HLSLExtension.CompileHLSL(hlsl, "vs", "vs_5_0");
+                var bytecode = HLSLExtensions.CompileHLSL(hlsl, "vs", "vs_5_0");
                 d3d11InputLayout = d3d11Device.CreateInputLayout(new[] { new D3D11InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 }, }, bytecode);
                 d3d11VertexShader = d3d11Device.CreateVertexShader(bytecode);
             }
             {
-                var bytecode = HLSLExtension.CompileHLSL(hlsl, "ps", "ps_5_0");
+                var bytecode = HLSLExtensions.CompileHLSL(hlsl, "ps", "ps_5_0");
                 d3d11PixelShader = d3d11Device.CreatePixelShader(bytecode);
             }
             d3d11RasterizerState = d3d11Device.CreateRasterizerState(new D3D11RasterizerDesc { FillMode = D3D11FillMode.Solid, CullMode = D3D11CullMode.None });

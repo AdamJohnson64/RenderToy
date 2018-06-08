@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Materials;
 using RenderToy.Math;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace RenderToy.Materials
+namespace RenderToy.Expressions
 {
-    public static class HLSLExtension
+    public static class HLSLExtensions
     {
         public static string GenerateHLSL(this IMNNode material)
         {

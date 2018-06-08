@@ -272,28 +272,3 @@ namespace RenderToy.WPF
         Func<object, object> Convert;
     }
 }
-
-namespace RenderToy.Linq
-{
-    public static class Extensions
-    {
-        public static long MaxOrDefault(this IEnumerable<long> data)
-        {
-            long? found = null;
-            foreach (var t in data)
-            {
-                found = System.Math.Max(found ?? t, t);
-            }
-            return found ?? 0;
-        }
-        public static long MinOrDefault(this IEnumerable<long> data)
-        {
-            long? found = null;
-            foreach (var t in data)
-            {
-                found = System.Math.Min(found ?? t, t);
-            }
-            return found ?? 0;
-        }
-    }
-}

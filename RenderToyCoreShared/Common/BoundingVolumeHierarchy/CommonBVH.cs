@@ -3,8 +3,8 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Linq;
 using RenderToy.Math;
-using RenderToy.Utility;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -124,7 +124,7 @@ namespace RenderToy.BoundingVolumeHierarchy
     }
 }
 
-namespace RenderToy
+namespace RenderToy.BoundingVolumeHierarchy
 {
     #region - Section : Data Types -
     public struct Bound1D
@@ -143,7 +143,7 @@ namespace RenderToy
         public readonly Vector3D P0, P1, P2;
         public static IEnumerable<Triangle3D> ExtractTriangles(IReadOnlyList<Vector3D> vertices, IEnumerable<int> indices)
         {
-            return SequenceHelp.Split3(indices).Select(i => new Triangle3D(vertices[i.Item1], vertices[i.Item2], vertices[i.Item3]));
+            return LinqExtensions.Split3(indices).Select(i => new Triangle3D(vertices[i.Item1], vertices[i.Item2], vertices[i.Item3]));
         }
     }
     #endregion

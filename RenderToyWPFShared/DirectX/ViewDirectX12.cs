@@ -1,6 +1,6 @@
 ﻿using RenderToy.Cameras;
 using RenderToy.DirectX;
-using RenderToy.Materials;
+using RenderToy.Expressions;
 using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.Primitives;
@@ -37,8 +37,8 @@ namespace RenderToy.WPF
             d3d12CommandAllocator = d3d12Device.CreateCommandAllocator(D3D12CommandListType.Direct);
             ////////////////////////////////////////////////////////////////////////////////
             // Create the Vertex Shader and Pixel Shader
-            var bytecode_VertexShader = HLSLExtension.CompileHLSL(GetShaderCode(), "vs", "vs_5_0");
-            var bytecode_PixelShader = HLSLExtension.CompileHLSL(GetShaderCode(), "ps", "ps_5_0");
+            var bytecode_VertexShader = HLSLExtensions.CompileHLSL(GetShaderCode(), "vs", "vs_5_0");
+            var bytecode_PixelShader = HLSLExtensions.CompileHLSL(GetShaderCode(), "ps", "ps_5_0");
             ////////////////////////////////////////////////////////////////////////////////
             // Extract the Root Signature
             byte[] bytecode_RootSignature = ExtractRootSignature(bytecode_VertexShader);

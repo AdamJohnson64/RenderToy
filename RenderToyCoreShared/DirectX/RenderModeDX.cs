@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.DirectX;
+using RenderToy.Expressions;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;

@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using Microsoft.Win32;
+using RenderToy.Expressions;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.ModelFormat;
@@ -213,7 +214,7 @@ namespace RenderToy.WPF
                 {
                     try
                     {
-                        HLSLExtension.CompileHLSL(ShaderCode.Text, "vs", "vs_3_0");
+                        HLSLExtensions.CompileHLSL(ShaderCode.Text, "vs", "vs_3_0");
                         ShaderErrorsVS.Text = "Vertex Shader Compilation Successful.";
                     }
                     catch (Exception exception)
@@ -224,7 +225,7 @@ namespace RenderToy.WPF
                 {
                     try
                     {
-                        HLSLExtension.CompileHLSL(ShaderCode.Text, "ps", "ps_3_0");
+                        HLSLExtensions.CompileHLSL(ShaderCode.Text, "ps", "ps_3_0");
                         ShaderErrorsPS.Text = "Pixel Shader Compilation Successful.";
                     }
                     catch (Exception exception)

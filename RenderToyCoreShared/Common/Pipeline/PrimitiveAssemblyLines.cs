@@ -3,11 +3,11 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Linq;
 using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
-using RenderToy.Utility;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -122,7 +122,7 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector3D> CreateLines(Mesh mesh)
         {
             var v = mesh.Vertices.GetVertices();
-            foreach (var t in SequenceHelp.Split3(mesh.Vertices.GetIndices()))
+            foreach (var t in LinqExtensions.Split3(mesh.Vertices.GetIndices()))
             {
                 yield return v[t.Item1]; yield return v[t.Item2];
                 yield return v[t.Item2]; yield return v[t.Item3];

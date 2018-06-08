@@ -3,9 +3,9 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Linq;
 using RenderToy.Math;
 using RenderToy.Primitives;
-using RenderToy.Utility;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -83,9 +83,9 @@ namespace RenderToy.Meshes
             var itex = TexCoords.GetIndices();
             var indexcount = ipos.Count;
             var doublelookup =
-                SequenceHelp.GenerateIntegerSequence(indexcount)
+                LinqExtensions.GenerateIntegerSequence(indexcount)
                 .Select(i => new { VertexIndex = ipos[i], TexCoordIndex = itex[i] });
-            var triangles = SequenceHelp.Split3(doublelookup);
+            var triangles = LinqExtensions.Split3(doublelookup);
             var tangents = new List<Vector3D>();
             var bitangents = new List<Vector3D>();
             var collectedtangentfaces = new List<int>();
