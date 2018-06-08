@@ -82,11 +82,13 @@ namespace RenderToy.PipelineModel
         {
             // TODO: This is a useful test, we might want to resurrect it later.
             return 0xFFFFFFFF;
+            /*
             var v4 = Transformation.Vector3ToVector4(normal);
             v4.X = (v4.X + 1) * 0.5;
             v4.Y = (v4.Y + 1) * 0.5;
             v4.Z = (v4.Z + 1) * 0.5;
             return Rasterization.ColorToUInt32(v4);
+            */
         }
         /// <summary>
         /// Create triangles representing a simple mesh.

@@ -5,7 +5,9 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RenderToy.BoundingVolumeHierarchy;
+using RenderToy.Diagnostics;
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.PipelineModel;

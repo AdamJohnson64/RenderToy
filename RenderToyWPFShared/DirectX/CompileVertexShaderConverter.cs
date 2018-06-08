@@ -20,7 +20,7 @@ namespace RenderToy.WPF
             {
                 return HLSLExtension.CompileHLSL(inputcode, "vs", "vs_3_0");
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 return null;
             }

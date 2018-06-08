@@ -102,7 +102,7 @@ namespace RenderToy.Materials
             return Expression.Constant(value);
         }
         public double Value { get { return value; } set { this.value = value; } }
-        protected double value;
+        double value;
     }
     sealed class MNVector4D : IMNNode<Vector4D>, INamed
     {
@@ -136,7 +136,7 @@ namespace RenderToy.Materials
         public IMNNode<double> G { get { return g; } set { g = value; } }
         public IMNNode<double> B { get { return b; } set { b = value; } }
         public IMNNode<double> A { get { return a; } set { a = value; } }
-        protected IMNNode<double> r, g, b, a;
+        IMNNode<double> r, g, b, a;
     }
     sealed class MNAdd : MNBinary<double>, IMNNode<double>, INamed
     {
@@ -172,7 +172,7 @@ namespace RenderToy.Materials
         }
         public IMNNode<double> Value { get { return this.value; } set { this.value = value; } }
         public IMNNode<double> Exponent { get { return exponent; } set { exponent = value; } }
-        protected IMNNode<double> value, exponent;
+        IMNNode<double> value, exponent;
     }
     sealed class MNSaturate : MNUnary<double>, IMNNode<double>, INamed
     {
@@ -209,7 +209,7 @@ namespace RenderToy.Materials
         public IMNNode<double> Value0 { get { return value0; } set { value0 = value; } }
         public IMNNode<double> Value1 { get { return value1; } set { value1 = value; } }
         public IMNNode<double> Factor { get { return factor; } set { factor = value; } }
-        protected IMNNode<double> value0, value1, factor;
+        IMNNode<double> value0, value1, factor;
     }
     public sealed class GenericMaterial : IMNNode<Vector4D>, INamed
     {

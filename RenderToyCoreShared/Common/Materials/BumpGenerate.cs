@@ -13,7 +13,7 @@ namespace RenderToy.Materials
     sealed class BumpGenerate : MNSample2D<Vector4D>, IMNNode<Vector4D>, INamed
     {
         public string Name { get { return "Bump Generate"; } }
-        public bool IsConstant() { return displacement.IsConstant(); }
+        public new bool IsConstant() { return displacement.IsConstant(); }
         static Expression _ReconstructSampler2(ParameterExpression ec, ParameterExpression newu, ParameterExpression newv)
         {
             var exprec = Expression.Variable(typeof(EvalContext));

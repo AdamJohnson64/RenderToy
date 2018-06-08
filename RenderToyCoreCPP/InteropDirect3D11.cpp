@@ -175,7 +175,7 @@ namespace RenderToy
 		FLOAT MinDepth;
 		FLOAT MaxDepth;
 	};
-	interface class D3D11Resource
+	public interface class D3D11Resource
 	{
 	public:
 		virtual ID3D11Resource* GetResource() = 0;

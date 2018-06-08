@@ -286,6 +286,14 @@ namespace RenderToy.Math
         {
             return !(a == b);
         }
+        public override bool Equals(object obj)
+        {
+            return obj is Matrix3D other ? this == other : false;
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
     public struct Quaternion
     {

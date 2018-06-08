@@ -54,11 +54,6 @@ namespace RenderToy.WPF
             public Visual Visual;
             public NodeConnection[] Children;
         }
-        struct NodeTree
-        {
-            public IMaterial Node;
-            public NodeTree[] Children;
-        }
         void InvalidateGraph()
         {
             // Disconnect all the previous visuals.

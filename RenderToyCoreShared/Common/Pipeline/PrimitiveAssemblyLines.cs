@@ -95,6 +95,7 @@ namespace RenderToy.PipelineModel
         public static IEnumerable<Vector3D> CreateLines(IParametricUVW uvw)
         {
             yield break;
+            /*
             int USEGMENTS = 10;
             int VSEGMENTS = 10;
             int WSEGMENTS = 10;
@@ -111,6 +112,7 @@ namespace RenderToy.PipelineModel
                     }
                 }
             }
+            */
         }
         /// <summary>
         /// Create line segments for a simple mesh.
