@@ -20,6 +20,22 @@ namespace RenderToy
 		Decoder = D3D11_BIND_DECODER,
 		VideoEncoder = D3D11_BIND_VIDEO_ENCODER,
 	};
+	public enum struct D3D11ComparisonFunc
+	{
+		Never = D3D11_COMPARISON_NEVER,
+		Less = D3D11_COMPARISON_LESS,
+		Equal = D3D11_COMPARISON_EQUAL,
+		LessEqual = D3D11_COMPARISON_LESS_EQUAL,
+		Greate = D3D11_COMPARISON_GREATER,
+		NotEqual = D3D11_COMPARISON_NOT_EQUAL,
+		GreaterEqual = D3D11_COMPARISON_GREATER_EQUAL,
+		Always = D3D11_COMPARISON_ALWAYS,
+	};
+	public enum struct D3D11ClearFlag
+	{
+		Depth = D3D11_CLEAR_DEPTH,
+		Stencil = D3D11_CLEAR_STENCIL,
+	};
 	public enum struct D3D11CpuAccessFlag
 	{
 		Write = D3D11_CPU_ACCESS_WRITE,
@@ -31,10 +47,59 @@ namespace RenderToy
 		Front = D3D11_CULL_FRONT,
 		Back = D3D11_CULL_BACK,
 	};
+	public enum struct D3D11DsvDimension
+	{
+		Unknown = D3D11_DSV_DIMENSION_UNKNOWN,
+		Texture1D = D3D11_DSV_DIMENSION_TEXTURE1D,
+		Texture1DArray = D3D11_DSV_DIMENSION_TEXTURE1DARRAY,
+		Texture2D = D3D11_DSV_DIMENSION_TEXTURE2D,
+		Texture2DArray = D3D11_DSV_DIMENSION_TEXTURE2DARRAY,
+		Texture2DMs = D3D11_DSV_DIMENSION_TEXTURE2DMS,
+		Texture2DMsArray = D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY,
+	};
 	public enum struct D3D11FillMode
 	{
 		Wireframe = D3D11_FILL_WIREFRAME,
 		Solid = D3D11_FILL_SOLID,
+	};
+	public enum struct D3D11Filter
+	{
+		MinMagMipPoint = D3D11_FILTER_MIN_MAG_MIP_POINT,
+		MinMagPointMipLinear = D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR,
+		MinPointMagLinearMipPoint = D3D11_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT,
+		MinPointMagMipLinear = D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR,
+		MinLinearMagMipPoint = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT,
+		MinLinearMagPointMipLinear = D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR,
+		MinMagLinearMipPoint = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT,
+		MinMagMipLinear = D3D11_FILTER_MIN_MAG_MIP_LINEAR,
+		Anisotropic = D3D11_FILTER_ANISOTROPIC,
+		ComparisonMinMagMipPoint = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT,
+		ComparisonMinMagPointMipLinear = D3D11_FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR,
+		ComparisonMinPointMagLinearMipPoint = D3D11_FILTER_COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT,
+		ComparisonMinPointMagMipLinear = D3D11_FILTER_COMPARISON_MIN_POINT_MAG_MIP_LINEAR,
+		ComparisonMinLinearMagMipPoint = D3D11_FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT,
+		ComparisonMinLinearMagPointMipLinear = D3D11_FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR,
+		ComparisonMinMagLinearMipPoint = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,
+		ComparisonMinMagMipLinear = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+		ComparisonAnisotropic = D3D11_FILTER_COMPARISON_ANISOTROPIC,
+		MinimumMinMagMipPoint = D3D11_FILTER_MINIMUM_MIN_MAG_MIP_POINT,
+		MinimumMinMagPointMipLinear = D3D11_FILTER_MINIMUM_MIN_MAG_POINT_MIP_LINEAR,
+		MinimumMinPointMagLinearMipPoint = D3D11_FILTER_MINIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT,
+		MinimumMinPointMagMipLinear = D3D11_FILTER_MINIMUM_MIN_POINT_MAG_MIP_LINEAR,
+		MinimumMinLinearMagMipPoint = D3D11_FILTER_MINIMUM_MIN_LINEAR_MAG_MIP_POINT,
+		MinimumMinLinearMagPointMipLinear = D3D11_FILTER_MINIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR,
+		MinimumMinMagLinearMipPoint = D3D11_FILTER_MINIMUM_MIN_MAG_LINEAR_MIP_POINT,
+		MinimumMinMagMipLinear = D3D11_FILTER_MINIMUM_MIN_MAG_MIP_LINEAR,
+		MinimumAnisotropic = D3D11_FILTER_MINIMUM_ANISOTROPIC,
+		MaximumMinMagMipPoint = D3D11_FILTER_MAXIMUM_MIN_MAG_MIP_POINT,
+		MaximumMinMagPointMipLinear = D3D11_FILTER_MAXIMUM_MIN_MAG_POINT_MIP_LINEAR,
+		MaximumMinPointMagLinearMipPoint = D3D11_FILTER_MAXIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT,
+		MaximumMinPointMagMipLinear = D3D11_FILTER_MAXIMUM_MIN_POINT_MAG_MIP_LINEAR,
+		MaxiumuMinLinearMagMipPoint = D3D11_FILTER_MAXIMUM_MIN_LINEAR_MAG_MIP_POINT,
+		MaximumMinLinearMagPointMipLinear = D3D11_FILTER_MAXIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR,
+		MaximumMinMagLinearMipPoint = D3D11_FILTER_MAXIMUM_MIN_MAG_LINEAR_MIP_POINT,
+		MaximumMinMagMipLinear = D3D11_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR,
+		MaximumAnisotropic = D3D11_FILTER_MAXIMUM_ANISOTROPIC,
 	};
 	public enum struct D3D11InputClassification
 	{
@@ -84,6 +149,14 @@ namespace RenderToy
 		Texture2DMs = D3D11_RTV_DIMENSION_TEXTURE2DMS,
 		Texture2DMsArray = D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY,
 		Texture3D = D3D11_RTV_DIMENSION_TEXTURE3D,
+	};
+	public enum struct D3D11TextureAddressMode
+	{
+		Wrap = D3D11_TEXTURE_ADDRESS_WRAP,
+		Mirror = D3D11_TEXTURE_ADDRESS_MIRROR,
+		Clamp = D3D11_TEXTURE_ADDRESS_CLAMP,
+		Border = D3D11_TEXTURE_ADDRESS_BORDER,
+		MirrorOnce = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE,
 	};
 	public enum struct D3D11Usage
 	{
@@ -136,6 +209,33 @@ namespace RenderToy
 		LONG top;
 		LONG right;
 		LONG bottom;
+	};
+	public value struct D3D11SamplerDesc
+	{
+		D3D11Filter Filter;
+		D3D11TextureAddressMode AddressU;
+		D3D11TextureAddressMode AddressV;
+		D3D11TextureAddressMode AddressW;
+		FLOAT MipLODBias;
+		UINT MaxAnisotropy;
+		D3D11ComparisonFunc ComparisonFunc;
+		FLOAT BorderColor0;
+		FLOAT BorderColor1;
+		FLOAT BorderColor2;
+		FLOAT BorderColor3;
+		FLOAT MinLOD;
+		FLOAT MaxLOD;
+	};
+	public value struct D3D11Tex2DDsv
+	{
+		UINT MipSlice;
+	};
+	public value struct D3D11DepthStencilViewDesc
+	{
+		DXGIFormat Format;
+		D3D11DsvDimension ViewDimension;
+		UINT Flags;
+		D3D11Tex2DDsv Texture2D;
 	};
 	public value struct D3D11Tex2DRtv
 	{
@@ -198,6 +298,13 @@ namespace RenderToy
 		{
 		}
 	};
+	public ref class D3D11DepthStencilView : COMWrapper<ID3D11DepthStencilView>
+	{
+	public:
+		D3D11DepthStencilView(ID3D11DepthStencilView *pObj) : COMWrapper(pObj)
+		{
+		}
+	};
 	public ref class D3D11InputLayout : COMWrapper<ID3D11InputLayout>
 	{
 	public:
@@ -223,6 +330,13 @@ namespace RenderToy
 	{
 	public:
 		D3D11RenderTargetView(ID3D11RenderTargetView *pObj) : COMWrapper(pObj)
+		{
+		}
+	};
+	public ref class D3D11SamplerState : COMWrapper<ID3D11SamplerState>
+	{
+	public:
+		D3D11SamplerState(ID3D11SamplerState *pObj) : COMWrapper(pObj)
 		{
 		}
 	};
@@ -260,6 +374,10 @@ namespace RenderToy
 		void Begin()
 		{
 			pWrapped->Begin(nullptr);
+		}
+		void ClearDepthStencilView(D3D11DepthStencilView ^pDepthStencilView, D3D11ClearFlag ClearFlags, FLOAT Depth, UINT8 Stencil)
+		{
+			pWrapped->ClearDepthStencilView(pDepthStencilView->Wrapped, (D3D11_CLEAR_FLAG)ClearFlags, Depth, Stencil);
 		}
 		void ClearRenderTargetView(D3D11RenderTargetView ^pRenderTargetView, float R, float G, float B, float A)
 		{
@@ -311,14 +429,23 @@ namespace RenderToy
 			pMappedResource.DepthPitch = pMappedResourceM.DepthPitch;
 			return pMappedResource;
 		};
-		void OMSetRenderTargets(cli::array<D3D11RenderTargetView^> ^ppRenderTargetViews)
+		void OMSetRenderTargets(cli::array<D3D11RenderTargetView^> ^ppRenderTargetViews, D3D11DepthStencilView ^pDepthStencilView)
 		{
 			std::unique_ptr<ID3D11RenderTargetView*[]> ppRenderTargetViewsM(new ID3D11RenderTargetView*[ppRenderTargetViews->Length]);
 			for (int i = 0; i < ppRenderTargetViews->Length; ++i)
 			{
 				ppRenderTargetViewsM[i] = ppRenderTargetViews[i] == nullptr ? nullptr : ppRenderTargetViews[i]->Wrapped;
 			}
-			pWrapped->OMSetRenderTargets(ppRenderTargetViews->Length, &ppRenderTargetViewsM[0], nullptr);
+			pWrapped->OMSetRenderTargets(ppRenderTargetViews->Length, &ppRenderTargetViewsM[0], pDepthStencilView == nullptr ? nullptr : pDepthStencilView->Wrapped);
+		}
+		void PSSetSamplers(UINT StartSlot, cli::array<D3D11SamplerState^> ^ppSamplers)
+		{
+			std::unique_ptr<ID3D11SamplerState*[]> ppSamplersM(new ID3D11SamplerState*[ppSamplers->Length]);
+			for (int i = 0; i < ppSamplers->Length; ++i)
+			{
+				ppSamplersM[i] = ppSamplers[i] == nullptr ? nullptr : ppSamplers[i]->Wrapped;
+			}
+			pWrapped->PSSetSamplers(StartSlot, ppSamplers->Length, &ppSamplersM[0]);
 		}
 		void PSSetShaderResources(UINT StartSlot, cli::array<D3D11ShaderResourceView^> ^ppShaderResourceViews)
 		{
@@ -396,6 +523,16 @@ namespace RenderToy
 			}
 			return gcnew D3D11Buffer(ppBuffer);
 		}
+		D3D11DepthStencilView^ CreateDepthStencilView(D3D11Resource ^pResource, D3D11DepthStencilViewDesc pDesc)
+		{
+			ID3D11DepthStencilView *ppDepthStencilView = nullptr;
+			D3D11_DEPTH_STENCIL_VIEW_DESC pDescM;
+			pDescM.Format = (DXGI_FORMAT)pDesc.Format;
+			pDescM.ViewDimension = (D3D11_DSV_DIMENSION)pDesc.ViewDimension;
+			pDescM.Texture2D.MipSlice = pDesc.Texture2D.MipSlice;
+			TRY_D3D(pWrapped->CreateDepthStencilView(pResource->GetResource(), &pDescM, &ppDepthStencilView));
+			return gcnew D3D11DepthStencilView(ppDepthStencilView);
+		}
 		D3D11InputLayout^ CreateInputLayout(cli::array<D3D11InputElementDesc> ^pInputElementDescs, cli::array<byte> ^pShaderBytecodeWithInputSignature)
 		{
 			ID3D11InputLayout *ppInputLayout = nullptr;
@@ -437,6 +574,12 @@ namespace RenderToy
 			pDescM.Texture2D.MipSlice = pDesc.Texture2D.MipSlice;
 			TRY_D3D(pWrapped->CreateRenderTargetView(pResource->GetResource(), &pDescM, &ppRTView));
 			return gcnew D3D11RenderTargetView(ppRTView);
+		}
+		D3D11SamplerState^ CreateSamplerState(D3D11SamplerDesc pSamplerDesc)
+		{
+			ID3D11SamplerState *ppSamplerState = nullptr;
+			TRY_D3D(pWrapped->CreateSamplerState((D3D11_SAMPLER_DESC*)&pSamplerDesc, &ppSamplerState));
+			return gcnew D3D11SamplerState(ppSamplerState);
 		}
 		D3D11ShaderResourceView^ CreateShaderResourceView(D3D11Resource ^pResource, D3D11ShaderResourceViewDesc pDesc)
 		{

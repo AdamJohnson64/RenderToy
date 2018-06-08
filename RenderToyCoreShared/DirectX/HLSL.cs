@@ -131,13 +131,25 @@ cbuffer Constants : register(b0)
     float4x4 TransformProjection;
 };
 
+SamplerState Sampler : register(s0);
+
+texture2D TextureAlbedo : register(t0);
+
 ";
-        public readonly static string DX11Simple =
+        public readonly static string D3D11PixelShaderCode =
+@"// Direct3D11 Standard Pixel Shader
+float4 ps(VS_OUTPUT input) : SV_Target {
+    //return float4(1, 1, 1, 1);
+    return TextureAlbedo.Sample(Sampler, input.TexCoord);
+}
+
+";
+        public readonly static string D3D11Simple =
             D3D11Constants +
             D3DVertexInputStruct +
             D3DVertexOutputStruct +
             D3DVertexShaderCode +
-            D3DPixelShaderCode;
+            D3D11PixelShaderCode;
         #endregion
         #region - Section : Direct3D12 -
         public readonly static string D3D12Constants =
@@ -155,7 +167,7 @@ cbuffer Constants : register(b0)
 };
 
 ";
-        public readonly static string DX12Simple =
+        public readonly static string D3D12Simple =
             D3D12Constants +
             D3DVertexInputStruct +
             D3DVertexOutputStruct +
