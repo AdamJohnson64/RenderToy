@@ -5,6 +5,7 @@ using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
+using RenderToy.Shaders;
 using RenderToy.Utility;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -28,46 +29,22 @@ namespace RenderToy.WPF
         }
         public ViewDirectX11()
         {
-            var hlsl =
-@"cbuffer Constants : register(b0)
-{
-    float4x4 TransformModelViewProjection;
-};
-
-struct VS_INPUT {
-    float3 Position : POSITION;
-};
-
-struct VS_OUTPUT {
-    float4 Position : SV_Position;
-};
-
-VS_OUTPUT vs(VS_INPUT input) {
-    VS_OUTPUT result;
-    //result.Position = float4(input.Position, 1);
-    result.Position = mul(TransformModelViewProjection, float4(input.Position, 1));
-    return result;
-}
-
-float4 ps(VS_OUTPUT input) : SV_Target {
-    return float4(1, 1, 1, 1);
-}";
             d3d11Device = Direct3D11.D3D11CreateDevice();
             {
-                var bytecode = HLSLExtensions.CompileHLSL(hlsl, "vs", "vs_5_0");
+                var bytecode = HLSLExtensions.CompileHLSL(HLSL.DX11Simple, "vs", "vs_5_0");
                 d3d11InputLayout = d3d11Device.CreateInputLayout(new[]
                 {
                     new D3D11InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
                     new D3D11InputElementDesc { SemanticName = "NORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 12, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
-                    new D3D11InputElementDesc { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 24, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
-                    new D3D11InputElementDesc { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 28, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                    new D3D11InputElementDesc { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGIFormat.B8G8R8A8_Unorm, InputSlot = 0, AlignedByteOffset = 24, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                    new D3D11InputElementDesc { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGIFormat.R32G32_Float, InputSlot = 0, AlignedByteOffset = 28, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
                     new D3D11InputElementDesc { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 36, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
-                    new D3D11InputElementDesc { SemanticName = "BITANGENT", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 48, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                    new D3D11InputElementDesc { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 48, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
                 }, bytecode);
                 d3d11VertexShader = d3d11Device.CreateVertexShader(bytecode);
             }
             {
-                var bytecode = HLSLExtensions.CompileHLSL(hlsl, "ps", "ps_5_0");
+                var bytecode = HLSLExtensions.CompileHLSL(HLSL.DX11Simple, "ps", "ps_5_0");
                 d3d11PixelShader = d3d11Device.CreatePixelShader(bytecode);
             }
             d3d11RasterizerState = d3d11Device.CreateRasterizerState(new D3D11RasterizerDesc { FillMode = D3D11FillMode.Solid, CullMode = D3D11CullMode.None });

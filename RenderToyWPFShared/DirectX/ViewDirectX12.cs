@@ -5,6 +5,7 @@ using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
+using RenderToy.Shaders;
 using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
@@ -37,8 +38,8 @@ namespace RenderToy.WPF
             d3d12CommandAllocator = d3d12Device.CreateCommandAllocator(D3D12CommandListType.Direct);
             ////////////////////////////////////////////////////////////////////////////////
             // Create the Vertex Shader and Pixel Shader
-            var bytecode_VertexShader = HLSLExtensions.CompileHLSL(GetShaderCode(), "vs", "vs_5_0");
-            var bytecode_PixelShader = HLSLExtensions.CompileHLSL(GetShaderCode(), "ps", "ps_5_0");
+            var bytecode_VertexShader = HLSLExtensions.CompileHLSL(HLSL.DX12Simple, "vs", "vs_5_0");
+            var bytecode_PixelShader = HLSLExtensions.CompileHLSL(HLSL.DX12Simple, "ps", "ps_5_0");
             ////////////////////////////////////////////////////////////////////////////////
             // Extract the Root Signature
             byte[] bytecode_RootSignature = ExtractRootSignature(bytecode_VertexShader);
@@ -63,7 +64,12 @@ namespace RenderToy.WPF
             d3d12GraphicsPipelineStateDesc.RasterizerState.CullMode = D3D12CullMode.None;
             d3d12GraphicsPipelineStateDesc.InputLayout.pInputElementDescs = new D3D12InputElementDesc[]
             {
-                new D3D12InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D12InputClassification.PerVertexData, InstanceDataStepRate = 0 }
+                new D3D12InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D12InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D12InputElementDesc { SemanticName = "NORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 12, InputSlotClass = D3D12InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D12InputElementDesc { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGIFormat.B8G8R8A8_Unorm, InputSlot = 0, AlignedByteOffset = 24, InputSlotClass = D3D12InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D12InputElementDesc { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGIFormat.R32G32_Float, InputSlot = 0, AlignedByteOffset = 28, InputSlotClass = D3D12InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D12InputElementDesc { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 36, InputSlotClass = D3D12InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D12InputElementDesc { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 48, InputSlotClass = D3D12InputClassification.PerVertexData, InstanceDataStepRate = 0 },
             };
             d3d12GraphicsPipelineStateDesc.PrimitiveTopologyType = D3D12PrimitiveTopologyType.Triangle;
             d3d12GraphicsPipelineStateDesc.NumRenderTargets = 1;
@@ -108,7 +114,7 @@ namespace RenderToy.WPF
                 var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (vertexbuffer == null) continue;
                 d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0);
-                d3d12CommandList.IASetVertexBuffers(0, new[] { new D3D12VertexBufferView { BufferLocation = vertexbuffer.d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = vertexbuffer.size, StrideInBytes = (uint)Marshal.SizeOf(typeof(XYZ)) } });
+                d3d12CommandList.IASetVertexBuffers(0, new[] { new D3D12VertexBufferView { BufferLocation = vertexbuffer.d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = vertexbuffer.size, StrideInBytes = (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) } });
                 d3d12CommandList.DrawInstanced((uint)vertexbuffer.length, 1, 0, 0);
             }
             d3d12CommandList.Close();
@@ -124,39 +130,6 @@ namespace RenderToy.WPF
             d3d12Resource_RenderTarget.ReadFromSubresource(wpfFrontBuffer.BackBuffer, (uint)wpfFrontBuffer.BackBufferStride, (uint)(wpfFrontBuffer.BackBufferStride * wpfFrontBuffer.PixelHeight), 0);
             wpfFrontBuffer.AddDirtyRect(new Int32Rect(0, 0, wpfFrontBuffer.PixelWidth, wpfFrontBuffer.PixelHeight));
             wpfFrontBuffer.Unlock();
-        }
-        string GetShaderCode()
-        {
-            return
-@"#define CommonRoot \
-""RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"" \
-""RootConstants(num32BitConstants=16, b0, space=0, visibility=SHADER_VISIBILITY_ALL)""
-
-cbuffer Constants : register(b0)
-{
-    float4x4 TransformModelViewProjection;
-};
-
-struct VS_INPUT {
-    float3 Position : POSITION;
-};
-
-struct VS_OUTPUT {
-    float4 Position : SV_Position;
-};
-
-[RootSignature(CommonRoot)]
-VS_OUTPUT vs(VS_INPUT input) {
-    VS_OUTPUT result;
-    //result.Position = float4(input.Position, 1);
-    result.Position = mul(TransformModelViewProjection, float4(input.Position, 1));
-    return result;
-}
-
-float4 ps(VS_OUTPUT input) : SV_Target {
-    return float4(1, 1, 1, 1);
-}
-";
         }
         byte[] ExtractRootSignature(byte[] shader)
         {
@@ -179,9 +152,9 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             if (primitive == null) return null;
             return MementoServer.Default.Get(primitive, Token, () =>
             {
-                var verticesout = DirectXHelper.ConvertToXYZ(primitive);
+                var verticesout = DirectXHelper.ConvertToXYZNorDiffuseTex1(primitive);
                 if (verticesout.Length == 0) return null;
-                var size = (uint)(Marshal.SizeOf(typeof(XYZ)) * verticesout.Length);
+                var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * verticesout.Length);
                 var d3d12ResourceDesc_Buffer = new D3D12ResourceDesc();
                 d3d12ResourceDesc_Buffer.Dimension = D3D12ResourceDimension.Buffer;
                 d3d12ResourceDesc_Buffer.Width = size;

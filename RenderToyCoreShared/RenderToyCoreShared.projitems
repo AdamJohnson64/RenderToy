@@ -60,6 +60,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\ExpressionReducer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\ExpressionSubstitution.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\FieldExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\HLSL.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\HLSLGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\MSILGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\TextureFormats\LoaderTGA.cs" />
