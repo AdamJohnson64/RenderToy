@@ -134,6 +134,9 @@ cbuffer Constants : register(b0)
 SamplerState Sampler : register(s0);
 
 texture2D TextureAlbedo : register(t0);
+texture2D TextureMask : register(t1);
+texture2D TextureBump : register(t2);
+texture2D TextureDisplacement : register(t3);
 
 ";
         public readonly static string D3D11PixelShaderCode =
