@@ -1,0 +1,101 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:materials="clr-namespace:RenderToy.Materials"
+                    xmlns:rendertoy="clr-namespace:RenderToy.WPF"
+                    xmlns:xps="clr-namespace:RenderToy.WPF.Xps">
+    <rendertoy:Camera x:Key="Camera"/>
+    <rendertoy:NamedConverter x:Key="NamedConverter"/>
+    <ToolTip x:Key="GraphNodeToolTip">
+        <StackPanel>
+            <TextBlock Text="{Binding Converter={StaticResource NamedConverter}}" Margin="4"/>
+            <Border Background="Beige" BorderBrush="Black" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4">
+                <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256"/>
+            </Border>
+        </StackPanel>
+    </ToolTip>
+    <DataTemplate x:Key="GraphNodeMNAdd">
+        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="+"/>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="GraphNodeMNLerp">
+        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Lerp"/>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="GraphNodeMNMultiply">
+        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="X"/>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="GraphNodeMNSaturate">
+        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Saturate"/>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="GraphNodeMNSubtract">
+        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="-"/>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="GraphNodeMNThreshold">
+        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Threshold"/>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="GraphNodeMNConstant">
+        <Border Background="LightGreen" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Path=Value}"/>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="GraphNodeTexCoordU">
+        <Border Background="LightGreen" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="U"/>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="GraphNodeTexCoordV">
+        <Border Background="LightGreen" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="V"/>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="GraphNodeTemplate">
+        <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+            <StackPanel Orientation="Horizontal">
+                <rendertoy:ViewMaterial MaterialSource="{Binding}" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Converter={StaticResource NamedConverter}}" Margin="2" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+    <rendertoy:TypeBasedDataTemplateSelector x:Key="GraphNodeDataTemplateSelector">
+        <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNAdd}" DataTemplate="{StaticResource GraphNodeMNAdd}"/>
+        <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNLerp}" DataTemplate="{StaticResource GraphNodeMNLerp}"/>
+        <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNMultiply}" DataTemplate="{StaticResource GraphNodeMNMultiply}"/>
+        <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNSaturate}" DataTemplate="{StaticResource GraphNodeMNSaturate}"/>
+        <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNSubtract}" DataTemplate="{StaticResource GraphNodeMNSubtract}"/>
+        <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNThreshold}" DataTemplate="{StaticResource GraphNodeMNThreshold}"/>
+        <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNConstant}" DataTemplate="{StaticResource GraphNodeMNConstant}"/>
+        <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNTexCoordU}" DataTemplate="{StaticResource GraphNodeTexCoordU}"/>
+        <rendertoy:TypeBasedDataTemplate DataType="{x:Type materials:MNTexCoordV}" DataTemplate="{StaticResource GraphNodeTexCoordV}"/>
+        <rendertoy:TypeBasedDataTemplate DataTemplate="{StaticResource GraphNodeTemplate}"/>
+    </rendertoy:TypeBasedDataTemplateSelector>
+    <DataTemplate x:Key="GraphNode">
+        <rendertoy:ViewMaterialNode ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}"/>
+    </DataTemplate>
+    <DataTemplate x:Key="HeaderTemplate">
+        <FlowDocument>
+            <Paragraph Background="Black" Foreground="White" TextAlignment="Center" BorderBrush="LightGray" BorderThickness="2" Padding="4">
+                <Run FontSize="24">RenderToy</Run>
+                <LineBreak/>
+                <Run FontSize="16">A bit of history that's now a bit of silicon...</Run>
+            </Paragraph>
+        </FlowDocument>
+    </DataTemplate>
+    <DataTemplate x:Key="FooterTemplate">
+        <FlowDocument>
+            <Paragraph Background="Black" Foreground="White" TextAlignment="Right" BorderBrush="LightGray" BorderThickness="2" Padding="4">
+                <Run>Page</Run>
+                <Run Text="{Binding RelativeSource={RelativeSource Mode=Self}, Path=(xps:DocumentPaginatorWrapper.PageNumber)}"/>
+            </Paragraph>
+        </FlowDocument>
+    </DataTemplate>
+</ResourceDictionary>

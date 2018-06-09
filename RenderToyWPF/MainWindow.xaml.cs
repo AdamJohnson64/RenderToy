@@ -20,6 +20,7 @@ using System.IO;
 using System.IO.Packaging;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Xps.Packaging;
@@ -36,6 +37,7 @@ namespace RenderToy.WPF
         public static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(ViewSoftwareCustomizable));
         public static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(ViewSoftwareCustomizable));
         public static RoutedUICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(ViewSoftwareCustomizable));
+        public static RoutedUICommand CommandDocumentOpen = new RoutedUICommand("Open the RenderToy document.", "CommandDocumentOpen", typeof(MainWindow));
         public static RoutedUICommand CommandDocumentExport = new RoutedUICommand("Export the RenderToy document to XPS.", "CommandDocumentExport", typeof(MainWindow));
         public MainWindow()
         {
@@ -101,6 +103,12 @@ namespace RenderToy.WPF
                 window.ShowDialog();
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandDocumentOpen, (s, e) =>
+            {
+                var window = new Window { Title = "RenderToy - A Bit Of History That's Now A Bit Of Silicon..." };
+                window.Content = new FlowDocumentReader { Document = new RenderToyDocument() };
+                window.Show();
+            }));
             CommandBindings.Add(new CommandBinding(CommandDocumentExport, (s, e) =>
             {
                 var savefiledialog = new SaveFileDialog();
@@ -119,9 +127,9 @@ namespace RenderToy.WPF
                         {
                             using (var xpsdocument = new XpsDocument(package, CompressionOption.Maximum))
                             {
-                                var flowdocument = (FlowDocument)Application.Current.Resources["RenderToyDocument"];
-                                var headerTemplate = (DataTemplate)flowdocument.Resources["HeaderTemplate"];
-                                var footerTemplate = (DataTemplate)flowdocument.Resources["FooterTemplate"];
+                                var flowdocument = new RenderToyDocument();
+                                var headerTemplate = (DataTemplate)flowdocument.FindResource("HeaderTemplate");
+                                var footerTemplate = (DataTemplate)flowdocument.FindResource("FooterTemplate");
                                 var serialization = new XpsSerializationManager(new XpsPackagingPolicy(xpsdocument), false);
                                 var paginator = new DocumentPaginatorWrapper(((IDocumentPaginatorSource)flowdocument).DocumentPaginator, 100, 100, headerTemplate, footerTemplate);
                                 paginator.PageSize = new System.Windows.Size(1024, 1280);
