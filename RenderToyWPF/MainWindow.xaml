@@ -17,6 +17,12 @@
             <MenuItem Header="Debug">
                 <MenuItem Header="Performance Trace" Command="{x:Static rendertoy:MainWindow.CommandDebugToolPerformanceTrace}"/>
             </MenuItem>
+            <MenuItem Header="Window">
+                <MenuItem Header="New Direct3D9 (Fixed Function) View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D9FF}"/>
+                <MenuItem Header="New Direct3D9 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D9}"/>
+                <MenuItem Header="New Direct3D11 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D11}"/>
+                <MenuItem Header="New Direct3D12 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D12}"/>
+            </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="Open RenderToy Document" Command="{x:Static rendertoy:MainWindow.CommandDocumentOpen}"/>
                 <MenuItem Header="Export RenderToy Document" Command="{x:Static rendertoy:MainWindow.CommandDocumentExport}"/>
@@ -118,24 +124,6 @@
                         </ContentControl.ContentTemplate>
                     </ContentControl>
                 </DockPanel>
-            </TabItem>
-            <!-- ==================== Accelerated DirectX Visualizer ==================== -->
-            <TabItem Header="DX9" DataContext="{Binding Path=Scene}">
-                <Grid Background="Black">
-                    <rendertoy:ViewDirectX9FixedFunction rendertoy:AttachedView.Scene="{Binding}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}"/>
-                </Grid>
-            </TabItem>
-            <!-- ==================== Accelerated DirectX11 Visualizer ==================== -->
-            <TabItem Header="DX11" DataContext="{Binding Path=Scene}">
-                <Grid Background="Black">
-                    <rendertoy:ViewDirectX11 rendertoy:AttachedView.Scene="{Binding}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}"/>
-                </Grid>
-            </TabItem>
-            <!-- ==================== Accelerated DirectX12 Visualizer ==================== -->
-            <TabItem Header="DX12" DataContext="{Binding Path=Scene}">
-                <Grid Background="Black">
-                    <rendertoy:ViewDirectX12 rendertoy:AttachedView.Scene="{Binding}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}"/>
-                </Grid>
             </TabItem>
             <!-- ==================== Shader Editor ==================== -->
             <TabItem Header="DX9 Shader Editor" DataContext="{Binding Path=Scene}">

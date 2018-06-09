@@ -21,6 +21,7 @@ using System.IO.Packaging;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Xps.Packaging;
@@ -39,6 +40,10 @@ namespace RenderToy.WPF
         public static RoutedUICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(ViewSoftwareCustomizable));
         public static RoutedUICommand CommandDocumentOpen = new RoutedUICommand("Open the RenderToy document.", "CommandDocumentOpen", typeof(MainWindow));
         public static RoutedUICommand CommandDocumentExport = new RoutedUICommand("Export the RenderToy document to XPS.", "CommandDocumentExport", typeof(MainWindow));
+        public static RoutedUICommand CommandWindowDirect3D9FF = new RoutedUICommand("Open a DirectX 9 (Fixed Function) View Window.", "CommandWindowDirectX3DFF", typeof(MainWindow));
+        public static RoutedUICommand CommandWindowDirect3D9 = new RoutedUICommand("Open a DirectX 9 View Window.", "CommandWindowDirect3D9", typeof(MainWindow));
+        public static RoutedUICommand CommandWindowDirect3D11 = new RoutedUICommand("Open a DirectX 11 View Window.", "CommandWindowDirect3D11", typeof(MainWindow));
+        public static RoutedUICommand CommandWindowDirect3D12 = new RoutedUICommand("Open a DirectX 12 View Window.", "CommandWindowDirect3D12", typeof(MainWindow));
         public MainWindow()
         {
             InitializeComponent();
@@ -103,6 +108,58 @@ namespace RenderToy.WPF
                 window.ShowDialog();
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9FF, (s, e) =>
+            {
+                var view = new ViewDirectX9FixedFunction();
+                view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
+                view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
+                view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
+                view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
+                view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
+                view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
+                var window = new Window { Title = "RenderToy (Direct3D9 Fixed Function)", Content = view, Owner = this };
+                window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
+                window.Show();
+            }));
+            CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9, (s, e) =>
+            {
+                var view = new ViewDirectX9 { VertexShader = HLSLExtensions.CompileHLSL(HLSL.DX9Full, "vs", "vs_3_0"), PixelShader = HLSLExtensions.CompileHLSL(HLSL.DX9Full, "ps", "ps_3_0") };
+                view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
+                view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
+                view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
+                view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
+                view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
+                view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
+                var window = new Window { Title = "RenderToy (Direct3D9)", Content = view, Owner = this };
+                window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
+                window.Show();
+            }));
+            CommandBindings.Add(new CommandBinding(CommandWindowDirect3D11, (s, e) =>
+            {
+                var view = new ViewDirectX11();
+                view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
+                view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
+                view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
+                view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
+                view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
+                view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
+                var window = new Window { Title = "RenderToy (Direct3D11)", Content = view, Owner = this };
+                window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
+                window.Show();
+            }));
+            CommandBindings.Add(new CommandBinding(CommandWindowDirect3D12, (s, e) =>
+            {
+                var view = new ViewDirectX12();
+                view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
+                view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
+                view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
+                view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
+                view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
+                view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
+                var window = new Window { Title = "RenderToy (Direct3D12)", Content = view, Owner = this };
+                window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
+                window.Show();
+            }));
             CommandBindings.Add(new CommandBinding(CommandDocumentOpen, (s, e) =>
             {
                 var window = new Window { Title = "RenderToy - A Bit Of History That's Now A Bit Of Silicon..." };
