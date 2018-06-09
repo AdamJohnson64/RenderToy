@@ -174,9 +174,8 @@ namespace RenderToy.WPF
             {
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (createdvertexbuffer.VertexBuffer == null) continue;
-                var createdtexture = CreateTexture(transformedobject.Node.Material, null);
                 device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
-                if (createdtexture != null) device.SetTexture(0, createdtexture);
+                device.SetTexture(0, CreateTexture(transformedobject.Node.Material, null));
                 device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * mvp), 0));
                 device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
             }
@@ -214,27 +213,12 @@ namespace RenderToy.WPF
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (createdvertexbuffer.VertexBuffer == null) continue;
-                Direct3DTexture9 map_Kd = null;
-                Direct3DTexture9 map_d = null;
-                Direct3DTexture9 map_bump = null;
-                Direct3DTexture9 displacement = null;
-                if (transformedobject.Node.Material is LoaderOBJ.OBJMaterial)
-                {
-                    var objmat = (LoaderOBJ.OBJMaterial)transformedobject.Node.Material;
-                    map_Kd = CreateTexture(objmat.map_Kd, StockMaterials.PlasticWhite);
-                    map_d = CreateTexture(objmat.map_d, StockMaterials.PlasticWhite);
-                    map_bump = CreateTexture(objmat.map_bump, StockMaterials.PlasticLightBlue);
-                    displacement = CreateTexture(objmat.displacement, StockMaterials.PlasticWhite);
-                }
-                else
-                {
-                    map_Kd = CreateTexture(transformedobject.Node.Material, StockMaterials.PlasticWhite);
-                }
                 device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
-                if (map_Kd != null) device.SetTexture(0, map_Kd);
-                if (map_d != null) device.SetTexture(1, map_d);
-                if (map_bump != null) device.SetTexture(2, map_bump);
-                if (displacement != null) device.SetTexture(3, displacement);
+                var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
+                device.SetTexture(0, CreateTexture(objmat == null ? transformedobject.Node.Material : objmat.map_Kd, StockMaterials.PlasticWhite));
+                device.SetTexture(1, CreateTexture(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite));
+                device.SetTexture(2, CreateTexture(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue));
+                device.SetTexture(3, CreateTexture(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite));
                 device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformCamera), 0), 4);
                 device.SetVertexShaderConstantF(4, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformModel), 0), 4);
                 device.SetVertexShaderConstantF(8, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformView), 0), 4);

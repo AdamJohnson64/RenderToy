@@ -29,9 +29,6 @@ namespace RenderToy.WPF
             {
                 ((ViewDirectX11)s).RenderDX();
             }));
-        }
-        public ViewDirectX11()
-        {
             d3d11Device = Direct3D11.D3D11CreateDevice();
             {
                 var bytecode = HLSLExtensions.CompileHLSL(HLSL.D3D11Simple, "vs", "vs_5_0");
@@ -92,26 +89,17 @@ namespace RenderToy.WPF
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (vertexbuffer == null) continue;
-                D3D11ShaderResourceView map_Kd = null;
-                D3D11ShaderResourceView map_d = null;
-                D3D11ShaderResourceView map_bump = null;
-                D3D11ShaderResourceView displacement = null;
-                if (transformedobject.Node.Material is LoaderOBJ.OBJMaterial)
-                {
-                    var objmat = (LoaderOBJ.OBJMaterial)transformedobject.Node.Material;
-                    map_Kd = CreateTextureView(objmat.map_Kd, StockMaterials.PlasticWhite);
-                    map_d = CreateTextureView(objmat.map_d, StockMaterials.PlasticWhite);
-                    map_bump = CreateTextureView(objmat.map_bump, StockMaterials.PlasticLightBlue);
-                    displacement = CreateTextureView(objmat.displacement, StockMaterials.PlasticWhite);
-                }
-                else
-                {
-                    map_Kd = CreateTextureView(transformedobject.Node.Material, StockMaterials.PlasticWhite);
-                }
                 var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)System.Math.Max(4 * 16, 128), Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16}, new D3D11SubresourceData { pSysMem = DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), SysMemPitch = 0, SysMemSlicePitch = 0 });
                 context.VSSetConstantBuffers(0, new[] { d3d11ConstantBuffer });
                 context.PSSetSamplers(0, new[] { d3d11SamplerState });
-                context.PSSetShaderResources(0, new[] { map_Kd, map_d, map_bump, displacement });
+                var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
+                context.PSSetShaderResources(0, new[]
+                {
+                    CreateTextureView(objmat == null ? transformedobject.Node.Material : objmat.map_Kd, StockMaterials.PlasticWhite),
+                    CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
+                    CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
+                    CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
+                });
                 context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
                 context.Draw(vertexbuffer.vertexCount, 0);
             }
@@ -246,13 +234,13 @@ namespace RenderToy.WPF
             RenderDX();
             drawingContext.DrawImage(wpfFrontBuffer, new Rect(0, 0, ActualWidth, ActualHeight));
         }
+        static D3D11Device d3d11Device;
+        static D3D11InputLayout d3d11InputLayout;
+        static D3D11RasterizerState d3d11RasterizerState;
+        static D3D11SamplerState d3d11SamplerState;
+        static D3D11VertexShader d3d11VertexShader;
+        static D3D11PixelShader d3d11PixelShader;
         WriteableBitmap wpfFrontBuffer;
-        D3D11Device d3d11Device;
-        D3D11InputLayout d3d11InputLayout;
-        D3D11RasterizerState d3d11RasterizerState;
-        D3D11SamplerState d3d11SamplerState;
-        D3D11VertexShader d3d11VertexShader;
-        D3D11PixelShader d3d11PixelShader;
         D3D11Texture2D d3d11Texture2D_RT;
         D3D11Texture2D d3d11Texture2D_DS;
         D3D11RenderTargetView d3d11RenderTargetView;
