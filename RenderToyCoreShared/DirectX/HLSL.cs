@@ -46,6 +46,53 @@ VS_OUTPUT vs(VS_INPUT input) {
         public static readonly string D3DPixelShaderCode =
 @"// Direct3D Standard Pixel Shader
 float4 ps(VS_OUTPUT input) : SV_Target {
+    ////////////////////////////////////////////////////////////////////////////////
+    // Stencil Mask
+    if (SampleTexture(TextureMask, input.TexCoord).r < 0.5) discard;
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Reconstruct Tangent Basis
+    float3x3 tbn = {input.Tangent, input.Bitangent, input.Normal};
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Displacement Mapping (Steep Parallax)
+    float height = 1.0;
+    float bumpScale = 0.02;
+    float numSteps = 20;
+    float2 offsetCoord = input.TexCoord.xy;
+    float sampledHeight = SampleTexture(TextureDisplacement, offsetCoord).r;
+    float3 tangentSpaceEye = mul(input.EyeVector, transpose(tbn));
+    numSteps = lerp(numSteps * 2, numSteps, normalize(tangentSpaceEye).z);
+    float step = 1.0 / numSteps;
+    float2 delta = -float2(tangentSpaceEye.x, tangentSpaceEye.y) * bumpScale / (tangentSpaceEye.z * numSteps);
+    int maxiter = 50;
+    int iter = 0;
+    while (sampledHeight < height && iter < maxiter) {
+        height -= step;
+        offsetCoord += delta;
+        sampledHeight = SampleTexture(TextureDisplacement, offsetCoord).r;
+        ++iter;
+    }
+    height = sampledHeight;
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Bump Mapping Normal
+    float3 bump = normalize(SampleTexture(TextureBump, offsetCoord).rgb * 2 - 1);
+    float3 normal = mul(bump, tbn);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Simple Lighting
+    float light = clamp(dot(normal, normalize(float3(1,1,1))), 0, 1);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Final Color
+    return float4(light * SampleTexture(TextureAlbedo, offsetCoord).rgb, 1);
+}
+
+";
+        public static readonly string D3DPixelShaderCodeSimple =
+@"// Direct3D Simple Pixel Shader
+float4 ps(VS_OUTPUT input) : SV_Target {
     return float4(1, 1, 1, 1);
 }
 
@@ -59,57 +106,14 @@ float4x4 TransformModel : register(c4);
 float4x4 TransformView : register(c8);
 float4x4 TransformProjection : register(c12);
 float4x4 TransformModelViewProjection : register(c16);
-sampler2D SamplerAlbedo : register(s0);
-sampler2D SamplerMask : register(s1);
-sampler2D SamplerBump : register(s2);
-sampler2D SamplerDisplacement : register(s3);
 
-";
-        public static readonly string D3D9PixelShaderCode =
-@"// Direct3D9 Standard Pixel Shader
-float4 ps(VS_OUTPUT input) : SV_Target {
-    ////////////////////////////////////////////////////////////////////////////////
-    // Stencil Mask
-    if (tex2D(SamplerMask, input.TexCoord).r < 0.5) discard;
+// Direct3D9 Standard Textures
+sampler2D TextureAlbedo : register(s0);
+sampler2D TextureMask : register(s1);
+sampler2D TextureBump : register(s2);
+sampler2D TextureDisplacement : register(s3);
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // Reconstruct Tangent Basis
-    float3x3 tbn = {input.Tangent, input.Bitangent, input.Normal};
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // Displacement Mapping (Steep Parallax)
-    float height = 1.0;
-    float bumpScale = 0.02;
-    float numSteps = 20;
-    float2 offsetCoord = input.TexCoord.xy;
-    float sampledHeight = tex2D(SamplerDisplacement, offsetCoord).r;
-    float3 tangentSpaceEye = mul(input.EyeVector, transpose(tbn));
-    numSteps = lerp(numSteps * 2, numSteps, normalize(tangentSpaceEye).z);
-    float step = 1.0 / numSteps;
-    float2 delta = -float2(tangentSpaceEye.x, tangentSpaceEye.y) * bumpScale / (tangentSpaceEye.z * numSteps);
-    int maxiter = 50;
-    int iter = 0;
-    while (sampledHeight < height && iter < maxiter) {
-        height -= step;
-        offsetCoord += delta;
-        sampledHeight = tex2D(SamplerDisplacement, offsetCoord).r;
-        ++iter;
-    }
-    height = sampledHeight;
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // Bump Mapping Normal
-    float3 bump = normalize(tex2D(SamplerBump, offsetCoord).rgb * 2 - 1);
-    float3 normal = mul(bump, tbn);
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // Simple Lighting
-    float light = clamp(dot(normal, normalize(float3(1,1,1))), 0, 1);
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // Final Color
-    return float4(light * tex2D(SamplerAlbedo, offsetCoord).rgb, 1);
-}
+float4 SampleTexture(sampler2D s, float2 uv) { return tex2D(s, uv); }
 
 ";
         public static readonly string DX9Full =
@@ -117,7 +121,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             D3DVertexInputStruct +
             D3DVertexOutputStruct +
             D3DVertexShaderCode +
-            D3D9PixelShaderCode;
+            D3DPixelShaderCode;
         #endregion
         #region - Section : Direct3D11 -
         public readonly static string D3D11Constants =
@@ -138,13 +142,7 @@ texture2D TextureMask : register(t1);
 texture2D TextureBump : register(t2);
 texture2D TextureDisplacement : register(t3);
 
-";
-        public readonly static string D3D11PixelShaderCode =
-@"// Direct3D11 Standard Pixel Shader
-float4 ps(VS_OUTPUT input) : SV_Target {
-    //return float4(1, 1, 1, 1);
-    return TextureAlbedo.Sample(Sampler, input.TexCoord);
-}
+float4 SampleTexture(texture2D s, float2 uv) { return s.Sample(Sampler, uv); }
 
 ";
         public readonly static string D3D11Simple =
@@ -152,7 +150,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
             D3DVertexInputStruct +
             D3DVertexOutputStruct +
             D3DVertexShaderCode +
-            D3D11PixelShaderCode;
+            D3DPixelShaderCode;
         #endregion
         #region - Section : Direct3D12 -
         public readonly static string D3D12Constants =
@@ -177,7 +175,7 @@ cbuffer Constants : register(b0)
 @"[RootSignature(CommonRoot)]
 " +
             D3DVertexShaderCode +
-            D3DPixelShaderCode;
+            D3DPixelShaderCodeSimple;
         #endregion
     }
 }
