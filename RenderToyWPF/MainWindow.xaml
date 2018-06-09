@@ -226,7 +226,7 @@
                 </Grid>
             </TabItem>
             <!-- ==================== Shader Editor ==================== -->
-            <TabItem Header="Shader Editor" DataContext="{Binding Path=Scene}">
+            <TabItem Header="DX9 Shader Editor" DataContext="{Binding Path=Scene}">
                 <TabItem.Resources>
                     <rendertoy:CompileVertexShaderConverter x:Key="CompileVertexShaderConverter"/>
                     <rendertoy:CompilePixelShaderConverter x:Key="CompilePixelShaderConverter"/>
@@ -236,15 +236,9 @@
                         <ColumnDefinition Width="50*"/>
                         <ColumnDefinition Width="50*"/>
                     </Grid.ColumnDefinitions>
-                    <DockPanel Grid.Column="0">
-                        <Border DockPanel.Dock="Bottom" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2" Padding="2">
-                            <TextBlock x:Name="ShaderErrorsPS" FontFamily="Consolas" Foreground="Red"/>
-                        </Border>
-                        <Border DockPanel.Dock="Bottom" BorderBrush="DarkGray" BorderThickness="2" CornerRadius="4" Margin="2" Padding="2">
-                            <TextBlock x:Name="ShaderErrorsVS" FontFamily="Consolas" Foreground="Red"/>
-                        </Border>
-                        <TextBox x:Name="ShaderCode" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas" Background="Black" Foreground="White"/>
-                    </DockPanel>
+                    <AdornerDecorator Grid.Column="0">
+                        <TextBox x:Name="ShaderCode" AcceptsReturn="True" FontFamily="Consolas" Background="Black" Foreground="White"/>
+                    </AdornerDecorator>
                     <GridSplitter Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="4"/>
                     <rendertoy:ViewDirectX9 Grid.Column="1" rendertoy:AttachedView.Scene="{Binding}" rendertoy:AttachedView.TransformCamera="{Binding Source={StaticResource Camera}, Path=TransformCamera}" rendertoy:AttachedView.TransformView="{Binding Source={StaticResource Camera}, Path=TransformView}" rendertoy:AttachedView.TransformProjection="{Binding Source={StaticResource Camera}, Path=TransformProjection}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}" VertexShader="{Binding ElementName=ShaderCode, Path=Text, Converter={StaticResource CompileVertexShaderConverter}}" PixelShader="{Binding ElementName=ShaderCode, Path=Text, Converter={StaticResource CompilePixelShaderConverter}}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}"/>
                 </Grid>

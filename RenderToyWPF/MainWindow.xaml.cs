@@ -137,30 +137,30 @@ namespace RenderToy.WPF
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
             DataContext = Document.Default;
+            var adornerlayer = AdornerLayer.GetAdornerLayer(ShaderCode);
+            var adornertextboxfloaters = new AdornerTextBoxErrors(ShaderCode);
+            adornerlayer.Add(adornertextboxfloaters);
             ShaderCode.TextChanged += (s, e) =>
             {
+                string errors = "";
+                try
                 {
-                    try
-                    {
-                        HLSLExtensions.CompileHLSL(ShaderCode.Text, "vs", "vs_3_0");
-                        ShaderErrorsVS.Text = "Vertex Shader Compilation Successful.";
-                    }
-                    catch (Exception exception)
-                    {
-                        ShaderErrorsVS.Text = exception.ToString();
-                    }
+                    HLSLExtensions.CompileHLSL(ShaderCode.Text, "vs", "vs_3_0");
                 }
+                catch (Exception exception)
                 {
-                    try
-                    {
-                        HLSLExtensions.CompileHLSL(ShaderCode.Text, "ps", "ps_3_0");
-                        ShaderErrorsPS.Text = "Pixel Shader Compilation Successful.";
-                    }
-                    catch (Exception exception)
-                    {
-                        ShaderErrorsPS.Text = exception.ToString();
-                    }
+                    errors = errors + exception.Message;
                 }
+                try
+                {
+                    HLSLExtensions.CompileHLSL(ShaderCode.Text, "ps", "ps_3_0");
+                }
+                catch (Exception exception)
+                {
+                    errors = errors + exception.Message;
+                }
+                var errordefinitions = ErrorDefinition.GetErrors(errors).Distinct().ToArray();
+                adornertextboxfloaters.SetErrors(errordefinitions);
             };
             ShaderCode.Text = HLSL.DX9Full;
         }

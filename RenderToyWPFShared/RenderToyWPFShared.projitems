@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\AttachedView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\AdornerTextBoxErrors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Xps\DocumentPaginator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Xps\RenderToyReference.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX11.cs" />
