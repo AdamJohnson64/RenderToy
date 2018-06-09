@@ -476,7 +476,7 @@ namespace RenderToy
 		}
 		void Unmap(D3D11Resource ^pResource, UINT Subresource)
 		{
-			pWrapped->Unmap(pResource->GetResource(), Subresource);
+			pWrapped->Unmap(pResource == nullptr ? nullptr : pResource->GetResource(), Subresource);
 		}
 		void VSSetConstantBuffers(UINT StartSlot, cli::array<D3D11Buffer^> ^ppConstantBuffers)
 		{

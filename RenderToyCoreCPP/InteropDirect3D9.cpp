@@ -331,7 +331,7 @@ namespace RenderToy
 		}
 		void SetTexture(DWORD Stage, Direct3DTexture9 ^pTexture)
 		{
-			TRY_D3D(pWrapped->SetTexture(Stage, pTexture->Wrapped));
+			TRY_D3D(pWrapped->SetTexture(Stage, pTexture == nullptr ? nullptr : pTexture->Wrapped));
 		}
 		void SetSamplerState(DWORD Sampler, D3DSamplerState Type, DWORD Value)
 		{
@@ -376,7 +376,7 @@ namespace RenderToy
 		}
 		void SetVertexShader(Direct3DVertexShader9 ^pShader)
 		{
-			TRY_D3D(pWrapped->SetVertexShader(pShader->Wrapped));
+			TRY_D3D(pWrapped->SetVertexShader(pShader == nullptr ? nullptr : pShader->Wrapped));
 		}
 		void SetVertexShaderConstantF(UINT StartRegister, System::IntPtr pConstantData, UINT Vector4fCount)
 		{
@@ -384,7 +384,7 @@ namespace RenderToy
 		}
 		void SetStreamSource(UINT StreamNumber, Direct3DVertexBuffer9 ^pStreamData, UINT OffsetInBytes, UINT Stride)
 		{
-			TRY_D3D(pWrapped->SetStreamSource(StreamNumber, pStreamData->Wrapped, OffsetInBytes, Stride));
+			TRY_D3D(pWrapped->SetStreamSource(StreamNumber, pStreamData == nullptr ? nullptr : pStreamData->Wrapped, OffsetInBytes, Stride));
 		}
 		Direct3DPixelShader9^ CreatePixelShader(array<byte> ^pFunction)
 		{
@@ -395,7 +395,7 @@ namespace RenderToy
 		}
 		void SetPixelShader(Direct3DPixelShader9 ^pShader)
 		{
-			TRY_D3D(pWrapped->SetPixelShader(pShader->Wrapped));
+			TRY_D3D(pWrapped->SetPixelShader(pShader == nullptr ? nullptr : pShader->Wrapped));
 		}
 		void DrawPrimitive(D3DPrimitiveType PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
 		{
