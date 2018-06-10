@@ -106,8 +106,8 @@ namespace RenderToy.WPF
             render_width = (int)ActualWidth;
             render_height = (int)ActualHeight;
             if (render_width == 0 || render_height == 0) return;
-            rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 1);
-            depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 1);
+            rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 0);
+            depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 0);
             InvalidateVisual();
         }
         #endregion

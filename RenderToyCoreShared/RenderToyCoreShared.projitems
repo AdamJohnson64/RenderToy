@@ -77,7 +77,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\MementoServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\Performance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\WorkQueue.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DirectX\RenderModeDX.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\DirectXHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Common\Math\" />
