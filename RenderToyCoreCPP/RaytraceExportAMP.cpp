@@ -53,14 +53,10 @@ template <typename FLOAT>
 void AMPExecutor(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, std::function<void(Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<FLOAT, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int render_width, int render_height, int bitmap_stride)> exec) {
 	Concurrency::array_view<int, 1> view_scene(((Scene<FLOAT>*)scene)->FileSize / sizeof(int), (int*)scene);
 	Concurrency::array_view<FLOAT, 1> view_imvp(4 * 4 * sizeof(FLOAT), (FLOAT*)inverse_mvp);
-	std::unique_ptr<int[]> result(new int[render_width * render_height]);
-	Concurrency::array_view<int, 2> view_bitmap(render_height, render_width, result.get());
+	Concurrency::array_view<int, 2> view_bitmap(render_height, bitmap_stride / sizeof(int), (int*)bitmap_ptr);
 	view_bitmap.discard_data();
 	exec(view_scene, view_imvp, view_bitmap, render_width, render_height, bitmap_stride);
 	view_bitmap.synchronize();
-	for (int y = 0; y < render_height; ++y) {
-		memcpy((unsigned char*)bitmap_ptr + bitmap_stride * y, &result[render_width * y], sizeof(int) * render_width);
-	}
 }
 
 extern "C" void RaycastAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
