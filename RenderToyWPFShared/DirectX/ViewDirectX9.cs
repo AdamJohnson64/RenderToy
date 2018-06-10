@@ -26,19 +26,13 @@ namespace RenderToy.WPF
         protected ViewDirectX9Base()
         {
             d3dimage = new D3DImage();
-            d3d = new Direct3D9();
-            d3dimage.IsFrontBufferAvailableChanged += (s, e) =>
-            {
-                RecreateDevice();
-            };
-            RecreateDevice();
         }
         static readonly string GeneratedTextureToken = "DirectX9Texture";
         protected Direct3DTexture9 CreateTexture(IMaterial material, IMaterial missing)
         {
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
-            return deviceboundmemento.Get(material, GeneratedTextureToken, () =>
+            return MementoServer.Default.Get(material, GeneratedTextureToken, () =>
             {
                 var astexture = material as ITexture;
                 if (astexture != null)
@@ -58,10 +52,12 @@ namespace RenderToy.WPF
                 else
                 {
                     var asimage = MaterialBitmapConverter.GetImageConverter(material, 512, 512);
-                    var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Managed);
-                    D3DLockedRect lockit = texture.LockRect(0);
+                    var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Default);
+                    var texturescratch = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory);
+                    D3DLockedRect lockit = texturescratch.LockRect(0);
                     MaterialBitmapConverter.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
-                    texture.UnlockRect(0);
+                    texturescratch.UnlockRect(0);
+                    device.UpdateTexture(texturescratch, texture);
                     return texture;
                 }
             });
@@ -75,14 +71,14 @@ namespace RenderToy.WPF
         protected VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
         {
             if (primitive == null) return new VertexBufferInfo { PrimitiveCount = 0, VertexBuffer = null };
-            return deviceboundmemento.Get(primitive, GeneratedVertexBufferToken, () =>
+            return MementoServer.Default.Get(primitive, GeneratedVertexBufferToken, () =>
             {
                 var data = DirectXHelper.ConvertToXYZNorDiffuseTex1(primitive);
                 var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * data.Length);
                 VertexBufferInfo buffer = new VertexBufferInfo();
                 if (data.Length > 0)
                 {
-                    buffer.VertexBuffer = device.CreateVertexBuffer(size, 0, 0U, D3DPool.Managed);
+                    buffer.VertexBuffer = device.CreateVertexBuffer(size, 0, 0U, D3DPool.Default);
                     var locked = buffer.VertexBuffer.Lock(0U, size, 0U);
                     unsafe
                     {
@@ -93,22 +89,6 @@ namespace RenderToy.WPF
                 buffer.PrimitiveCount = data.Length / 3;
                 return buffer;
             });
-        }
-        void RecreateDevice()
-        {
-            deviceboundmemento.EvictByToken(GeneratedTextureToken);
-            deviceboundmemento.EvictByToken(GeneratedVertexBufferToken);
-            device = d3d.CreateDevice();
-            RecreateSurfaces();
-        }
-        void RecreateSurfaces()
-        {
-            render_width = (int)ActualWidth;
-            render_height = (int)ActualHeight;
-            if (render_width == 0 || render_height == 0) return;
-            rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 0);
-            depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 0);
-            InvalidateVisual();
         }
         #endregion
         #region - Section : Overrides -
@@ -149,16 +129,19 @@ namespace RenderToy.WPF
             d3dimage.Unlock();
             drawingContext.DrawImage(d3dimage, new Rect(0, 0, ActualWidth, ActualHeight));
         }
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        protected override Size MeasureOverride(Size availableSize)
         {
-            RecreateSurfaces();
+            render_width = (int)availableSize.Width;
+            render_height = (int)availableSize.Height;
+            rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 0);
+            depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 0);
+            return base.MeasureOverride(availableSize);
         }
         #endregion
         #region - Section : Private Fields -
-        MementoServer deviceboundmemento = new MementoServer();
+        static readonly Direct3D9Ex d3d = new Direct3D9Ex();
+        protected static readonly Direct3DDevice9Ex device = d3d.CreateDevice();
         D3DImage d3dimage;
-        Direct3D9 d3d;
-        protected Direct3DDevice9 device;
         Direct3DSurface9 rendertarget;
         Direct3DSurface9 depthstencil;
         int render_width;

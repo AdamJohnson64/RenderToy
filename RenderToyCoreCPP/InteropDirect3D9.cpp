@@ -281,11 +281,11 @@ namespace RenderToy
 		}
 	};
 	#pragma endregion
-	#pragma region - Direct3DDevice9 -
-	public ref class Direct3DDevice9 : public COMWrapper<IDirect3DDevice9>
+	#pragma region - Direct3DDevice9Ex -
+	public ref class Direct3DDevice9Ex : public COMWrapper<IDirect3DDevice9Ex>
 	{
 	public:
-		Direct3DDevice9(IDirect3DDevice9 *pObject)
+		Direct3DDevice9Ex(IDirect3DDevice9Ex *pObject)
 		{
 			pWrapped = pObject;
 		}
@@ -312,6 +312,10 @@ namespace RenderToy
 			IDirect3DSurface9 *ppSurface = nullptr;
 			TRY_D3D(pWrapped->CreateDepthStencilSurface(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Discard, &ppSurface, nullptr));
 			return gcnew Direct3DSurface9(ppSurface);
+		}
+		void UpdateTexture(Direct3DTexture9 ^pSourceTexture, Direct3DTexture9 ^pDestinationTexture)
+		{
+			TRY_D3D(pWrapped->UpdateTexture(pSourceTexture == nullptr ? nullptr : pSourceTexture->Wrapped, pDestinationTexture == nullptr ? nullptr : pDestinationTexture->Wrapped))
 		}
 		void SetRenderTarget(DWORD RenderTargetIndex, Direct3DSurface9^ pRenderTarget)
 		{
@@ -407,27 +411,26 @@ namespace RenderToy
 		}
 	};
 	#pragma endregion
-	#pragma region - Direct3D9 -
-	public ref class Direct3D9 : public COMWrapper<IDirect3D9>
+	#pragma region - Direct3D9Ex -
+	public ref class Direct3D9Ex : public COMWrapper<IDirect3D9Ex>
 	{
 	public:
-		Direct3D9()
+		Direct3D9Ex()
 		{
-			pWrapped = Direct3DCreate9(D3D_SDK_VERSION);
-			if (pWrapped == nullptr) {
-				throw gcnew System::Exception("Direct3DCreate9() failed.");
-			}
+			IDirect3D9Ex *pD3D9Ex = nullptr;
+			TRY_D3D(Direct3DCreate9Ex(D3D_SDK_VERSION, &pD3D9Ex));
+			pWrapped = pD3D9Ex;
 		}
-		Direct3DDevice9^ CreateDevice()
+		Direct3DDevice9Ex^ CreateDevice()
 		{
 			D3DPRESENT_PARAMETERS d3dpp = { 0 };
 			d3dpp.BackBufferWidth = 1;
 			d3dpp.BackBufferHeight = 1;
 			d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 			d3dpp.Windowed = TRUE;
-			IDirect3DDevice9* pReturnedDeviceInterface = nullptr;
-			TRY_D3D(pWrapped->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Direct3D9Globals::Instance->hHostWindow, D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pReturnedDeviceInterface));
-			return gcnew Direct3DDevice9(pReturnedDeviceInterface);
+			IDirect3DDevice9Ex* pReturnedDeviceInterface = nullptr;
+			TRY_D3D(pWrapped->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Direct3D9Globals::Instance->hHostWindow, D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, nullptr, &pReturnedDeviceInterface));
+			return gcnew Direct3DDevice9Ex(pReturnedDeviceInterface);
 		}
 	};
 	#pragma endregion
