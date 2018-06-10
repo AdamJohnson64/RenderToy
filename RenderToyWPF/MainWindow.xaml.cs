@@ -123,7 +123,7 @@ namespace RenderToy.WPF
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9, (s, e) =>
             {
-                var view = new ViewDirectX9 { VertexShader = HLSLExtensions.CompileHLSL(HLSL.DX9Full, "vs", "vs_3_0"), PixelShader = HLSLExtensions.CompileHLSL(HLSL.DX9Full, "ps", "ps_3_0") };
+                var view = new ViewDirectX9();
                 view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
                 view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
                 view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
@@ -227,7 +227,7 @@ namespace RenderToy.WPF
                 var errordefinitions = ErrorDefinition.GetErrors(errors).Distinct().ToArray();
                 adornertextboxfloaters.SetErrors(errordefinitions);
             };
-            ShaderCode.Text = HLSL.DX9Full;
+            ShaderCode.Text = HLSL.D3D9Standard;
         }
     }
     class Document

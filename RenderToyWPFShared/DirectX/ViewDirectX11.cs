@@ -1,6 +1,5 @@
 using RenderToy.Cameras;
 using RenderToy.DirectX;
-using RenderToy.Expressions;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
@@ -19,6 +18,18 @@ namespace RenderToy.WPF
 {
     class ViewDirectX11 : FrameworkElement
     {
+        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11VS, FrameworkPropertyMetadataOptions.AffectsRender));
+        public byte[] VertexShader
+        {
+            get { return (byte[])GetValue(VertexShaderProperty); }
+            set { SetValue(VertexShaderProperty, value); }
+        }
+        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11PS, FrameworkPropertyMetadataOptions.AffectsRender));
+        public byte[] PixelShader
+        {
+            get { return (byte[])GetValue(PixelShaderProperty); }
+            set { SetValue(PixelShaderProperty, value); }
+        }
         static ViewDirectX11()
         {
             AttachedView.SceneProperty.OverrideMetadata(typeof(ViewDirectX11), new FrameworkPropertyMetadata(null, (s, e) =>
@@ -30,23 +41,15 @@ namespace RenderToy.WPF
                 ((ViewDirectX11)s).RenderDX();
             }));
             d3d11Device = Direct3D11.D3D11CreateDevice();
+            d3d11InputLayout = d3d11Device.CreateInputLayout(new[]
             {
-                var bytecode = HLSLExtensions.CompileHLSL(HLSL.D3D11Simple, "vs", "vs_5_0");
-                d3d11InputLayout = d3d11Device.CreateInputLayout(new[]
-                {
-                    new D3D11InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
-                    new D3D11InputElementDesc { SemanticName = "NORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 12, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
-                    new D3D11InputElementDesc { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGIFormat.B8G8R8A8_Unorm, InputSlot = 0, AlignedByteOffset = 24, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
-                    new D3D11InputElementDesc { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGIFormat.R32G32_Float, InputSlot = 0, AlignedByteOffset = 28, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
-                    new D3D11InputElementDesc { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 36, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
-                    new D3D11InputElementDesc { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 48, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
-                }, bytecode);
-                d3d11VertexShader = d3d11Device.CreateVertexShader(bytecode);
-            }
-            {
-                var bytecode = HLSLExtensions.CompileHLSL(HLSL.D3D11Simple, "ps", "ps_5_0");
-                d3d11PixelShader = d3d11Device.CreatePixelShader(bytecode);
-            }
+                new D3D11InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D11InputElementDesc { SemanticName = "NORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 12, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D11InputElementDesc { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGIFormat.B8G8R8A8_Unorm, InputSlot = 0, AlignedByteOffset = 24, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D11InputElementDesc { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGIFormat.R32G32_Float, InputSlot = 0, AlignedByteOffset = 28, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D11InputElementDesc { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 36, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+                new D3D11InputElementDesc { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 48, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
+            }, HLSL.D3D11VS);
             d3d11RasterizerState = d3d11Device.CreateRasterizerState(new D3D11RasterizerDesc { FillMode = D3D11FillMode.Solid, CullMode = D3D11CullMode.None });
             {
                 D3D11SamplerDesc pSamplerDesc;
@@ -68,7 +71,9 @@ namespace RenderToy.WPF
         }
         void RenderDX()
         {
-            if (wpfFrontBuffer == null || !IsVisible) return;
+            if (wpfFrontBuffer == null || VertexShader == null || PixelShader == null || !IsVisible) return;
+            d3d11VertexShader = d3d11Device.CreateVertexShader(VertexShader);
+            d3d11PixelShader = d3d11Device.CreatePixelShader(PixelShader);
             var context = d3d11Device.GetImmediateContext();
             context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
             context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
@@ -219,8 +224,8 @@ namespace RenderToy.WPF
         static D3D11InputLayout d3d11InputLayout;
         static D3D11RasterizerState d3d11RasterizerState;
         static D3D11SamplerState d3d11SamplerState;
-        static D3D11VertexShader d3d11VertexShader;
-        static D3D11PixelShader d3d11PixelShader;
+        D3D11VertexShader d3d11VertexShader;
+        D3D11PixelShader d3d11PixelShader;
         WriteableBitmap wpfFrontBuffer;
         D3D11Texture2D d3d11Texture2D_RT;
         D3D11Texture2D d3d11Texture2D_DS;

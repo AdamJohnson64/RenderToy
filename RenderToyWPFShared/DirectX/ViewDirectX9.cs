@@ -10,6 +10,7 @@ using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
+using RenderToy.Shaders;
 using RenderToy.Textures;
 using RenderToy.Utility;
 using System;
@@ -166,13 +167,13 @@ namespace RenderToy.WPF
     }
     public class ViewDirectX9 : ViewDirectX9Base
     {
-        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX9), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX9), new FrameworkPropertyMetadata(HLSL.D3D9VS, FrameworkPropertyMetadataOptions.AffectsRender));
         public byte[] VertexShader
         {
             get { return (byte[])GetValue(VertexShaderProperty); }
             set { SetValue(VertexShaderProperty, value); }
         }
-        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX9), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX9), new FrameworkPropertyMetadata(HLSL.D3D9PS, FrameworkPropertyMetadataOptions.AffectsRender));
         public byte[] PixelShader
         {
             get { return (byte[])GetValue(PixelShaderProperty); }

@@ -1,4 +1,6 @@
-﻿namespace RenderToy.Shaders
+﻿using RenderToy.Expressions;
+
+namespace RenderToy.Shaders
 {
     public static class HLSL
     {
@@ -116,7 +118,7 @@ sampler2D TextureDisplacement : register(s3);
 float4 SampleTexture(sampler2D s, float2 uv) { return tex2D(s, uv); }
 
 ";
-        public static readonly string DX9Full =
+        public static readonly string D3D9Standard =
             D3D9Constants +
             D3DVertexInputStruct +
             D3DVertexOutputStruct +
@@ -145,7 +147,7 @@ texture2D TextureDisplacement : register(t3);
 float4 SampleTexture(texture2D s, float2 uv) { return s.Sample(Sampler, uv); }
 
 ";
-        public readonly static string D3D11Simple =
+        public readonly static string D3D11Standard =
             D3D11Constants +
             D3DVertexInputStruct +
             D3DVertexOutputStruct +
@@ -176,6 +178,12 @@ cbuffer Constants : register(b0)
 " +
             D3DVertexShaderCode +
             D3DPixelShaderCodeSimple;
+        #endregion
+        #region - Section : Compiled Results -
+        public static readonly byte[] D3D9VS = HLSLExtensions.CompileHLSL(HLSL.D3D9Standard, "vs", "vs_3_0");
+        public static readonly byte[] D3D9PS = HLSLExtensions.CompileHLSL(HLSL.D3D9Standard, "ps", "ps_3_0");
+        public static readonly byte[] D3D11VS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "vs", "vs_5_0");
+        public static readonly byte[] D3D11PS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "ps", "ps_5_0");
         #endregion
     }
 }
