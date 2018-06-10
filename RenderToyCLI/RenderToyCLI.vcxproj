@@ -85,6 +85,10 @@
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D12.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D9.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3DCompiler.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportAMP.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
+    </ClCompile>
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCPU.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCUDA.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RenderToyCLI.cpp" />
@@ -95,6 +99,7 @@
   <ItemGroup>
     <ClInclude Include="..\RenderToyCoreCPP\InteropCommon.h" />
     <ClInclude Include="..\RenderToyCoreCPP\Raytrace.h" />
+    <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportAMP.h" />
     <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportCPU.h" />
     <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportCUDA.h" />
   </ItemGroup>

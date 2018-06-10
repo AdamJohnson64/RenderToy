@@ -59,7 +59,7 @@ void AMPExecutor(const void* scene, const void* inverse_mvp, void* bitmap_ptr, i
 	exec(view_scene, view_imvp, view_bitmap, render_width, render_height, bitmap_stride);
 	view_bitmap.synchronize();
 	for (int y = 0; y < render_height; ++y) {
-		memcpy((uint8*)bitmap_ptr + bitmap_stride * y, &result[render_width * y], sizeof(int) * render_width);
+		memcpy((unsigned char*)bitmap_ptr + bitmap_stride * y, &result[render_width * y], sizeof(int) * render_width);
 	}
 }
 
@@ -121,6 +121,6 @@ extern "C" void AmbientOcclusionAMPF32(const void* scene, const void* inverse_mv
 	});
 	view_bitmap.synchronize();
 	for (int y = 0; y < render_height; ++y) {
-		memcpy((uint8*)bitmap_ptr + bitmap_stride * y, &result[render_width * y], sizeof(int) * render_width);
+		memcpy((unsigned char*)bitmap_ptr + bitmap_stride * y, &result[render_width * y], sizeof(int) * render_width);
 	}
 }

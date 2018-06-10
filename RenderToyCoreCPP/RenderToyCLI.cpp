@@ -9,6 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <memory>
+#include "RaytraceExportAMP.h"
 #include "RaytraceExportCPU.h"
 #include "RaytraceExportCUDA.h"
 
@@ -32,6 +33,11 @@ namespace RenderToy
 		EXPORTGENERATOR(RaycastBitangentsCPUF32)
 		EXPORTGENERATOR(RaycastTangentsCPUF32)
 		EXPORTGENERATOR(RaytraceCPUF32)
+		EXPORTGENERATOR(RaycastAMPF32)
+		EXPORTGENERATOR(RaycastNormalsAMPF32)
+		EXPORTGENERATOR(RaycastTangentsAMPF32)
+		EXPORTGENERATOR(RaycastBitangentsAMPF32)
+		EXPORTGENERATOR(RaytraceAMPF32)
 		EXPORTGENERATOR(RaycastCUDAF32)
 		EXPORTGENERATOR(RaycastCUDAF64)
 		EXPORTGENERATOR(RaycastNormalsCUDAF32)
