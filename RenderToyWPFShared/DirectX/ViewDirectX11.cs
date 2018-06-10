@@ -108,26 +108,7 @@ namespace RenderToy.WPF
             context.CopyResource(d3d11Texture2D_Copyback, d3d11Texture2D_RT);
             context.Flush();
             var d3d11Map = context.Map(d3d11Texture2D_Copyback, 0, D3D11Map.Read, 0);
-            int bitmapWidth = wpfFrontBuffer.PixelWidth;
-            int bitmapHeight = wpfFrontBuffer.PixelHeight;
-            int bitmapStride = wpfFrontBuffer.BackBufferStride;
-            wpfFrontBuffer.Lock();
-            unsafe
-            {
-                void* pBitmapIn = d3d11Map.pData.ToPointer();
-                void* pBitmapOut = wpfFrontBuffer.BackBuffer.ToPointer();
-                for (int y = 0; y < bitmapHeight; ++y)
-                {
-                    uint* pRasterIn = (uint*)((byte*)pBitmapIn + d3d11Map.RowPitch * y); 
-                    uint* pRasterOut = (uint*)((byte*)pBitmapOut + bitmapStride * y);
-                    for (int x = 0; x < bitmapWidth; ++x)
-                    {
-                        pRasterOut[x] = pRasterIn[x];
-                    }
-                }
-            }
-            wpfFrontBuffer.AddDirtyRect(new Int32Rect(0, 0, wpfFrontBuffer.PixelWidth, wpfFrontBuffer.PixelHeight));
-            wpfFrontBuffer.Unlock();
+            wpfFrontBuffer.WritePixels(new Int32Rect(0, 0, wpfFrontBuffer.PixelWidth, wpfFrontBuffer.PixelHeight), d3d11Map.pData, (int)(d3d11Map.RowPitch * wpfFrontBuffer.PixelHeight), (int)d3d11Map.RowPitch);
             context.Unmap(d3d11Texture2D_Copyback, 0);
         }
         class VertexBufferInfo
