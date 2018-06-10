@@ -13,14 +13,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\AdornerTextBoxErrors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Xps\DocumentPaginator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Xps\RenderToyReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ShaderEditor.xaml.cs">
+      <DependentUpon>ShaderEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX11.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX9.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX12.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\ViewSoftwareCustomizable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\ViewSoftwareWireframe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\AttachedCamera.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DirectX\CompilePixelShaderConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DirectX\CompileVertexShaderConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Xps\Figures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Material\MaterialBitmapConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Material\ViewMaterialGraph.cs" />
@@ -37,6 +38,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)DirectX\ShaderEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)RenderToyDocument.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

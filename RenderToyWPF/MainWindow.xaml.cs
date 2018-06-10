@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using Microsoft.Win32;
-using RenderToy.Expressions;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.ModelFormat;
@@ -123,6 +122,15 @@ namespace RenderToy.WPF
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9, (s, e) =>
             {
+                var grid = new Grid();
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(25, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(75, GridUnitType.Star) });
+                var shader = new ShaderEditor { Text = HLSL.D3D9Standard };
+                Grid.SetColumn(shader, 0);
+                grid.Children.Add(shader);
+                var splitter = new GridSplitter { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Stretch, Width = 4 };
+                Grid.SetColumn(shader, 0);
+                grid.Children.Add(splitter);
                 var view = new ViewDirectX9();
                 view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
                 view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
@@ -130,12 +138,23 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
-                var window = new Window { Title = "RenderToy (Direct3D9)", Content = view, Owner = this };
+                Grid.SetColumn(view, 1);
+                grid.Children.Add(view);
+                var window = new Window { Title = "RenderToy (Direct3D9)", Content = grid, Owner = this };
                 window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
                 window.Show();
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D11, (s, e) =>
             {
+                var grid = new Grid();
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(25, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(75, GridUnitType.Star) });
+                var shader = new ShaderEditor { ProfileVS = "vs_5_0", ProfilePS = "ps_5_0", Text = HLSL.D3D11Standard };
+                Grid.SetColumn(shader, 0);
+                grid.Children.Add(shader);
+                var splitter = new GridSplitter { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Stretch, Width = 4 };
+                Grid.SetColumn(shader, 0);
+                grid.Children.Add(splitter);
                 var view = new ViewDirectX11();
                 view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
                 view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
@@ -143,7 +162,11 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
-                var window = new Window { Title = "RenderToy (Direct3D11)", Content = view, Owner = this };
+                view.SetBinding(ViewDirectX11.VertexShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodeVSProperty) });
+                view.SetBinding(ViewDirectX11.PixelShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodePSProperty) });
+                Grid.SetColumn(view, 1);
+                grid.Children.Add(view);
+                var window = new Window { Title = "RenderToy (Direct3D11)", Content = grid, Owner = this };
                 window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
                 window.Show();
             }));
@@ -202,32 +225,6 @@ namespace RenderToy.WPF
             InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
             DataContext = Document.Default;
-            var adornerlayer = AdornerLayer.GetAdornerLayer(ShaderCode);
-            var adornertextboxfloaters = new AdornerTextBoxErrors(ShaderCode);
-            adornerlayer.Add(adornertextboxfloaters);
-            ShaderCode.TextChanged += (s, e) =>
-            {
-                string errors = "";
-                try
-                {
-                    HLSLExtensions.CompileHLSL(ShaderCode.Text, "vs", "vs_3_0");
-                }
-                catch (Exception exception)
-                {
-                    errors = errors + exception.Message;
-                }
-                try
-                {
-                    HLSLExtensions.CompileHLSL(ShaderCode.Text, "ps", "ps_3_0");
-                }
-                catch (Exception exception)
-                {
-                    errors = errors + exception.Message;
-                }
-                var errordefinitions = ErrorDefinition.GetErrors(errors).Distinct().ToArray();
-                adornertextboxfloaters.SetErrors(errordefinitions);
-            };
-            ShaderCode.Text = HLSL.D3D9Standard;
         }
     }
     class Document
