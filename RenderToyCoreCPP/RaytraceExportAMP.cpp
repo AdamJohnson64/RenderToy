@@ -33,6 +33,7 @@ struct SetPixelAMP {
 	const Concurrency::index<2> index;
 };
 
+/*
 template<typename FLOAT>
 struct SetPixelScaledAMP {
 	SetPixelScaledAMP(const Concurrency::array_view<int, 2>& data, Concurrency::index<2>& index, FLOAT scale) restrict(amp) : data(data), index(index), scale(scale) {}
@@ -47,6 +48,7 @@ struct SetPixelScaledAMP {
 	const Concurrency::index<2> index;
 	FLOAT scale;
 };
+*/
 }
 
 template <typename FLOAT>
@@ -104,6 +106,16 @@ extern "C" void RaytraceAMPF32(const void* scene, const void* inverse_mvp, void*
 	});
 }
 
+extern "C" void DebugMeshAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
+	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int render_width, int render_height, int bitmap_stride) {
+		Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
+			RaytraceCX::SetPixelAMP<float> setpixel(view_bitmap, idx);
+			RaytraceCX::ComputePixel<float, RaytraceCX::RenderModeDebugMesh<float>>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], setpixel);
+		});
+	});
+}
+
+/*
 extern "C" void AmbientOcclusionAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count) {
 	Concurrency::array_view<int, 1> view_scene(((Scene<float>*)scene)->FileSize / sizeof(int), (int*)scene);
 	Concurrency::array_view<float, 1> view_imvp(4 * 4, (float*)inverse_mvp);
@@ -120,3 +132,4 @@ extern "C" void AmbientOcclusionAMPF32(const void* scene, const void* inverse_mv
 		memcpy((unsigned char*)bitmap_ptr + bitmap_stride * y, &result[render_width * y], sizeof(int) * render_width);
 	}
 }
+*/
