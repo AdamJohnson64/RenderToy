@@ -34,11 +34,10 @@ namespace RenderToy.WPF
         public static RoutedUICommand CommandSceneOpen = new RoutedUICommand("Open Scene", "CommandSceneLoad", typeof(ViewSoftwareCustomizable));
         public static RoutedUICommand CommandScenePlane = new RoutedUICommand("Open Plane", "CommandScenePlane", typeof(ViewSoftwareCustomizable));
         public static RoutedUICommand CommandSceneAddSphere = new RoutedUICommand("Add Sphere", "CommandSceneAddSphere", typeof(ViewSoftwareCustomizable));
-        public static RoutedUICommand CommandRenderPreviewsToggle = new RoutedUICommand("Toggle Render Previews", "CommandRenderPreviewsToggle", typeof(ViewSoftwareCustomizable));
-        public static RoutedUICommand CommandRenderWireframeToggle = new RoutedUICommand("Toggle Render Wireframe", "CommandRenderWireframeToggle", typeof(ViewSoftwareCustomizable));
         public static RoutedUICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(ViewSoftwareCustomizable));
         public static RoutedUICommand CommandDocumentOpen = new RoutedUICommand("Open the RenderToy document.", "CommandDocumentOpen", typeof(MainWindow));
         public static RoutedUICommand CommandDocumentExport = new RoutedUICommand("Export the RenderToy document to XPS.", "CommandDocumentExport", typeof(MainWindow));
+        public static RoutedUICommand CommandWindowSoftware = new RoutedUICommand("Open a Software View Window.", "CommandWindowDirectX3DFF", typeof(MainWindow));
         public static RoutedUICommand CommandWindowDirect3D9FF = new RoutedUICommand("Open a DirectX 9 (Fixed Function) View Window.", "CommandWindowDirectX3DFF", typeof(MainWindow));
         public static RoutedUICommand CommandWindowDirect3D9 = new RoutedUICommand("Open a DirectX 9 View Window.", "CommandWindowDirect3D9", typeof(MainWindow));
         public static RoutedUICommand CommandWindowDirect3D11 = new RoutedUICommand("Open a DirectX 11 View Window.", "CommandWindowDirect3D11", typeof(MainWindow));
@@ -100,8 +99,6 @@ namespace RenderToy.WPF
                 if (root == null) return;
                 root.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), new Sphere(), StockMaterials.White, StockMaterials.Brick));
             }));
-            CommandBindings.Add(new CommandBinding(CommandRenderPreviewsToggle, (s, e) => { ViewPreview.Visibility = ViewPreview.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
-            CommandBindings.Add(new CommandBinding(CommandRenderWireframeToggle, (s, e) => { ViewWireframe.Visibility = ViewWireframe.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden; e.Handled = true; }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
             CommandBindings.Add(new CommandBinding(CommandDebugToolPerformanceTrace, (s, e) => {
                 var window = new Window { Title = "Performance Trace Tool", Content = new PerformanceTrace() };
                 window.ShowDialog();
@@ -117,6 +114,19 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
                 var window = new Window { Title = "RenderToy (Direct3D9 Fixed Function)", Content = view, Owner = this };
+                window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
+                window.Show();
+            }));
+            CommandBindings.Add(new CommandBinding(CommandWindowSoftware, (s, e) =>
+            {
+                var view = new ViewSoftwareCustomizable();
+                view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
+                view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
+                view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
+                view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
+                view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
+                view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
+                var window = new Window { Title = "RenderToy (Software)", Content = view, Owner = this };
                 window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
                 window.Show();
             }));
@@ -222,8 +232,6 @@ namespace RenderToy.WPF
             }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(CommandRenderPreviewsToggle, Key.P, ModifierKeys.Control));
-            InputBindings.Add(new KeyBinding(CommandRenderWireframeToggle, Key.W, ModifierKeys.Control));
             DataContext = Document.Default;
         }
     }
