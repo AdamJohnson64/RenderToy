@@ -11,6 +11,7 @@
 #ifndef RAYTRACEEXPORTAMP_H
 #define RAYTRACEEXPORTAMP_H
 
+#ifndef RENDERTOY_NO_AMP
 extern "C" void RaycastAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride);
 extern "C" void RaycastNormalsAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride);
 extern "C" void RaycastTangentsAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride);
@@ -18,5 +19,6 @@ extern "C" void RaycastBitangentsAMPF32(const void* pScene, const void* pMVP, vo
 extern "C" void RaytraceAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride);
 extern "C" void DebugMeshAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride);
 //extern "C" void AmbientOcclusionAMPF32(const void* pScene, const void* pMVP, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count);
+#endif
 
 #endif  // RAYTRACEEXPORTAMP_H

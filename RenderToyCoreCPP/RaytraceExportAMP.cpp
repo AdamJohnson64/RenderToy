@@ -61,6 +61,7 @@ void AMPExecutor(const void* scene, const void* inverse_mvp, void* bitmap_ptr, i
 	view_bitmap.synchronize();
 }
 
+#ifndef RENDERTOY_NO_AMP
 extern "C" void RaycastAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride) {
 	AMPExecutor<float>(scene, inverse_mvp, bitmap_ptr, render_width, render_height, bitmap_stride, [](Concurrency::array_view<int, 1> view_scene, Concurrency::array_view<float, 1> view_imvp, Concurrency::array_view<int, 2> view_bitmap, int render_width, int render_height, int bitmap_stride) {
 		Concurrency::parallel_for_each(view_bitmap.extent, [=](Concurrency::index<2> idx) restrict(amp) {
@@ -114,6 +115,7 @@ extern "C" void DebugMeshAMPF32(const void* scene, const void* inverse_mvp, void
 		});
 	});
 }
+#endif
 
 /*
 extern "C" void AmbientOcclusionAMPF32(const void* scene, const void* inverse_mvp, void* bitmap_ptr, int render_width, int render_height, int bitmap_stride, int sample_offset, int sample_count) {
