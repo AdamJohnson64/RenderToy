@@ -19,10 +19,17 @@ namespace RenderToy.WPF
     }
     class ViewMaterialNode : ContentPresenter, INodeInputHandle
     {
+        public static DependencyProperty ForegroundProperty = DependencyProperty.Register("Foreground", typeof(Color), typeof(ViewMaterialNode), new FrameworkPropertyMetadata(Colors.Black, FrameworkPropertyMetadataOptions.AffectsRender));
+        public Color Foreground
+        {
+            get { return (Color)GetValue(ForegroundProperty); }
+            set { SetValue(ForegroundProperty, value); }
+        }
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            var penblack = new Pen(Brushes.Black, 1);
+            var brush = new SolidColorBrush(Foreground);
+            var pen = new Pen(brush, 1);
             var typeface = new Typeface("Arial");
             if (Content == null) return;
             var properties =
@@ -32,9 +39,9 @@ namespace RenderToy.WPF
             for (int i = 0; i < properties.Length; ++i)
             {
                 double y = (i + 0.5) * ActualHeight / properties.Length;
-                drawingContext.DrawLine(penblack, new Point(ActualWidth - 64, y), new Point(ActualWidth, y));
-                drawingContext.DrawEllipse(Brushes.White, penblack, new Point(ActualWidth - 4, y), 4, 4);
-                var formattedtext = new FormattedText(properties[i].Name, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 10, Brushes.Black);
+                drawingContext.DrawLine(pen, new Point(ActualWidth - 64, y), new Point(ActualWidth, y));
+                drawingContext.DrawEllipse(Brushes.White, pen, new Point(ActualWidth - 4, y), 4, 4);
+                var formattedtext = new FormattedText(properties[i].Name, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 10, brush);
                 drawingContext.DrawText(formattedtext, new Point(ActualWidth - 32 - formattedtext.Width / 2, y - formattedtext.Height));
             }
         }

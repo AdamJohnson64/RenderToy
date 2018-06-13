@@ -30,6 +30,12 @@ namespace RenderToy.WPF
             get { return (DataTemplate)GetValue(NodeTemplateProperty); }
             set { SetValue(NodeTemplateProperty, value); }
         }
+        public static DependencyProperty ForegroundProperty = DependencyProperty.Register("Foreground", typeof(Color), typeof(ViewMaterialGraph), new FrameworkPropertyMetadata(Colors.Black, FrameworkPropertyMetadataOptions.AffectsRender));
+        public Color Foreground
+        {
+            get { return (Color)GetValue(ForegroundProperty); }
+            set { SetValue(ForegroundProperty, value); }
+        }
         static void OnRootChanged(object s, DependencyPropertyChangedEventArgs e)
         {
             ((ViewMaterialGraph)s).InvalidateGraph();
@@ -212,6 +218,7 @@ namespace RenderToy.WPF
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
+            var pen = new Pen(new SolidColorBrush(Foreground), 1);
             foreach (var parent in visuals.Keys)
             {
                 var interfaces = parent.Visual as INodeInputHandle;
@@ -222,7 +229,7 @@ namespace RenderToy.WPF
                     foreach (var origin in child.Origin)
                     {
                         var interfacepoint = interfaces.GetInputHandleLocation(origin);
-                        drawingContext.DrawLine(new Pen(Brushes.Black, 1), new Point(parent.X + interfacepoint.X, parent.Y + interfacepoint.Y), new Point(child.Target.X, child.Target.Y + GetHeight(child.Target) / 2));
+                        drawingContext.DrawLine(pen, new Point(parent.X + interfacepoint.X, parent.Y + interfacepoint.Y), new Point(child.Target.X, child.Target.Y + GetHeight(child.Target) / 2));
                     }
                 }
             }
