@@ -3,65 +3,142 @@
                     xmlns:materials="clr-namespace:RenderToy.Materials"
                     xmlns:rendertoy="clr-namespace:RenderToy.WPF"
                     xmlns:xps="clr-namespace:RenderToy.WPF.Xps">
+    <WindowChrome x:Key="RenderToyWindowChrome"/>
+    <Style TargetType="TabControl">
+        <Setter Property="Background" Value="#404040"/>
+    </Style>
+    <Style TargetType="TabItem">
+        <Setter Property="Background" Value="#404040"/>
+        <Setter Property="ContextMenu">
+            <Setter.Value>
+                <ContextMenu DataContext="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="Undock Tab" Command="{x:Static rendertoy:CommandLayoutUndockTab.Command}" CommandParameter="{Binding}"/>
+                </ContextMenu>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border BorderBrush="#404040" BorderThickness="1" Background="#808080"  CornerRadius="4,4,0,0" Margin="2,0,2,0" Padding="2,0,2,0">
+                        <ContentPresenter ContentSource="Header"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ContextMenu">
+        <Setter Property="Background" Value="#404040"/>
+    </Style>
+    <Style TargetType="Menu">
+        <Setter Property="Background" Value="#404040"/>
+    </Style>
+    <Style TargetType="MenuItem">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="#404040"/>
+        <Setter Property="Foreground" Value="#808080"/>
+    </Style>
+    <Style TargetType="TextBox">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background" Value="#202020"/>
+        <Setter Property="Foreground" Value="#808080"/>
+    </Style>
+    <Style TargetType="TreeView">
+        <Setter Property="Background" Value="#202020"/>
+        <Setter Property="Foreground" Value="#808080"/>
+    </Style>
+    <Style TargetType="TreeViewItem">
+        <Setter Property="Foreground" Value="#808080"/>
+    </Style>
+    <Style TargetType="Window">
+        <Setter Property="WindowChrome.WindowChrome" Value="{StaticResource RenderToyWindowChrome}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Window">
+                    <Grid Background="#404040">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="32"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Title}" Foreground="DarkGray" FontSize="18" Margin="4"/>
+                        <ContentPresenter Grid.Row="1" Content="{TemplateBinding Content}"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type rendertoy:MainWindow}" BasedOn="{StaticResource {x:Type Window}}"/>
+    <Style x:Key="TitleStyle" TargetType="TextBlock">
+        <Setter Property="FontStyle" Value="Italic"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Margin" Value="4"/>
+    </Style>
+    <Style TargetType="rendertoy:ViewMaterialGraph">
+        <Setter Property="Foreground" Value="LightGray"/>
+    </Style>
+    <Style TargetType="rendertoy:ViewMaterialNode">
+        <Setter Property="Foreground" Value="LightGray"/>
+    </Style>
     <rendertoy:Camera x:Key="Camera"/>
     <rendertoy:NamedConverter x:Key="NamedConverter"/>
     <ToolTip x:Key="GraphNodeToolTip">
         <StackPanel>
             <TextBlock Text="{Binding Converter={StaticResource NamedConverter}}" Margin="4"/>
-            <Border Background="Beige" BorderBrush="Black" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4">
+            <Border Background="Beige" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Margin="4" Padding="4">
                 <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256"/>
             </Border>
         </StackPanel>
     </ToolTip>
     <DataTemplate x:Key="GraphNodeMNAdd">
-        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="Beige" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="+"/>
         </Border>
     </DataTemplate>
     <DataTemplate x:Key="GraphNodeMNLerp">
-        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="Beige" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Lerp"/>
         </Border>
     </DataTemplate>
     <DataTemplate x:Key="GraphNodeMNMultiply">
-        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="Beige" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="X"/>
         </Border>
     </DataTemplate>
     <DataTemplate x:Key="GraphNodeMNSaturate">
-        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="Beige" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Saturate"/>
         </Border>
     </DataTemplate>
     <DataTemplate x:Key="GraphNodeMNSubtract">
-        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="Beige" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="-"/>
         </Border>
     </DataTemplate>
     <DataTemplate x:Key="GraphNodeMNThreshold">
-        <Border Background="Beige" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="Beige" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Threshold"/>
         </Border>
     </DataTemplate>
     <DataTemplate x:Key="GraphNodeMNConstant">
-        <Border Background="LightGreen" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="LightGreen" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Path=Value}"/>
         </Border>
     </DataTemplate>
     <DataTemplate x:Key="GraphNodeTexCoordU">
-        <Border Background="LightGreen" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="LightGreen" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="U"/>
         </Border>
     </DataTemplate>
     <DataTemplate x:Key="GraphNodeTexCoordV">
-        <Border Background="LightGreen" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="LightGreen" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="V"/>
         </Border>
     </DataTemplate>
     <DataTemplate x:Key="GraphNodeTemplate">
-        <Border Background="LightBlue" BorderBrush="Black" BorderThickness="2" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
+        <Border Background="White" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2" ToolTip="{StaticResource GraphNodeToolTip}">
             <StackPanel Orientation="Horizontal">
-                <rendertoy:ViewMaterial MaterialSource="{Binding}" VerticalAlignment="Center"/>
+                <Border Background="Black" BorderBrush="LightGray" BorderThickness="1" CornerRadius="4" Padding="2">
+                    <rendertoy:ViewMaterial MaterialSource="{Binding}" VerticalAlignment="Center"/>
+                </Border>
                 <TextBlock Text="{Binding Converter={StaticResource NamedConverter}}" Margin="2" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
@@ -81,6 +158,7 @@
     <DataTemplate x:Key="GraphNode">
         <rendertoy:ViewMaterialNode ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}"/>
     </DataTemplate>
+    <!--
     <DataTemplate x:Key="HeaderTemplate">
         <FlowDocument>
             <Paragraph Background="Black" Foreground="White" TextAlignment="Center" BorderBrush="LightGray" BorderThickness="2" Padding="4">
@@ -98,4 +176,5 @@
             </Paragraph>
         </FlowDocument>
     </DataTemplate>
+    -->
 </ResourceDictionary>

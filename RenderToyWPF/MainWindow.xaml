@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:rendertoy="clr-namespace:RenderToy.WPF"
         mc:Ignorable="d"
-        Title="RenderToy Experiment" Height="600" Width="1024">
-    <DockPanel>
+        Title="RenderToy Experiment"
+        Width="1024" Height="600"
+        Background="#404040">
+    <DockPanel Grid.Row="1">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
                 <MenuItem Header="New" Command="{x:Static rendertoy:MainWindow.CommandSceneNew}"/>
@@ -29,59 +31,77 @@
                 <MenuItem Header="Export RenderToy Document" Command="{x:Static rendertoy:MainWindow.CommandDocumentExport}"/>
             </MenuItem>
         </Menu>
-        <DockPanel>
-            <!-- ==================== Scene Graph ==================== -->
-            <TreeView ItemsSource="{Binding Path=Scene.Children}" Width="192">
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                        <TextBlock Text="{Binding Name}"/>
-                        <HierarchicalDataTemplate.ItemTemplate>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="4"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TabControl x:Name="TabControlLeft" Grid.Column="0" rendertoy:DockTarget.DockTarget="True">
+                <!-- ==================== Scene Graph ==================== -->
+                <TabItem Header="Scene">
+                    <TreeView ItemsSource="{Binding Path=Scene.Children}">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <TextBlock Text="{Binding Name}"/>
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </TabItem>
+                <!-- ==================== Material List ==================== -->
+                <TabItem Header="Materials">
+                    <ListView x:Name="MaterialList" DockPanel.Dock="Left" ItemsSource="{Binding Path=Materials}" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource GraphNodeTemplate}">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                </TabItem>
+            </TabControl>
+            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
+                <!-- ==================== Software Render ==================== -->
+                <TabItem Header="Software Render">
+                    <rendertoy:ViewSoftwareCustomizable rendertoy:AttachedView.Scene="{Binding Path=Scene}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}"/>
+                </TabItem>
+                <!-- ==================== Texture View ==================== -->
+                <TabItem Header="Textures">
+                    <ContentControl Content="{Binding ElementName=MaterialList, Path=SelectedItem}">
+                        <ContentControl.ContentTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}" />
+                                <TabControl>
+                                    <TabItem Header="Graph">
+                                        <DockPanel>
+                                            <Menu DockPanel.Dock="Top">
+                                                <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomGraph}"/>>
+                                            </Menu>
+                                            <rendertoy:ViewZoom x:Name="ViewZoomGraph">
+                                                <rendertoy:ViewMaterialGraph Root="{Binding}" NodeTemplate="{StaticResource GraphNode}"/>
+                                            </rendertoy:ViewZoom>
+                                        </DockPanel>
+                                    </TabItem>
+                                    <TabItem Header="Preview">
+                                        <DockPanel>
+                                            <Menu DockPanel.Dock="Top">
+                                                <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomPreview}"/>>
+                                            </Menu>
+                                            <rendertoy:ViewZoom x:Name="ViewZoomPreview">
+                                                <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                            </rendertoy:ViewZoom>
+                                        </DockPanel>
+                                    </TabItem>
+                                </TabControl>
                             </DataTemplate>
-                        </HierarchicalDataTemplate.ItemTemplate>
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
-            <!-- ==================== Material List ==================== -->
-            <GroupBox DataContext="{Binding Path=Materials}" Header="Material Nodes" Margin="4" Padding="4">
-                <ListView x:Name="MaterialList" DockPanel.Dock="Left" ItemsSource="{Binding}" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource GraphNodeTemplate}">
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                </ListView>
-            </GroupBox>
-            <!-- ==================== Texture View ==================== -->
-            <ContentControl Content="{Binding ElementName=MaterialList, Path=SelectedItem}">
-                <ContentControl.ContentTemplate>
-                    <DataTemplate>
-                        <TabControl>
-                            <TabItem Header="Graph">
-                                <DockPanel>
-                                    <Menu DockPanel.Dock="Top">
-                                        <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomGraph}"/>>
-                                    </Menu>
-                                    <rendertoy:ViewZoom x:Name="ViewZoomGraph">
-                                        <rendertoy:ViewMaterialGraph Root="{Binding}" NodeTemplate="{StaticResource GraphNode}"/>
-                                    </rendertoy:ViewZoom>
-                                </DockPanel>
-                            </TabItem>
-                            <TabItem Header="Preview">
-                                <DockPanel>
-                                    <Menu DockPanel.Dock="Top">
-                                        <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomPreview}"/>>
-                                    </Menu>
-                                    <rendertoy:ViewZoom x:Name="ViewZoomPreview">
-                                        <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                    </rendertoy:ViewZoom>
-                                </DockPanel>
-                            </TabItem>
-                        </TabControl>
-                    </DataTemplate>
-                </ContentControl.ContentTemplate>
-            </ContentControl>
-        </DockPanel>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+                </TabItem>
+            </TabControl>
+        </Grid>
     </DockPanel>
 </Window>
