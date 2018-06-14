@@ -117,12 +117,14 @@ namespace RenderToy.WPF
         protected override void OnRender(DrawingContext drawingContext)
         {
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
+            /*
             var visual = GetVisualChild(0) as UIElement;
             if (visual == null) return;
             var transform = ContentTransform;
             Point tl = transform.Transform(new Point(0, 0));
             Point br = transform.Transform(new Point(visual.DesiredSize.Width, visual.DesiredSize.Height));
             drawingContext.DrawRectangle(null, new Pen(Brushes.Green, 1), new Rect(tl, br));
+            */
         }
         protected override Size ArrangeOverride(Size arrangeSize)
         {
