@@ -53,16 +53,6 @@
                         </TreeView.ItemTemplate>
                     </TreeView>
                 </TabItem>
-                <!-- ==================== Material List ==================== -->
-                <TabItem Header="Materials">
-                    <ListView x:Name="MaterialList" DockPanel.Dock="Left" ItemsSource="{Binding Path=Materials}" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource GraphNodeTemplate}">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                    </ListView>
-                </TabItem>
             </TabControl>
             <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
             <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
@@ -72,34 +62,54 @@
                 </TabItem>
                 <!-- ==================== Texture View ==================== -->
                 <TabItem Header="Textures">
-                    <ContentControl Content="{Binding ElementName=MaterialList, Path=SelectedItem}">
-                        <ContentControl.ContentTemplate>
-                            <DataTemplate>
-                                <TabControl>
-                                    <TabItem Header="Graph">
-                                        <DockPanel>
-                                            <Menu DockPanel.Dock="Top">
-                                                <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomGraph}"/>>
-                                            </Menu>
-                                            <rendertoy:ViewZoom x:Name="ViewZoomGraph">
-                                                <rendertoy:ViewMaterialGraph Root="{Binding}" NodeTemplate="{StaticResource GraphNode}"/>
-                                            </rendertoy:ViewZoom>
-                                        </DockPanel>
-                                    </TabItem>
-                                    <TabItem Header="Preview">
-                                        <DockPanel>
-                                            <Menu DockPanel.Dock="Top">
-                                                <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomPreview}"/>>
-                                            </Menu>
-                                            <rendertoy:ViewZoom x:Name="ViewZoomPreview">
-                                                <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                            </rendertoy:ViewZoom>
-                                        </DockPanel>
-                                    </TabItem>
-                                </TabControl>
-                            </DataTemplate>
-                        </ContentControl.ContentTemplate>
-                    </ContentControl>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="4"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- ==================== Material List ==================== -->
+                        <TabControl Grid.Column="0">
+                            <TabItem Header="Materials">
+                                <ListView x:Name="MaterialList" DockPanel.Dock="Left" ItemsSource="{Binding Path=Materials}" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource GraphNodeTemplate}">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                </ListView>
+                            </TabItem>
+                        </TabControl>
+                        <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                        <ContentControl Grid.Column="2" Content="{Binding ElementName=MaterialList, Path=SelectedItem}">
+                            <ContentControl.ContentTemplate>
+                                <DataTemplate>
+                                    <TabControl>
+                                        <TabItem Header="Graph">
+                                            <DockPanel>
+                                                <Menu DockPanel.Dock="Top">
+                                                    <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomGraph}"/>>
+                                                </Menu>
+                                                <rendertoy:ViewZoom x:Name="ViewZoomGraph">
+                                                    <rendertoy:ViewMaterialGraph Root="{Binding}" NodeTemplate="{StaticResource GraphNode}"/>
+                                                </rendertoy:ViewZoom>
+                                            </DockPanel>
+                                        </TabItem>
+                                        <TabItem Header="Preview">
+                                            <DockPanel>
+                                                <Menu DockPanel.Dock="Top">
+                                                    <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomPreview}"/>>
+                                                </Menu>
+                                                <rendertoy:ViewZoom x:Name="ViewZoomPreview">
+                                                    <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                                </rendertoy:ViewZoom>
+                                            </DockPanel>
+                                        </TabItem>
+                                    </TabControl>
+                                </DataTemplate>
+                            </ContentControl.ContentTemplate>
+                        </ContentControl>
+                    </Grid>
                 </TabItem>
             </TabControl>
         </Grid>
