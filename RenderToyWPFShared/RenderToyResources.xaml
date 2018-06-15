@@ -29,6 +29,10 @@
     <Style TargetType="ContextMenu">
         <Setter Property="Background" Value="#404040"/>
     </Style>
+    <Style TargetType="ListView">
+        <Setter Property="Background" Value="#202020"/>
+        <Setter Property="Foreground" Value="#808080"/>
+    </Style>
     <Style TargetType="Menu">
         <Setter Property="Background" Value="#404040"/>
     </Style>
@@ -59,7 +63,7 @@
                             <RowDefinition Height="32"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Title}" Foreground="DarkGray" FontSize="18" Margin="4"/>
+                        <TextBlock Grid.Row="0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Title}" Foreground="LightGray" FontSize="18" Margin="4"/>
                         <ContentPresenter Grid.Row="1" Content="{TemplateBinding Content}"/>
                     </Grid>
                 </ControlTemplate>
@@ -77,6 +81,15 @@
     </Style>
     <Style TargetType="rendertoy:ViewMaterialNode">
         <Setter Property="Foreground" Value="LightGray"/>
+    </Style>
+    <Style TargetType="rendertoy:ViewZoom">
+        <Setter Property="ContextMenu">
+            <Setter.Value>
+                <ContextMenu DataContext="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="Recenter" Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding}"/>
+                </ContextMenu>
+            </Setter.Value>
+        </Setter>
     </Style>
     <rendertoy:Camera x:Key="Camera"/>
     <rendertoy:NamedConverter x:Key="NamedConverter"/>
@@ -158,7 +171,6 @@
     <DataTemplate x:Key="GraphNode">
         <rendertoy:ViewMaterialNode ContentTemplateSelector="{StaticResource GraphNodeDataTemplateSelector}"/>
     </DataTemplate>
-    <!--
     <DataTemplate x:Key="HeaderTemplate">
         <FlowDocument>
             <Paragraph Background="Black" Foreground="White" TextAlignment="Center" BorderBrush="LightGray" BorderThickness="2" Padding="4">
@@ -176,5 +188,4 @@
             </Paragraph>
         </FlowDocument>
     </DataTemplate>
-    -->
 </ResourceDictionary>

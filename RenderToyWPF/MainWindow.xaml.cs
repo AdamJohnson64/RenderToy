@@ -113,7 +113,7 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
-                ShowToolWindow(view, "RenderToy (Direct3D9 Fixed Function)");
+                CreatePanelDefault(view, "Direct3D9FF Render");
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowSoftware, (s, e) =>
             {
@@ -124,53 +124,35 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
-                ShowToolWindow(view, "RenderToy (Software)");
+                CreatePanelDefault(view, "RenderToy (Software)");
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9, (s, e) =>
             {
-                var grid = new Grid();
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(25, GridUnitType.Star) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(75, GridUnitType.Star) });
-                var shader = new ShaderEditor { Text = HLSL.D3D9Standard };
-                Grid.SetColumn(shader, 0);
-                grid.Children.Add(shader);
-                var splitter = new GridSplitter { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Stretch, Width = 4 };
-                Grid.SetColumn(shader, 0);
-                grid.Children.Add(splitter);
-                var view = new ViewDirectX9();
-                view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
-                view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
-                view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
-                view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
-                view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
-                view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
-                Grid.SetColumn(view, 1);
-                grid.Children.Add(view);
-                ShowToolWindow(grid, "RenderToy(Direct3D9)");
+                var shader = new ShaderEditor { ProfileVS = "vs_3_0", ProfilePS = "ps_3_0", Text = HLSL.D3D9Standard };
+                var render = new ViewDirectX9();
+                render.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
+                render.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
+                render.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
+                render.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
+                render.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
+                render.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
+                render.SetBinding(ViewDirectX9.VertexShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodeVSProperty) });
+                render.SetBinding(ViewDirectX9.PixelShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodePSProperty) });
+                CreatePanelNavigation("Direct3D9", render, "Direct3D9 Render", shader, "Direct3D9 Shader");
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D11, (s, e) =>
             {
-                var grid = new Grid();
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(25, GridUnitType.Star) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(75, GridUnitType.Star) });
                 var shader = new ShaderEditor { ProfileVS = "vs_5_0", ProfilePS = "ps_5_0", Text = HLSL.D3D11Standard };
-                Grid.SetColumn(shader, 0);
-                grid.Children.Add(shader);
-                var splitter = new GridSplitter { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Stretch, Width = 4 };
-                Grid.SetColumn(shader, 0);
-                grid.Children.Add(splitter);
-                var view = new ViewDirectX11();
-                view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
-                view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
-                view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
-                view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
-                view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
-                view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
-                view.SetBinding(ViewDirectX11.VertexShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodeVSProperty) });
-                view.SetBinding(ViewDirectX11.PixelShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodePSProperty) });
-                Grid.SetColumn(view, 1);
-                grid.Children.Add(view);
-                ShowToolWindow(grid, "RenderToy(Direct3D11)");
+                var render = new ViewDirectX11();
+                render.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
+                render.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
+                render.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
+                render.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
+                render.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
+                render.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
+                render.SetBinding(ViewDirectX11.VertexShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodeVSProperty) });
+                render.SetBinding(ViewDirectX11.PixelShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodePSProperty) });
+                CreatePanelNavigation("Direct3D11", render, "Direct3D11 Render", shader, "Direct3D11 Shader");
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D12, (s, e) =>
             {
@@ -181,7 +163,7 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
-                ShowToolWindow(view, "RenderToy(Direct3D12)");
+                CreatePanelDefault(view, "Direct3D12 Render");
             }));
             CommandBindings.Add(new CommandBinding(CommandDocumentOpen, (s, e) =>
             {
@@ -212,7 +194,7 @@ namespace RenderToy.WPF
                                 var footerTemplate = (DataTemplate)flowdocument.FindResource("FooterTemplate");
                                 var serialization = new XpsSerializationManager(new XpsPackagingPolicy(xpsdocument), false);
                                 var paginator = new DocumentPaginatorWrapper(((IDocumentPaginatorSource)flowdocument).DocumentPaginator, 100, 100, headerTemplate, footerTemplate);
-                                paginator.PageSize = new System.Windows.Size(1024, 1280);
+                                paginator.PageSize = new Size(1024, 1280);
                                 serialization.SaveAsXaml(paginator);
                                 serialization.Commit();
                             }
@@ -224,14 +206,36 @@ namespace RenderToy.WPF
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
             DataContext = Document.Default;
         }
-        void ShowToolWindow(FrameworkElement element, string title)
+        void CreatePanelDefault(FrameworkElement control, string title)
         {
-            var tabitem = new TabItem { Header = title, Content = element };
-            TabControlMain.Items.Add(tabitem);
-            TabControlMain.SelectedItem = tabitem;
+            var tabcontrol = new TabControl();
+            tabcontrol.Items.Add(new TabItem { Header = title, Content = control });
+            TabControlMain.Items.Add(tabcontrol);
+            TabControlMain.SelectedItem = tabcontrol;
             //var window = new Window { Title = title, Content = view, Owner = this };
             //window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
             //window.Show();
+        }
+        void CreatePanelNavigation(string title, FrameworkElement controlmain, string titlemain, FrameworkElement controlnavigation, string titlenavigation)
+        {
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(192, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(4, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100, GridUnitType.Star) });
+            var tabcontrolleft = new TabControl();
+            tabcontrolleft.Items.Add(new TabItem { Header = titlenavigation, Content = controlnavigation });
+            Grid.SetColumn(tabcontrolleft, 0);
+            grid.Children.Add(tabcontrolleft);
+            var splitter = new GridSplitter { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Stretch, Width = 4 };
+            Grid.SetColumn(splitter, 1);
+            grid.Children.Add(splitter);
+            TabControl tabcontrolmain = new TabControl();
+            tabcontrolmain.Items.Add(new TabItem { Header = titlemain, Content = controlmain });
+            Grid.SetColumn(tabcontrolmain, 2);
+            grid.Children.Add(tabcontrolmain);
+            var tabitem = new TabItem { Content = grid, Header = title };
+            TabControlMain.Items.Add(tabitem);
+            TabControlMain.SelectedItem = tabitem;
         }
     }
     class Document

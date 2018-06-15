@@ -84,9 +84,9 @@ namespace RenderToy.WPF
             UpdateTransform();
             e.Handled = true;
         }
-        protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            base.OnMouseRightButtonDown(e);
+            base.OnMouseLeftButtonDown(e);
             var visual = GetVisualChild(0) as UIElement;
             if (visual == null) return;
             var pointmouse = e.GetPosition(this);
@@ -97,9 +97,9 @@ namespace RenderToy.WPF
             CaptureMouse();
             e.Handled = true;
         }
-        protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            base.OnMouseRightButtonUp(e);
+            base.OnMouseLeftButtonUp(e);
             if (!dragActive) return;
             dragActive = false;
             dragPoint = default(Point);

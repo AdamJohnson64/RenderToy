@@ -6,7 +6,7 @@
         xmlns:rendertoy="clr-namespace:RenderToy.WPF"
         mc:Ignorable="d"
         Title="RenderToy Experiment"
-        Width="1024" Height="600"
+        Width="1600" Height="900"
         Background="#404040">
     <DockPanel Grid.Row="1">
         <Menu DockPanel.Dock="Top">
@@ -33,7 +33,7 @@
         </Menu>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="192"/>
                 <ColumnDefinition Width="4"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -64,7 +64,7 @@
                 <TabItem Header="Textures">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="192"/>
                             <ColumnDefinition Width="4"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
@@ -81,26 +81,17 @@
                             </TabItem>
                         </TabControl>
                         <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                        <!-- ==================== Material Views ==================== -->
                         <TabControl Grid.Column="2">
                             <TabItem Header="Graph" DataContext="{Binding ElementName=MaterialList, Path=SelectedItem}">
-                                <DockPanel>
-                                    <Menu DockPanel.Dock="Top">
-                                        <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomGraph}"/>>
-                                    </Menu>
-                                    <rendertoy:ViewZoom x:Name="ViewZoomGraph">
-                                        <rendertoy:ViewMaterialGraph Root="{Binding}" NodeTemplate="{StaticResource GraphNode}"/>
-                                    </rendertoy:ViewZoom>
-                                </DockPanel>
+                                <rendertoy:ViewZoom x:Name="ViewZoomGraph">
+                                    <rendertoy:ViewMaterialGraph Root="{Binding}" NodeTemplate="{StaticResource GraphNode}"/>
+                                </rendertoy:ViewZoom>
                             </TabItem>
                             <TabItem Header="Preview" DataContext="{Binding ElementName=MaterialList, Path=SelectedItem}">
-                                <DockPanel>
-                                    <Menu DockPanel.Dock="Top">
-                                        <MenuItem Command="{x:Static rendertoy:ViewZoom.RecenterCommand}" CommandTarget="{Binding ElementName=ViewZoomPreview}"/>>
-                                    </Menu>
-                                    <rendertoy:ViewZoom x:Name="ViewZoomPreview">
-                                        <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                    </rendertoy:ViewZoom>
-                                </DockPanel>
+                                <rendertoy:ViewZoom x:Name="ViewZoomPreview">
+                                    <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                </rendertoy:ViewZoom>
                             </TabItem>
                         </TabControl>
                     </Grid>
