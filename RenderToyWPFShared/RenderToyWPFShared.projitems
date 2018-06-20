@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\AttachedView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Material\MaterialToHLSLConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Material\MaterialToMSILConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\AdornerTextBoxErrors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\Docking.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\DragDock.cs" />

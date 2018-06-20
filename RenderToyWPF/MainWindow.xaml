@@ -93,6 +93,12 @@
                                     <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                                 </rendertoy:ViewZoom>
                             </TabItem>
+                            <TabItem Header="MSIL">
+                                <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem,Converter={StaticResource MaterialToMSILConverter}}"/>
+                            </TabItem>
+                            <TabItem Header="HLSL">
+                                <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem,Converter={StaticResource MaterialToHLSLConverter}}"/>
+                            </TabItem>
                         </TabControl>
                     </Grid>
                 </TabItem>

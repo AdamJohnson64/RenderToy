@@ -208,10 +208,9 @@ namespace RenderToy.WPF
         }
         void CreatePanelDefault(FrameworkElement control, string title)
         {
-            var tabcontrol = new TabControl();
-            tabcontrol.Items.Add(new TabItem { Header = title, Content = control });
-            TabControlMain.Items.Add(tabcontrol);
-            TabControlMain.SelectedItem = tabcontrol;
+            var tabitem = new TabItem { Header = title, Content = control };
+            TabControlMain.Items.Add(tabitem);
+            TabControlMain.SelectedItem = tabitem;
             //var window = new Window { Title = title, Content = view, Owner = this };
             //window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
             //window.Show();

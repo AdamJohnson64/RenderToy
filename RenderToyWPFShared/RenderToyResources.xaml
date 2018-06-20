@@ -93,6 +93,8 @@
     </Style>
     <rendertoy:Camera x:Key="Camera"/>
     <rendertoy:NamedConverter x:Key="NamedConverter"/>
+    <rendertoy:MaterialToHLSLConverter x:Key="MaterialToHLSLConverter"/>
+    <rendertoy:MaterialToMSILConverter x:Key="MaterialToMSILConverter"/>
     <ToolTip x:Key="GraphNodeToolTip">
         <StackPanel>
             <TextBlock Text="{Binding Converter={StaticResource NamedConverter}}" Margin="4"/>
