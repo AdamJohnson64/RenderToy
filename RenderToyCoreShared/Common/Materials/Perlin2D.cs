@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Expressions;
 using RenderToy.Utility;
 using System;
 using System.Linq.Expressions;
@@ -12,9 +13,12 @@ namespace RenderToy.Materials
     sealed class Perlin2D : MNSample2D<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "Perlin (2D)"; } }
-        public static Expression<Func<int, int, int>> Temp1 = (x, y) => x + y * 57;
-        public static Expression<Func<int, int>> Temp2 = (n) => (n << 13) ^ n;
-        public static Expression<Func<int, double>> Temp3 = (n) => 1.0 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0;
+        static Expression<Func<int, int, int>> Temp1Fn2 = (x, y) => x + y * 57;
+        static Expression<Func<int, int, int>> Temp1Fn = ExpressionReducer.Rename(Temp1Fn2, "Random2DMix");
+        static Expression<Func<int, int>> Temp2Fn2 = (n) => (n << 13) ^ n;
+        static Expression<Func<int, int>> Temp2Fn = ExpressionReducer.Rename(Temp2Fn2, "RandomExtend");
+        static Expression<Func<int, double>> Temp3Fn2 = (n) => 1.0 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0;
+        static Expression<Func<int, double>> Temp3Fn = ExpressionReducer.Rename(Temp3Fn2, "RandomDouble");
         public static double Random2D(int x, int y)
         {
             int n = x + y * 57;
@@ -23,9 +27,9 @@ namespace RenderToy.Materials
         }
         public static Expression Random2D(Expression x, Expression y)
         {
-            var _temp = Expression.Invoke(Temp1, x, y);
-            var _temp2 = Expression.Invoke(Temp2, _temp);
-            return Expression.Invoke(Temp3, _temp2);
+            var _temp = Expression.Invoke(Temp1Fn, x, y);
+            var _temp2 = Expression.Invoke(Temp2Fn, _temp);
+            return Expression.Invoke(Temp3Fn, _temp2);
         }
         public static double Noise2D(double x, double y)
         {

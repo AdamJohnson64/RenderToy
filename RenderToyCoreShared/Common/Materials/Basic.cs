@@ -16,15 +16,16 @@ namespace RenderToy.Materials
     public class ExpressionBase
     {
         static Expression<Func<double, double, double, double>> LerpFn2 = (a, b, x) => a * (1 - x) + b * x;
-        public static Expression<Func<double, double, double, double>> LerpFn = ExpressionReducer.Reduce(LerpFn2);
+        public static Expression<Func<double, double, double, double>> LerpFn = ExpressionReducer.Rename(ExpressionReducer.Reduce(LerpFn2), "Lerp");
         public static Func<double, double, double, double> Lerp = LerpFn.Compile();
-        public static Expression<Func<double, double, double>> PowFn = (mantissa, exponent) => System.Math.Pow(mantissa, exponent);
+        static Expression<Func<double, double, double>> PowFn2 = (mantissa, exponent) => System.Math.Pow(mantissa, exponent);
+        public static Expression<Func<double, double, double>> PowFn = ExpressionReducer.Rename(PowFn2, "Pow");
         public static Func<double, double, double> Pow = PowFn.Compile();
         static Expression<Func<double, double>> SaturateFn2 = (f) => f < 0 ? 0 : (f < 1 ? f : 1);
-        public static Expression<Func<double, double>> SaturateFn = ExpressionReducer.Reduce(SaturateFn2);
+        public static Expression<Func<double, double>> SaturateFn = ExpressionReducer.Rename(ExpressionReducer.Reduce(SaturateFn2), "Saturate");
         public static Func<double, double> Saturate = SaturateFn.Compile();
         static Expression<Func<double, double>> TileFn2 = (f) => f - System.Math.Floor(f);
-        public static Expression<Func<double, double>> TileFn = ExpressionReducer.Reduce(TileFn2);
+        public static Expression<Func<double, double>> TileFn = ExpressionReducer.Rename(ExpressionReducer.Reduce(TileFn2), "Tile");
         public static Func<double, double> Tile = TileFn.Compile();
         public static Expression InvokeLerp(Expression value0, Expression value1, Expression factor)
         {
@@ -189,15 +190,17 @@ namespace RenderToy.Materials
     }
     sealed class MNSin : MNUnary<double>, IMNNode<double>, INamed
     {
-        public static Expression<Func<double, double>> Sin = (f) => System.Math.Sin(f);
+        static Expression<Func<double, double>> SinFn2 = (f) => System.Math.Sin(f);
+        static Expression<Func<double, double>> SinFn = ExpressionReducer.Rename(SinFn2, "Sin");
         public string Name { get { return "Sin"; } }
-        public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(Sin, Value.CreateExpression(evalcontext)); }
+        public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(SinFn, Value.CreateExpression(evalcontext)); }
     }
     sealed class MNThreshold : MNUnary<double>, IMNNode<double>, INamed
     {
-        public static Expression<Func<double, double>> Threshold = (f) => f < 0.5 ? 0 : 1;
+        static Expression<Func<double, double>> ThresholdFn2 = (f) => f < 0.5 ? 0 : 1;
+        static Expression<Func<double, double>> ThresholdFn = ExpressionReducer.Rename(ThresholdFn2, "Threshold");
         public string Name { get { return "Threshold"; } }
-        public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(Threshold, Value.CreateExpression(evalcontext)); }
+        public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(ThresholdFn, Value.CreateExpression(evalcontext)); }
     }
     sealed class MNLerp : ExpressionBase, IMNNode<double>, INamed
     {

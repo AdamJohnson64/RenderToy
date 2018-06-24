@@ -15,6 +15,10 @@ namespace RenderToy.Expressions
         {
             return expression.Update(Reduce(expression.Body), expression.Parameters);
         }
+        public static Expression<TDelegate> Rename<TDelegate>(Expression<TDelegate> expression, string name)
+        {
+            return (Expression<TDelegate>)Expression.Lambda(expression.Body, name, expression.Parameters);
+        }
         public static Expression Reduce(Expression expression)
         {
             var termcounter = new ExpressionCounter();
