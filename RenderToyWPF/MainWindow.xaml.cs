@@ -28,7 +28,7 @@ using System.Windows.Xps.Serialization;
 
 namespace RenderToy.WPF
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, IToolWindowCreator
     {
         public static ICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandSceneOpen = new RoutedUICommand("Open Scene", "CommandSceneLoad", typeof(ViewSoftwareCustomizable));
@@ -211,9 +211,6 @@ namespace RenderToy.WPF
             var tabitem = new TabItem { Header = title, Content = control };
             TabControlMain.Items.Add(tabitem);
             TabControlMain.SelectedItem = tabitem;
-            //var window = new Window { Title = title, Content = view, Owner = this };
-            //window.SetBinding(DataContextProperty, new Binding { Source = this, Path = new PropertyPath(DataContextProperty) });
-            //window.Show();
         }
         void CreatePanelNavigation(string title, FrameworkElement controlmain, string titlemain, FrameworkElement controlnavigation, string titlenavigation)
         {
@@ -235,6 +232,14 @@ namespace RenderToy.WPF
             var tabitem = new TabItem { Content = grid, Header = title };
             TabControlMain.Items.Add(tabitem);
             TabControlMain.SelectedItem = tabitem;
+        }
+        public void CreateToolWindow(object content)
+        {
+            var newitemscontainer = new TabControl();
+            newitemscontainer.Items.Add(content);
+            var window = new Window { Content = newitemscontainer, Title = "Tool Window", Width = 256, Height = 256 };
+            window.DataContext = DataContext;
+            window.Show();
         }
     }
     class Document

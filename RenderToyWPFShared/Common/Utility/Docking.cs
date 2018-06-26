@@ -5,32 +5,28 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 
 namespace RenderToy.WPF
 {
+    interface IToolWindowCreator
+    {
+        void CreateToolWindow(object content);
+    }
     public static class DockTarget
     {
-        public static DependencyProperty DockTargetProperty = DependencyProperty.RegisterAttached("DockTarget", typeof(TabControl), typeof(MainWindow));
-        public static bool GetDockTarget(TabControl on)
+        public static DependencyProperty DockTargetProperty = DependencyProperty.RegisterAttached("DockTarget", typeof(string), typeof(ItemsControl));
+        public static string GetDockTarget(ItemsControl on)
         {
-            return Registered.Contains(on);
+            return (string)on.GetValue(DockTargetProperty);
         }
-        public static void SetDockTarget(TabControl on, bool value)
+        public static void SetDockTarget(ItemsControl on, string value)
         {
-            if (value)
-            {
-                Registered.Add(on);
-            }
-            else
-            {
-                Registered.Remove(on);
-            }
+            on.SetValue(DockTargetProperty, value);
         }
-        static HashSet<TabControl> Registered = new HashSet<TabControl>();
     }
     public class CommandLayoutUndockTab : ICommand
     {
@@ -46,25 +42,20 @@ namespace RenderToy.WPF
         }
         public void Execute(object parameter)
         {
-            var tabitem = parameter as TabItem;
-            if (tabitem == null) return;
-            var oldtabcontrol = tabitem.Parent as TabControl;
-            if (oldtabcontrol == null) return;
-            FrameworkElement findhostpresenter = FindPredecessor<ContentPresenter>(oldtabcontrol);
-            FrameworkElement findhostwindow = FindPredecessor<Window>(oldtabcontrol);
-            var oldhostwindow = findhostpresenter != null ? findhostpresenter : findhostwindow;
-            var newtabcontrol = new TabControl();
-            oldtabcontrol.Items.Remove(tabitem);
-            newtabcontrol.Items.Add(tabitem);
-            var window = new Window { Content = newtabcontrol, Title = "Tool Window", Width = 256, Height = 256 };
-            window.SetBinding(FrameworkElement.DataContextProperty, new Binding { Source = oldhostwindow, Path = new PropertyPath(FrameworkElement.DataContextProperty) });
-            window.Show();
+            var container = parameter as FrameworkElement;
+            if (container == null) return;
+            var olditemscontainer = ItemsControl.ItemsControlFromItemContainer(container) as ItemsControl;
+            if (olditemscontainer == null) return;
+            var toolcreator = EnumerateVisualChain(container).OfType<IToolWindowCreator>().FirstOrDefault();
+            if (toolcreator == null) return;
+            olditemscontainer.Items.Remove(parameter);
+            toolcreator.CreateToolWindow(container);
         }
-        static T FindPredecessor<T>(FrameworkElement element)
-            where T : FrameworkElement
+        static IEnumerable<FrameworkElement> EnumerateVisualChain(FrameworkElement element)
         {
-            while (element != null && !(element is T))
+            while (element != null)
             {
+                yield return element;
                 if (element.TemplatedParent == null)
                 {
                     element = element.Parent as FrameworkElement;
@@ -74,7 +65,6 @@ namespace RenderToy.WPF
                     element = element.TemplatedParent as FrameworkElement;
                 }
             }
-            return (T)element;
         }
     }
 }
