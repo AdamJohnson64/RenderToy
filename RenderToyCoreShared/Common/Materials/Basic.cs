@@ -124,7 +124,7 @@ namespace RenderToy.Materials
             }
             Expression interior = Expression.New(
                 typeof(Vector4D).GetConstructor(new System.Type[] { typeof(double), typeof(double), typeof(double), typeof(double) }),
-                new Expression[] { lookup[r], lookup[b], lookup[b], lookup[a] });
+                new Expression[] { lookup[r], lookup[g], lookup[b], lookup[a] });
             if (parts.Length < 4)
             {
                 interior = Expression.Block(
