@@ -5,6 +5,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RenderToy.BoundingVolumeHierarchy;
+using RenderToy.Cameras;
 using RenderToy.Diagnostics;
 using RenderToy.Expressions;
 using RenderToy.Materials;
@@ -16,6 +17,7 @@ using RenderToy.Primitives;
 using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -239,6 +241,55 @@ namespace RenderToy
         {
             ForAllTestModels("*.ply", (pathname) => LoaderPLY.LoadFromPath(pathname));
         }
+    }
+    [TestClass]
+    public class PipelineQueryTests
+    {
+        [TestMethod]
+        public void PipelineQueryEquivalence()
+        {
+            var pipe1 = StandardPipeline(PrimitiveAssembly.CreateTriangles((IPrimitive)new Sphere()).AsQueryable());
+            var pipe2 = StandardPipeline(new ParametricUVToTriangles(new Sphere()));
+            Debug.Assert(pipe1.SequenceEqual(pipe2));
+        }
+        [TestMethod]
+        public void PipelineQueryPerformance()
+        {
+             const int ITERATIONS = 10000;
+            // Call directly into the transform pipe function.
+            var time1 = Performance.Time(() =>
+            {
+                var transformstage = StandardPipeline(PrimitiveAssembly.CreateTriangles((IPrimitive)new Sphere()).AsQueryable());
+                for (int i = 0; i < ITERATIONS; ++i)
+                {
+                    foreach (var v in transformstage)
+                    {
+                    }
+                }
+            });
+            Console.WriteLine(time1);
+            // Call into the rebuilt transform pipe function.
+            var time2 = Performance.Time(() =>
+            {
+                var transformstage = StandardPipeline(new ParametricUVToTriangles(new Sphere()));
+                for (int i = 0; i < ITERATIONS; ++i)
+                {
+                    foreach (var v in transformstage)
+                    {
+                    }
+                }
+            });
+            Console.WriteLine(time2);
+            Debug.Assert(time1 > time2);
+        }
+        public static IQueryable<Vector4D> StandardPipeline(IQueryable<Vector3D> source)
+        {
+            return source.Select(i => Transformation.TransformToScreen(
+                Transformation.HomogeneousDivide(
+                    Transformation.Vector3ToVector4(
+                        MathHelp.TransformPoint(mvp, i))), 256, 256));
+        }
+        static Matrix3D mvp = Perspective.CreateProjection(0.01, 100.0, 60.0 * System.Math.PI / 180.0, 60.0 * System.Math.PI / 180.0);
     }
     [TestClass]
     public class WorkQueueTests
