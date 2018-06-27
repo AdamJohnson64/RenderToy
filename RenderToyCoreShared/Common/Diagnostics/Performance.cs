@@ -28,6 +28,14 @@ namespace RenderToy.Diagnostics
         {
             WriteEvent("END", text);
         }
+        public static TimeSpan Time(Action action)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            action();
+            stopwatch.Stop();
+            return stopwatch.Elapsed;
+        }
         static void WriteEvent(string eventtype, string text)
         {
 #if WINDOWS_UWP
