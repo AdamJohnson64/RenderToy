@@ -69,36 +69,6 @@ namespace RenderToy.PipelineModel
             return vertices.SelectMany(p => RasterizePoint(p, color));
         }
         /// <summary>
-        /// Rasterize a stream of points to a stream of pixels.
-        /// </summary>
-        /// <param name="points">The points to rasterize.</param>
-        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
-        /// <param name="color">The color to render pixels with.</param>
-        /// <param name="render_width">The pixel width of the target bitmap.</param>
-        /// <param name="render_height">The pixel height of the target bitmap.</param>
-        /// <returns>A stream of pixels representing all points.</returns>
-        public static IEnumerable<PixelBgra32> RasterizePoint(IEnumerable<Vector3D> points, Matrix3D mvp, uint color, int render_width, int render_height)
-        {
-            var v3tov4 = Transformation.Vector3ToVector4(points);
-            var clipspace = Transformation.Transform(v3tov4, mvp);
-            var clipped = Clipping.ClipPoint(clipspace);
-            var hdiv = Transformation.HomogeneousDivide(clipped);
-            var screenspace = Transformation.TransformToScreen(hdiv, render_width, render_height);
-            return RasterizePoint(screenspace, color);
-        }
-        /// <summary>
-        /// Rasterize a transformed scene of colored objects as points into a stream of pixels.
-        /// </summary>
-        /// <param name="scene">The scene to be rasterized.</param>
-        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
-        /// <param name="render_width">The pixel width of the target bitmap.</param>
-        /// <param name="render_height">The pixel height of the target bitmap.</param>
-        /// <returns>A stream of pixels representing the complete scene as points.</returns>
-        public static IEnumerable<PixelBgra32> RasterizePoint(IScene scene, Matrix3D mvp, int render_width, int render_height)
-        {
-            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizePoint(PrimitiveAssembly.CreatePoints(x.Node.Primitive), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.WireColor), render_width, render_height));
-        }
-        /// <summary>
         /// Rasterize a stream of clip-space points and emit pixels.
         /// </summary>
         /// <param name="vertices">The vertex source to be transformed.</param>
@@ -179,36 +149,6 @@ namespace RenderToy.PipelineModel
             }
         }
         /// <summary>
-        /// Rasterize a stream of lines to a stream of pixels.
-        /// </summary>
-        /// <param name="lines">The lines to rasterize.</param>
-        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
-        /// <param name="color">The color to render pixels with.</param>
-        /// <param name="render_width">The pixel width of the target bitmap.</param>
-        /// <param name="render_height">The pixel height of the target bitmap.</param>
-        /// <returns>A stream of pixels representing all lines.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeLine(IEnumerable<Vector3D> lines, Matrix3D mvp, uint color, int render_width, int render_height)
-        {
-            var v3tov4 = Transformation.Vector3ToVector4(lines);
-            var clipspace = Transformation.Transform(v3tov4, mvp);
-            var clipped = Clipping.ClipLine(clipspace);
-            var hdiv = Transformation.HomogeneousDivide(clipped);
-            var screenspace = Transformation.TransformToScreen(hdiv, render_width, render_height);
-            return RasterizeLine(screenspace, color);
-        }
-        /// <summary>
-        /// Rasterize a transformed scene of colored objects as lines into a stream of pixels.
-        /// </summary>
-        /// <param name="scene">The scene to be rasterized.</param>
-        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
-        /// <param name="render_width">The pixel width of the target bitmap.</param>
-        /// <param name="render_height">The pixel height of the target bitmap.</param>
-        /// <returns>A stream of pixels representing the complete scene as lines.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeLine(IScene scene, Matrix3D mvp, int render_width, int render_height)
-        {
-            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeLine(PrimitiveAssembly.CreateLines(x.Node.Primitive), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.WireColor), render_width, render_height));
-        }
-        /// <summary>
         /// Rasterize a triangle in screen-space and emit pixels.
         /// </summary>
         /// <param name="triangle">The triangle to be rasterized.</param>
@@ -272,36 +212,6 @@ namespace RenderToy.PipelineModel
                     yield return pixel;
                 }
             }
-        }
-        /// <summary>
-        /// Rasterize a stream of triangles to a stream of pixels.
-        /// </summary>
-        /// <param name="triangles">The triangles to rasterize.</param>
-        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
-        /// <param name="color">The color to render pixels with.</param>
-        /// <param name="render_width">The pixel width of the target bitmap.</param>
-        /// <param name="render_height">The pixel height of the target bitmap.</param>
-        /// <returns>A stream of pixels representing all triangles.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeTriangle(IEnumerable<Vector3D> triangles, Matrix3D mvp, uint color, int render_width, int render_height)
-        {
-            var v3tov4 = Transformation.Vector3ToVector4(triangles);
-            var clipspace = Transformation.Transform(v3tov4, mvp);
-            var clipped = Clipping.ClipTriangle(clipspace);
-            var hdiv = Transformation.HomogeneousDivide(clipped);
-            var screenspace = Transformation.TransformToScreen(hdiv, render_width, render_height);
-            return RasterizeTriangle(screenspace, color);
-        }
-        /// <summary>
-        /// Rasterize a transformed scene of colored objects as triangles into a stream of pixels.
-        /// </summary>
-        /// <param name="scene">The scene to be rasterized.</param>
-        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
-        /// <param name="render_width">The pixel width of the target bitmap.</param>
-        /// <param name="render_height">The pixel height of the target bitmap.</param>
-        /// <returns>A stream of pixels representing the complete scene as triangles.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeTriangle(IScene scene, Matrix3D mvp, int render_width, int render_height)
-        {
-            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeTriangle(PrimitiveAssembly.CreateTriangles(x.Node.Primitive), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.WireColor), render_width, render_height));
         }
         /// <summary>
         /// Rasterize a homogeneous triangle directly without homogeneous divide.
@@ -405,33 +315,6 @@ namespace RenderToy.PipelineModel
                     yield return pixel;
                 }
             }
-        }
-        /// <summary>
-        /// Rasterize a stream of triangles to a stream of pixels via homogeneous rasterization.
-        /// </summary>
-        /// <param name="triangles">The triangles to rasterize.</param>
-        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
-        /// <param name="color">The color to render pixels with.</param>
-        /// <param name="render_width">The pixel width of the target bitmap.</param>
-        /// <param name="render_height">The pixel height of the target bitmap.</param>
-        /// <returns>A stream of pixels representing all triangles.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(IEnumerable<Vector3D> triangles, Matrix3D mvp, uint color, ushort render_width, ushort render_height)
-        {
-            var v3tov4 = Transformation.Vector3ToVector4(triangles);
-            var clipspace = Transformation.Transform(v3tov4, mvp);
-            return RasterizeHomogeneous(clipspace, render_width, render_height);
-        }
-        /// <summary>
-        /// Rasterize a transformed scene of colored objects as triangles into a stream of pixels.
-        /// </summary>
-        /// <param name="scene">The scene to be rasterized.</param>
-        /// <param name="mvp">The model-view-projection matrix into clip space.</param>
-        /// <param name="render_width">The pixel width of the target bitmap.</param>
-        /// <param name="render_height">The pixel height of the target bitmap.</param>
-        /// <returns>A stream of pixels representing the complete scene as triangles.</returns>
-        public static IEnumerable<PixelBgra32> RasterizeHomogeneous(IScene scene, Matrix3D mvp, ushort render_width, ushort render_height)
-        {
-            return TransformedObject.Enumerate(scene).SelectMany(x => RasterizeHomogeneous(PrimitiveAssembly.CreateTriangles(x.Node.Primitive), x.Transform * mvp, Rasterization.ColorToUInt32(x.Node.WireColor), render_width, render_height));
         }
     }
 }
