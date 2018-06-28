@@ -12,20 +12,10 @@ namespace RenderToy.Materials
 {
     sealed class BrickMask : MNSample2D<double>, IMNNode<double>, INamed
     {
-        const double MortarWidth = 0.025;
-        public static Expression<Func<double, double, double>> TempFn2 = (u, v) => (v < MortarWidth) ? 0 : (((v < 0.5 - MortarWidth) ? ((u < MortarWidth) ? 0 : ((u < 1.0 - MortarWidth) ? 1 : 0)) : (v < 0.5 + MortarWidth) ? 0 : ((v < 1.0 - MortarWidth) ? (u < 0.5 - MortarWidth) ? 1 : ((u < 0.5 + MortarWidth) ? 0 : 1) : 0)));
-        public static Expression<Func<double, double, double>> TempFn = ExpressionReducer.Rename(TempFn2, "BrickMask");
-        public static Func<double, double, double> CallTemp = TempFn.Compile();
-        public static double Compute(double u, double v)
-        {
-            return CallTemp(u - System.Math.Floor(u), v - System.Math.Floor(v));
-        }
         public string Name { get { return "Brick Mask"; } }
-        public Expression CreateExpression(Expression evalcontext)
-        {
-            return Expression.Invoke(TempFn,
-                Expression.Invoke(TileFn, u.CreateExpression(evalcontext)),
-                Expression.Invoke(TileFn, v.CreateExpression(evalcontext)));
-        }
+        static Expression<Func<double, double, double>> TempFn2 = (u, v) => (v < MortarWidth) ? 0 : (((v < 0.5 - MortarWidth) ? ((u < MortarWidth) ? 0 : ((u < 1.0 - MortarWidth) ? 1 : 0)) : (v < 0.5 + MortarWidth) ? 0 : ((v < 1.0 - MortarWidth) ? (u < 0.5 - MortarWidth) ? 1 : ((u < 0.5 + MortarWidth) ? 0 : 1) : 0)));
+        static Expression<Func<double, double, double>> TempFn = ExpressionReducer.Rename(TempFn2, "BrickMask2D");
+        public Expression CreateExpression(Expression evalcontext) => TempFn.CreateInvoke(TileFn.CreateInvoke(u.CreateExpression(evalcontext)), TileFn.CreateInvoke(v.CreateExpression(evalcontext)));
+        const double MortarWidth = 0.025;
     }
 }

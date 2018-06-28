@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Expressions;
 using RenderToy.Utility;
 using System;
 using System.Linq.Expressions;
@@ -11,42 +12,25 @@ namespace RenderToy.Materials
 {
     sealed class BrickNoise : MNSample2D<double>, IMNNode<double>, INamed
     {
-        public static double Compute(double u, double v)
-        {
-            if (v - System.Math.Floor(v) < 0.5)
-            {
-                return Perlin2D.PerlinNoise2D(System.Math.Floor(u) * 8, System.Math.Floor(v + 0.5) * 8);
-            }
-            else
-            {
-                return Perlin2D.PerlinNoise2D(System.Math.Floor(u + 0.5) * 8, System.Math.Floor(v) * 8);
-            }
-        }
         public string Name { get { return "Brick Noise"; } }
-        public Expression CreateExpression(Expression evalcontext)
+        static Expression<Func<double, double, double>> BrickNoise2D(ParameterExpression u, ParameterExpression v)
         {
-            return Expression.Invoke(CreateExpressionFn, u.CreateExpression(evalcontext), v.CreateExpression(evalcontext));
-        }
-        static Expression _CreateExpression()
-        {
-            var tempu = Expression.Parameter(typeof(double), "u");
-            var tempv = Expression.Parameter(typeof(double), "v");
-            return Expression.Lambda(
+            return (Expression<Func<double, double, double>>)Expression.Lambda(
                 Expression.Condition(
                     Expression.LessThan(
                         Expression.Subtract(
-                            tempv,
-                            Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv })),
+                            v,
+                            Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new[] { v })),
                         Expression.Constant(0.5)),
-                    Perlin2D.PerlinNoise2D(
-                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempu }), Expression.Constant(8.0)),
-                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { Expression.Add(tempv, Expression.Constant(0.5)) }), Expression.Constant(8.0))),
-                    Perlin2D.PerlinNoise2D(
-                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { Expression.Add(tempu, Expression.Constant(0.5)) }), Expression.Constant(8.0)),
-                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new Expression[] { tempv }), Expression.Constant(8.0)))),
-                "BrickNoise",
-                new ParameterExpression[] { tempu, tempv });
+                    Perlin2D.PerlinNoise2DFn.CreateInvoke(
+                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new[] { u }), Expression.Constant(8.0)),
+                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new[] { Expression.Add(v, Expression.Constant(0.5)) }), Expression.Constant(8.0))),
+                    Perlin2D.PerlinNoise2DFn.CreateInvoke(
+                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new[] { Expression.Add(u, Expression.Constant(0.5)) }), Expression.Constant(8.0)),
+                            Expression.Multiply(Expression.Call(null, typeof(System.Math).GetMethod("Floor", new Type[] { typeof(double) }), new[] { v }), Expression.Constant(8.0)))),
+                "BrickNoise2D", new ParameterExpression[] { u, v });
         }
-        static Expression CreateExpressionFn = _CreateExpression();
+        static Expression<Func<double, double, double>> CreateExpressionFn = ExpressionReducer.CreateLambda(BrickNoise2D);
+        public Expression CreateExpression(Expression evalcontext) => CreateExpressionFn.CreateInvoke(u.CreateExpression(evalcontext), v.CreateExpression(evalcontext));
     }
 }

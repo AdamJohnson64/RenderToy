@@ -13,7 +13,8 @@ namespace RenderToy.Expressions
     {
         public static Expression GenerateMSIL(this IMNNode material)
         {
-            return material.CreateExpression(_evalcontext);
+            var expression = material.CreateExpression(_evalcontext);
+            return expression;
         }
         public static Func<EvalContext,T> CompileMSIL<T>(this IMNNode<T> material)
         {
