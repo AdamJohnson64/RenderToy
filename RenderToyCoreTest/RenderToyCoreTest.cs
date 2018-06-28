@@ -285,14 +285,14 @@ namespace RenderToy
         }
         static IEnumerable<Vector3D> triangles = PrimitiveAssembly.CreateTriangles((IParametricUV)new Sphere(), 2000, 2000);
         static Matrix3D mvp = Perspective.CreateProjection(0.01, 100.0, 60.0 * System.Math.PI / 180.0, 60.0 * System.Math.PI / 180.0);
-        static Expression<Func<Vector3D, Vector4D>> oldexpression = (v) =>
-            Transformation.TransformToScreen(
-                Transformation.HomogeneousDivide(
-                    Transformation.Vector3ToVector4(
+        static Expression<Func<Vector3D, Vector4D>> TestExpressionFn = (v) =>
+            Transformation.TransformToScreen.Call(
+                Transformation.HomogeneousDivide.Call(
+                    Transformation.Vector3ToVector4.Call(
                         MathHelp.TransformPoint(mvp, v))), 256, 256);
-        static Expression<Func<Vector3D, Vector4D>> newexpression = oldexpression.ReplaceCalls();
-        static Func<Vector3D, Vector4D> oldmethod = oldexpression.Compile();
-        static Func<Vector3D, Vector4D> newmethod = newexpression.Compile();
+        static ExpressionFlatten<Func<Vector3D, Vector4D>> TestExpression = TestExpressionFn.ReplaceCalls().Flatten();
+        static Func<Vector3D, Vector4D> oldmethod = TestExpressionFn.Compile();
+        static Func<Vector3D, Vector4D> newmethod = TestExpression.Call;
     }
     [TestClass]
     public class WorkQueueTests

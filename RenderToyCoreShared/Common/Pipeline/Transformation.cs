@@ -26,9 +26,8 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="vertex">The input vector.</param>
         /// <returns>A vector of the form [x/w,y/y,z/w,1].</returns>
-        public static Expression<Func<Vector4D, Vector4D>> HomogeneousDivide_Vector4D2 = (vertex) => MathHelp.Multiply(1.0 / vertex.W, vertex);
-        public static Expression<Func<Vector4D, Vector4D>> HomogeneousDivide_Vector4D = HomogeneousDivide_Vector4D2.ReplaceCalls().Rename("HomogeneousDivide");
-        public static Func<Vector4D, Vector4D> HomogeneousDivide = HomogeneousDivide_Vector4D.Compile();
+        static Expression<Func<Vector4D, Vector4D>> HomogeneousDivideFn = (vertex) => MathHelp.Multiply(1.0 / vertex.W, vertex);
+        public static ExpressionFlatten<Func<Vector4D, Vector4D>> HomogeneousDivide = HomogeneousDivideFn.ReplaceCalls().Rename("HomogeneousDivide").Flatten();
         /// <summary>
         /// Perform a homogeneous divide on a vertex stream.
         /// 
@@ -36,7 +35,7 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="vertices">The vertex source to be transformed</param>
         /// <returns>A stream of post-homogeneous-divide vertices.</returns>
-        public static IEnumerable<Vector4D> HomogeneousDivideAll(IEnumerable<Vector4D> vertices) => vertices.Select(v => HomogeneousDivide(v));
+        public static IEnumerable<Vector4D> HomogeneousDivideAll(IEnumerable<Vector4D> vertices) => vertices.Select(v => HomogeneousDivide.Call(v));
         /// <summary>
         /// Transform a stream of vertices by an arbitrary 4D matrix.
         /// </summary>
@@ -51,9 +50,8 @@ namespace RenderToy.PipelineModel
         /// <param name="width">The width of the screen area in pixels.</param>
         /// <param name="height">The height of the screen area in pixels.</param>
         /// <returns>The vertex transformed into screen space.</returns>
-        public static Expression<Func<Vector4D, double, double, Vector4D>> TransformToScreen_Vector4D_Double_Double2 = (vertex, width, height) => new Vector4D((vertex.X + 1) * width / 2, (1 - vertex.Y) * height / 2, vertex.Z, vertex.W);
-        public static Expression<Func<Vector4D, double, double, Vector4D>> TransformToScreen_Vector4D_Double_Double = TransformToScreen_Vector4D_Double_Double2.Rename("TransformToScreen");
-        public static Func<Vector4D, double, double, Vector4D> TransformToScreen = TransformToScreen_Vector4D_Double_Double.Compile();
+        static Expression<Func<Vector4D, double, double, Vector4D>> TransformToScreenFn = (vertex, width, height) => new Vector4D((vertex.X + 1) * width / 2, (1 - vertex.Y) * height / 2, vertex.Z, vertex.W);
+        public static ExpressionFlatten<Func<Vector4D, double, double, Vector4D>> TransformToScreen = TransformToScreenFn.Rename("TransformToScreen").Flatten();
         /// <summary>
         /// Transform a list of vertices into screen space.
         /// </summary>
@@ -61,20 +59,19 @@ namespace RenderToy.PipelineModel
         /// <param name="width">The width of the screen area in pixels.</param>
         /// <param name="height">The height of the screen area in pixels.</param>
         /// <returns>A stream of screen-space transformed vertices.</returns>
-        public static IEnumerable<Vector4D> TransformToScreenAll(IEnumerable<Vector4D> vertices, double width, double height) => vertices.Select(v => TransformToScreen(v, width, height));
+        public static IEnumerable<Vector4D> TransformToScreenAll(IEnumerable<Vector4D> vertices, double width, double height) => vertices.Select(v => TransformToScreen.Call(v, width, height));
         /// <summary>
         /// Up-cast a stream of 3D vectors to a stream of 4D vectors with w=1.
         /// </summary>
         /// <param name="vertices">A stream of 3D vectors.</param>
         /// <returns>A stream of 4D vectors with w=1.</returns>
-        public static Expression<Func<Vector3D, Vector4D>> Vector3ToVector4_Vector3D2 = (vertex) => new Vector4D { X = vertex.X, Y = vertex.Y, Z = vertex.Z, W = 1 };
-        public static Expression<Func<Vector3D, Vector4D>> Vector3ToVector4_Vector3D = Vector3ToVector4_Vector3D2.Rename("Vector3ToVector4");
-        public static Func<Vector3D, Vector4D> Vector3ToVector4 = Vector3ToVector4_Vector3D.Compile();
+        static Expression<Func<Vector3D, Vector4D>> Vector3ToVector4Fn = (vertex) => new Vector4D { X = vertex.X, Y = vertex.Y, Z = vertex.Z, W = 1 };
+        public static ExpressionFlatten<Func<Vector3D, Vector4D>> Vector3ToVector4 = Vector3ToVector4Fn.Rename("Vector3ToVector4").Flatten();
         /// <summary>
         /// Cast a sequence of Vector3 points to their homogeneous representation [x,y,z,1].
         /// </summary>
         /// <param name="vertices">The vertices to cast.</param>
         /// <returns>A stream of homogeneous vertices expanded as [x,y,z,1].</returns>
-        public static IEnumerable<Vector4D> Vector3ToVector4All(IEnumerable<Vector3D> vertices) => vertices.Select(v => Vector3ToVector4(v));
+        public static IEnumerable<Vector4D> Vector3ToVector4All(IEnumerable<Vector3D> vertices) => vertices.Select(v => Vector3ToVector4.Call(v));
     }
 }
