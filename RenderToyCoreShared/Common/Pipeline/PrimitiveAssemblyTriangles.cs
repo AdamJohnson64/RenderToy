@@ -61,8 +61,15 @@ namespace RenderToy.PipelineModel
         /// <returns>A stream of triangles describing the surface of this primitive.</returns>
         public static IEnumerable<Vector3D> CreateTriangles(IParametricUV uv)
         {
-            int USEGMENTS = 10;
-            int VSEGMENTS = 10;
+            return CreateTriangles(uv, 10, 10);
+        }
+        /// <summary>
+        /// Create triangles representing a UV parametric surface.
+        /// </summary>
+        /// <param name="uv">The UV parametric surface.</param>
+        /// <returns>A stream of triangles describing the surface of this primitive.</returns>
+        public static IEnumerable<Vector3D> CreateTriangles(IParametricUV uv, int USEGMENTS, int VSEGMENTS)
+        {
             for (int u = 0; u < USEGMENTS; ++u)
             {
                 for (int v = 0; v < VSEGMENTS; ++v)
