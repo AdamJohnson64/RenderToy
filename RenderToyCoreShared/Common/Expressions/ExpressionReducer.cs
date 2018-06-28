@@ -50,7 +50,6 @@ namespace RenderToy.Expressions
             Debug.Assert(name != null);
             return (Expression<Func<T1, T2, TResult>>)Expression.Lambda(func.Body, name, new[] { a, b });
         }
-        /*
         public static Expression<Func<T1, T2, TResult>> CreateLambda<T1, T2, TResult>(this Expression<Func<T1, T2, TResult>> func)
         {
             var a = Expression.Parameter(typeof(T1), "a");
@@ -59,9 +58,8 @@ namespace RenderToy.Expressions
         }
         public static Expression<Func<T1, T2, TResult>> CreateLambda<T1, T2, TResult>(this Func<ParameterExpression, ParameterExpression, Expression<Func<T1, T2, TResult>>> func, ParameterExpression a, ParameterExpression b)
         {
-            return CreateLambda(func(a, b), a, b);
+            return CreateLambda(func(a, b), "BLAH", a, b);
         }
-        */
         public static Expression<Func<T1, T2, TResult>> CreateLambda<T1, T2, TResult>(this Func<ParameterExpression, ParameterExpression, Expression<Func<T1, T2, TResult>>> func)
         {
             var a = Expression.Parameter(typeof(T1), "a");
