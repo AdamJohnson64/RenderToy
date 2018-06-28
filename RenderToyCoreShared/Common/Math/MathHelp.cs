@@ -37,9 +37,9 @@ namespace RenderToy.Math
         public static Vector3D Multiply(double lhs, Vector3D rhs) { return Multiply(rhs, lhs); }
         public static Vector4D Multiply(Vector4D lhs, double rhs) { return new Vector4D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs, lhs.W * rhs); }
         public static Expression<Func<Vector4D, double, Vector4D>> Multiply_Vector4D_DoubleFn = (lhs, rhs) => new Vector4D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs, lhs.W * rhs);
-        public static Expression<Func<Vector4D, double, Vector4D>> Multiply_Vector4D_Double = ExpressionReducer.Rename(Multiply_Vector4D_DoubleFn, "Multiply");
+        public static Expression<Func<Vector4D, double, Vector4D>> Multiply_Vector4D_Double = Multiply_Vector4D_DoubleFn.Rename("Multiply");
         public static Expression<Func<double, Vector4D, Vector4D>> Multiply_Double_Vector4DFn = (rhs, lhs) => new Vector4D(lhs.X * rhs, lhs.Y * rhs, lhs.Z * rhs, lhs.W * rhs);
-        public static Expression<Func<double, Vector4D, Vector4D>> Multiply_Double_Vector4D = ExpressionReducer.Rename(Multiply_Double_Vector4DFn, "Multiply");
+        public static Expression<Func<double, Vector4D, Vector4D>> Multiply_Double_Vector4D = Multiply_Double_Vector4DFn.Rename("Multiply");
         public static Vector4D Multiply(double lhs, Vector4D rhs) { return Multiply(rhs, lhs); }
         public static Vector2D Negate(Vector2D val) { return new Vector2D(-val.X, -val.Y); }
         public static Vector3D Negate(Vector3D val) { return new Vector3D(-val.X, -val.Y, -val.Z); }
@@ -209,7 +209,7 @@ namespace RenderToy.Math
                     a.M11 * b.X + a.M21 * b.Y + a.M31 * b.Z + a.M41,
                     a.M12 * b.X + a.M22 * b.Y + a.M32 * b.Z + a.M42,
                     a.M13 * b.X + a.M23 * b.Y + a.M33 * b.Z + a.M43);
-        public static Expression<Func<Matrix3D, Vector3D, Vector3D>> TransformPoint_Matrix3D_Vector3D = ExpressionReducer.Rename(TransformPoint_Matrix3D_Vector3DFn, "TransformPoint");
+        public static Expression<Func<Matrix3D, Vector3D, Vector3D>> TransformPoint_Matrix3D_Vector3D = TransformPoint_Matrix3D_Vector3DFn.Rename("TransformPoint");
         public static Vector3D TransformPoint(Matrix3D a, Vector3D b)
         {
             return new Vector3D(

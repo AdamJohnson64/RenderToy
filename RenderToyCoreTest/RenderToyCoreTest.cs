@@ -202,6 +202,19 @@ namespace RenderToy
         }
     }
     [TestClass]
+    public class ExpressionFlattenTests
+    {
+        static Expression<Func<double, double>> Number = (a) => a;
+        static ExpressionFlatten<Func<double, double>> NumberFn = Number.Flatten();
+        static Expression<Func<double, double, double>> Compound = (a, b) => NumberFn.Call(a) + NumberFn.Call(b);
+        static ExpressionFlatten<Func<double, double, double>> CompoundFn = Compound.Flatten();
+        [TestMethod]
+        public void ExpressionFlattenTest()
+        {
+            Debug.Assert(CompoundFn.Call(1, 2) == 3);
+        }
+    }
+    [TestClass]
     public class MeshPLYTests
     {
         static void ForAllTestModels(string wildcard, Action<string> execute)
@@ -277,7 +290,7 @@ namespace RenderToy
                 Transformation.HomogeneousDivide(
                     Transformation.Vector3ToVector4(
                         MathHelp.TransformPoint(mvp, v))), 256, 256);
-        static Expression<Func<Vector3D, Vector4D>> newexpression = ExpressionReplaceCalls.Replace(oldexpression);
+        static Expression<Func<Vector3D, Vector4D>> newexpression = oldexpression.ReplaceCalls();
         static Func<Vector3D, Vector4D> oldmethod = oldexpression.Compile();
         static Func<Vector3D, Vector4D> newmethod = newexpression.Compile();
     }

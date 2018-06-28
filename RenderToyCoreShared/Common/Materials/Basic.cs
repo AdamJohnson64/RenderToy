@@ -15,22 +15,20 @@ namespace RenderToy.Materials
 {
     public class ExpressionBase
     {
-        static Expression<Func<double, double, double, double>> LerpFn2 = (a, b, x) => a * (1 - x) + b * x;
-        public static Expression<Func<double, double, double, double>> LerpFn = ExpressionReducer.Rename(ExpressionReducer.Reduce(LerpFn2), "Lerp");
-        public static Func<double, double, double, double> Lerp = LerpFn.Compile();
-        static Expression<Func<double, double, double>> PowFn2 = (mantissa, exponent) => System.Math.Pow(mantissa, exponent);
-        public static Expression<Func<double, double, double>> PowFn = ExpressionReducer.Rename(PowFn2, "Pow");
-        public static Func<double, double, double> Pow = PowFn.Compile();
-        static Expression<Func<double, double>> SaturateFn2 = (f) => f < 0 ? 0 : (f < 1 ? f : 1);
-        public static Expression<Func<double, double>> SaturateFn = ExpressionReducer.Rename(ExpressionReducer.Reduce(SaturateFn2), "Saturate");
-        public static Func<double, double> Saturate = SaturateFn.Compile();
-        static Expression<Func<double, double>> TileFn2 = (f) => f - System.Math.Floor(f);
-        public static Expression<Func<double, double>> TileFn = ExpressionReducer.Rename(ExpressionReducer.Reduce(TileFn2), "Tile");
-        public static Func<double, double> Tile = TileFn.Compile();
-        public static Expression InvokeLerp(Expression value0, Expression value1, Expression factor)
-        {
-            return Expression.Invoke(LerpFn, new Expression[] { value0, value1, factor });
-        }
+        static readonly Expression<Func<double, double>> FloorFn = (d) => System.Math.Floor(d);
+        public static readonly ExpressionFlatten<Func<double, double>> Floor = FloorFn.Rename("Floor").Flatten();
+        static readonly Expression<Func<double, double, double, double>> LerpFn = (a, b, x) => a * (1 - x) + b * x;
+        public static readonly ExpressionFlatten<Func<double, double, double, double>> Lerp = LerpFn.CommonSubexpression().Rename("Lerp").Flatten();
+        static readonly Expression<Func<double, double, double>> PowFn = (mantissa, exponent) => System.Math.Pow(mantissa, exponent);
+        public static readonly ExpressionFlatten<Func<double, double, double>> Pow = PowFn.Rename("Pow").Flatten();
+        static readonly Expression<Func<double, double>> SaturateFn = (f) => f < 0 ? 0 : (f < 1 ? f : 1);
+        public static readonly ExpressionFlatten<Func<double, double>> Saturate = SaturateFn.CommonSubexpression().Rename("Saturate").Flatten();
+        static readonly Expression<Func<double, double>> SquareFn = d => d * d;
+        public static readonly ExpressionFlatten<Func<double, double>> Square = SquareFn.CommonSubexpression().Rename("Square").Flatten();
+        static readonly Expression<Func<double, double>> SqrtFn = d => System.Math.Sqrt(d);
+        public static readonly ExpressionFlatten<Func<double, double>> Sqrt = SqrtFn.Rename("Sqrt").Flatten();
+        static readonly Expression<Func<double, double>> TileFn = (f) => f - System.Math.Floor(f);
+        public static readonly ExpressionFlatten<Func<double, double>> Tile = TileFn.CommonSubexpression().Rename("Tile").Flatten();
     }
     public interface IMaterial
     {
@@ -170,7 +168,7 @@ namespace RenderToy.Materials
         public bool IsConstant() { return value.IsConstant() && exponent.IsConstant(); }
         public Expression CreateExpression(Expression evalcontext)
         {
-            return Expression.Invoke(PowFn, Value.CreateExpression(evalcontext), Exponent.CreateExpression(evalcontext));
+            return Pow.Replaced.CreateInvoke(Value.CreateExpression(evalcontext), Exponent.CreateExpression(evalcontext));
         }
         public IMNNode<double> Value { get { return this.value; } set { this.value = value; } }
         public IMNNode<double> Exponent { get { return exponent; } set { exponent = value; } }
@@ -181,7 +179,7 @@ namespace RenderToy.Materials
         public string Name { get { return "Saturate"; } }
         public static Expression CreateSaturate(Expression v)
         {
-            return Expression.Invoke(SaturateFn, v);
+            return Saturate.Replaced.CreateInvoke(v);
         }
         public Expression CreateExpression(Expression evalcontext)
         {
@@ -191,14 +189,14 @@ namespace RenderToy.Materials
     sealed class MNSin : MNUnary<double>, IMNNode<double>, INamed
     {
         static Expression<Func<double, double>> SinFn2 = (f) => System.Math.Sin(f);
-        static Expression<Func<double, double>> SinFn = ExpressionReducer.Rename(SinFn2, "Sin");
+        static Expression<Func<double, double>> SinFn = SinFn2.Rename("Sin");
         public string Name { get { return "Sin"; } }
         public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(SinFn, Value.CreateExpression(evalcontext)); }
     }
     sealed class MNThreshold : MNUnary<double>, IMNNode<double>, INamed
     {
         static Expression<Func<double, double>> ThresholdFn2 = (f) => f < 0.5 ? 0 : 1;
-        static Expression<Func<double, double>> ThresholdFn = ExpressionReducer.Rename(ThresholdFn2, "Threshold");
+        static Expression<Func<double, double>> ThresholdFn = ThresholdFn2.Rename("Threshold");
         public string Name { get { return "Threshold"; } }
         public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(ThresholdFn, Value.CreateExpression(evalcontext)); }
     }
@@ -208,7 +206,7 @@ namespace RenderToy.Materials
         public bool IsConstant() { return value0.IsConstant() && value1.IsConstant() && factor.IsConstant(); }
         public Expression CreateExpression(Expression evalcontext)
         {
-            return InvokeLerp(value0.CreateExpression(evalcontext), value1.CreateExpression(evalcontext), factor.CreateExpression(evalcontext));
+            return Lerp.Replaced.CreateInvoke(value0.CreateExpression(evalcontext), value1.CreateExpression(evalcontext), factor.CreateExpression(evalcontext));
         }
         public IMNNode<double> Value0 { get { return value0; } set { value0 = value; } }
         public IMNNode<double> Value1 { get { return value1; } set { value1 = value; } }

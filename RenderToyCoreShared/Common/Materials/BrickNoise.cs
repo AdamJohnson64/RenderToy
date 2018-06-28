@@ -14,24 +14,11 @@ namespace RenderToy.Materials
     {
         public string Name { get { return "Brick Noise"; } }
         static Expression<Func<double, double>> FloorFn = (a) => System.Math.Floor(a);
-        static Expression<Func<double, double, double>> BrickNoise2D(ParameterExpression u, ParameterExpression v)
-        {
-            return (Expression<Func<double, double, double>>)Expression.Lambda(
-                Expression.Condition(
-                    Expression.LessThan(
-                        Expression.Subtract(
-                            v,
-                            FloorFn.CreateInvoke(v)),
-                        Expression.Constant(0.5)),
-                    Perlin2D.PerlinNoise2DFn.CreateInvoke(
-                            Expression.Multiply(FloorFn.CreateInvoke(u), Expression.Constant(8.0)),
-                            Expression.Multiply(FloorFn.CreateInvoke(Expression.Add(v, Expression.Constant(0.5))), Expression.Constant(8.0))),
-                    Perlin2D.PerlinNoise2DFn.CreateInvoke(
-                            Expression.Multiply(FloorFn.CreateInvoke(Expression.Add(u, Expression.Constant(0.5))), Expression.Constant(8.0)),
-                            Expression.Multiply(FloorFn.CreateInvoke(v), Expression.Constant(8.0)))),
-                "BrickNoise2D", new ParameterExpression[] { u, v });
-        }
-        static Expression<Func<double, double, double>> BrickNoise2DFn = ExpressionReducer.CreateLambda(BrickNoise2D);
-        public Expression CreateExpression(Expression evalcontext) => BrickNoise2DFn.CreateInvoke(u.CreateExpression(evalcontext), v.CreateExpression(evalcontext));
+        static Expression<Func<double, double, double>> BrickNoiseFn = (u, v) =>
+            v - Floor.Call(v) < 0.5
+                ? Perlin2D.Perlin.Call(Floor.Call(u) * 8, Floor.Call(v + 0.5) * 8)
+                : Perlin2D.Perlin.Call(Floor.Call(u + 0.5) * 8, Floor.Call(v) * 8);
+        static readonly ExpressionFlatten<Func<double, double, double>> Noise = BrickNoiseFn.Rename("BrickNoise").Flatten();
+        public Expression CreateExpression(Expression evalcontext) => Noise.Replaced.CreateInvoke(u.CreateExpression(evalcontext), v.CreateExpression(evalcontext));
     }
 }

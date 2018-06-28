@@ -355,7 +355,8 @@ struct VS_INPUT
         }
         static string EmitType(Type type)
         {
-            if (type == typeof(System.Double)) return "float";
+            if (type == typeof(System.Boolean)) return "bool";
+            else if (type == typeof(System.Double)) return "float";
             else if (type == typeof(System.Int32)) return "int";
             else if (type == typeof(Vector4D)) return "float4";
             else throw new NotSupportedException("Don't know how to generate HLSL for type '" + type + "'.");
