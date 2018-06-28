@@ -8,13 +8,38 @@ using RenderToy.Primitives;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
-namespace RenderToy.PipelineModel
+namespace RenderToy.Expressions
 {
     class ExpressionReplaceCalls : ExpressionVisitor
     {
+        public static Expression Replace(Expression expression)
+        {
+            return new ExpressionReplaceCalls().Visit(expression);
+        }
+        public static Expression<TDelegate> Replace<TDelegate>(Expression<TDelegate> expression)
+        {
+            string name = null;
+            if (expression.Body is InvocationExpression invocation)
+            {
+                if (!(invocation.Expression is MemberExpression memberaccess)) goto FAIL;
+                name = memberaccess.Member.Name;
+            }
+            if (expression.Body is MethodCallExpression methodcall)
+            {
+                name = methodcall.Method.Name;
+            }
+            FAIL:
+            return Replace(expression, name);
+        }
+        public static Expression<TDelegate> Replace<TDelegate>(Expression<TDelegate> expression, string name)
+        {
+            return (Expression<TDelegate>)Expression.Lambda(Replace(expression.Body), name, expression.Parameters);
+        }
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
             var methodinfo = node.Method;
@@ -34,66 +59,26 @@ namespace RenderToy.PipelineModel
             {
                 throw new NotSupportedException();
             }
+            Debug.Assert(false, "Couldn't replace node '" + node + "'.");
             return base.VisitMethodCall(node);
         }
         protected override Expression VisitInvocation(InvocationExpression node)
         {
             if (!(node.Expression is MemberExpression member)) goto FAIL;
             var membertype = member.Member.DeclaringType;
-            var expressionname = member.Member.Name + "Fn";
+            var expressionname = member.Member.Name;
+            foreach (var param in node.Arguments)
+            {
+                expressionname = expressionname + "_" + param.Type.Name;
+            }
             var expressionfield = membertype.GetField(expressionname);
             if (expressionfield == null) goto FAIL;
             var expressiontree = expressionfield.GetValue(null) as LambdaExpression;
             if (expressiontree == null) goto FAIL;
             return base.VisitInvocation(Expression.Invoke(expressiontree, node.Arguments));
             FAIL:
+            //Debug.Assert(false, "Couldn't replace node '" + node + "'.");
             return base.VisitInvocation(node);
         }
-    }
-    public class TransformStage : IQueryProvider
-    {
-        public IQueryable CreateQuery(Expression expression)
-        {
-            throw new NotImplementedException();
-        }
-        public IQueryable<TElement> CreateQuery<TElement>(Expression expression)
-        {
-            var newexpression = new ExpressionReplaceCalls().Visit(expression);
-            var methodcall = (MethodCallExpression)newexpression;
-            var constant = (ConstantExpression)methodcall.Arguments[0];
-            var vertexsource = (IEnumerable<Vector3D>)constant.Value;
-            var unaryexpression = (UnaryExpression)methodcall.Arguments[1];
-            var lambda = (Expression<Func<Vector3D, TElement>>)unaryexpression.Operand;
-            var map = lambda.Compile();
-            return vertexsource.Select(i => map(i)).AsQueryable();
-        }
-        public object Execute(Expression expression)
-        {
-            throw new NotImplementedException();
-        }
-        public TResult Execute<TResult>(Expression expression)
-        {
-            throw new NotImplementedException();
-        }
-        internal static TransformStage Singleton = new TransformStage();
-    }
-    public class ParametricUVToTriangles : IQueryable<Vector3D>
-    {
-        public ParametricUVToTriangles(IParametricUV primitive)
-        {
-            _primitive = primitive;
-        }
-        public Expression Expression => Expression.Constant(this);
-        public Type ElementType => typeof(Vector3D);
-        public IQueryProvider Provider => TransformStage.Singleton;
-        public IEnumerator<Vector3D> GetEnumerator()
-        {
-            return PrimitiveAssembly.CreateTriangles(_primitive).GetEnumerator();
-        }
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return PrimitiveAssembly.CreateTriangles(_primitive).GetEnumerator();
-        }
-        IParametricUV _primitive;
     }
 }

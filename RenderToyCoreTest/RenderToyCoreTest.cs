@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 
 namespace RenderToy
@@ -248,48 +249,37 @@ namespace RenderToy
         [TestMethod]
         public void PipelineQueryEquivalence()
         {
-            var pipe1 = StandardPipeline(PrimitiveAssembly.CreateTriangles((IPrimitive)new Sphere()).AsQueryable());
-            var pipe2 = StandardPipeline(new ParametricUVToTriangles(new Sphere()));
+            var pipe1 = triangles.Select(v => oldmethod(v));
+            var pipe2 = triangles.Select(v => newmethod(v));
             Debug.Assert(pipe1.SequenceEqual(pipe2));
         }
         [TestMethod]
         public void PipelineQueryPerformance()
         {
-             const int ITERATIONS = 10000;
             // Call directly into the transform pipe function.
             var time1 = Performance.Time(() =>
             {
-                var transformstage = StandardPipeline(PrimitiveAssembly.CreateTriangles((IPrimitive)new Sphere()).AsQueryable());
-                for (int i = 0; i < ITERATIONS; ++i)
-                {
-                    foreach (var v in transformstage)
-                    {
-                    }
-                }
+                foreach (var v in triangles.Select(v => oldmethod)) { }
             });
             Console.WriteLine(time1);
             // Call into the rebuilt transform pipe function.
             var time2 = Performance.Time(() =>
             {
-                var transformstage = StandardPipeline(new ParametricUVToTriangles(new Sphere()));
-                for (int i = 0; i < ITERATIONS; ++i)
-                {
-                    foreach (var v in transformstage)
-                    {
-                    }
-                }
+                foreach (var v in triangles.Select(v => newmethod)) { }
             });
             Console.WriteLine(time2);
             Debug.Assert(time1 > time2);
         }
-        public static IQueryable<Vector4D> StandardPipeline(IQueryable<Vector3D> source)
-        {
-            return source.Select(i => Transformation.TransformToScreen(
+        static IEnumerable<Vector3D> triangles = PrimitiveAssembly.CreateTriangles((IParametricUV)new Sphere(), 2000, 2000);
+        static Matrix3D mvp = Perspective.CreateProjection(0.01, 100.0, 60.0 * System.Math.PI / 180.0, 60.0 * System.Math.PI / 180.0);
+        static Expression<Func<Vector3D, Vector4D>> oldexpression = (v) =>
+            Transformation.TransformToScreen(
                 Transformation.HomogeneousDivide(
                     Transformation.Vector3ToVector4(
-                        MathHelp.TransformPoint(mvp, i))), 256, 256));
-        }
-        static Matrix3D mvp = Perspective.CreateProjection(0.01, 100.0, 60.0 * System.Math.PI / 180.0, 60.0 * System.Math.PI / 180.0);
+                        MathHelp.TransformPoint(mvp, v))), 256, 256);
+        static Expression<Func<Vector3D, Vector4D>> newexpression = ExpressionReplaceCalls.Replace(oldexpression);
+        static Func<Vector3D, Vector4D> oldmethod = oldexpression.Compile();
+        static Func<Vector3D, Vector4D> newmethod = newexpression.Compile();
     }
     [TestClass]
     public class WorkQueueTests

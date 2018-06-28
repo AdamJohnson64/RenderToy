@@ -26,9 +26,9 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="vertex">The input vector.</param>
         /// <returns>A vector of the form [x/w,y/y,z/w,1].</returns>
-        public static Expression<Func<Vector4D, Vector4D>> HomogeneousDivideFn2 = (vertex) => MathHelp.Multiply(1.0 / vertex.W, vertex);
-        public static Expression<Func<Vector4D, Vector4D>> HomogeneousDivideFn = ExpressionReducer.Rename(HomogeneousDivideFn2, "HomogeneousDivide");
-        public static Func<Vector4D, Vector4D> HomogeneousDivide = HomogeneousDivideFn.Compile();
+        public static Expression<Func<Vector4D, Vector4D>> HomogeneousDivide_Vector4D2 = (vertex) => MathHelp.Multiply(1.0 / vertex.W, vertex);
+        public static Expression<Func<Vector4D, Vector4D>> HomogeneousDivide_Vector4D = ExpressionReplaceCalls.Replace(HomogeneousDivide_Vector4D2, "HomogeneousDivide");
+        public static Func<Vector4D, Vector4D> HomogeneousDivide = HomogeneousDivide_Vector4D.Compile();
         /// <summary>
         /// Perform a homogeneous divide on a vertex stream.
         /// 
@@ -51,9 +51,9 @@ namespace RenderToy.PipelineModel
         /// <param name="width">The width of the screen area in pixels.</param>
         /// <param name="height">The height of the screen area in pixels.</param>
         /// <returns>The vertex transformed into screen space.</returns>
-        public static Expression<Func<Vector4D, double, double, Vector4D>> TransformToScreenFn2 = (vertex, width, height) => new Vector4D((vertex.X + 1) * width / 2, (1 - vertex.Y) * height / 2, vertex.Z, vertex.W);
-        public static Expression<Func<Vector4D, double, double, Vector4D>> TransformToScreenFn = ExpressionReducer.Rename(TransformToScreenFn2, "TransformToScreen");
-        public static Func<Vector4D, double, double, Vector4D> TransformToScreen = TransformToScreenFn.Compile();
+        public static Expression<Func<Vector4D, double, double, Vector4D>> TransformToScreen_Vector4D_Double_Double2 = (vertex, width, height) => new Vector4D((vertex.X + 1) * width / 2, (1 - vertex.Y) * height / 2, vertex.Z, vertex.W);
+        public static Expression<Func<Vector4D, double, double, Vector4D>> TransformToScreen_Vector4D_Double_Double = ExpressionReducer.Rename(TransformToScreen_Vector4D_Double_Double2, "TransformToScreen");
+        public static Func<Vector4D, double, double, Vector4D> TransformToScreen = TransformToScreen_Vector4D_Double_Double.Compile();
         /// <summary>
         /// Transform a list of vertices into screen space.
         /// </summary>
@@ -67,9 +67,9 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="vertices">A stream of 3D vectors.</param>
         /// <returns>A stream of 4D vectors with w=1.</returns>
-        public static Expression<Func<Vector3D, Vector4D>> Vector3ToVector4Fn2 = (vertex) => new Vector4D { X = vertex.X, Y = vertex.Y, Z = vertex.Z, W = 1 };
-        public static Expression<Func<Vector3D, Vector4D>> Vector3ToVector4Fn = ExpressionReducer.Rename(Vector3ToVector4Fn2, "Vector3ToVector4");
-        public static Func<Vector3D, Vector4D> Vector3ToVector4 = Vector3ToVector4Fn.Compile();
+        public static Expression<Func<Vector3D, Vector4D>> Vector3ToVector4_Vector3D2 = (vertex) => new Vector4D { X = vertex.X, Y = vertex.Y, Z = vertex.Z, W = 1 };
+        public static Expression<Func<Vector3D, Vector4D>> Vector3ToVector4_Vector3D = ExpressionReducer.Rename(Vector3ToVector4_Vector3D2, "Vector3ToVector4");
+        public static Func<Vector3D, Vector4D> Vector3ToVector4 = Vector3ToVector4_Vector3D.Compile();
         /// <summary>
         /// Cast a sequence of Vector3 points to their homogeneous representation [x,y,z,1].
         /// </summary>

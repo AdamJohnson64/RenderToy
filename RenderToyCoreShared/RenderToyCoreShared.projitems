@@ -26,7 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderBPT.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderOBJ.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderPLY.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\PipelineQuery.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\ExpressionReplaceCalls.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\PrimitiveAssemblyPoints.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\PrimitiveAssemblyTriangles.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\PrimitiveAssemblyTrianglesDX.cs" />
