@@ -1,6 +1,6 @@
 #include <memory>
 #include <msclr\marshal_cppstd.h>
-#include <d3d11.h>
+#include <d3d11_4.h>
 #include "InteropCommon.h"
 
 #define TRY_D3D(FUNCTION) if (FUNCTION != S_OK) throw gcnew System::Exception(#FUNCTION);
@@ -319,10 +319,10 @@ namespace RenderToy
 		{
 		}
 	};
-	public ref class D3D11RasterizerState : COMWrapper<ID3D11RasterizerState>
+	public ref class D3D11RasterizerState2 : COMWrapper<ID3D11RasterizerState2>
 	{
 	public:
-		D3D11RasterizerState(ID3D11RasterizerState *pObj) : COMWrapper(pObj)
+		D3D11RasterizerState2(ID3D11RasterizerState2 *pObj) : COMWrapper(pObj)
 		{
 		}
 	};
@@ -340,10 +340,10 @@ namespace RenderToy
 		{
 		}
 	};
-	public ref class D3D11ShaderResourceView : COMWrapper<ID3D11ShaderResourceView>
+	public ref class D3D11ShaderResourceView1 : COMWrapper<ID3D11ShaderResourceView1>
 	{
 	public:
-		D3D11ShaderResourceView(ID3D11ShaderResourceView *pObj) : COMWrapper(pObj)
+		D3D11ShaderResourceView1(ID3D11ShaderResourceView1 *pObj) : COMWrapper(pObj)
 		{
 		}
 	};
@@ -365,10 +365,10 @@ namespace RenderToy
 		{
 		}
 	};
-	public ref class D3D11DeviceContext : COMWrapper<ID3D11DeviceContext>
+	public ref class D3D11DeviceContext4 : COMWrapper<ID3D11DeviceContext4>
 	{
 	public:
-		D3D11DeviceContext(ID3D11DeviceContext *pObj) : COMWrapper(pObj)
+		D3D11DeviceContext4(ID3D11DeviceContext4 *pObj) : COMWrapper(pObj)
 		{
 		}
 		void Begin()
@@ -447,7 +447,7 @@ namespace RenderToy
 			}
 			pWrapped->PSSetSamplers(StartSlot, ppSamplers->Length, &ppSamplersM[0]);
 		}
-		void PSSetShaderResources(UINT StartSlot, cli::array<D3D11ShaderResourceView^> ^ppShaderResourceViews)
+		void PSSetShaderResources(UINT StartSlot, cli::array<D3D11ShaderResourceView1^> ^ppShaderResourceViews)
 		{
 			std::unique_ptr<ID3D11ShaderResourceView*[]> ppShaderResourceViewsM(new ID3D11ShaderResourceView*[ppShaderResourceViews->Length]);
 			for (int i = 0; i < ppShaderResourceViews->Length; ++i)
@@ -460,7 +460,7 @@ namespace RenderToy
 		{
 			pWrapped->PSSetShader(pPixelShader == nullptr ? nullptr : pPixelShader->Wrapped, nullptr, 0);
 		}
-		void RSSetState(D3D11RasterizerState ^ppRasterizerState)
+		void RSSetState(D3D11RasterizerState2 ^ppRasterizerState)
 		{
 			pWrapped->RSSetState(ppRasterizerState == nullptr ? nullptr : ppRasterizerState->Wrapped);
 		}
@@ -492,10 +492,10 @@ namespace RenderToy
 			pWrapped->VSSetShader(pVertexShader == nullptr ? nullptr : pVertexShader->Wrapped, nullptr, 0);
 		}
 	};
-	public ref class D3D11Device : COMWrapper<ID3D11Device>
+	public ref class D3D11Device5 : COMWrapper<ID3D11Device5>
 	{
 	public:
-		D3D11Device(ID3D11Device *pObj) : COMWrapper(pObj)
+		D3D11Device5(ID3D11Device5 *pObj) : COMWrapper(pObj)
 		{
 		}
 		D3D11Buffer^ CreateBuffer(D3D11BufferDesc pDesc, System::Nullable<D3D11SubresourceData> pInitialData)
@@ -559,11 +559,13 @@ namespace RenderToy
 			TRY_D3D(pWrapped->CreatePixelShader(pShaderBytecodeM, pShaderBytecode->Length, nullptr, &ppPixelShader));
 			return gcnew D3D11PixelShader(ppPixelShader);
 		}
-		D3D11RasterizerState^ CreateRasterizerState(D3D11RasterizerDesc pDesc)
+		D3D11RasterizerState2^ CreateRasterizerState(D3D11RasterizerDesc pDesc)
 		{
 			ID3D11RasterizerState *ppRasterizerState = nullptr;
 			TRY_D3D(pWrapped->CreateRasterizerState((D3D11_RASTERIZER_DESC*)&pDesc, &ppRasterizerState));
-			return gcnew D3D11RasterizerState(ppRasterizerState);
+			ID3D11RasterizerState2 *ppRasterizerState2 = nullptr;
+			TRY_D3D(ppRasterizerState->QueryInterface<ID3D11RasterizerState2>(&ppRasterizerState2));
+			return gcnew D3D11RasterizerState2(ppRasterizerState2);
 		}
 		D3D11RenderTargetView^ CreateRenderTargetView(D3D11Resource ^pResource, D3D11RenderTargetViewDesc pDesc)
 		{
@@ -581,7 +583,7 @@ namespace RenderToy
 			TRY_D3D(pWrapped->CreateSamplerState((D3D11_SAMPLER_DESC*)&pSamplerDesc, &ppSamplerState));
 			return gcnew D3D11SamplerState(ppSamplerState);
 		}
-		D3D11ShaderResourceView^ CreateShaderResourceView(D3D11Resource ^pResource, D3D11ShaderResourceViewDesc pDesc)
+		D3D11ShaderResourceView1^ CreateShaderResourceView(D3D11Resource ^pResource, D3D11ShaderResourceViewDesc pDesc)
 		{
 			ID3D11ShaderResourceView *ppSRView = nullptr;
 			D3D11_SHADER_RESOURCE_VIEW_DESC pDescM;
@@ -590,7 +592,9 @@ namespace RenderToy
 			pDescM.Texture2D.MipLevels = pDesc.Texture2D.MipLevels;
 			pDescM.Texture2D.MostDetailedMip = pDesc.Texture2D.MostDetailedMip;
 			TRY_D3D(pWrapped->CreateShaderResourceView(pResource->GetResource(), &pDescM, &ppSRView));
-			return gcnew D3D11ShaderResourceView(ppSRView);
+			ID3D11ShaderResourceView1 *ppSRView1 = nullptr;
+			TRY_D3D(ppSRView->QueryInterface<ID3D11ShaderResourceView1>(&ppSRView1));
+			return gcnew D3D11ShaderResourceView1(ppSRView1);
 		}
 		D3D11Texture2D^ CreateTexture2D(D3D11Texture2DDesc pDesc, System::Nullable<D3D11SubresourceData> pInitialData)
 		{
@@ -624,21 +628,27 @@ namespace RenderToy
 			TRY_D3D(pWrapped->CreateVertexShader(pShaderBytecodeM, pShaderBytecode->Length, nullptr, &ppVertexShader));
 			return gcnew D3D11VertexShader(ppVertexShader);
 		}
-		D3D11DeviceContext^ GetImmediateContext()
+		D3D11DeviceContext4^ GetImmediateContext()
 		{
 			ID3D11DeviceContext *ppImmediateContext = nullptr;
 			pWrapped->GetImmediateContext(&ppImmediateContext);
-			return gcnew D3D11DeviceContext(ppImmediateContext);
+			ID3D11DeviceContext4 *ppImmediateContext4 = nullptr;
+			TRY_D3D(ppImmediateContext->QueryInterface<ID3D11DeviceContext4>(&ppImmediateContext4));
+			ppImmediateContext->Release();
+			return gcnew D3D11DeviceContext4(ppImmediateContext4);
 		}
 	};
 	public ref class Direct3D11
 	{
 	public:
-		static D3D11Device^ D3D11CreateDevice()
+		static D3D11Device5^ D3D11CreateDevice()
 		{
 			ID3D11Device *ppDevice = nullptr;
 			TRY_D3D(::D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, nullptr, 0, D3D11_SDK_VERSION, &ppDevice, nullptr, nullptr));
-			return gcnew D3D11Device(ppDevice);
+			ID3D11Device5 *ppDevice5 = nullptr;
+			TRY_D3D(ppDevice->QueryInterface<ID3D11Device5>(&ppDevice5));
+			ppDevice->Release();
+			return gcnew D3D11Device5(ppDevice5);
 		}
 	};
 }
