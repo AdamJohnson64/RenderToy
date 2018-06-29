@@ -9,8 +9,6 @@ using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using RenderToy.Textures;
 using RenderToy.Utility;
-using System.Diagnostics.Tracing;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
@@ -18,57 +16,20 @@ using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
-    class ShaderSource : DependencyObject
-    {
-        public static DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(string), typeof(ShaderSource), new PropertyMetadata(OnRecompile));
-        public string Source
-        {
-            get => (string)GetValue(SourceProperty);
-            set => SetValue(SourceProperty, value);
-        }
-        public static DependencyProperty ProfileProperty = DependencyProperty.Register("Profile", typeof(string), typeof(ShaderSource), new PropertyMetadata(OnRecompile));
-        public string Profile
-        {
-            get => (string)GetValue(ProfileProperty);
-            set => SetValue(ProfileProperty, value);
-        }
-        public static DependencyProperty BytecodeProperty = DependencyProperty.Register("Bytecode", typeof(byte[]), typeof(ShaderSource));
-        public byte[] Bytecode
-        {
-            get => (byte[])GetValue(BytecodeProperty);
-            set => SetValue(BytecodeProperty, value);
-        }
-        static void OnRecompile(DependencyObject s, DependencyPropertyChangedEventArgs e)
-        {
-            var host = (ShaderSource)s;
-
-        }
-    }
     class ViewDirectX11 : FrameworkElement
     {
-        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11VS, FrameworkPropertyMetadataOptions.AffectsRender, OnRebuildVertexShader));
+        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11VS, FrameworkPropertyMetadataOptions.AffectsRender));
         public byte[] VertexShader
         {
             get { return (byte[])GetValue(VertexShaderProperty); }
             set { SetValue(VertexShaderProperty, value); }
         }
-        static void OnRebuildVertexShader(DependencyObject s, DependencyPropertyChangedEventArgs e)
-        {
-            var host = (ViewDirectX11)s;
-            host.d3d11VertexShader = d3d11Device.CreateVertexShader(host.VertexShader);
-        }
-        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11PS, FrameworkPropertyMetadataOptions.AffectsRender, OnRebuildPixelShader));
+        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11PS, FrameworkPropertyMetadataOptions.AffectsRender));
         public byte[] PixelShader
         {
             get { return (byte[])GetValue(PixelShaderProperty); }
             set { SetValue(PixelShaderProperty, value); }
         }
-        static void OnRebuildPixelShader(DependencyObject s, DependencyPropertyChangedEventArgs e)
-        {
-            var host = (ViewDirectX11)s;
-            host.d3d11PixelShader = d3d11Device.CreatePixelShader(host.PixelShader);
-        }
-        static RenderToyETWListener blah = new RenderToyETWListener();
         static ViewDirectX11()
         {
             AttachedView.SceneProperty.OverrideMetadata(typeof(ViewDirectX11), new FrameworkPropertyMetadata(null, (s, e) =>
@@ -110,8 +71,9 @@ namespace RenderToy.WPF
         }
         void RenderDX()
         {
-            if (wpfFrontBuffer == null || d3d11VertexShader == null || d3d11PixelShader == null || !IsVisible) return;
-            RenderToyETWEventSource.Default.BeginFrame();
+            if (wpfFrontBuffer == null || VertexShader == null || PixelShader == null || !IsVisible) return;
+            d3d11VertexShader = d3d11Device.CreateVertexShader(VertexShader);
+            d3d11PixelShader = d3d11Device.CreatePixelShader(PixelShader);
             var context = d3d11Device.GetImmediateContext();
             context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
             context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
@@ -125,15 +87,14 @@ namespace RenderToy.WPF
             context.OMSetRenderTargets(new[] { d3d11RenderTargetView }, d3d11DepthStencilView);
             ////////////////////////////////////////////////////////////////////////////////
             // Draw the scene.
-            var parts = TransformedObject.Enumerate(AttachedView.GetScene(this)).ToList();
             var transformViewProjection = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            foreach (var transformedobject in parts)
+            foreach (var transformedobject in TransformedObject.Enumerate(AttachedView.GetScene(this)))
             {
                 var transformModel = transformedobject.Transform;
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (vertexbuffer == null) continue;
-                var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)System.Math.Max(4 * 16, 128), Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, new D3D11SubresourceData { pSysMem = DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), SysMemPitch = 0, SysMemSlicePitch = 0 });
+                var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)System.Math.Max(4 * 16, 128), Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16}, new D3D11SubresourceData { pSysMem = DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), SysMemPitch = 0, SysMemSlicePitch = 0 });
                 context.VSSetConstantBuffers(0, new[] { d3d11ConstantBuffer });
                 context.PSSetSamplers(0, new[] { d3d11SamplerState });
                 var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
@@ -154,7 +115,6 @@ namespace RenderToy.WPF
             var d3d11Map = context.Map(d3d11Texture2D_Copyback, 0, D3D11Map.Read, 0);
             wpfFrontBuffer.WritePixels(new Int32Rect(0, 0, wpfFrontBuffer.PixelWidth, wpfFrontBuffer.PixelHeight), d3d11Map.pData, (int)(d3d11Map.RowPitch * wpfFrontBuffer.PixelHeight), (int)d3d11Map.RowPitch);
             context.Unmap(d3d11Texture2D_Copyback, 0);
-            RenderToyETWEventSource.Default.EndFrame();
         }
         class VertexBufferInfo
         {
