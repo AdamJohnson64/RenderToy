@@ -72,6 +72,7 @@ namespace RenderToy.WPF
         void RenderDX()
         {
             if (wpfFrontBuffer == null || VertexShader == null || PixelShader == null || !IsVisible) return;
+            RenderToyETWEventSource.Default.BeginFrame();
             d3d11VertexShader = d3d11Device.CreateVertexShader(VertexShader);
             d3d11PixelShader = d3d11Device.CreatePixelShader(PixelShader);
             var context = d3d11Device.GetImmediateContext();
@@ -115,6 +116,7 @@ namespace RenderToy.WPF
             var d3d11Map = context.Map(d3d11Texture2D_Copyback, 0, D3D11Map.Read, 0);
             wpfFrontBuffer.WritePixels(new Int32Rect(0, 0, wpfFrontBuffer.PixelWidth, wpfFrontBuffer.PixelHeight), d3d11Map.pData, (int)(d3d11Map.RowPitch * wpfFrontBuffer.PixelHeight), (int)d3d11Map.RowPitch);
             context.Unmap(d3d11Texture2D_Copyback, 0);
+            RenderToyETWEventSource.Default.EndFrame();
         }
         class VertexBufferInfo
         {

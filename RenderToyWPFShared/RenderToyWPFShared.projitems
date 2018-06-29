@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\AttachedView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\PerformanceView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Material\MaterialToHLSLConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Material\MaterialToMSILConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\AdornerTextBoxErrors.cs" />
@@ -41,6 +42,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RenderToyDocument.xaml.cs">
       <DependentUpon>RenderToyDocument.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\RenderToyEventSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)DirectX\ShaderEditor.xaml">

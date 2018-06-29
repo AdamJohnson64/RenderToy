@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace RenderToy.Diagnostics
 {
-    public static class Performance
+    public static partial class Performance
     {
         public static void LogEvent(string text)
         {
