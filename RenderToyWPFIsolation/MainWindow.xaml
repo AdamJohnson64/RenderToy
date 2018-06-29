@@ -46,6 +46,11 @@
                 </TextBox>
             </rendertoy:DragDock>
         </TabItem>
+        <TabItem Header="Math">
+            <rendertoy:ViewZoom>
+                <rendertoy:ViewMath/>
+            </rendertoy:ViewZoom>
+        </TabItem>
         <TabItem Header="API Reference">
             <FlowDocumentReader x:Name="Reference" rendertoy:DragDock.Title="API Reference"/>
         </TabItem>

@@ -207,12 +207,12 @@ Before any point is represented on screen it is always divided by <Run FontFamil
 Imagine 4 points on the screen, and we’ll just pretend all their <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> components are unity for now. These four points are actually quite significant - we call this box the <Italic>clip frame</Italic>. For now you can just ignore this fact.<LineBreak/>
 </Paragraph>
 <!-- Placeholder -->
-<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><Rectangle HorizontalAlignment="Center" Width="256" Height="256" Fill="Red"/></Border></BlockUIContainer>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><rendertoy:ViewZoom><rendertoy:ViewMath/></rendertoy:ViewZoom></Border></BlockUIContainer>
 <Paragraph>
 Now: Imagine if we divide all these components by a value increasing from 1 to infinity. They will apparently <Italic>pinch</Italic> toward the center point at <Run FontFamily="Times New Roman" FontStyle="Italic">[0,0]</Run> but they will not do so in a linear fashion.
 </Paragraph>
 <!-- Placeholder -->
-<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><Rectangle HorizontalAlignment="Center" Width="256" Height="256" Fill="Red"/></Border></BlockUIContainer>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><rendertoy:ViewZoom><rendertoy:ViewMath/></rendertoy:ViewZoom></Border></BlockUIContainer>
 <Paragraph TextAlignment="Center">
 Looks fairly <Italic>perspectivey</Italic> doesn’t it?
 </Paragraph>
@@ -221,12 +221,7 @@ The points will actually converge toward the center of the screen without ever r
 <LineBreak/>
 Notice how most transformation matrices (rotations, scales and translations) are of the form:
 </Paragraph>
-<Paragraph FontFamily="Consolas" FontStyle="Italic" TextAlignment="Center">
-[a b c 0]<LineBreak/>
-[d e f 0]<LineBreak/>
-[g h i 0]<LineBreak/>
-[j k l 1]<LineBreak/>
-</Paragraph>
+<BlockUIContainer><Border BorderBrush="LightGray" BorderThickness="2" CornerRadius="4" Margin="8" Padding="8"><rendertoy:ViewZoom><rendertoy:ViewMath/></rendertoy:ViewZoom></Border></BlockUIContainer>
 <Paragraph>
 <Bold>Note:</Bold> Transforms of this form cannot change <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run>.<LineBreak/>
 <LineBreak/>
@@ -241,7 +236,7 @@ Now we know enough to talk about the <Italic>perspective projection transformati
 The projection matrix <Run FontFamily="Times New Roman" FontStyle="Italic">P</Run> can be thought of as your lens - it defines the angular extent of your view. It’s the only matrix in our system that can change the <Run FontFamily="Times New Roman" FontStyle="Italic">w</Run> component of a vector and typically looks like this:
 </Paragraph>
 <!-- Placeholder -->
-<BlockUIContainer><Rectangle HorizontalAlignment="Center" Width="256" Height="256" Fill="Red"/></BlockUIContainer>
+<BlockUIContainer><rendertoy:ViewZoom><rendertoy:ViewMath/></rendertoy:ViewZoom></BlockUIContainer>
 <Paragraph TextAlignment="Center">
 Notice how it violates our signature transformation matrix format.<LineBreak/>
 The final column is <Underline>NOT</Underline> <Run FontFamily="Times New Roman" FontStyle="Italic">[0,0,0,1]</Run>.<LineBreak/>

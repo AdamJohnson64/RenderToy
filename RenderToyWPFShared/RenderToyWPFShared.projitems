@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\AdornerTextBoxErrors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\Docking.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\DragDock.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\ViewMath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Xps\DocumentPaginator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Xps\RenderToyReference.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ShaderEditor.xaml.cs">

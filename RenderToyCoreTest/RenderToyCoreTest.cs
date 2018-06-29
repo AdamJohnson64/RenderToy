@@ -215,6 +215,52 @@ namespace RenderToy
         }
     }
     [TestClass]
+    public class MathTests
+    {
+        [TestMethod]
+        public void MathMatrixDeterminantIdentity()
+        {
+            var test = MatrixExtensions.Identity(4).Determinant();
+            Console.WriteLine(test);
+            var constant = (ConstantExpression)test;
+            Debug.Assert(((double)constant.Value) == 1);
+        }
+        [TestMethod]
+        public void MathMatrixDeterminantDX43()
+        {
+            var test = MatrixExtensions.CreateDX43().Determinant();
+            Console.WriteLine("Debug:  " + test);
+            Console.WriteLine("Pretty: " + test.PrettyPrint());
+        }
+        [TestMethod]
+        public void MathMatrixDeterminantDX44()
+        {
+            var test = MatrixExtensions.CreateDX44().Determinant();
+            Console.WriteLine("Debug:  " + test);
+            Console.WriteLine("Pretty: " + test.PrettyPrint());
+        }
+        [TestMethod]
+        public void MathMatrixInvertDX43()
+        {
+            MatrixExtensions.CreateDX43().Invert();
+        }
+        [TestMethod]
+        public void MathMatrixInvertDX44()
+        {
+            MatrixExtensions.CreateDX44().Invert();
+        }
+        [TestMethod]
+        public void MathMatrixInvertIdentity()
+        {
+            MatrixExtensions.Identity(4).Invert();
+        }
+        [TestMethod]
+        public void MathMatrixTransposeIdentity()
+        {
+            MatrixExtensions.Identity(4).Transpose();
+        }
+    }
+    [TestClass]
     public class MeshPLYTests
     {
         static void ForAllTestModels(string wildcard, Action<string> execute)
