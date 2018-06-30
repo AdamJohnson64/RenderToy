@@ -36,6 +36,11 @@ namespace RenderToy
 		Depth = D3D11_CLEAR_DEPTH,
 		Stencil = D3D11_CLEAR_STENCIL,
 	};
+	public enum struct D3D11CopyFlags
+	{
+		NoOverwrite = D3D11_COPY_NO_OVERWRITE,
+		Discard = D3D11_COPY_DISCARD,
+	};
 	public enum struct D3D11CpuAccessFlag
 	{
 		Write = D3D11_CPU_ACCESS_WRITE,
@@ -165,6 +170,15 @@ namespace RenderToy
 		Dynamic = D3D11_USAGE_DYNAMIC,
 		Staging = D3D11_USAGE_STAGING,
 	};
+	public value struct D3D11Box
+	{
+		UINT left;
+		UINT top;
+		UINT front;
+		UINT right;
+		UINT bottom;
+		UINT back;
+	};
 	public value struct D3D11BufferDesc
 	{
 		UINT					ByteWidth;
@@ -291,11 +305,15 @@ namespace RenderToy
 	public:
 		virtual ID3D11Resource* GetResource() = 0;
 	};
-	public ref class D3D11Buffer : COMWrapper<ID3D11Buffer>
+	public ref class D3D11Buffer : COMWrapper<ID3D11Buffer>, D3D11Resource
 	{
 	public:
 		D3D11Buffer(ID3D11Buffer *pObj) : COMWrapper(pObj)
 		{
+		}
+		virtual ID3D11Resource* GetResource()
+		{
+			return Wrapped;
 		}
 	};
 	public ref class D3D11DepthStencilView : COMWrapper<ID3D11DepthStencilView>
@@ -487,9 +505,27 @@ namespace RenderToy
 			}
 			pWrapped->VSSetConstantBuffers(StartSlot, ppConstantBuffers->Length, &ppConstantBuffersM[0]);
 		}
+		void VSSetConstantBuffers1(UINT StartSlot, cli::array<D3D11Buffer^> ^ppConstantBuffers, cli::array<UINT> ^pFirstConstant, cli::array<UINT> ^pNumConstants)
+		{
+			std::unique_ptr<ID3D11Buffer*[]> ppConstantBuffersM(new ID3D11Buffer*[ppConstantBuffers->Length]);
+			for (int i = 0; i < ppConstantBuffers->Length; ++i)
+			{
+				ppConstantBuffersM[i] = ppConstantBuffers[i]->Wrapped;
+			}
+			pin_ptr<UINT> pFirstConstantM = &pFirstConstant[0];
+			pin_ptr<UINT> pNumConstantsM = &pNumConstants[0];
+			pWrapped->VSSetConstantBuffers1(StartSlot, ppConstantBuffers->Length, &ppConstantBuffersM[0], &pFirstConstantM[0], &pNumConstantsM[0]);
+		}
 		void VSSetShader(D3D11VertexShader ^pVertexShader)
 		{
 			pWrapped->VSSetShader(pVertexShader == nullptr ? nullptr : pVertexShader->Wrapped, nullptr, 0);
+		}
+		void UpdateSubresource1(D3D11Resource ^pDstResource, UINT DstSubresource, System::Nullable<D3D11Box> pDstBox, System::Array ^pSrcData, UINT SrcRowPitch, UINT DstRowPitch, D3D11CopyFlags CopyFlags)
+		{
+			System::Runtime::InteropServices::GCHandle handle = System::Runtime::InteropServices::GCHandle::Alloc(pSrcData, System::Runtime::InteropServices::GCHandleType::Pinned);
+			D3D11_BOX *pDstBoxM = pDstBox.HasValue ? (D3D11_BOX*)&pDstBox.Value : nullptr;
+			pWrapped->UpdateSubresource1(pDstResource->GetResource(), DstSubresource, nullptr, handle.AddrOfPinnedObject().ToPointer(), SrcRowPitch, DstRowPitch, (UINT)CopyFlags);
+			handle.Free();
 		}
 	};
 	public ref class D3D11Device5 : COMWrapper<ID3D11Device5>
