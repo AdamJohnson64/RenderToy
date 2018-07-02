@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace RenderToy.Materials
 {
-    sealed class BrickMask : MNSample2D<double>, IMNNode<double>, INamed
+    public sealed class BrickMask : MNSample2D<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "Brick Mask"; } }
         static Expression<Func<double, double, double>> TempFn = (u, v) => (v < MortarWidth) ? 0 : (((v < 0.5 - MortarWidth) ? ((u < MortarWidth) ? 0 : ((u < 1.0 - MortarWidth) ? 1 : 0)) : (v < 0.5 + MortarWidth) ? 0 : ((v < 1.0 - MortarWidth) ? (u < 0.5 - MortarWidth) ? 1 : ((u < 0.5 + MortarWidth) ? 0 : 1) : 0)));

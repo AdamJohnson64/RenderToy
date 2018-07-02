@@ -65,6 +65,10 @@
       <Project>{e68e5ecf-2731-45dc-a334-4fc4651ee0af}</Project>
       <Name>RenderToyCLI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\RenderToyCoreLibrary\RenderToyCoreLibrary.csproj">
+      <Project>{44234705-fbd6-4d0e-885f-d01b4e2d23ce}</Project>
+      <Name>RenderToyCoreLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
@@ -84,8 +88,6 @@
       </ItemGroup>
     </When>
   </Choose>
-  <Import Project="..\RenderToyCoreShared\RenderToyCoreShared.projitems" Label="Shared" />
-  <Import Project="..\RenderToyMathShared\RenderToyMathShared.projitems" Label="Shared" />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

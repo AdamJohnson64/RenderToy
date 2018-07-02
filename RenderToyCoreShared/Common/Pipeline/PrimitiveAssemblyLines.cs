@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace RenderToy.PipelineModel
 {
-    static partial class PrimitiveAssembly
+    public static partial class PrimitiveAssembly
     {
         /// <summary>
         /// Convert an input scene into a wireframe line list.

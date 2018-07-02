@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace RenderToy.Materials
 {
-    sealed class BumpGenerate : MNSample2D<Vector4D>, IMNNode<Vector4D>, INamed
+    public sealed class BumpGenerate : MNSample2D<Vector4D>, IMNNode<Vector4D>, INamed
     {
         public string Name { get => "Bump Generate"; }
         public new bool IsConstant() => displacement.IsConstant();

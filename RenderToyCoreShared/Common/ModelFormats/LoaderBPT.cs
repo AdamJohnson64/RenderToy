@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace RenderToy.ModelFormat
 {
-    class LoaderBPT
+    public class LoaderBPT
     {
         public static IEnumerable<IPrimitive> LoadFromPath(string path)
         {

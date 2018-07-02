@@ -19,7 +19,7 @@ namespace RenderToy.RenderControl
     /// This model will be used for renderers that converge quickly or don't
     /// require any fancy sampling (i.e. the raycase, TBN or raytrace).
     /// </summary>
-    class SinglePassAsyncAdaptor : IMultiPass
+    public class SinglePassAsyncAdaptor : IMultiPass
     {
         #region - Section : Threaded Pump -
         public SinglePassAsyncAdaptor(RenderCall fillwith, BitmapReady onbitmapready)

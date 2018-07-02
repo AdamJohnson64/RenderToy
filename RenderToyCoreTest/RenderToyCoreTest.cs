@@ -171,9 +171,11 @@ namespace RenderToy
     public class CompilerTests
     {
         [TestMethod]
-        public void PipelineCompilerGenerate()
+        public void PipelineCompileRenderer()
         {
-            Console.WriteLine(Compiler.CreateRenderer());
+            var renderer = Compiler.GenerateRenderer();
+            Console.WriteLine(Compiler.DoString(renderer));
+            Compiler.DoCompile(renderer);
         }
     }
     [TestClass]

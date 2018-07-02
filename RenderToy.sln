@@ -39,11 +39,13 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderToyWPFShared", "Rende
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderToyMathShared", "RenderToyMathShared\RenderToyMathShared.shproj", "{9C6F2652-2992-447E-8A45-A347549D35BC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyCoreLibrary", "RenderToyCoreLibrary\RenderToyCoreLibrary.csproj", "{44234705-FBD6-4D0E-885F-D01B4E2D23CE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		RenderToyCoreShared\RenderToyCoreShared.projitems*{0afaed8e-b5ab-4693-8698-6686481c0784}*SharedItemsImports = 4
-		RenderToyMathShared\RenderToyMathShared.projitems*{0afaed8e-b5ab-4693-8698-6686481c0784}*SharedItemsImports = 4
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{201b2138-c542-4c95-901c-5f5066c9b625}*SharedItemsImports = 4
+		RenderToyCoreShared\RenderToyCoreShared.projitems*{44234705-fbd6-4d0e-885f-d01b4e2d23ce}*SharedItemsImports = 4
+		RenderToyMathShared\RenderToyMathShared.projitems*{44234705-fbd6-4d0e-885f-d01b4e2d23ce}*SharedItemsImports = 4
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{496d4d78-f405-4d98-90d4-da9b9ffa7e34}*SharedItemsImports = 13
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{5ec8c9a2-46ef-4767-bf70-e6551893d2ca}*SharedItemsImports = 4
 		RenderToyMathShared\RenderToyMathShared.projitems*{5ec8c9a2-46ef-4767-bf70-e6551893d2ca}*SharedItemsImports = 4
@@ -84,6 +86,10 @@ Global
 		{5EC8C9A2-46EF-4767-BF70-E6551893D2CA}.Debug|x64.Build.0 = Debug|x64
 		{5EC8C9A2-46EF-4767-BF70-E6551893D2CA}.Release|x64.ActiveCfg = Release|x64
 		{5EC8C9A2-46EF-4767-BF70-E6551893D2CA}.Release|x64.Build.0 = Release|x64
+		{44234705-FBD6-4D0E-885F-D01B4E2D23CE}.Debug|x64.ActiveCfg = Debug|x64
+		{44234705-FBD6-4D0E-885F-D01B4E2D23CE}.Debug|x64.Build.0 = Debug|x64
+		{44234705-FBD6-4D0E-885F-D01B4E2D23CE}.Release|x64.ActiveCfg = Release|x64
+		{44234705-FBD6-4D0E-885F-D01B4E2D23CE}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +105,7 @@ Global
 		{5EC8C9A2-46EF-4767-BF70-E6551893D2CA} = {4245020D-436B-458F-85C8-AFC3491A89F0}
 		{BC2D7F38-71A7-4F50-B206-BD97D2D46F12} = {4245020D-436B-458F-85C8-AFC3491A89F0}
 		{9C6F2652-2992-447E-8A45-A347549D35BC} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
+		{44234705-FBD6-4D0E-885F-D01B4E2D23CE} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B8307FCD-BF35-462A-A7E7-62A533E764D5}

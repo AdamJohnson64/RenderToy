@@ -19,7 +19,7 @@ namespace RenderToy.PipelineModel
     /// partial pipelines. Components can be omitted to test cases such as
     /// (e.g.) a missing clipper unit or different transform behaviors.
     /// </summary>
-    static partial class Transformation
+    public static partial class Transformation
     {
         /// <summary>
         /// Perform a homogeneous divide on a 4D vector (for readability only).

@@ -18,7 +18,7 @@ using RenderToy.Math;
 
 namespace RenderToy.ModelFormat
 {
-    static class LoaderOBJ
+    public static class LoaderOBJ
     {
         public static IEnumerable<INode> LoadFromPath(string path)
         {

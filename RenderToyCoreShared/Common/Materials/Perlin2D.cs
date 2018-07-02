@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace RenderToy.Materials
 {
-    sealed class Perlin2D : MNSample2D<double>, IMNNode<double>, INamed
+    public sealed class Perlin2D : MNSample2D<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "Perlin (2D)"; } }
         static readonly Expression<Func<int, int, int>> Temp1Fn2 = (x, y) => x + y * 57;

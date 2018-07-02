@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace RenderToy.RenderControl
 {
-    class MultiPassAsyncAdaptor : IMultiPass
+    public class MultiPassAsyncAdaptor : IMultiPass
     {
         #region - Section : Threaded Pump -
         public MultiPassAsyncAdaptor(RenderCall fillwith, BitmapReady onbitmapready)

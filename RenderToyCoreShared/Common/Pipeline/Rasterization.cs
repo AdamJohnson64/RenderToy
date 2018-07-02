@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace RenderToy.PipelineModel
 {
-    static partial class Rasterization
+    public static partial class Rasterization
     {
         /// <summary>
         /// Convert a Vector4D color to a Bgra32 uint color.

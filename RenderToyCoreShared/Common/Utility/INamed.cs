@@ -1,6 +1,11 @@
-﻿namespace RenderToy.Utility
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
+
+namespace RenderToy.Utility
 {
-    interface INamed
+    public interface INamed
     {
         string Name { get; }
     }

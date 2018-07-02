@@ -55,27 +55,27 @@ namespace RenderToy.Materials
     public interface IMNNode<T> : IMNNode
     {
     }
-    abstract class MNUnary<T> : ExpressionBase
+    public abstract class MNUnary<T> : ExpressionBase
     {
         public bool IsConstant() { return value.IsConstant(); }
         public IMNNode<T> Value { get { return value; } set { this.value = value; } }
         protected IMNNode<T> value;
     }
-    abstract class MNBinary<T> : ExpressionBase
+    public abstract class MNBinary<T> : ExpressionBase
     {
         public bool IsConstant() { return lhs.IsConstant() && rhs.IsConstant(); }
         public IMNNode<T> Lhs { get { return lhs; } set { lhs = value; } }
         public IMNNode<T> Rhs { get { return rhs; } set { rhs = value; } }
         protected IMNNode<T> lhs, rhs;
     }
-    abstract class MNSample2D<T> : ExpressionBase
+    public abstract class MNSample2D<T> : ExpressionBase
     {
         public bool IsConstant() { return u.IsConstant() && v.IsConstant(); }
         public IMNNode<double> U { get { return u; } set { u = value; } }
         public IMNNode<double> V { get { return v; } set { v = value; } }
         protected IMNNode<double> u, v;
     }
-    class MNTexCoordU : ExpressionBase, IMNNode<double>, INamed
+    public class MNTexCoordU : ExpressionBase, IMNNode<double>, INamed
     {
         public string Name { get { return "U"; } }
         public bool IsConstant() { return false; }
@@ -84,7 +84,7 @@ namespace RenderToy.Materials
             return Expression.Field(evalcontext, evalcontext.Type.GetField("U"));
         }
     }
-    sealed class MNTexCoordV : IMNNode<double>, INamed
+    public sealed class MNTexCoordV : IMNNode<double>, INamed
     {
         public string Name { get { return "V"; } }
         public bool IsConstant() { return false; }
@@ -93,7 +93,7 @@ namespace RenderToy.Materials
             return Expression.Field(evalcontext, evalcontext.Type.GetField("V"));
         }
     }
-    sealed class MNConstant : IMNNode<double>, INamed
+    public sealed class MNConstant : IMNNode<double>, INamed
     {
         public string Name { get { return value.ToString(); } }
         public bool IsConstant() { return true; }
@@ -104,7 +104,7 @@ namespace RenderToy.Materials
         public double Value { get { return value; } set { this.value = value; } }
         double value;
     }
-    sealed class MNVector4D : IMNNode<Vector4D>, INamed
+    public sealed class MNVector4D : IMNNode<Vector4D>, INamed
     {
         public string Name { get { return "RGBA"; } }
         public bool IsConstant() { return r.IsConstant() && g.IsConstant() && b.IsConstant() && a.IsConstant(); }
@@ -138,7 +138,7 @@ namespace RenderToy.Materials
         public IMNNode<double> A { get { return a; } set { a = value; } }
         IMNNode<double> r, g, b, a;
     }
-    sealed class MNAdd : MNBinary<double>, IMNNode<double>, INamed
+    public sealed class MNAdd : MNBinary<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "+"; } }
         public Expression CreateExpression(Expression evalcontext)
@@ -146,7 +146,7 @@ namespace RenderToy.Materials
             return Expression.Add(Lhs.CreateExpression(evalcontext), Rhs.CreateExpression(evalcontext));
         }
     }
-    sealed class MNSubtract : MNBinary<double>, IMNNode<double>, INamed
+    public sealed class MNSubtract : MNBinary<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "-"; } }
         public Expression CreateExpression(Expression evalcontext)
@@ -154,7 +154,7 @@ namespace RenderToy.Materials
             return Expression.Subtract(Lhs.CreateExpression(evalcontext), Rhs.CreateExpression(evalcontext));
         }
     }
-    sealed class MNMultiply : MNBinary<double>, IMNNode<double>, INamed
+    public sealed class MNMultiply : MNBinary<double>, IMNNode<double>, INamed
     {
         public string Name { get { return "X"; } }
         public Expression CreateExpression(Expression evalcontext)
@@ -162,7 +162,7 @@ namespace RenderToy.Materials
             return Expression.Multiply(Lhs.CreateExpression(evalcontext), Rhs.CreateExpression(evalcontext));
         }
     }
-    sealed class MNPower : ExpressionBase, IMNNode<double>, INamed
+    public sealed class MNPower : ExpressionBase, IMNNode<double>, INamed
     {
         public string Name { get { return "Power"; } }
         public bool IsConstant() { return value.IsConstant() && exponent.IsConstant(); }
@@ -186,21 +186,21 @@ namespace RenderToy.Materials
             return CreateSaturate(value.CreateExpression(evalcontext));
         }
     }
-    sealed class MNSin : MNUnary<double>, IMNNode<double>, INamed
+    public sealed class MNSin : MNUnary<double>, IMNNode<double>, INamed
     {
         static Expression<Func<double, double>> SinFn2 = (f) => System.Math.Sin(f);
         static Expression<Func<double, double>> SinFn = SinFn2.Rename("Sin");
         public string Name { get { return "Sin"; } }
         public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(SinFn, Value.CreateExpression(evalcontext)); }
     }
-    sealed class MNThreshold : MNUnary<double>, IMNNode<double>, INamed
+    public sealed class MNThreshold : MNUnary<double>, IMNNode<double>, INamed
     {
         static Expression<Func<double, double>> ThresholdFn2 = (f) => f < 0.5 ? 0 : 1;
         static Expression<Func<double, double>> ThresholdFn = ThresholdFn2.Rename("Threshold");
         public string Name { get { return "Threshold"; } }
         public Expression CreateExpression(Expression evalcontext) { return Expression.Invoke(ThresholdFn, Value.CreateExpression(evalcontext)); }
     }
-    sealed class MNLerp : ExpressionBase, IMNNode<double>, INamed
+    public sealed class MNLerp : ExpressionBase, IMNNode<double>, INamed
     {
         public string Name { get { return "Lerp"; } }
         public bool IsConstant() { return value0.IsConstant() && value1.IsConstant() && factor.IsConstant(); }
