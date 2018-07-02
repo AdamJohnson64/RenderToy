@@ -236,6 +236,12 @@ namespace RenderToy.Math
         public static Vector2D operator *(Vector2D a, double b) { return MathHelp.Multiply(a, b); }
         public static Vector2D operator *(double a, Vector2D b) { return MathHelp.Multiply(a, b); }
     }
+    [DebuggerDisplay("[{X}, {Y}]")]
+    public struct Vector2F
+    {
+        public float X, Y;
+        public Vector2F(float x, float y) { X = x; Y = y; }
+    }
     [DebuggerDisplay("[{X}, {Y}, {Z}]")]
     public struct Vector3D
     {
@@ -247,6 +253,12 @@ namespace RenderToy.Math
         public static Vector3D operator *(Vector3D a, double b) { return MathHelp.Multiply(a, b); }
         public static Vector3D operator *(double a, Vector3D b) { return MathHelp.Multiply(a, b); }
     }
+    [DebuggerDisplay("[{X}, {Y}, {Z}]")]
+    public struct Vector3F
+    {
+        public float X, Y, Z;
+        public Vector3F(float x, float y, float z) { X = x; Y = y; Z = z; }
+    }
     [DebuggerDisplay("[{X}, {Y}, {Z}, {W}]")]
     public struct Vector4D
     {
@@ -257,6 +269,12 @@ namespace RenderToy.Math
         public static Vector4D operator -(Vector4D a, Vector4D b) { return MathHelp.Subtract(a, b); }
         public static Vector4D operator *(Vector4D a, double b) { return MathHelp.Multiply(a, b); }
         public static Vector4D operator *(double a, Vector4D b) { return MathHelp.Multiply(a, b); }
+    }
+    [DebuggerDisplay("[{X}, {Y}, {Z}, {W}]")]
+    public struct Vector4F
+    {
+        public float X, Y, Z, W;
+        public Vector4F(float x, float y, float z, float w) { X = x; Y = y; Z = z; W = w; }
     }
     public struct Matrix2D
     {

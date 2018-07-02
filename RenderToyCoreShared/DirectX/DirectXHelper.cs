@@ -28,9 +28,8 @@ namespace RenderToy.DirectX
             var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
             var verticesout = verticesin.Select(i => new XYZ
             {
-                Xp = (float)i.Position.X,
-                Yp = (float)i.Position.Y,
-                Zp = (float)i.Position.Z });
+                Position = new Vector3F((float)i.Position.X, (float)i.Position.Y, (float)i.Position.Z)
+            });
             return verticesout.ToArray();
         }
         public static XYZNorDiffuseTex1[] ConvertToXYZNorDiffuseTex1(IPrimitive primitive)
@@ -38,21 +37,12 @@ namespace RenderToy.DirectX
             var verticesin = PrimitiveAssembly.CreateTrianglesDX(primitive);
             var verticesout = verticesin.Select(i => new XYZNorDiffuseTex1
             {
-                Xp = (float)i.Position.X,
-                Yp = (float)i.Position.Y,
-                Zp = (float)i.Position.Z,
-                Xn = (float)i.Normal.X,
-                Yn = (float)i.Normal.Y,
-                Zn = (float)i.Normal.Z,
+                Position = new Vector3F((float)i.Position.X, (float)i.Position.Y, (float)i.Position.Z),
+                Normal = new Vector3F((float)i.Normal.X, (float)i.Normal.Y, (float)i.Normal.Z),
                 Diffuse = i.Diffuse,
-                U = (float)i.TexCoord.X,
-                V = (float)i.TexCoord.Y,
-                Tx = (float)i.Tangent.X,
-                Ty = (float)i.Tangent.Y,
-                Tz = (float)i.Tangent.Z,
-                Bx = (float)i.Bitangent.X,
-                By = (float)i.Bitangent.Y,
-                Bz = (float)i.Bitangent.Z,
+                TexCoord = new Vector2F((float)i.TexCoord.X, (float)i.TexCoord.Y),
+                Tangent = new Vector3F((float)i.Tangent.X, (float)i.Tangent.Y, (float)i.Tangent.Z),
+                Bitangent = new Vector3F((float)i.Bitangent.X, (float)i.Bitangent.Y, (float)i.Bitangent.Z),
             });
             return verticesout.ToArray();
         }

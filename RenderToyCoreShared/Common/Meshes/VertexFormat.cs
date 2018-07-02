@@ -3,29 +3,31 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Math;
+
 namespace RenderToy.Meshes
 {
     public struct XYZ
     {
-        public float Xp, Yp, Zp;
+        public Vector3F Position;
     };
     public struct XYZDiffuse
     {
-        public float X, Y, Z;
+        public Vector3F Position;
         public uint Diffuse;
     };
     public struct XYZWDiffuse
     {
-        public float X, Y, Z, W;
+        public Vector4F Position;
         public uint Diffuse;
     };
     public struct XYZNorDiffuseTex1
     {
-        public float Xp, Yp, Zp;
-        public float Xn, Yn, Zn;
+        public Vector3F Position;
+        public Vector3F Normal;
         public uint Diffuse;
-        public float U, V;
-        public float Tx, Ty, Tz;
-        public float Bx, By, Bz;
+        public Vector2F TexCoord;
+        public Vector3F Tangent;
+        public Vector3F Bitangent;
     };
 }
