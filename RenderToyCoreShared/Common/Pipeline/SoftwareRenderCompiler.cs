@@ -5,18 +5,6 @@ using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.IO;
 
-namespace RenderToy.Math
-{
-    struct Vector3<TYPE>
-    {
-        TYPE X, Y, Z;
-    }
-    struct Vector4<TYPE>
-    {
-        TYPE X, Y, Z, W;
-    }
-}
-
 namespace RenderToy.PipelineModel
 {
     enum VertexUsage
@@ -40,11 +28,11 @@ namespace RenderToy.PipelineModel
         {
             var maketype = new CodeTypeDeclaration("VertexDeclaration");
             maketype.IsStruct = true;
-            maketype.Members.Add(CreateVertexComponent(typeof(Vector3<float>), VertexUsage.Position));
-            maketype.Members.Add(CreateVertexComponent(typeof(Vector3<float>), VertexUsage.Normal));
-            maketype.Members.Add(CreateVertexComponent(typeof(Vector3<float>), VertexUsage.Tangent));
-            maketype.Members.Add(CreateVertexComponent(typeof(Vector3<float>), VertexUsage.Binormal));
-            maketype.Members.Add(CreateVertexComponent(typeof(Vector4<float>), VertexUsage.Color));
+            maketype.Members.Add(CreateVertexComponent(typeof(Vector3F), VertexUsage.Position));
+            maketype.Members.Add(CreateVertexComponent(typeof(Vector3F), VertexUsage.Normal));
+            maketype.Members.Add(CreateVertexComponent(typeof(Vector3F), VertexUsage.Tangent));
+            maketype.Members.Add(CreateVertexComponent(typeof(Vector3F), VertexUsage.Binormal));
+            maketype.Members.Add(CreateVertexComponent(typeof(Vector4F), VertexUsage.Color));
             return maketype;
         }
         static CodeNamespace CreateRendererNamespace()
