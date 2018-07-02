@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\PrimitiveAssemblyPoints.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\PrimitiveAssemblyTriangles.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\PrimitiveAssemblyTrianglesDX.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\SoftwareRenderCompiler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\Transformation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\Common.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\Rasterization.cs" />

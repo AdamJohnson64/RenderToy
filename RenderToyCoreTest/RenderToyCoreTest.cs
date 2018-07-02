@@ -168,6 +168,15 @@ namespace RenderToy
         }
     }
     [TestClass]
+    public class CompilerTests
+    {
+        [TestMethod]
+        public void PipelineCompilerGenerate()
+        {
+            Console.WriteLine(Compiler.CreateRenderer());
+        }
+    }
+    [TestClass]
     public class ExpressionTests
     {
         [TestMethod]
