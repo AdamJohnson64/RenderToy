@@ -47,12 +47,17 @@ namespace RenderToy.PipelineModel
             maketype.Members.Add(CreateVertexComponent(typeof(Vector4<float>), VertexUsage.Color));
             return maketype;
         }
+        static CodeNamespace CreateRendererNamespace()
+        {
+            var makens = new CodeNamespace("RenderToy.Generated");
+            makens.Types.Add(CreateVertexDeclaration());
+            return makens;
+        }
         public static string CreateRenderer()
         {
-            var maketype = CreateVertexDeclaration();
             var provider = new CSharpCodeProvider();
             var writer = new StringWriter();
-            provider.GenerateCodeFromType(maketype, writer, new CodeGeneratorOptions { BlankLinesBetweenMembers = false });
+            provider.GenerateCodeFromNamespace(CreateRendererNamespace(), writer, new CodeGeneratorOptions { BlankLinesBetweenMembers = false });
             return writer.ToString();
         }
     }
