@@ -674,16 +674,62 @@ namespace RenderToy
 			return gcnew D3D11DeviceContext4(ppImmediateContext4);
 		}
 	};
+	public ref class DXGISwapChain : COMWrapper<IDXGISwapChain>
+	{
+	public:
+		DXGISwapChain(IDXGISwapChain *pObj) : COMWrapper(pObj)
+		{
+		}
+		D3D11Texture2D^ GetBuffer(UINT Buffer)
+		{
+			void *ppSurface = nullptr;
+			TRY_D3D(pWrapped->GetBuffer(Buffer, __uuidof(ID3D11Texture2D), &ppSurface));
+			return gcnew D3D11Texture2D(reinterpret_cast<ID3D11Texture2D*>(ppSurface));
+		}
+		void Present()
+		{
+			HRESULT hResult = pWrapped->Present(0, 0);
+			if (hResult == DXGI_STATUS_OCCLUDED) return;
+			TRY_D3D(hResult);
+		}
+	};
 	public ref class Direct3D11
 	{
 	public:
 		static D3D11Device5^ D3D11CreateDevice()
 		{
 			ID3D11Device *ppDevice = nullptr;
-			TRY_D3D(::D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, nullptr, 0, D3D11_SDK_VERSION, &ppDevice, nullptr, nullptr));
+			D3D_FEATURE_LEVEL featurelevel = D3D_FEATURE_LEVEL_12_1;
+			TRY_D3D(::D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, &featurelevel, 1, D3D11_SDK_VERSION, &ppDevice, nullptr, nullptr));
 			ID3D11Device5 *ppDevice5 = nullptr;
 			TRY_D3D(ppDevice->QueryInterface<ID3D11Device5>(&ppDevice5));
 			ppDevice->Release();
+			return gcnew D3D11Device5(ppDevice5);
+		}
+		static D3D11Device5^ D3D11CreateDeviceAndSwapChain(System::IntPtr OutputWindow, DXGISwapChain ^%swapchain)
+		{
+			ID3D11Device *ppDevice = nullptr;
+			D3D_FEATURE_LEVEL featurelevel = D3D_FEATURE_LEVEL_12_1;
+			DXGI_SWAP_CHAIN_DESC swapchaindesc = { 0 };
+			swapchaindesc.BufferDesc.Width = 1920;
+			swapchaindesc.BufferDesc.Height = 1080;
+			swapchaindesc.BufferDesc.RefreshRate.Numerator = 60;
+			swapchaindesc.BufferDesc.RefreshRate.Denominator = 1;
+			swapchaindesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+			swapchaindesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
+			swapchaindesc.BufferDesc.Scaling = DXGI_MODE_SCALING_STRETCHED;
+			swapchaindesc.SampleDesc.Count = 1;
+			swapchaindesc.SampleDesc.Quality = 0;
+			swapchaindesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+			swapchaindesc.BufferCount = 3;
+			swapchaindesc.OutputWindow = reinterpret_cast<HWND>(OutputWindow.ToPointer());
+			swapchaindesc.Windowed = true;
+			IDXGISwapChain *ppSwapChain = nullptr;
+			TRY_D3D(::D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, &featurelevel, 1, D3D11_SDK_VERSION, &swapchaindesc, &ppSwapChain, &ppDevice, nullptr, nullptr));
+			ID3D11Device5 *ppDevice5 = nullptr;
+			TRY_D3D(ppDevice->QueryInterface<ID3D11Device5>(&ppDevice5));
+			ppDevice->Release();
+			swapchain = gcnew DXGISwapChain(ppSwapChain);
 			return gcnew D3D11Device5(ppDevice5);
 		}
 	};
