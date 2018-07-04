@@ -158,37 +158,6 @@ namespace RenderToy
 		BYTE			UsageIndex; // Semantic index
 	};
 	#pragma endregion
-	#pragma region - Direct3D9 Global Services -
-	ref class Direct3D9Globals
-	{
-	private:
-		Direct3D9Globals()
-		{
-			hHostWindow = CreateWindow("STATIC", "D3D9HostWindow", WS_OVERLAPPEDWINDOW, 0, 0, 16, 16, nullptr, nullptr, nullptr, nullptr);
-			if (hHostWindow == nullptr) {
-				throw gcnew System::Exception("CreateWindow() failed.");
-			}
-		}
-		!Direct3D9Globals()
-		{
-			Destroy();
-		}
-		~Direct3D9Globals()
-		{
-			Destroy();
-		}
-		void Destroy()
-		{
-			if (hHostWindow != nullptr) {
-				DestroyWindow(hHostWindow);
-				hHostWindow = nullptr;
-			}
-		}
-	public:
-		HWND hHostWindow = nullptr;
-		static Direct3D9Globals^ Instance = gcnew Direct3D9Globals();
-	};
-	#pragma endregion
 	#pragma region - Direct3DPixelShader9 -
 	public ref class Direct3DPixelShader9 : public COMWrapper<IDirect3DPixelShader9>
 	{
@@ -421,7 +390,7 @@ namespace RenderToy
 			TRY_D3D(Direct3DCreate9Ex(D3D_SDK_VERSION, &pD3D9Ex));
 			pWrapped = pD3D9Ex;
 		}
-		Direct3DDevice9Ex^ CreateDevice()
+		Direct3DDevice9Ex^ CreateDevice(System::IntPtr hFocusWindow)
 		{
 			D3DPRESENT_PARAMETERS d3dpp = { 0 };
 			d3dpp.BackBufferWidth = 1;
@@ -429,7 +398,7 @@ namespace RenderToy
 			d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 			d3dpp.Windowed = TRUE;
 			IDirect3DDevice9Ex* pReturnedDeviceInterface = nullptr;
-			TRY_D3D(pWrapped->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, Direct3D9Globals::Instance->hHostWindow, D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, nullptr, &pReturnedDeviceInterface));
+			TRY_D3D(pWrapped->CreateDeviceEx(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, reinterpret_cast<HWND>(hFocusWindow.ToPointer()), D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, nullptr, &pReturnedDeviceInterface));
 			return gcnew Direct3DDevice9Ex(pReturnedDeviceInterface);
 		}
 	};

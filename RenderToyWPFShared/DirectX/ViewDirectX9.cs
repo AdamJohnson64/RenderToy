@@ -16,6 +16,7 @@ using RenderToy.Utility;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
 
@@ -24,10 +25,6 @@ namespace RenderToy.WPF
     public abstract class ViewDirectX9Base : FrameworkElement
     {
         #region - Section : Direct3D Resource Factory -
-        protected ViewDirectX9Base()
-        {
-            d3dimage = new D3DImage();
-        }
         static readonly string GeneratedTextureToken = "DirectX9Texture";
         protected Direct3DTexture9 CreateTexture(IMaterial material, IMaterial missing)
         {
@@ -143,8 +140,9 @@ namespace RenderToy.WPF
         #endregion
         #region - Section : Private Fields -
         static readonly Direct3D9Ex d3d = new Direct3D9Ex();
-        protected static readonly Direct3DDevice9Ex device = d3d.CreateDevice();
-        D3DImage d3dimage;
+        protected static readonly Form form = new Form();
+        protected static readonly Direct3DDevice9Ex device = d3d.CreateDevice(form.Handle);
+        D3DImage d3dimage = new D3DImage();
         Direct3DSurface9 rendertarget;
         Direct3DSurface9 depthstencil;
         int render_width;
