@@ -498,7 +498,7 @@ namespace RenderToy
 		}
 		void Reset()
 		{
-			TRY_D3D(pWrapped->Reset());
+			TRY_D3D(WrappedInterface()->Reset());
 		}
 	};
 	#pragma endregion
@@ -511,7 +511,7 @@ namespace RenderToy
 		}
 		D3D12CPUDescriptorHandle GetCPUDescriptorHandleForHeapStart()
 		{
-			D3D12_CPU_DESCRIPTOR_HANDLE result = pWrapped->GetCPUDescriptorHandleForHeapStart();
+			D3D12_CPU_DESCRIPTOR_HANDLE result = WrappedInterface()->GetCPUDescriptorHandleForHeapStart();
 			D3D12CPUDescriptorHandle convert;
 			convert.ptr = System::IntPtr((void*)result.ptr);
 			return convert;
@@ -527,7 +527,7 @@ namespace RenderToy
 		}
 		void SetEventOnCompletion(UINT64 Value, System::IntPtr hEvent)
 		{
-			TRY_D3D(pWrapped->SetEventOnCompletion(Value, hEvent.ToPointer()));
+			TRY_D3D(WrappedInterface()->SetEventOnCompletion(Value, hEvent.ToPointer()));
 		}
 	};
 	#pragma endregion
@@ -549,21 +549,21 @@ namespace RenderToy
 		}
 		D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress()
 		{
-			return pWrapped->GetGPUVirtualAddress();
+			return WrappedInterface()->GetGPUVirtualAddress();
 		}
 		System::IntPtr Map(UINT Subresource)
 		{
 			void *ppData = nullptr;
-			TRY_D3D(pWrapped->Map(Subresource, nullptr, &ppData));
+			TRY_D3D(WrappedInterface()->Map(Subresource, nullptr, &ppData));
 			return System::IntPtr(ppData);
 		}
 		void ReadFromSubresource(System::IntPtr pDstData, UINT DstRowPitch, UINT DstDepthPitch, UINT SrcSubresource)
 		{
-			TRY_D3D(pWrapped->ReadFromSubresource(pDstData.ToPointer(), DstRowPitch, DstDepthPitch, SrcSubresource, nullptr));
+			TRY_D3D(WrappedInterface()->ReadFromSubresource(pDstData.ToPointer(), DstRowPitch, DstDepthPitch, SrcSubresource, nullptr));
 		}
 		void Unmap(UINT Subresource)
 		{
-			pWrapped->Unmap(Subresource, nullptr);
+			WrappedInterface()->Unmap(Subresource, nullptr);
 		}
 	};
 	#pragma endregion
@@ -588,28 +588,28 @@ namespace RenderToy
 			float rgba[4] = { R, G, B, A };
 			D3D12_CPU_DESCRIPTOR_HANDLE desc;
 			desc.ptr = (SIZE_T)RenderTargetView.ptr.ToPointer();
-			pWrapped->ClearRenderTargetView(desc, rgba, 0U, nullptr);
+			WrappedInterface()->ClearRenderTargetView(desc, rgba, 0U, nullptr);
 		};
 		void Close()
 		{
-			TRY_D3D(pWrapped->Close());
+			TRY_D3D(WrappedInterface()->Close());
 		}
 		void CopyResource(D3D12Resource ^pDstResource, D3D12Resource ^pSrcResource)
 		{
-			pWrapped->CopyResource(pDstResource->Wrapped, pSrcResource->Wrapped);
+			WrappedInterface()->CopyResource(pDstResource->WrappedInterface(), pSrcResource->WrappedInterface());
 		}
 		void DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation)
 		{
-			pWrapped->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
+			WrappedInterface()->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
 		}
 		void IASetPrimitiveTopology(D3DPrimitiveTopology PrimitiveTopology)
 		{
-			pWrapped->IASetPrimitiveTopology((D3D12_PRIMITIVE_TOPOLOGY)PrimitiveTopology);
+			WrappedInterface()->IASetPrimitiveTopology((D3D12_PRIMITIVE_TOPOLOGY)PrimitiveTopology);
 		}
 		void IASetVertexBuffers(UINT StartSlot, cli::array<D3D12VertexBufferView> ^pViews)
 		{
 			pin_ptr<D3D12VertexBufferView> pViewsM = &pViews[0];
-			pWrapped->IASetVertexBuffers(StartSlot, pViews->Length, (D3D12_VERTEX_BUFFER_VIEW*)&pViewsM[0]);
+			WrappedInterface()->IASetVertexBuffers(StartSlot, pViews->Length, (D3D12_VERTEX_BUFFER_VIEW*)&pViewsM[0]);
 		}
 		void OMSetRenderTargets(cli::array<D3D12CPUDescriptorHandle> ^pRenderTargetDescriptors, BOOL RTsSingleHandleToDescriptorRange, System::Nullable<D3D12CPUDescriptorHandle> pDepthStencilDescriptor)
 		{
@@ -620,43 +620,43 @@ namespace RenderToy
 			}
 			D3D12_CPU_DESCRIPTOR_HANDLE pDepthStencilDescriptorM;
 			pDepthStencilDescriptorM.ptr = (SIZE_T)(pDepthStencilDescriptor.HasValue ? pDepthStencilDescriptor.Value.ptr.ToPointer() : nullptr);
-			pWrapped->OMSetRenderTargets(pRenderTargetDescriptors->Length, pRenderTargetDescriptorsM.get(), RTsSingleHandleToDescriptorRange, pDepthStencilDescriptor.HasValue ? &pDepthStencilDescriptorM : nullptr);
+			WrappedInterface()->OMSetRenderTargets(pRenderTargetDescriptors->Length, pRenderTargetDescriptorsM.get(), RTsSingleHandleToDescriptorRange, pDepthStencilDescriptor.HasValue ? &pDepthStencilDescriptorM : nullptr);
 		}
 		void RSSetScissorRects(cli::array<D3D12Rect> ^pRects)
 		{
 			pin_ptr<D3D12Rect> pRectsM = &pRects[0];
-			pWrapped->RSSetScissorRects(pRects->Length, reinterpret_cast<D3D12_RECT*>(&pRectsM[0]));
+			WrappedInterface()->RSSetScissorRects(pRects->Length, reinterpret_cast<D3D12_RECT*>(&pRectsM[0]));
 		}
 		void RSSetViewports(cli::array<D3D12Viewport> ^pViewports)
 		{
 			pin_ptr<D3D12Viewport> pViewportsM = &pViewports[0];
-			pWrapped->RSSetViewports(pViewports->Length, reinterpret_cast<D3D12_VIEWPORT*>(&pViewportsM[0]));
+			WrappedInterface()->RSSetViewports(pViewports->Length, reinterpret_cast<D3D12_VIEWPORT*>(&pViewportsM[0]));
 		}
 		void SetDescriptorHeaps(cli::array<D3D12DescriptorHeap^> ^ppDescriptorHeaps)
 		{
 			std::unique_ptr<ID3D12DescriptorHeap*[]> ppDescriptorHeapsM(new ID3D12DescriptorHeap*[ppDescriptorHeaps->Length]);
 			for (int i = 0; i < ppDescriptorHeaps->Length; ++i)
 			{
-				ppDescriptorHeapsM[i] = ppDescriptorHeaps[i]->Wrapped;
+				ppDescriptorHeapsM[i] = ppDescriptorHeaps[i]->WrappedInterface();
 			}
-			pWrapped->SetDescriptorHeaps(ppDescriptorHeaps->Length, ppDescriptorHeapsM.get());
+			WrappedInterface()->SetDescriptorHeaps(ppDescriptorHeaps->Length, ppDescriptorHeapsM.get());
 		}
 		void SetGraphicsRoot32BitConstants(UINT RootParameterIndex, UINT Num32BitValuesToSet, cli::array<float> ^pSrcData, UINT DestOffsetIn32BitValues)
 		{
 			pin_ptr<float> pSrcDataM = &pSrcData[0];
-			pWrapped->SetGraphicsRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, &pSrcDataM[0], DestOffsetIn32BitValues);
+			WrappedInterface()->SetGraphicsRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, &pSrcDataM[0], DestOffsetIn32BitValues);
 		}
 		void SetGraphicsRootSignature(D3D12RootSignature ^pRootSignature)
 		{
-			pWrapped->SetGraphicsRootSignature(pRootSignature == nullptr ? nullptr : pRootSignature->Wrapped);
+			WrappedInterface()->SetGraphicsRootSignature(pRootSignature == nullptr ? nullptr : pRootSignature->WrappedInterface());
 		}
 		void SetPipelineState(D3D12PipelineState ^pPipelineState)
 		{
-			pWrapped->SetPipelineState(pPipelineState == nullptr ? nullptr : pPipelineState->Wrapped);
+			WrappedInterface()->SetPipelineState(pPipelineState == nullptr ? nullptr : pPipelineState->WrappedInterface());
 		}
 		void Reset(D3D12CommandAllocator ^pAllocator, D3D12PipelineState ^pInitialState)
 		{
-			TRY_D3D(pWrapped->Reset(pAllocator->Wrapped, pInitialState->Wrapped));
+			TRY_D3D(WrappedInterface()->Reset(pAllocator->WrappedInterface(), pInitialState->WrappedInterface()));
 		}
 		void ResourceBarrier(cli::array<D3D12ResourceBarrier> ^pBarriers)
 		{
@@ -665,12 +665,12 @@ namespace RenderToy
 			{
 				pBarriersM[i].Type = (D3D12_RESOURCE_BARRIER_TYPE)pBarriers[i].Type;
 				pBarriersM[i].Flags = (D3D12_RESOURCE_BARRIER_FLAGS)pBarriers[i].Flags;
-				pBarriersM[i].Transition.pResource = pBarriers[i].Transition.pResource->Wrapped;
+				pBarriersM[i].Transition.pResource = pBarriers[i].Transition.pResource->WrappedInterface();
 				pBarriersM[i].Transition.Subresource = pBarriers[i].Transition.Subresource;
 				pBarriersM[i].Transition.StateBefore = (D3D12_RESOURCE_STATES)pBarriers[i].Transition.StateBefore;
 				pBarriersM[i].Transition.StateAfter = (D3D12_RESOURCE_STATES)pBarriers[i].Transition.StateAfter;
 			}
-			pWrapped->ResourceBarrier(pBarriers->Length, pBarriersM.get());
+			WrappedInterface()->ResourceBarrier(pBarriers->Length, pBarriersM.get());
 		}
 	};
 	#pragma endregion
@@ -684,16 +684,16 @@ namespace RenderToy
 		void ExecuteCommandLists(cli::array<D3D12GraphicsCommandList1^> ^ppCommandLists)
 		{
 			if (ppCommandLists->Length != 1) throw gcnew System::Exception("Unexpected command list count.");
-			ID3D12CommandList *ppCommandLists2 = ppCommandLists[0]->Wrapped;
-			pWrapped->ExecuteCommandLists(1, &ppCommandLists2);
+			ID3D12CommandList *ppCommandLists2 = ppCommandLists[0]->WrappedInterface();
+			WrappedInterface()->ExecuteCommandLists(1, &ppCommandLists2);
 		}
 		void Signal(D3D12Fence ^pFence, UINT64 Value)
 		{
-			TRY_D3D(pWrapped->Signal(pFence->Wrapped, Value));
+			TRY_D3D(WrappedInterface()->Signal(pFence->WrappedInterface(), Value));
 		}
 		void Wait(D3D12Fence ^pFence, UINT64 Value)
 		{
-			TRY_D3D(pWrapped->Wait(pFence->Wrapped, Value));
+			TRY_D3D(WrappedInterface()->Wait(pFence->WrappedInterface(), Value));
 		}
 	};
 	#pragma endregion
@@ -707,44 +707,44 @@ namespace RenderToy
 		D3D12CommandAllocator^ CreateCommandAllocator(D3D12CommandListType type)
 		{
 			void *ppCommandAllocator = nullptr;
-			TRY_D3D(pWrapped->CreateCommandAllocator((D3D12_COMMAND_LIST_TYPE)type, __uuidof(ID3D12CommandAllocator), &ppCommandAllocator));
+			TRY_D3D(WrappedInterface()->CreateCommandAllocator((D3D12_COMMAND_LIST_TYPE)type, __uuidof(ID3D12CommandAllocator), &ppCommandAllocator));
 			return gcnew D3D12CommandAllocator(reinterpret_cast<ID3D12CommandAllocator*>(ppCommandAllocator));
 		}
 		D3D12GraphicsCommandList1^ CreateCommandList(UINT nodeMask, D3D12CommandListType type, D3D12CommandAllocator ^pCommandAllocator, D3D12PipelineState ^pInitialState)
 		{
 			void *ppCommandList = nullptr;
-			TRY_D3D(pWrapped->CreateCommandList(nodeMask, (D3D12_COMMAND_LIST_TYPE)type, pCommandAllocator->Wrapped, pInitialState->Wrapped, __uuidof(ID3D12GraphicsCommandList1), &ppCommandList));
+			TRY_D3D(WrappedInterface()->CreateCommandList(nodeMask, (D3D12_COMMAND_LIST_TYPE)type, pCommandAllocator->WrappedInterface(), pInitialState->WrappedInterface(), __uuidof(ID3D12GraphicsCommandList1), &ppCommandList));
 			return gcnew D3D12GraphicsCommandList1(reinterpret_cast<ID3D12GraphicsCommandList1*>(ppCommandList));
 		}
 		D3D12CommandQueue^ CreateCommandQueue(D3D12CommandQueueDesc pDesc)
 		{
 			void *ppCommandQueue = nullptr;
-			TRY_D3D(pWrapped->CreateCommandQueue((D3D12_COMMAND_QUEUE_DESC*)&pDesc, __uuidof(ID3D12CommandQueue), &ppCommandQueue));
+			TRY_D3D(WrappedInterface()->CreateCommandQueue((D3D12_COMMAND_QUEUE_DESC*)&pDesc, __uuidof(ID3D12CommandQueue), &ppCommandQueue));
 			return gcnew D3D12CommandQueue(reinterpret_cast<ID3D12CommandQueue*>(ppCommandQueue));
 		}
 		D3D12Resource^ CreateCommittedResource(D3D12HeapProperties pHeapProperties, D3D12HeapFlags HeapFlags, D3D12ResourceDesc pDesc, D3D12ResourceStates InitialResourceState, System::Nullable<D3D12ClearValue> pOptimizedClearValue)
 		{
 			void *ppvResource = nullptr;
-			TRY_D3D(pWrapped->CreateCommittedResource(reinterpret_cast<D3D12_HEAP_PROPERTIES*>(&pHeapProperties), (D3D12_HEAP_FLAGS)HeapFlags, reinterpret_cast<D3D12_RESOURCE_DESC*>(&pDesc), (D3D12_RESOURCE_STATES)InitialResourceState, pOptimizedClearValue.HasValue ? reinterpret_cast<D3D12_CLEAR_VALUE*>(&pOptimizedClearValue.Value) : nullptr, __uuidof(ID3D12Resource), &ppvResource));
+			TRY_D3D(WrappedInterface()->CreateCommittedResource(reinterpret_cast<D3D12_HEAP_PROPERTIES*>(&pHeapProperties), (D3D12_HEAP_FLAGS)HeapFlags, reinterpret_cast<D3D12_RESOURCE_DESC*>(&pDesc), (D3D12_RESOURCE_STATES)InitialResourceState, pOptimizedClearValue.HasValue ? reinterpret_cast<D3D12_CLEAR_VALUE*>(&pOptimizedClearValue.Value) : nullptr, __uuidof(ID3D12Resource), &ppvResource));
 			return gcnew D3D12Resource(reinterpret_cast<ID3D12Resource*>(ppvResource));
 		}
 		D3D12DescriptorHeap^ CreateDescriptorHeap(D3D12DescriptorHeapDesc pDescriptorHeapDesc)
 		{
 			void *ppvHeap = nullptr;
-			TRY_D3D(pWrapped->CreateDescriptorHeap((D3D12_DESCRIPTOR_HEAP_DESC*)&pDescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), &ppvHeap));
+			TRY_D3D(WrappedInterface()->CreateDescriptorHeap((D3D12_DESCRIPTOR_HEAP_DESC*)&pDescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), &ppvHeap));
 			return gcnew D3D12DescriptorHeap(reinterpret_cast<ID3D12DescriptorHeap*>(ppvHeap));
 		}
 		D3D12Fence^ CreateFence(UINT64 InitialValue, D3D12FenceFlags Flags)
 		{
 			void *ppFence = nullptr;
-			TRY_D3D(pWrapped->CreateFence(InitialValue, (D3D12_FENCE_FLAGS)Flags, __uuidof(ID3D12Fence), &ppFence));
+			TRY_D3D(WrappedInterface()->CreateFence(InitialValue, (D3D12_FENCE_FLAGS)Flags, __uuidof(ID3D12Fence), &ppFence));
 			return gcnew D3D12Fence(reinterpret_cast<ID3D12Fence*>(ppFence));
 		}
 		D3D12PipelineState^ CreateGraphicsPipelineState(D3D12GraphicsPipelineStateDesc pDesc)
 		{
 			void *ppPipelineState = nullptr;
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC pDesc2 = { 0 };
-			pDesc2.pRootSignature = pDesc.pRootSignature == nullptr ? nullptr : pDesc.pRootSignature->Wrapped;
+			pDesc2.pRootSignature = pDesc.pRootSignature == nullptr ? nullptr : pDesc.pRootSignature->WrappedInterface();
 			pin_ptr<byte> vs(&pDesc.VS[0]);
 			pDesc2.VS.pShaderBytecode = vs;
 			pDesc2.VS.BytecodeLength = pDesc.VS == nullptr ? 0 : pDesc.VS->Length;
@@ -788,7 +788,7 @@ namespace RenderToy
 			pDesc2.PrimitiveTopologyType = (D3D12_PRIMITIVE_TOPOLOGY_TYPE)pDesc.PrimitiveTopologyType;
 			pDesc2.NumRenderTargets = pDesc.NumRenderTargets;
 			pDesc2.RTVFormats[0] = (DXGI_FORMAT)pDesc.RTVFormats0;
-			TRY_D3D(pWrapped->CreateGraphicsPipelineState(&pDesc2, __uuidof(ID3D12PipelineState), &ppPipelineState));
+			TRY_D3D(WrappedInterface()->CreateGraphicsPipelineState(&pDesc2, __uuidof(ID3D12PipelineState), &ppPipelineState));
 			return gcnew D3D12PipelineState(reinterpret_cast<ID3D12PipelineState*>(ppPipelineState));
 		}
 		void CreateRenderTargetView(D3D12Resource ^pResource, D3D12RenderTargetViewDesc pDesc, D3D12CPUDescriptorHandle DestDescriptor)
@@ -800,13 +800,13 @@ namespace RenderToy
 			pDesc2.Texture2D.PlaneSlice = pDesc.Texture2D.PlaneSlice;
 			D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor2;
 			DestDescriptor2.ptr = (SIZE_T)DestDescriptor.ptr.ToPointer();
-			pWrapped->CreateRenderTargetView(pResource->Wrapped, &pDesc2, DestDescriptor2);
+			WrappedInterface()->CreateRenderTargetView(pResource->WrappedInterface(), &pDesc2, DestDescriptor2);
 		}
 		D3D12RootSignature^ CreateRootSignature(UINT nodeMask, cli::array<byte> ^pBlobWithRootSignature)
 		{
 			void* ppvRootSignature = nullptr;
 			pin_ptr<byte> pBlobWithRootSignatureM = &pBlobWithRootSignature[0];
-			TRY_D3D(pWrapped->CreateRootSignature(nodeMask, pBlobWithRootSignatureM, pBlobWithRootSignature->Length, __uuidof(ID3D12RootSignature), &ppvRootSignature));
+			TRY_D3D(WrappedInterface()->CreateRootSignature(nodeMask, pBlobWithRootSignatureM, pBlobWithRootSignature->Length, __uuidof(ID3D12RootSignature), &ppvRootSignature));
 			return gcnew D3D12RootSignature(reinterpret_cast<ID3D12RootSignature*>(ppvRootSignature));
 		}
 	};
@@ -820,7 +820,7 @@ namespace RenderToy
 		}
 		void EnableDebugLayer()
 		{
-			pWrapped->EnableDebugLayer();
+			WrappedInterface()->EnableDebugLayer();
 		}
 	};
 	#pragma endregion

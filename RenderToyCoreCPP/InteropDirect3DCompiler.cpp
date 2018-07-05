@@ -48,13 +48,13 @@ namespace RenderToy
 		}
 		System::IntPtr GetBufferPointer()
 		{
-			if (pWrapped == nullptr) return System::IntPtr(nullptr);
-			return System::IntPtr(pWrapped->GetBufferPointer());
+			if (WrappedInterface() == nullptr) return System::IntPtr(nullptr);
+			return System::IntPtr(WrappedInterface()->GetBufferPointer());
 		}
 		size_t GetBufferSize()
 		{
-			if (pWrapped == nullptr) return 0;
-			return pWrapped->GetBufferSize();
+			if (WrappedInterface() == nullptr) return 0;
+			return WrappedInterface()->GetBufferSize();
 		}
 	internal:
 		void SetWrappedPointer(ID3DBlob *pNewWrapped)

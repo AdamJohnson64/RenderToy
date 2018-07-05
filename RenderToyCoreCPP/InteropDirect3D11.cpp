@@ -313,7 +313,7 @@ namespace RenderToy
 		}
 		virtual ID3D11Resource* GetResource()
 		{
-			return Wrapped;
+			return WrappedInterface();
 		}
 	};
 	public ref class D3D11DepthStencilView : COMWrapper<ID3D11DepthStencilView>
@@ -337,10 +337,10 @@ namespace RenderToy
 		{
 		}
 	};
-	public ref class D3D11RasterizerState2 : COMWrapper<ID3D11RasterizerState2>
+	public ref class D3D11RasterizerState : COMWrapper<ID3D11RasterizerState>
 	{
 	public:
-		D3D11RasterizerState2(ID3D11RasterizerState2 *pObj) : COMWrapper(pObj)
+		D3D11RasterizerState(ID3D11RasterizerState *pObj) : COMWrapper(pObj)
 		{
 		}
 	};
@@ -358,10 +358,10 @@ namespace RenderToy
 		{
 		}
 	};
-	public ref class D3D11ShaderResourceView1 : COMWrapper<ID3D11ShaderResourceView1>
+	public ref class D3D11ShaderResourceView : COMWrapper<ID3D11ShaderResourceView>
 	{
 	public:
-		D3D11ShaderResourceView1(ID3D11ShaderResourceView1 *pObj) : COMWrapper(pObj)
+		D3D11ShaderResourceView(ID3D11ShaderResourceView *pObj) : COMWrapper(pObj)
 		{
 		}
 	};
@@ -373,7 +373,19 @@ namespace RenderToy
 		}
 		virtual ID3D11Resource* GetResource()
 		{
-			return Wrapped;
+			return WrappedInterface();
+		}
+		int GetWidth()
+		{
+			D3D11_TEXTURE2D_DESC desc;
+			WrappedInterface()->GetDesc(&desc);
+			return desc.Width;
+		}
+		int GetHeight()
+		{
+			D3D11_TEXTURE2D_DESC desc;
+			WrappedInterface()->GetDesc(&desc);
+			return desc.Height;
 		}
 	};
 	public ref class D3D11VertexShader : COMWrapper<ID3D11VertexShader>
@@ -383,64 +395,66 @@ namespace RenderToy
 		{
 		}
 	};
-	public ref class D3D11DeviceContext4 : COMWrapper<ID3D11DeviceContext4>
+	ref class D3D11DeviceContext4;
+	public ref class D3D11DeviceContext : COMWrapper<ID3D11DeviceContext>
 	{
 	public:
-		D3D11DeviceContext4(ID3D11DeviceContext4 *pObj) : COMWrapper(pObj)
+		D3D11DeviceContext(ID3D11DeviceContext *pObj) : COMWrapper(pObj)
 		{
 		}
+		D3D11DeviceContext4^ QueryInterfaceD3D11DeviceContext4();
 		void Begin()
 		{
-			pWrapped->Begin(nullptr);
+			WrappedInterface()->Begin(nullptr);
 		}
 		void ClearDepthStencilView(D3D11DepthStencilView ^pDepthStencilView, D3D11ClearFlag ClearFlags, FLOAT Depth, UINT8 Stencil)
 		{
-			pWrapped->ClearDepthStencilView(pDepthStencilView->Wrapped, (D3D11_CLEAR_FLAG)ClearFlags, Depth, Stencil);
+			WrappedInterface()->ClearDepthStencilView(pDepthStencilView->WrappedInterface(), (D3D11_CLEAR_FLAG)ClearFlags, Depth, Stencil);
 		}
 		void ClearRenderTargetView(D3D11RenderTargetView ^pRenderTargetView, float R, float G, float B, float A)
 		{
 			float ColorRGBA[4] = { R,G,B,A };
-			pWrapped->ClearRenderTargetView(pRenderTargetView == nullptr ? nullptr : pRenderTargetView->Wrapped, ColorRGBA);
+			WrappedInterface()->ClearRenderTargetView(pRenderTargetView == nullptr ? nullptr : pRenderTargetView->WrappedInterface(), ColorRGBA);
 		}
 		void CopyResource(D3D11Resource ^pDstResource, D3D11Resource ^pSrcResource)
 		{
-			pWrapped->CopyResource(pDstResource->GetResource(), pSrcResource->GetResource());
+			WrappedInterface()->CopyResource(pDstResource->GetResource(), pSrcResource->GetResource());
 		}
 		void Draw(UINT VertexCount, UINT StartVertexLocation)
 		{
-			pWrapped->Draw(VertexCount, StartVertexLocation);
+			WrappedInterface()->Draw(VertexCount, StartVertexLocation);
 		}
 		void End()
 		{
-			pWrapped->End(nullptr);
+			WrappedInterface()->End(nullptr);
 		}
 		void Flush()
 		{
-			pWrapped->Flush();
+			WrappedInterface()->Flush();
 		}
 		void IASetInputLayout(D3D11InputLayout ^pInputLayout)
 		{
-			pWrapped->IASetInputLayout(pInputLayout == nullptr ? nullptr : pInputLayout->Wrapped);
+			WrappedInterface()->IASetInputLayout(pInputLayout == nullptr ? nullptr : pInputLayout->WrappedInterface());
 		}
 		void IASetPrimitiveTopology(D3DPrimitiveTopology Topology)
 		{
-			pWrapped->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)Topology);
+			WrappedInterface()->IASetPrimitiveTopology((D3D11_PRIMITIVE_TOPOLOGY)Topology);
 		}
 		void IASetVertexBuffers(UINT StartSlot, cli::array<D3D11Buffer^> ^ppVertexBuffers, cli::array<UINT> ^pStrides, cli::array<UINT> ^pOffsets)
 		{
 			std::unique_ptr<ID3D11Buffer*[]> ppVertexBuffersM(new ID3D11Buffer*[ppVertexBuffers->Length]);
 			for (int i = 0; i < ppVertexBuffers->Length; ++i)
 			{
-				ppVertexBuffersM[i] = ppVertexBuffers[i]->Wrapped;
+				ppVertexBuffersM[i] = ppVertexBuffers[i]->WrappedInterface();
 			}
 			pin_ptr<UINT> pStridesM = &pStrides[0];
 			pin_ptr<UINT> pOffsetsM = &pOffsets[0];
-			pWrapped->IASetVertexBuffers(StartSlot, ppVertexBuffers->Length, &ppVertexBuffersM[0], &pStridesM[0], &pOffsetsM[0]);
+			WrappedInterface()->IASetVertexBuffers(StartSlot, ppVertexBuffers->Length, &ppVertexBuffersM[0], &pStridesM[0], &pOffsetsM[0]);
 		}
 		D3D11MappedSubresource Map(D3D11Resource ^pResource, UINT Subresource, D3D11Map MapType, D3D11MapFlag MapFlags)
 		{
 			D3D11_MAPPED_SUBRESOURCE pMappedResourceM = { 0 };
-			TRY_D3D(pWrapped->Map(pResource->GetResource(), Subresource, (D3D11_MAP)MapType, (UINT)MapFlags, &pMappedResourceM));
+			TRY_D3D(WrappedInterface()->Map(pResource->GetResource(), Subresource, (D3D11_MAP)MapType, (UINT)MapFlags, &pMappedResourceM));
 			D3D11MappedSubresource pMappedResource;
 			pMappedResource.pData = System::IntPtr(pMappedResourceM.pData);
 			pMappedResource.RowPitch = pMappedResourceM.RowPitch;
@@ -452,86 +466,103 @@ namespace RenderToy
 			std::unique_ptr<ID3D11RenderTargetView*[]> ppRenderTargetViewsM(new ID3D11RenderTargetView*[ppRenderTargetViews->Length]);
 			for (int i = 0; i < ppRenderTargetViews->Length; ++i)
 			{
-				ppRenderTargetViewsM[i] = ppRenderTargetViews[i] == nullptr ? nullptr : ppRenderTargetViews[i]->Wrapped;
+				ppRenderTargetViewsM[i] = ppRenderTargetViews[i] == nullptr ? nullptr : ppRenderTargetViews[i]->WrappedInterface();
 			}
-			pWrapped->OMSetRenderTargets(ppRenderTargetViews->Length, &ppRenderTargetViewsM[0], pDepthStencilView == nullptr ? nullptr : pDepthStencilView->Wrapped);
+			WrappedInterface()->OMSetRenderTargets(ppRenderTargetViews->Length, &ppRenderTargetViewsM[0], pDepthStencilView == nullptr ? nullptr : pDepthStencilView->WrappedInterface());
 		}
 		void PSSetSamplers(UINT StartSlot, cli::array<D3D11SamplerState^> ^ppSamplers)
 		{
 			std::unique_ptr<ID3D11SamplerState*[]> ppSamplersM(new ID3D11SamplerState*[ppSamplers->Length]);
 			for (int i = 0; i < ppSamplers->Length; ++i)
 			{
-				ppSamplersM[i] = ppSamplers[i] == nullptr ? nullptr : ppSamplers[i]->Wrapped;
+				ppSamplersM[i] = ppSamplers[i] == nullptr ? nullptr : ppSamplers[i]->WrappedInterface();
 			}
-			pWrapped->PSSetSamplers(StartSlot, ppSamplers->Length, &ppSamplersM[0]);
+			WrappedInterface()->PSSetSamplers(StartSlot, ppSamplers->Length, &ppSamplersM[0]);
 		}
-		void PSSetShaderResources(UINT StartSlot, cli::array<D3D11ShaderResourceView1^> ^ppShaderResourceViews)
+		void PSSetShaderResources(UINT StartSlot, cli::array<D3D11ShaderResourceView^> ^ppShaderResourceViews)
 		{
 			std::unique_ptr<ID3D11ShaderResourceView*[]> ppShaderResourceViewsM(new ID3D11ShaderResourceView*[ppShaderResourceViews->Length]);
 			for (int i = 0; i < ppShaderResourceViews->Length; ++i)
 			{
-				ppShaderResourceViewsM[i] = ppShaderResourceViews[i] == nullptr ? nullptr : ppShaderResourceViews[i]->Wrapped;
+				ppShaderResourceViewsM[i] = ppShaderResourceViews[i] == nullptr ? nullptr : ppShaderResourceViews[i]->WrappedInterface();
 			}
-			pWrapped->PSSetShaderResources(StartSlot, ppShaderResourceViews->Length, &ppShaderResourceViewsM[0]);
+			WrappedInterface()->PSSetShaderResources(StartSlot, ppShaderResourceViews->Length, &ppShaderResourceViewsM[0]);
 		}
 		void PSSetShader(D3D11PixelShader ^pPixelShader)
 		{
-			pWrapped->PSSetShader(pPixelShader == nullptr ? nullptr : pPixelShader->Wrapped, nullptr, 0);
+			WrappedInterface()->PSSetShader(pPixelShader == nullptr ? nullptr : pPixelShader->WrappedInterface(), nullptr, 0);
 		}
-		void RSSetState(D3D11RasterizerState2 ^ppRasterizerState)
+		void RSSetState(D3D11RasterizerState ^ppRasterizerState)
 		{
-			pWrapped->RSSetState(ppRasterizerState == nullptr ? nullptr : ppRasterizerState->Wrapped);
+			WrappedInterface()->RSSetState(ppRasterizerState == nullptr ? nullptr : ppRasterizerState->WrappedInterface());
 		}
 		void RSSetScissorRects(cli::array<D3D11Rect> ^pRects)
 		{
 			pin_ptr<D3D11Rect> pRectsM = &pRects[0];
-			pWrapped->RSSetScissorRects(pRects->Length, (D3D11_RECT*)&pRectsM[0]);
+			WrappedInterface()->RSSetScissorRects(pRects->Length, (D3D11_RECT*)&pRectsM[0]);
 		}
 		void RSSetViewports(cli::array<D3D11Viewport> ^pViewports)
 		{
 			pin_ptr<D3D11Viewport> pViewportsM = &pViewports[0];
-			pWrapped->RSSetViewports(pViewports->Length, (D3D11_VIEWPORT*)&pViewportsM[0]);
+			WrappedInterface()->RSSetViewports(pViewports->Length, (D3D11_VIEWPORT*)&pViewportsM[0]);
 		}
 		void Unmap(D3D11Resource ^pResource, UINT Subresource)
 		{
-			pWrapped->Unmap(pResource == nullptr ? nullptr : pResource->GetResource(), Subresource);
+			WrappedInterface()->Unmap(pResource == nullptr ? nullptr : pResource->GetResource(), Subresource);
 		}
 		void VSSetConstantBuffers(UINT StartSlot, cli::array<D3D11Buffer^> ^ppConstantBuffers)
 		{
 			std::unique_ptr<ID3D11Buffer*[]> ppConstantBuffersM(new ID3D11Buffer*[ppConstantBuffers->Length]);
 			for (int i = 0; i < ppConstantBuffers->Length; ++i)
 			{
-				ppConstantBuffersM[i] = ppConstantBuffers[i]->Wrapped;
+				ppConstantBuffersM[i] = ppConstantBuffers[i]->WrappedInterface();
 			}
-			pWrapped->VSSetConstantBuffers(StartSlot, ppConstantBuffers->Length, &ppConstantBuffersM[0]);
+			WrappedInterface()->VSSetConstantBuffers(StartSlot, ppConstantBuffers->Length, &ppConstantBuffersM[0]);
+		}
+		void VSSetShader(D3D11VertexShader ^pVertexShader)
+		{
+			WrappedInterface()->VSSetShader(pVertexShader == nullptr ? nullptr : pVertexShader->WrappedInterface(), nullptr, 0);
+		}
+	};
+	public ref class D3D11DeviceContext4 : public D3D11DeviceContext
+	{
+	public:
+		D3D11DeviceContext4(ID3D11DeviceContext4 *pObj) : D3D11DeviceContext(pObj)
+		{
+		}
+		ID3D11DeviceContext4* WrappedInterface()
+		{
+			return reinterpret_cast<ID3D11DeviceContext4*>(pWrapped);
 		}
 		void VSSetConstantBuffers1(UINT StartSlot, cli::array<D3D11Buffer^> ^ppConstantBuffers, cli::array<UINT> ^pFirstConstant, cli::array<UINT> ^pNumConstants)
 		{
 			std::unique_ptr<ID3D11Buffer*[]> ppConstantBuffersM(new ID3D11Buffer*[ppConstantBuffers->Length]);
 			for (int i = 0; i < ppConstantBuffers->Length; ++i)
 			{
-				ppConstantBuffersM[i] = ppConstantBuffers[i]->Wrapped;
+				ppConstantBuffersM[i] = ppConstantBuffers[i]->WrappedInterface();
 			}
 			pin_ptr<UINT> pFirstConstantM = &pFirstConstant[0];
 			pin_ptr<UINT> pNumConstantsM = &pNumConstants[0];
-			pWrapped->VSSetConstantBuffers1(StartSlot, ppConstantBuffers->Length, &ppConstantBuffersM[0], &pFirstConstantM[0], &pNumConstantsM[0]);
-		}
-		void VSSetShader(D3D11VertexShader ^pVertexShader)
-		{
-			pWrapped->VSSetShader(pVertexShader == nullptr ? nullptr : pVertexShader->Wrapped, nullptr, 0);
+			WrappedInterface()->VSSetConstantBuffers1(StartSlot, ppConstantBuffers->Length, &ppConstantBuffersM[0], &pFirstConstantM[0], &pNumConstantsM[0]);
 		}
 		void UpdateSubresource1(D3D11Resource ^pDstResource, UINT DstSubresource, System::Nullable<D3D11Box> pDstBox, System::Array ^pSrcData, UINT SrcRowPitch, UINT DstRowPitch, D3D11CopyFlags CopyFlags)
 		{
 			System::Runtime::InteropServices::GCHandle handle = System::Runtime::InteropServices::GCHandle::Alloc(pSrcData, System::Runtime::InteropServices::GCHandleType::Pinned);
 			D3D11_BOX *pDstBoxM = pDstBox.HasValue ? (D3D11_BOX*)&pDstBox.Value : nullptr;
-			pWrapped->UpdateSubresource1(pDstResource->GetResource(), DstSubresource, nullptr, handle.AddrOfPinnedObject().ToPointer(), SrcRowPitch, DstRowPitch, (UINT)CopyFlags);
+			WrappedInterface()->UpdateSubresource1(pDstResource->GetResource(), DstSubresource, nullptr, handle.AddrOfPinnedObject().ToPointer(), SrcRowPitch, DstRowPitch, (UINT)CopyFlags);
 			handle.Free();
 		}
 	};
-	public ref class D3D11Device5 : COMWrapper<ID3D11Device5>
+	D3D11DeviceContext4^ D3D11DeviceContext::QueryInterfaceD3D11DeviceContext4()
+	{
+		ID3D11DeviceContext4 *ppImmediateContext4 = nullptr;
+		TRY_D3D(WrappedInterface()->QueryInterface<ID3D11DeviceContext4>(&ppImmediateContext4));
+		return gcnew D3D11DeviceContext4(ppImmediateContext4);
+	}
+	public ref class D3D11Device : COMWrapper<ID3D11Device>
 	{
 	public:
-		D3D11Device5(ID3D11Device5 *pObj) : COMWrapper(pObj)
+		D3D11Device(ID3D11Device *pObj) : COMWrapper(pObj)
 		{
 		}
 		D3D11Buffer^ CreateBuffer(D3D11BufferDesc pDesc, System::Nullable<D3D11SubresourceData> pInitialData)
@@ -546,7 +577,7 @@ namespace RenderToy
 					pInitialDataM.pSysMem = gchandle.AddrOfPinnedObject().ToPointer();
 					pInitialDataM.SysMemPitch = pInitialData.Value.SysMemPitch;
 					pInitialDataM.SysMemSlicePitch = pInitialData.Value.SysMemSlicePitch;
-					TRY_D3D(pWrapped->CreateBuffer((D3D11_BUFFER_DESC*)&pDesc, &pInitialDataM, &ppBuffer));
+					TRY_D3D(WrappedInterface()->CreateBuffer((D3D11_BUFFER_DESC*)&pDesc, &pInitialDataM, &ppBuffer));
 				}
 				finally
 				{
@@ -555,7 +586,7 @@ namespace RenderToy
 			}
 			else
 			{
-				TRY_D3D(pWrapped->CreateBuffer((D3D11_BUFFER_DESC*)&pDesc, nullptr, &ppBuffer));
+				TRY_D3D(WrappedInterface()->CreateBuffer((D3D11_BUFFER_DESC*)&pDesc, nullptr, &ppBuffer));
 			}
 			return gcnew D3D11Buffer(ppBuffer);
 		}
@@ -563,10 +594,11 @@ namespace RenderToy
 		{
 			ID3D11DepthStencilView *ppDepthStencilView = nullptr;
 			D3D11_DEPTH_STENCIL_VIEW_DESC pDescM;
+			memset(&pDescM, 0, sizeof(pDescM));
 			pDescM.Format = (DXGI_FORMAT)pDesc.Format;
 			pDescM.ViewDimension = (D3D11_DSV_DIMENSION)pDesc.ViewDimension;
 			pDescM.Texture2D.MipSlice = pDesc.Texture2D.MipSlice;
-			TRY_D3D(pWrapped->CreateDepthStencilView(pResource->GetResource(), &pDescM, &ppDepthStencilView));
+			TRY_D3D(WrappedInterface()->CreateDepthStencilView(pResource->GetResource(), &pDescM, &ppDepthStencilView));
 			return gcnew D3D11DepthStencilView(ppDepthStencilView);
 		}
 		D3D11InputLayout^ CreateInputLayout(cli::array<D3D11InputElementDesc> ^pInputElementDescs, cli::array<byte> ^pShaderBytecodeWithInputSignature)
@@ -585,23 +617,21 @@ namespace RenderToy
 				pInputElementDescsM[i].InputSlotClass = (D3D11_INPUT_CLASSIFICATION)pInputElementDescs[i].InputSlotClass;
 				pInputElementDescsM[i].InstanceDataStepRate = pInputElementDescs[i].InstanceDataStepRate;
 			}
-			TRY_D3D(pWrapped->CreateInputLayout(&pInputElementDescsM[0], pInputElementDescs->Length, pShaderBytecodeWithInputSignatureM, pShaderBytecodeWithInputSignature->Length, &ppInputLayout));
+			TRY_D3D(WrappedInterface()->CreateInputLayout(&pInputElementDescsM[0], pInputElementDescs->Length, pShaderBytecodeWithInputSignatureM, pShaderBytecodeWithInputSignature->Length, &ppInputLayout));
 			return gcnew D3D11InputLayout(ppInputLayout);
 		}
 		D3D11PixelShader^ CreatePixelShader(cli::array<byte> ^pShaderBytecode)
 		{
 			ID3D11PixelShader *ppPixelShader = nullptr;
 			pin_ptr<byte> pShaderBytecodeM = &pShaderBytecode[0];
-			TRY_D3D(pWrapped->CreatePixelShader(pShaderBytecodeM, pShaderBytecode->Length, nullptr, &ppPixelShader));
+			TRY_D3D(WrappedInterface()->CreatePixelShader(pShaderBytecodeM, pShaderBytecode->Length, nullptr, &ppPixelShader));
 			return gcnew D3D11PixelShader(ppPixelShader);
 		}
-		D3D11RasterizerState2^ CreateRasterizerState(D3D11RasterizerDesc pDesc)
+		D3D11RasterizerState^ CreateRasterizerState(D3D11RasterizerDesc pDesc)
 		{
 			ID3D11RasterizerState *ppRasterizerState = nullptr;
-			TRY_D3D(pWrapped->CreateRasterizerState((D3D11_RASTERIZER_DESC*)&pDesc, &ppRasterizerState));
-			ID3D11RasterizerState2 *ppRasterizerState2 = nullptr;
-			TRY_D3D(ppRasterizerState->QueryInterface<ID3D11RasterizerState2>(&ppRasterizerState2));
-			return gcnew D3D11RasterizerState2(ppRasterizerState2);
+			TRY_D3D(WrappedInterface()->CreateRasterizerState((D3D11_RASTERIZER_DESC*)&pDesc, &ppRasterizerState));
+			return gcnew D3D11RasterizerState(ppRasterizerState);
 		}
 		D3D11RenderTargetView^ CreateRenderTargetView(D3D11Resource ^pResource, D3D11RenderTargetViewDesc pDesc)
 		{
@@ -610,16 +640,16 @@ namespace RenderToy
 			pDescM.Format = (DXGI_FORMAT)pDesc.Format;
 			pDescM.ViewDimension = (D3D11_RTV_DIMENSION)pDesc.ViewDimension;
 			pDescM.Texture2D.MipSlice = pDesc.Texture2D.MipSlice;
-			TRY_D3D(pWrapped->CreateRenderTargetView(pResource->GetResource(), &pDescM, &ppRTView));
+			TRY_D3D(WrappedInterface()->CreateRenderTargetView(pResource->GetResource(), &pDescM, &ppRTView));
 			return gcnew D3D11RenderTargetView(ppRTView);
 		}
 		D3D11SamplerState^ CreateSamplerState(D3D11SamplerDesc pSamplerDesc)
 		{
 			ID3D11SamplerState *ppSamplerState = nullptr;
-			TRY_D3D(pWrapped->CreateSamplerState((D3D11_SAMPLER_DESC*)&pSamplerDesc, &ppSamplerState));
+			TRY_D3D(WrappedInterface()->CreateSamplerState((D3D11_SAMPLER_DESC*)&pSamplerDesc, &ppSamplerState));
 			return gcnew D3D11SamplerState(ppSamplerState);
 		}
-		D3D11ShaderResourceView1^ CreateShaderResourceView(D3D11Resource ^pResource, D3D11ShaderResourceViewDesc pDesc)
+		D3D11ShaderResourceView^ CreateShaderResourceView(D3D11Resource ^pResource, D3D11ShaderResourceViewDesc pDesc)
 		{
 			ID3D11ShaderResourceView *ppSRView = nullptr;
 			D3D11_SHADER_RESOURCE_VIEW_DESC pDescM;
@@ -627,10 +657,8 @@ namespace RenderToy
 			pDescM.ViewDimension = (D3D11_SRV_DIMENSION)pDesc.ViewDimension;
 			pDescM.Texture2D.MipLevels = pDesc.Texture2D.MipLevels;
 			pDescM.Texture2D.MostDetailedMip = pDesc.Texture2D.MostDetailedMip;
-			TRY_D3D(pWrapped->CreateShaderResourceView(pResource->GetResource(), &pDescM, &ppSRView));
-			ID3D11ShaderResourceView1 *ppSRView1 = nullptr;
-			TRY_D3D(ppSRView->QueryInterface<ID3D11ShaderResourceView1>(&ppSRView1));
-			return gcnew D3D11ShaderResourceView1(ppSRView1);
+			TRY_D3D(WrappedInterface()->CreateShaderResourceView(pResource->GetResource(), &pDescM, &ppSRView));
+			return gcnew D3D11ShaderResourceView(ppSRView);
 		}
 		D3D11Texture2D^ CreateTexture2D(D3D11Texture2DDesc pDesc, System::Nullable<D3D11SubresourceData> pInitialData)
 		{
@@ -644,7 +672,7 @@ namespace RenderToy
 					pInitialDataM.pSysMem = gchandle.AddrOfPinnedObject().ToPointer();
 					pInitialDataM.SysMemPitch = pInitialData.Value.SysMemPitch;
 					pInitialDataM.SysMemSlicePitch = pInitialData.Value.SysMemSlicePitch;
-					TRY_D3D(pWrapped->CreateTexture2D((D3D11_TEXTURE2D_DESC*)&pDesc, &pInitialDataM, &ppTexture2D));
+					TRY_D3D(WrappedInterface()->CreateTexture2D((D3D11_TEXTURE2D_DESC*)&pDesc, &pInitialDataM, &ppTexture2D));
 				}
 				finally
 				{
@@ -653,7 +681,7 @@ namespace RenderToy
 			}
 			else
 			{
-				TRY_D3D(pWrapped->CreateTexture2D((D3D11_TEXTURE2D_DESC*)&pDesc, nullptr, &ppTexture2D));
+				TRY_D3D(WrappedInterface()->CreateTexture2D((D3D11_TEXTURE2D_DESC*)&pDesc, nullptr, &ppTexture2D));
 			}
 			return gcnew D3D11Texture2D(ppTexture2D);
 		}
@@ -661,17 +689,14 @@ namespace RenderToy
 		{
 			ID3D11VertexShader *ppVertexShader = nullptr;
 			pin_ptr<byte> pShaderBytecodeM = &pShaderBytecode[0];
-			TRY_D3D(pWrapped->CreateVertexShader(pShaderBytecodeM, pShaderBytecode->Length, nullptr, &ppVertexShader));
+			TRY_D3D(WrappedInterface()->CreateVertexShader(pShaderBytecodeM, pShaderBytecode->Length, nullptr, &ppVertexShader));
 			return gcnew D3D11VertexShader(ppVertexShader);
 		}
-		D3D11DeviceContext4^ GetImmediateContext()
+		D3D11DeviceContext^ GetImmediateContext()
 		{
 			ID3D11DeviceContext *ppImmediateContext = nullptr;
-			pWrapped->GetImmediateContext(&ppImmediateContext);
-			ID3D11DeviceContext4 *ppImmediateContext4 = nullptr;
-			TRY_D3D(ppImmediateContext->QueryInterface<ID3D11DeviceContext4>(&ppImmediateContext4));
-			ppImmediateContext->Release();
-			return gcnew D3D11DeviceContext4(ppImmediateContext4);
+			WrappedInterface()->GetImmediateContext(&ppImmediateContext);
+			return gcnew D3D11DeviceContext(ppImmediateContext);
 		}
 	};
 	public ref class DXGISwapChain : COMWrapper<IDXGISwapChain>
@@ -683,12 +708,12 @@ namespace RenderToy
 		D3D11Texture2D^ GetBuffer(UINT Buffer)
 		{
 			void *ppSurface = nullptr;
-			TRY_D3D(pWrapped->GetBuffer(Buffer, __uuidof(ID3D11Texture2D), &ppSurface));
+			TRY_D3D(WrappedInterface()->GetBuffer(Buffer, __uuidof(ID3D11Texture2D), &ppSurface));
 			return gcnew D3D11Texture2D(reinterpret_cast<ID3D11Texture2D*>(ppSurface));
 		}
 		void Present()
 		{
-			HRESULT hResult = pWrapped->Present(0, 0);
+			HRESULT hResult = WrappedInterface()->Present(0, 0);
 			if (hResult == DXGI_STATUS_OCCLUDED) return;
 			TRY_D3D(hResult);
 		}
@@ -696,17 +721,14 @@ namespace RenderToy
 	public ref class Direct3D11
 	{
 	public:
-		static D3D11Device5^ D3D11CreateDevice()
+		static D3D11Device^ D3D11CreateDevice()
 		{
 			ID3D11Device *ppDevice = nullptr;
 			D3D_FEATURE_LEVEL featurelevel = D3D_FEATURE_LEVEL_12_1;
 			TRY_D3D(::D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, &featurelevel, 1, D3D11_SDK_VERSION, &ppDevice, nullptr, nullptr));
-			ID3D11Device5 *ppDevice5 = nullptr;
-			TRY_D3D(ppDevice->QueryInterface<ID3D11Device5>(&ppDevice5));
-			ppDevice->Release();
-			return gcnew D3D11Device5(ppDevice5);
+			return gcnew D3D11Device(ppDevice);
 		}
-		static D3D11Device5^ D3D11CreateDeviceAndSwapChain(System::IntPtr OutputWindow, DXGISwapChain ^%swapchain)
+		static D3D11Device^ D3D11CreateDeviceAndSwapChain(System::IntPtr OutputWindow, DXGISwapChain ^%swapchain)
 		{
 			ID3D11Device *ppDevice = nullptr;
 			D3D_FEATURE_LEVEL featurelevel = D3D_FEATURE_LEVEL_12_1;
@@ -726,11 +748,8 @@ namespace RenderToy
 			swapchaindesc.Windowed = true;
 			IDXGISwapChain *ppSwapChain = nullptr;
 			TRY_D3D(::D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, &featurelevel, 1, D3D11_SDK_VERSION, &swapchaindesc, &ppSwapChain, &ppDevice, nullptr, nullptr));
-			ID3D11Device5 *ppDevice5 = nullptr;
-			TRY_D3D(ppDevice->QueryInterface<ID3D11Device5>(&ppDevice5));
-			ppDevice->Release();
 			swapchain = gcnew DXGISwapChain(ppSwapChain);
-			return gcnew D3D11Device5(ppDevice5);
+			return gcnew D3D11Device(ppDevice);
 		}
 	};
 }

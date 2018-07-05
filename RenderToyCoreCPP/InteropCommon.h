@@ -169,23 +169,30 @@ namespace RenderToy
 		UINT Count;
 		UINT Quality;
 	};
-	template <typename T>
-	public ref class COMWrapper
+	public ref class COMWrapperBase
 	{
 	public:
-		COMWrapper()
+		property System::IntPtr ManagedPtr
+		{
+			System::IntPtr get()
+			{
+				return System::IntPtr(pWrapped);
+			}
+		}
+	protected:
+		COMWrapperBase()
 		{
 			this->pWrapped = nullptr;
 		}
-		COMWrapper(T* pWrapped)
+		COMWrapperBase(IUnknown* pWrapped)
 		{
 			this->pWrapped = pWrapped;
 		}
-		!COMWrapper()
+		!COMWrapperBase()
 		{
 			Destroy();
 		}
-		~COMWrapper()
+		~COMWrapperBase()
 		{
 			Destroy();
 		}
@@ -197,21 +204,21 @@ namespace RenderToy
 				pWrapped = nullptr;
 			}
 		}
-		property T* Wrapped
+		IUnknown *pWrapped;
+	};
+	template <typename T>
+	public ref class COMWrapper : public COMWrapperBase
+	{
+	public:
+		COMWrapper() : COMWrapperBase(nullptr)
 		{
-			T* get()
-			{
-				return pWrapped;
-			}
 		}
-		property System::IntPtr ManagedPtr
+		COMWrapper(T* pWrapped) : COMWrapperBase(pWrapped)
 		{
-			System::IntPtr get()
-			{
-				return System::IntPtr(pWrapped);
-			}
 		}
-	protected:
-		T * pWrapped;
+		inline T* WrappedInterface()
+		{
+			return reinterpret_cast<T*>(pWrapped);
+		}
 	};
 }
