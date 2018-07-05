@@ -139,7 +139,7 @@ namespace RenderToy.WPF
             });
         }
         readonly static string DX11TextureView = "DX11TextureView";
-        D3D11ShaderResourceView1 CreateTextureView(IMaterial material, IMaterial missing)
+        D3D11ShaderResourceView CreateTextureView(IMaterial material, IMaterial missing)
         {
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
@@ -222,9 +222,9 @@ namespace RenderToy.WPF
             RenderDX();
             drawingContext.DrawImage(wpfFrontBuffer, new Rect(0, 0, ActualWidth, ActualHeight));
         }
-        static D3D11Device5 d3d11Device;
+        static D3D11Device d3d11Device;
         static D3D11InputLayout d3d11InputLayout;
-        static D3D11RasterizerState2 d3d11RasterizerState;
+        static D3D11RasterizerState d3d11RasterizerState;
         static D3D11SamplerState d3d11SamplerState;
         D3D11VertexShader d3d11VertexShader;
         D3D11PixelShader d3d11PixelShader;
