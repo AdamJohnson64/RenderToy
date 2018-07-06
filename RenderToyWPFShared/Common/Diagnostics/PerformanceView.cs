@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Windows;
@@ -21,21 +22,22 @@ namespace RenderToy.WPF
         {
             if (eventData.EventId == RenderToyETWEventSource.RenderBegin)
             {
-                datetimestart = DateTime.Now;
+                stopwatch.Restart();
             }
             if (eventData.EventId == RenderToyETWEventSource.RenderEnd)
             {
-                datetimeend = DateTime.Now;
+                stopwatch.Stop();
                 InvalidateVisual();
             }
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            TimeSpan timespan = datetimeend.Subtract(datetimestart);
-            var formattedtext = new FormattedText(timespan.TotalMilliseconds.ToString("0.0") + "ms (" + (1000 / timespan.TotalMilliseconds).ToString("0.0") + " FPS)", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Green);
+            double milliseconds = (double)stopwatch.ElapsedTicks / Stopwatch.Frequency * 1000.0;
+            var formattedtext = new FormattedText(milliseconds.ToString("0.0") + "ms (" + (1000.0 / milliseconds).ToString("0.0") + " FPS)", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Green);
             drawingContext.DrawText(formattedtext, new Point(0, 0));
         }
         RenderToyETWListener listener = new RenderToyETWListener();
+        Stopwatch stopwatch = new Stopwatch();
         DateTime datetimestart;
         DateTime datetimeend;
     }

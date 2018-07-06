@@ -10,11 +10,14 @@ using RenderToy.Shaders;
 using RenderToy.Textures;
 using RenderToy.Utility;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
@@ -78,15 +81,19 @@ namespace RenderToy.WPF
                 d3d11SamplerState = d3d11Device.CreateSamplerState(pSamplerDesc);
             }
         }
+        public ViewDirectX11()
+        {
+            d3d11constantbufferCPU = new byte[256 * 1024];
+            d3d11constantbufferGPU = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, null);
+        }
         void RenderDX()
         {
             if (d3d11VertexShader == null || d3d11PixelShader == null || d3d11DepthStencilView == null || d3d11RenderTargetView == null) return;
             RenderToyETWEventSource.Default.BeginFrame();
-            d3dimage.Lock();
             var contextold = d3d11Device.GetImmediateContext();
             var context = contextold.QueryInterfaceD3D11DeviceContext4();
             context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
-            context.ClearRenderTargetView(d3d11RenderTargetView, 1, 0, 0, 1);
+            context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
             context.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
             context.IASetInputLayout(d3d11InputLayout);
             context.VSSetShader(d3d11VertexShader);
@@ -94,21 +101,49 @@ namespace RenderToy.WPF
             context.RSSetState(d3d11RasterizerState);
             int width = d3d11Texture2D_RT.GetWidth();
             int height = d3d11Texture2D_RT.GetHeight();
-            context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = d3d11Texture2D_RT.GetWidth(), bottom = d3d11Texture2D_RT.GetHeight() } });
-            context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = d3d11Texture2D_RT.GetWidth(), Height = d3d11Texture2D_RT.GetHeight(), MinDepth = 0, MaxDepth = 1 } });
+            context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = width, bottom = height } });
+            context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = width, Height = height, MinDepth = 0, MaxDepth = 1 } });
             context.OMSetRenderTargets(new[] { d3d11RenderTargetView }, d3d11DepthStencilView);
+            context.PSSetSamplers(0, new[] { d3d11SamplerState });
+
             ////////////////////////////////////////////////////////////////////////////////
             // Draw the scene.
             var transformViewProjection = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            foreach (var transformedobject in TransformedObject.Enumerate(AttachedView.GetScene(this)))
+            // Assemble the scene parts.
+            var scene = TransformedObject.Enumerate(AttachedView.GetScene(this)).ToArray();
+            // We're collecting constant buffers because DX11 hates to do actual work.
+            int constantbufferoffset = 0;
+            List<uint> offsets = new List<uint>();
+            foreach (var transformedobject in scene)
             {
                 var transformModel = transformedobject.Transform;
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (vertexbuffer == null) continue;
-                var d3d11ConstantBuffer = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)System.Math.Max(4 * 16, 128), Usage = D3D11Usage.Immutable, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16}, new D3D11SubresourceData { pSysMem = DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), SysMemPitch = 0, SysMemSlicePitch = 0 });
-                context.VSSetConstantBuffers(0, new[] { d3d11ConstantBuffer });
-                context.PSSetSamplers(0, new[] { d3d11SamplerState });
+                offsets.Add((uint)constantbufferoffset);
+                Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, constantbufferoffset, 4 * 16);
+                constantbufferoffset += 4 * 16;
+                // Pad up to 256 bytes.
+                if ((constantbufferoffset & 0xFF) != 0)
+                {
+                    constantbufferoffset = constantbufferoffset & (~0xFF);
+                    constantbufferoffset += 256;
+                }
+            }
+            context.UpdateSubresource1(d3d11constantbufferGPU, 0, new D3D11Box { right = (uint)constantbufferoffset }, d3d11constantbufferCPU, 0, 0, D3D11CopyFlags.Discard);
+            ////////////////////////////////////////////////////////////////////////////////
+            // Start drawing.
+            int constantbufferindex = 0;
+            var constantoffset = new uint[1];
+            var constantsize = new uint[1];
+            foreach (var transformedobject in scene)
+            {
+                var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
+                if (vertexbuffer == null) continue;
+                constantoffset[0] = offsets[constantbufferindex] / 16;
+                constantsize[0] = 4 * 16;
+                context.VSSetConstantBuffers1(0, new[] { d3d11constantbufferGPU }, constantoffset, constantsize);
+                ++constantbufferindex;
                 var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
                 context.PSSetShaderResources(0, new[]
                 {
@@ -121,10 +156,10 @@ namespace RenderToy.WPF
                 context.Draw(vertexbuffer.vertexCount, 0);
             }
             context.Flush();
-            d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3d9backbuffer.ManagedPtr);
+            RenderToyETWEventSource.Default.EndFrame();
+            d3dimage.Lock();
             d3dimage.AddDirtyRect(new Int32Rect(0, 0, d3d11Texture2D_RT.GetWidth(), d3d11Texture2D_RT.GetHeight()));
             d3dimage.Unlock();
-            RenderToyETWEventSource.Default.EndFrame();
         }
         void SetVertexShader(byte[] bytecode)
         {
@@ -228,6 +263,9 @@ namespace RenderToy.WPF
             var d3d11Texture2DDesc_DS = new D3D11Texture2DDesc { Width = (uint)availableSize.Width, Height = (uint)availableSize.Height, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.D32_Float, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.DepthStencil, CPUAccessFlags = 0 };
             d3d11Texture2D_DS = d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS, null);
             d3d11DepthStencilView = d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS, new D3D11DepthStencilViewDesc { Format = DXGIFormat.D32_Float, ViewDimension = D3D11DsvDimension.Texture2D, Texture2D = new D3D11Tex2DDsv { MipSlice = 0 } });
+            d3dimage.Lock();
+            d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3d9backbuffer.ManagedPtr);
+            d3dimage.Unlock();
             RenderDX();
             return base.MeasureOverride(availableSize);
         }
@@ -246,6 +284,8 @@ namespace RenderToy.WPF
         static D3D11InputLayout d3d11InputLayout;
         static D3D11RasterizerState d3d11RasterizerState;
         static D3D11SamplerState d3d11SamplerState;
+        byte[] d3d11constantbufferCPU;
+        D3D11Buffer d3d11constantbufferGPU;
         D3D11VertexShader d3d11VertexShader;
         D3D11PixelShader d3d11PixelShader;
         D3D11Texture2D d3d11Texture2D_RT;
