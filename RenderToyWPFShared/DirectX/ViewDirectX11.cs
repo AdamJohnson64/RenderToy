@@ -77,7 +77,7 @@ namespace RenderToy.WPF
                 pSamplerDesc.BorderColor2 = 0;
                 pSamplerDesc.BorderColor3 = 0;
                 pSamplerDesc.MinLOD = 0;
-                pSamplerDesc.MaxLOD = 0;
+                pSamplerDesc.MaxLOD = float.MaxValue;
                 d3d11SamplerState = d3d11Device.CreateSamplerState(pSamplerDesc);
             }
         }
@@ -199,28 +199,34 @@ namespace RenderToy.WPF
                 var astexture = material as ITexture;
                 if (astexture != null)
                 {
+                    List<D3D11SubresourceData> pInitialData = new List<D3D11SubresourceData>();
+                    for (int miplevel = 0; miplevel < astexture.GetTextureLevelCount(); ++miplevel)
+                    {
+                        var level = astexture.GetTextureLevel(miplevel);
+                        if (level == null) return null;
+                        D3D11SubresourceData FillpInitialData;
+                        byte[] texturedata = new byte[4 * level.GetImageWidth() * level.GetImageHeight()];
+                        MaterialBitmapConverter.ConvertToBitmap(level, Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
+                        FillpInitialData.pSysMem = texturedata;
+                        FillpInitialData.SysMemPitch = (uint)(4 * level.GetImageWidth());
+                        FillpInitialData.SysMemSlicePitch = (uint)(4 * level.GetImageWidth() * level.GetImageHeight());
+                        pInitialData.Add(FillpInitialData);
+                    }
                     var level0 = astexture.GetTextureLevel(0);
-                    if (level0 == null) return null;
                     D3D11Texture2DDesc desc = new D3D11Texture2DDesc();
                     desc.Width = (uint)level0.GetImageWidth();
                     desc.Height = (uint)level0.GetImageHeight();
-                    desc.MipLevels = 1;
+                    desc.MipLevels = (uint)pInitialData.Count;
                     desc.ArraySize = 1;
                     desc.Format = DXGIFormat.B8G8R8A8_Unorm;
                     desc.SampleDesc.Count = 1;
                     desc.Usage = D3D11Usage.Immutable;
                     desc.BindFlags = D3D11BindFlag.ShaderResource;
-                    D3D11SubresourceData pInitialData;
-                    byte[] texturedata = new byte[4 * level0.GetImageWidth() * level0.GetImageHeight()];
-                    MaterialBitmapConverter.ConvertToBitmap(level0, Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), level0.GetImageWidth(), level0.GetImageHeight(), 4 * level0.GetImageWidth());
-                    pInitialData.pSysMem = texturedata;
-                    pInitialData.SysMemPitch = (uint)(4 * level0.GetImageWidth());
-                    pInitialData.SysMemSlicePitch = (uint)(4 * level0.GetImageWidth() * level0.GetImageHeight());
-                    var texture = d3d11Device.CreateTexture2D(desc, pInitialData);
+                    var texture = d3d11Device.CreateTexture2D(desc, pInitialData.ToArray());
                     D3D11ShaderResourceViewDesc vdesc;
                     vdesc.Format = DXGIFormat.Unknown;
                     vdesc.ViewDimension = D3DSrvDimension.Texture2D;
-                    vdesc.Texture2D.MipLevels = 1;
+                    vdesc.Texture2D.MipLevels = (uint)pInitialData.Count;
                     vdesc.Texture2D.MostDetailedMip = 0;
                     var srview = d3d11Device.CreateShaderResourceView(texture, vdesc);
                     return srview;
@@ -243,7 +249,7 @@ namespace RenderToy.WPF
                     pInitialData.pSysMem = texturedata;
                     pInitialData.SysMemPitch = (uint)(4 * asimage.GetImageWidth());
                     pInitialData.SysMemSlicePitch = (uint)(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
-                    var texture = d3d11Device.CreateTexture2D(desc, pInitialData);
+                    var texture = d3d11Device.CreateTexture2D(desc, new[] { pInitialData });
                     D3D11ShaderResourceViewDesc vdesc;
                     vdesc.Format = DXGIFormat.Unknown;
                     vdesc.ViewDimension = D3DSrvDimension.Texture2D;

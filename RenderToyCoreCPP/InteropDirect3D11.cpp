@@ -666,28 +666,37 @@ namespace RenderToy
 			TRY_D3D(WrappedInterface()->CreateShaderResourceView(pResource->GetResource(), &pDescM, &ppSRView));
 			return gcnew D3D11ShaderResourceView(ppSRView);
 		}
-		D3D11Texture2D^ CreateTexture2D(D3D11Texture2DDesc pDesc, System::Nullable<D3D11SubresourceData> pInitialData)
+		D3D11Texture2D^ CreateTexture2D(D3D11Texture2DDesc pDesc, cli::array<D3D11SubresourceData> ^pInitialData)
 		{
 			ID3D11Texture2D *ppTexture2D = nullptr;
-			if (pInitialData.HasValue)
+			if (pInitialData == nullptr)
 			{
-				D3D11_SUBRESOURCE_DATA pInitialDataM = { 0 };
-				auto gchandle = System::Runtime::InteropServices::GCHandle::Alloc(pInitialData.Value.pSysMem, System::Runtime::InteropServices::GCHandleType::Pinned);
-				try
-				{
-					pInitialDataM.pSysMem = gchandle.AddrOfPinnedObject().ToPointer();
-					pInitialDataM.SysMemPitch = pInitialData.Value.SysMemPitch;
-					pInitialDataM.SysMemSlicePitch = pInitialData.Value.SysMemSlicePitch;
-					TRY_D3D(WrappedInterface()->CreateTexture2D((D3D11_TEXTURE2D_DESC*)&pDesc, &pInitialDataM, &ppTexture2D));
-				}
-				finally
-				{
-					gchandle.Free();
-				}
+				TRY_D3D(WrappedInterface()->CreateTexture2D((D3D11_TEXTURE2D_DESC*)&pDesc, nullptr, &ppTexture2D));
 			}
 			else
 			{
-				TRY_D3D(WrappedInterface()->CreateTexture2D((D3D11_TEXTURE2D_DESC*)&pDesc, nullptr, &ppTexture2D));
+				std::unique_ptr<D3D11_SUBRESOURCE_DATA[]> pInitialDataM(new D3D11_SUBRESOURCE_DATA[pDesc.MipLevels]);
+				auto trackhandles = gcnew System::Collections::Generic::List<System::Runtime::InteropServices::GCHandle>();
+				try
+				{
+					for (int miplevel = 0; miplevel < pDesc.MipLevels; ++miplevel)
+					{
+						auto initialdata = pInitialData[miplevel];
+						auto gchandle = System::Runtime::InteropServices::GCHandle::Alloc(initialdata.pSysMem, System::Runtime::InteropServices::GCHandleType::Pinned);
+						trackhandles->Add(gchandle);
+						pInitialDataM[miplevel].pSysMem = gchandle.AddrOfPinnedObject().ToPointer();
+						pInitialDataM[miplevel].SysMemPitch = initialdata.SysMemPitch;
+						pInitialDataM[miplevel].SysMemSlicePitch = initialdata.SysMemSlicePitch;
+					}
+					TRY_D3D(WrappedInterface()->CreateTexture2D((D3D11_TEXTURE2D_DESC*)&pDesc, pInitialDataM.get(), &ppTexture2D));
+				}
+				finally
+				{
+					for (int alllocks = 0; alllocks < trackhandles->Count; ++alllocks)
+					{
+						trackhandles[alllocks].Free();
+					}
+				}
 			}
 			return gcnew D3D11Texture2D(ppTexture2D);
 		}
