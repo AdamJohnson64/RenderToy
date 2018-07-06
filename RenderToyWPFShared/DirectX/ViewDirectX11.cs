@@ -89,9 +89,11 @@ namespace RenderToy.WPF
         void RenderDX()
         {
             if (d3d11VertexShader == null || d3d11PixelShader == null || d3d11DepthStencilView == null || d3d11RenderTargetView == null) return;
-            RenderToyETWEventSource.Default.BeginFrame();
             var contextold = d3d11Device.GetImmediateContext();
             var context = contextold.QueryInterfaceD3D11DeviceContext4();
+            int width = d3d11Texture2D_RT.GetWidth();
+            int height = d3d11Texture2D_RT.GetHeight();
+            RenderToyETWEventSource.Default.BeginFrame();
             context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
             context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
             context.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
@@ -99,13 +101,10 @@ namespace RenderToy.WPF
             context.VSSetShader(d3d11VertexShader);
             context.PSSetShader(d3d11PixelShader);
             context.RSSetState(d3d11RasterizerState);
-            int width = d3d11Texture2D_RT.GetWidth();
-            int height = d3d11Texture2D_RT.GetHeight();
             context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = width, bottom = height } });
             context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = width, Height = height, MinDepth = 0, MaxDepth = 1 } });
             context.OMSetRenderTargets(new[] { d3d11RenderTargetView }, d3d11DepthStencilView);
             context.PSSetSamplers(0, new[] { d3d11SamplerState });
-
             ////////////////////////////////////////////////////////////////////////////////
             // Draw the scene.
             var transformViewProjection = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
@@ -136,13 +135,14 @@ namespace RenderToy.WPF
             int constantbufferindex = 0;
             var constantoffset = new uint[1];
             var constantsize = new uint[1];
+            var constantbufferlist = new[] { d3d11constantbufferGPU };
             foreach (var transformedobject in scene)
             {
                 var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
                 if (vertexbuffer == null) continue;
                 constantoffset[0] = offsets[constantbufferindex] / 16;
                 constantsize[0] = 4 * 16;
-                context.VSSetConstantBuffers1(0, new[] { d3d11constantbufferGPU }, constantoffset, constantsize);
+                context.VSSetConstantBuffers1(0, constantbufferlist, constantoffset, constantsize);
                 ++constantbufferindex;
                 var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
                 context.PSSetShaderResources(0, new[]
