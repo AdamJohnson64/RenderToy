@@ -9,26 +9,36 @@ using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using RenderToy.Textures;
 using RenderToy.Utility;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
     class ViewDirectX11 : FrameworkElement
     {
-        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11VS, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11VS, OnVertexShaderChanged));
         public byte[] VertexShader
         {
             get { return (byte[])GetValue(VertexShaderProperty); }
             set { SetValue(VertexShaderProperty, value); }
         }
-        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11PS, FrameworkPropertyMetadataOptions.AffectsRender));
+        private static void OnVertexShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            ((ViewDirectX11)sender).SetVertexShader((byte[])e.NewValue);
+        }
+        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11PS, OnPixelShaderChanged));
         public byte[] PixelShader
         {
             get { return (byte[])GetValue(PixelShaderProperty); }
             set { SetValue(PixelShaderProperty, value); }
+        }
+        private static void OnPixelShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            ((ViewDirectX11)sender).SetPixelShader((byte[])e.NewValue);
         }
         static ViewDirectX11()
         {
@@ -40,7 +50,6 @@ namespace RenderToy.WPF
             {
                 ((ViewDirectX11)s).RenderDX();
             }));
-            d3d11Device = Direct3D11.D3D11CreateDevice();
             d3d11InputLayout = d3d11Device.CreateInputLayout(new[]
             {
                 new D3D11InputElementDesc { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 0, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
@@ -71,20 +80,22 @@ namespace RenderToy.WPF
         }
         void RenderDX()
         {
-            if (wpfFrontBuffer == null || VertexShader == null || PixelShader == null || !IsVisible) return;
+            if (d3d11VertexShader == null || d3d11PixelShader == null || d3d11DepthStencilView == null || d3d11RenderTargetView == null) return;
             RenderToyETWEventSource.Default.BeginFrame();
-            d3d11VertexShader = d3d11Device.CreateVertexShader(VertexShader);
-            d3d11PixelShader = d3d11Device.CreatePixelShader(PixelShader);
-            var context = d3d11Device.GetImmediateContext();
+            d3dimage.Lock();
+            var contextold = d3d11Device.GetImmediateContext();
+            var context = contextold.QueryInterfaceD3D11DeviceContext4();
             context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
-            context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
+            context.ClearRenderTargetView(d3d11RenderTargetView, 1, 0, 0, 1);
             context.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
             context.IASetInputLayout(d3d11InputLayout);
             context.VSSetShader(d3d11VertexShader);
             context.PSSetShader(d3d11PixelShader);
             context.RSSetState(d3d11RasterizerState);
-            context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = wpfFrontBuffer.PixelWidth, bottom = wpfFrontBuffer.PixelHeight } });
-            context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = wpfFrontBuffer.PixelWidth, Height = wpfFrontBuffer.PixelHeight, MinDepth = 0, MaxDepth = 1 } });
+            int width = d3d11Texture2D_RT.GetWidth();
+            int height = d3d11Texture2D_RT.GetHeight();
+            context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = d3d11Texture2D_RT.GetWidth(), bottom = d3d11Texture2D_RT.GetHeight() } });
+            context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = d3d11Texture2D_RT.GetWidth(), Height = d3d11Texture2D_RT.GetHeight(), MinDepth = 0, MaxDepth = 1 } });
             context.OMSetRenderTargets(new[] { d3d11RenderTargetView }, d3d11DepthStencilView);
             ////////////////////////////////////////////////////////////////////////////////
             // Draw the scene.
@@ -109,14 +120,19 @@ namespace RenderToy.WPF
                 context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
                 context.Draw(vertexbuffer.vertexCount, 0);
             }
-            ////////////////////////////////////////////////////////////////////////////////
-            // Copy back the Render Target.
-            context.CopyResource(d3d11Texture2D_Copyback, d3d11Texture2D_RT);
             context.Flush();
-            var d3d11Map = context.Map(d3d11Texture2D_Copyback, 0, D3D11Map.Read, 0);
-            wpfFrontBuffer.WritePixels(new Int32Rect(0, 0, wpfFrontBuffer.PixelWidth, wpfFrontBuffer.PixelHeight), d3d11Map.pData, (int)(d3d11Map.RowPitch * wpfFrontBuffer.PixelHeight), (int)d3d11Map.RowPitch);
-            context.Unmap(d3d11Texture2D_Copyback, 0);
+            d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3d9backbuffer.ManagedPtr);
+            d3dimage.AddDirtyRect(new Int32Rect(0, 0, d3d11Texture2D_RT.GetWidth(), d3d11Texture2D_RT.GetHeight()));
+            d3dimage.Unlock();
             RenderToyETWEventSource.Default.EndFrame();
+        }
+        void SetVertexShader(byte[] bytecode)
+        {
+            d3d11VertexShader = d3d11Device.CreateVertexShader(bytecode);
+        }
+        void SetPixelShader(byte[] bytecode)
+        {
+            d3d11PixelShader = d3d11Device.CreatePixelShader(bytecode);
         }
         class VertexBufferInfo
         {
@@ -205,34 +221,36 @@ namespace RenderToy.WPF
         }
         protected override Size MeasureOverride(Size availableSize)
         {
-            wpfFrontBuffer = new WriteableBitmap((int)availableSize.Width, (int)availableSize.Height, 0, 0, PixelFormats.Bgra32, null);
-            var d3d11Texture2DDesc_RT = new D3D11Texture2DDesc { Width = (uint)wpfFrontBuffer.PixelWidth, Height = (uint)wpfFrontBuffer.PixelHeight, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.B8G8R8A8_Unorm, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.RenderTarget, CPUAccessFlags = 0 };
-            d3d11Texture2D_RT = d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT, null);
-            var d3d11Texture2DDesc_DS = new D3D11Texture2DDesc { Width = (uint)wpfFrontBuffer.PixelWidth, Height = (uint)wpfFrontBuffer.PixelHeight, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.D32_Float, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.DepthStencil, CPUAccessFlags = 0 };
-            d3d11Texture2D_DS = d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS, null);
+            NullablePtr<IntPtr> handle = new NullablePtr<IntPtr>(IntPtr.Zero);
+            d3d9backbuffer = d3d9device.CreateRenderTarget((uint)availableSize.Width, (uint)availableSize.Height, D3DFormat.A8R8G8B8, D3DMultisample.None, 1, 0, handle);
+            d3d11Texture2D_RT = d3d11Device.OpenSharedTexture2D(handle.Value);
             d3d11RenderTargetView = d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT, new D3D11RenderTargetViewDesc { Format = DXGIFormat.B8G8R8A8_Unorm, ViewDimension = D3D11RtvDimension.Texture2D, Texture2D = new D3D11Tex2DRtv { MipSlice = 0 } });
+            var d3d11Texture2DDesc_DS = new D3D11Texture2DDesc { Width = (uint)availableSize.Width, Height = (uint)availableSize.Height, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.D32_Float, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.DepthStencil, CPUAccessFlags = 0 };
+            d3d11Texture2D_DS = d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS, null);
             d3d11DepthStencilView = d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS, new D3D11DepthStencilViewDesc { Format = DXGIFormat.D32_Float, ViewDimension = D3D11DsvDimension.Texture2D, Texture2D = new D3D11Tex2DDsv { MipSlice = 0 } });
-            var d3d11Texture2DDesc_Copyback = new D3D11Texture2DDesc { Width = (uint)wpfFrontBuffer.PixelWidth, Height = (uint)wpfFrontBuffer.PixelHeight, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.B8G8R8A8_Unorm, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Staging, BindFlags = 0, CPUAccessFlags = D3D11CpuAccessFlag.Read };
-            d3d11Texture2D_Copyback = d3d11Device.CreateTexture2D(d3d11Texture2DDesc_Copyback, null);
+            RenderDX();
             return base.MeasureOverride(availableSize);
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if (wpfFrontBuffer == null) return;
-            RenderDX();
-            drawingContext.DrawImage(wpfFrontBuffer, new Rect(0, 0, ActualWidth, ActualHeight));
+            drawingContext.DrawImage(d3dimage, new Rect(0, 0, ActualWidth, ActualHeight));
         }
-        static D3D11Device d3d11Device;
+        // Direct3D9 Handling for D3DImage
+        static Direct3D9Ex d3d9 = new Direct3D9Ex();
+        static Form d3d9window = new Form();
+        static Direct3DDevice9Ex d3d9device = d3d9.CreateDevice(d3d9window.Handle);
+        Direct3DSurface9 d3d9backbuffer;
+        D3DImage d3dimage = new D3DImage();
+        // Direct3D11 Handling
+        static D3D11Device d3d11Device = Direct3D11.D3D11CreateDevice();
         static D3D11InputLayout d3d11InputLayout;
         static D3D11RasterizerState d3d11RasterizerState;
         static D3D11SamplerState d3d11SamplerState;
         D3D11VertexShader d3d11VertexShader;
         D3D11PixelShader d3d11PixelShader;
-        WriteableBitmap wpfFrontBuffer;
         D3D11Texture2D d3d11Texture2D_RT;
         D3D11Texture2D d3d11Texture2D_DS;
         D3D11RenderTargetView d3d11RenderTargetView;
         D3D11DepthStencilView d3d11DepthStencilView;
-        D3D11Texture2D d3d11Texture2D_Copyback;
     }
 }

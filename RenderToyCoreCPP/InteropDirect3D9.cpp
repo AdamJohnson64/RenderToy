@@ -138,7 +138,29 @@ namespace RenderToy
 	};
 	public enum class D3DUsage
 	{
+		RenderTarget = D3DUSAGE_RENDERTARGET,
+		DepthStencil = D3DUSAGE_DEPTHSTENCIL,
+		Dynamic = D3DUSAGE_DYNAMIC,
 		WriteOnly = D3DUSAGE_WRITEONLY,
+		SoftwareProcessing = D3DUSAGE_SOFTWAREPROCESSING,
+		DoNotClip = D3DUSAGE_DONOTCLIP,
+		Points = D3DUSAGE_POINTS,
+		RTPatches = D3DUSAGE_RTPATCHES,
+		NPatches = D3DUSAGE_NPATCHES,
+		AutoGenMipmap = D3DUSAGE_AUTOGENMIPMAP,
+		RestrictedContent = D3DUSAGE_RESTRICTED_CONTENT,
+		SharedResourceDriver = D3DUSAGE_RESTRICT_SHARED_RESOURCE_DRIVER,
+		SharedResource = D3DUSAGE_RESTRICT_SHARED_RESOURCE,
+		DMap = D3DUSAGE_DMAP,
+		LegacyBumpMap = D3DUSAGE_QUERY_LEGACYBUMPMAP,
+		QuerySrgbRead = D3DUSAGE_QUERY_SRGBREAD,
+		QueryFilter = D3DUSAGE_QUERY_FILTER,
+		QuerySrgbWrite = D3DUSAGE_QUERY_SRGBWRITE,
+		QueryPostPixelShaderBlending = D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
+		QueryVertexTexture = D3DUSAGE_QUERY_VERTEXTEXTURE,
+		QueryWrapAndMip = D3DUSAGE_QUERY_WRAPANDMIP,
+		NonSecure = D3DUSAGE_NONSECURE,
+		TextApi = D3DUSAGE_TEXTAPI,
 	};
 	#pragma endregion
 	#pragma region - Direct3D9 Structures -
@@ -250,6 +272,16 @@ namespace RenderToy
 	};
 	#pragma endregion
 	#pragma region - Direct3DDevice9Ex -
+	generic <typename T>
+	public ref class NullablePtr
+	{
+	public:
+		NullablePtr(T value)
+		{
+			Value = value;
+		}
+		T Value;
+	};
 	public ref class Direct3DDevice9Ex : public COMWrapper<IDirect3DDevice9Ex>
 	{
 	public:
@@ -257,33 +289,49 @@ namespace RenderToy
 		{
 			pWrapped = pObject;
 		}
-		Direct3DTexture9^ CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFormat Format, D3DPool Pool)
+		Direct3DTexture9^ CreateTexture(UINT Width, UINT Height, UINT Levels, D3DUsage Usage, D3DFormat Format, D3DPool Pool, NullablePtr<System::IntPtr> ^ppSharedHandle)
 		{
 			IDirect3DTexture9 *ppTexture = nullptr;
-			TRY_D3D(WrappedInterface()->CreateTexture(Width, Height, Levels, Usage, (D3DFORMAT)Format, (D3DPOOL)Pool, &ppTexture, nullptr));
+			HANDLE hSharedHandle = ppSharedHandle == nullptr ? nullptr : ppSharedHandle->Value.ToPointer();
+			TRY_D3D(WrappedInterface()->CreateTexture(Width, Height, Levels, (UINT)Usage, (D3DFORMAT)Format, (D3DPOOL)Pool, &ppTexture, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
+			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
 			return gcnew Direct3DTexture9(ppTexture);
 		}
-		Direct3DVertexBuffer9^ CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPool Pool)
+		Direct3DVertexBuffer9^ CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPool Pool, NullablePtr<System::IntPtr> ^ppSharedHandle)
 		{
 			IDirect3DVertexBuffer9 *ppVertexBuffer = nullptr;
-			TRY_D3D(WrappedInterface()->CreateVertexBuffer(Length, Usage, FVF, (D3DPOOL)Pool, &ppVertexBuffer, nullptr));
+			HANDLE hSharedHandle = ppSharedHandle == nullptr ? nullptr : ppSharedHandle->Value.ToPointer();
+			TRY_D3D(WrappedInterface()->CreateVertexBuffer(Length, Usage, FVF, (D3DPOOL)Pool, &ppVertexBuffer, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
+			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
 			return gcnew Direct3DVertexBuffer9(ppVertexBuffer);
 		}
-		Direct3DSurface9^ CreateRenderTarget(UINT Width, UINT Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Lockable)
+		Direct3DSurface9^ CreateRenderTarget(UINT Width, UINT Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Lockable, NullablePtr<System::IntPtr> ^ppSharedHandle)
 		{
 			IDirect3DSurface9 *ppSurface = nullptr;
-			TRY_D3D(WrappedInterface()->CreateRenderTarget(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Lockable, &ppSurface, nullptr));
+			HANDLE hSharedHandle = ppSharedHandle == nullptr ? nullptr : ppSharedHandle->Value.ToPointer();
+			TRY_D3D(WrappedInterface()->CreateRenderTarget(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Lockable, &ppSurface, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
+			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
 			return gcnew Direct3DSurface9(ppSurface);
 		}
-		Direct3DSurface9^ CreateDepthStencilSurface(UINT Width, UINT Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Discard)
+		Direct3DSurface9^ CreateDepthStencilSurface(UINT Width, UINT Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Discard, NullablePtr<System::IntPtr> ^ppSharedHandle)
 		{
 			IDirect3DSurface9 *ppSurface = nullptr;
-			TRY_D3D(WrappedInterface()->CreateDepthStencilSurface(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Discard, &ppSurface, nullptr));
+			HANDLE hSharedHandle = ppSharedHandle == nullptr ? nullptr : ppSharedHandle->Value.ToPointer();
+			TRY_D3D(WrappedInterface()->CreateDepthStencilSurface(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Discard, &ppSurface, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
+			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
 			return gcnew Direct3DSurface9(ppSurface);
 		}
 		void UpdateTexture(Direct3DTexture9 ^pSourceTexture, Direct3DTexture9 ^pDestinationTexture)
 		{
 			TRY_D3D(WrappedInterface()->UpdateTexture(pSourceTexture == nullptr ? nullptr : pSourceTexture->WrappedInterface(), pDestinationTexture == nullptr ? nullptr : pDestinationTexture->WrappedInterface()))
+		}
+		Direct3DSurface9^ CreateOffscreenPlainSurface(UINT Width, UINT Height, D3DFormat Format, D3DPool Pool, NullablePtr<System::IntPtr> ^ppSharedHandle)
+		{
+			IDirect3DSurface9 *ppSurface = nullptr;
+			HANDLE hSharedHandle = ppSharedHandle == nullptr ? nullptr : ppSharedHandle->Value.ToPointer();
+			TRY_D3D(WrappedInterface()->CreateOffscreenPlainSurface(Width, Height, (D3DFORMAT)Format, (D3DPOOL)Pool, &ppSurface, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
+			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
+			return gcnew Direct3DSurface9(ppSurface);
 		}
 		void SetRenderTarget(DWORD RenderTargetIndex, Direct3DSurface9^ pRenderTarget)
 		{

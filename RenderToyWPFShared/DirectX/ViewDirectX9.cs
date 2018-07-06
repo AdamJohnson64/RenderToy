@@ -37,8 +37,8 @@ namespace RenderToy.WPF
                 {
                     var level0 = astexture.GetTextureLevel(0);
                     if (level0 == null) return null;
-                    var texture = device.CreateTexture((uint)level0.GetImageWidth(), (uint)level0.GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.Default);
-                    var texturescratch = device.CreateTexture((uint)level0.GetImageWidth(), (uint)level0.GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory);
+                    var texture = device.CreateTexture((uint)level0.GetImageWidth(), (uint)level0.GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.Default, null);
+                    var texturescratch = device.CreateTexture((uint)level0.GetImageWidth(), (uint)level0.GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory, null);
                     for (int level = 0; level < astexture.GetTextureLevelCount(); ++level)
                     {
                         D3DLockedRect lockit = texturescratch.LockRect((uint)level);
@@ -52,8 +52,8 @@ namespace RenderToy.WPF
                 else
                 {
                     var asimage = MaterialBitmapConverter.GetImageConverter(material, 512, 512);
-                    var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Default);
-                    var texturescratch = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory);
+                    var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Default, null);
+                    var texturescratch = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory, null);
                     D3DLockedRect lockit = texturescratch.LockRect(0);
                     MaterialBitmapConverter.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
                     texturescratch.UnlockRect(0);
@@ -78,7 +78,7 @@ namespace RenderToy.WPF
                 VertexBufferInfo buffer = new VertexBufferInfo();
                 if (data.Length > 0)
                 {
-                    buffer.VertexBuffer = device.CreateVertexBuffer(size, 0, 0U, D3DPool.Default);
+                    buffer.VertexBuffer = device.CreateVertexBuffer(size, 0, 0U, D3DPool.Default, null);
                     var locked = buffer.VertexBuffer.Lock(0U, size, 0U);
                     unsafe
                     {
@@ -133,8 +133,8 @@ namespace RenderToy.WPF
         {
             render_width = (int)availableSize.Width;
             render_height = (int)availableSize.Height;
-            rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 0);
-            depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 0);
+            rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 0, null);
+            depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 0, null);
             return base.MeasureOverride(availableSize);
         }
         #endregion
