@@ -1,5 +1,11 @@
+////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
+
 #include <memory>
 #include <msclr\marshal_cppstd.h>
+#include <d3d9.h>
 #include <d3d11_4.h>
 #include "InteropCommon.h"
 
@@ -132,7 +138,7 @@ namespace RenderToy
 		BufferAllowRawViews = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS,
 		BufferStructured = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED,
 		ResourceClamp = D3D11_RESOURCE_MISC_RESOURCE_CLAMP,
-		SharedKeyedMuted = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX,
+		SharedKeyedMutex = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX,
 		GdiCompatible = D3D11_RESOURCE_MISC_GDI_COMPATIBLE,
 		SharedNtHandle = D3D11_RESOURCE_MISC_SHARED_NTHANDLE,
 		RestrictedContent = D3D11_RESOURCE_MISC_RESTRICTED_CONTENT,
@@ -187,7 +193,7 @@ namespace RenderToy
 		D3D11CpuAccessFlag		CPUAccessFlags;
 		D3D11ResourceMiscFlag	MiscFlags;
 		UINT					StructureByteStride;
-	};	
+	};
 	public value struct D3D11InputElementDesc
 	{
 		System::String^             SemanticName;
@@ -697,6 +703,12 @@ namespace RenderToy
 			ID3D11DeviceContext *ppImmediateContext = nullptr;
 			WrappedInterface()->GetImmediateContext(&ppImmediateContext);
 			return gcnew D3D11DeviceContext(ppImmediateContext);
+		}
+		D3D11Texture2D^ OpenSharedTexture2D(System::IntPtr hResource)
+		{
+			void *ppResource = nullptr;
+			TRY_D3D(WrappedInterface()->OpenSharedResource(hResource.ToPointer(), __uuidof(ID3D11Texture2D), &ppResource));
+			return gcnew D3D11Texture2D(reinterpret_cast<ID3D11Texture2D*>(ppResource));
 		}
 	};
 	public ref class DXGISwapChain : COMWrapper<IDXGISwapChain>
