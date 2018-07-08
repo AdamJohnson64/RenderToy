@@ -89,6 +89,16 @@ namespace RenderToy.WPF
             d3d11constantbufferCPU = new byte[256 * 1024];
             d3d11constantbufferGPU = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, null);
 #if OPENVR_INSTALLED
+            uint vrwidth = 0, vrheight = 0;
+            OpenVR.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
+            var d3d11Texture2DDesc_DS_Eye = new D3D11Texture2DDesc { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.D32_Float, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.DepthStencil, CPUAccessFlags = 0 };
+            d3d11Texture2D_DS_Eye = d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS_Eye, null);
+            d3d11DepthStencilView_Eye = d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS_Eye, new D3D11DepthStencilViewDesc { Format = DXGIFormat.D32_Float, ViewDimension = D3D11DsvDimension.Texture2D, Texture2D = new D3D11Tex2DDsv { MipSlice = 0 } });
+            var d3d11Texture2DDesc_RT_Eye = new D3D11Texture2DDesc { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.B8G8R8A8_Unorm, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.RenderTarget | D3D11BindFlag.ShaderResource, CPUAccessFlags = 0 };
+            d3d11Texture2D_RT_EyeLeft = d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, null);
+            d3d11RenderTargetView_EyeLeft = d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeLeft, new D3D11RenderTargetViewDesc { Format = DXGIFormat.B8G8R8A8_Unorm, ViewDimension = D3D11RtvDimension.Texture2D, Texture2D = new D3D11Tex2DRtv { MipSlice = 0 } });
+            d3d11Texture2D_RT_EyeRight = d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, null);
+            d3d11RenderTargetView_EyeRight = d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeRight, new D3D11RenderTargetViewDesc { Format = DXGIFormat.B8G8R8A8_Unorm, ViewDimension = D3D11RtvDimension.Texture2D, Texture2D = new D3D11Tex2DRtv { MipSlice = 0 } });
             timer = new DispatcherTimer(TimeSpan.FromMilliseconds(10), DispatcherPriority.Normal, (s, e) =>
             {
                 RenderDX();
@@ -107,77 +117,160 @@ namespace RenderToy.WPF
             int width = d3d11Texture2D_RT.GetWidth();
             int height = d3d11Texture2D_RT.GetHeight();
             RenderToyETWEventSource.Default.BeginFrame();
-            context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
-            context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
+            // Setup common global render state.
             context.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
             context.IASetInputLayout(d3d11InputLayout);
             context.VSSetShader(d3d11VertexShader);
             context.PSSetShader(d3d11PixelShader);
             context.RSSetState(d3d11RasterizerState);
+            context.PSSetSamplers(0, new[] { d3d11SamplerState });
+            // Prepare pass render state.
             context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = width, bottom = height } });
             context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = width, Height = height, MinDepth = 0, MaxDepth = 1 } });
             context.OMSetRenderTargets(new[] { d3d11RenderTargetView }, d3d11DepthStencilView);
-            context.PSSetSamplers(0, new[] { d3d11SamplerState });
+            context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
+            context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
             ////////////////////////////////////////////////////////////////////////////////
-            // Draw the scene.
-            var transformViewProjection = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             // Assemble the scene parts.
             var scene = TransformedObject.Enumerate(AttachedView.GetScene(this)).ToArray();
-            // We're collecting constant buffers because DX11 hates to do actual work.
-            int constantbufferoffset = 0;
-            List<uint> offsets = new List<uint>();
-            foreach (var transformedobject in scene)
+            Action<Matrix3D> drawscene = (Matrix3D transformViewProjection) =>
             {
-                var transformModel = transformedobject.Transform;
-                var transformModelViewProjection = transformModel * transformViewProjection;
-                var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
-                if (vertexbuffer == null) continue;
-                offsets.Add((uint)constantbufferoffset);
-                Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, constantbufferoffset, 4 * 16);
-                constantbufferoffset += 4 * 16;
-                // Pad up to 256 bytes.
-                if ((constantbufferoffset & 0xFF) != 0)
+                // We're collecting constant buffers because DX11 hates to do actual work.
+                int constantbufferoffset = 0;
+                List<uint> offsets = new List<uint>();
+                foreach (var transformedobject in scene)
                 {
-                    constantbufferoffset = constantbufferoffset & (~0xFF);
-                    constantbufferoffset += 256;
+                    var transformModel = transformedobject.Transform;
+                    var transformModelViewProjection = transformModel * transformViewProjection;
+                    var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
+                    if (vertexbuffer == null) continue;
+                    offsets.Add((uint)constantbufferoffset);
+                    Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, constantbufferoffset, 4 * 16);
+                    constantbufferoffset += 4 * 16;
+                    // Pad up to 256 bytes.
+                    if ((constantbufferoffset & 0xFF) != 0)
+                    {
+                        constantbufferoffset = constantbufferoffset & (~0xFF);
+                        constantbufferoffset += 256;
+                    }
                 }
-            }
-            context.UpdateSubresource1(d3d11constantbufferGPU, 0, new D3D11Box { right = (uint)constantbufferoffset }, d3d11constantbufferCPU, 0, 0, D3D11CopyFlags.Discard);
-            ////////////////////////////////////////////////////////////////////////////////
-            // Start drawing.
-            int constantbufferindex = 0;
-            var constantoffset = new uint[1];
-            var constantsize = new uint[1];
-            var constantbufferlist = new[] { d3d11constantbufferGPU };
-            foreach (var transformedobject in scene)
-            {
-                var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
-                if (vertexbuffer == null) continue;
-                constantoffset[0] = offsets[constantbufferindex] / 16;
-                constantsize[0] = 4 * 16;
-                context.VSSetConstantBuffers1(0, constantbufferlist, constantoffset, constantsize);
-                ++constantbufferindex;
-                var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
-                context.PSSetShaderResources(0, new[]
+                context.UpdateSubresource1(d3d11constantbufferGPU, 0, new D3D11Box { right = (uint)constantbufferoffset }, d3d11constantbufferCPU, 0, 0, D3D11CopyFlags.Discard);
+                ////////////////////////////////////////////////////////////////////////////////
+                // Start drawing.
+                int constantbufferindex = 0;
+                var constantoffset = new uint[1];
+                var constantsize = new uint[1];
+                var constantbufferlist = new[] { d3d11constantbufferGPU };
+                foreach (var transformedobject in scene)
                 {
-                    CreateTextureView(objmat == null ? transformedobject.Node.Material : objmat.map_Kd, StockMaterials.PlasticWhite),
-                    CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
-                    CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
-                    CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
-                });
-                context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
-                context.Draw(vertexbuffer.vertexCount, 0);
-            }
+                    var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
+                    if (vertexbuffer == null) continue;
+                    constantoffset[0] = offsets[constantbufferindex] / 16;
+                    constantsize[0] = 4 * 16;
+                    context.VSSetConstantBuffers1(0, constantbufferlist, constantoffset, constantsize);
+                    ++constantbufferindex;
+                    var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
+                    context.PSSetShaderResources(0, new[]
+                    {
+                        CreateTextureView(objmat == null ? transformedobject.Node.Material : objmat.map_Kd, StockMaterials.PlasticWhite),
+                        CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
+                        CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
+                        CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
+                    });
+                    context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
+                    context.Draw(vertexbuffer.vertexCount, 0);
+                }
+            };
+            drawscene(AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             context.Flush();
-            RenderToyETWEventSource.Default.EndFrame();
             d3dimage.Lock();
             d3dimage.AddDirtyRect(new Int32Rect(0, 0, d3d11Texture2D_RT.GetWidth(), d3d11Texture2D_RT.GetHeight()));
             d3dimage.Unlock();
 #if OPENVR_INSTALLED
+            {
+                uint vrwidth = 0, vrheight = 0;
+                OpenVR.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
+                context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight } });
+                context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 } });
+            }
+            Matrix3D transformHead;
+            {
+                var matin = new float[12];
+                if (OpenVR.LocateDeviceId(matin, 0))
+                {
+                    transformHead = ConvertMatrix43(matin);
+                    transformHead = MathHelp.Invert(transformHead);
+                }
+                else
+                {
+                    transformHead = AttachedView.GetTransformView(this);
+                }
+            }
+            {
+                Matrix3D transformProjection;
+                {
+                    var matin = new float[16];
+                    OpenVR.GetProjectionMatrix(matin, Eye.Left, 0.1f, 2000.0f);
+                    transformProjection = ConvertMatrix44(matin);
+                }
+                Matrix3D transformView;
+                {
+                    var matin = new float[12];
+                    OpenVR.GetEyeToHeadTransform(matin, Eye.Left);
+                    transformView = ConvertMatrix43(matin);
+                }
+                context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
+                context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
+                context.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, 0, 0, 0, 0);
+                drawscene(transformView * transformHead * transformProjection);
+                context.Flush();
+            }
+            {
+                Matrix3D transformProjection;
+                {
+                    var matin = new float[16];
+                    OpenVR.GetProjectionMatrix(matin, Eye.Right, 0.1f, 2000.0f);
+                    transformProjection = ConvertMatrix44(matin);
+                }
+                Matrix3D transformView;
+                {
+                    var matin = new float[12];
+                    OpenVR.GetEyeToHeadTransform(matin, Eye.Right);
+                    transformView = ConvertMatrix43(matin);
+                }
+                uint vrwidth = 0, vrheight = 0;
+                OpenVR.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
+                context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight } });
+                context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 } });
+                context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeRight }, d3d11DepthStencilView_Eye);
+                context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
+                context.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, 0, 0, 0, 0);
+                drawscene(transformView * transformHead * transformProjection);
+                context.Flush();
+            }
             OpenVRCompositor.WaitGetPoses();
-            OpenVRCompositor.Submit(Eye.Left, d3d11Texture2D_RT.ManagedPtr);
-            OpenVRCompositor.Submit(Eye.Right, d3d11Texture2D_RT.ManagedPtr);
+            OpenVRCompositor.Submit(Eye.Left, d3d11Texture2D_RT_EyeLeft.ManagedPtr);
+            OpenVRCompositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
 #endif // OPENVR_INSTALLED
+            RenderToyETWEventSource.Default.EndFrame();
+        }
+        static Matrix3D ConvertMatrix43(float[] matin)
+        {
+            Matrix3D matout = new Matrix3D();
+            matout.M11 = matin[0]; matout.M21 = matin[1]; matout.M31 = matin[2]; matout.M41 = matin[3];
+            matout.M12 = matin[4]; matout.M22 = matin[5]; matout.M32 = matin[6]; matout.M42 = matin[7];
+            matout.M13 = matin[8]; matout.M23 = matin[9]; matout.M33 = matin[10]; matout.M43 = matin[11];
+            matout.M14 = 0; matout.M24 = 0; matout.M34 = 0; matout.M44 = 1;
+            return matout;
+        }
+        static Matrix3D ConvertMatrix44(float[] matin)
+        {
+            Matrix3D matout = new Matrix3D();
+            matout.M11 = matin[0]; matout.M21 = matin[1]; matout.M31 = matin[2]; matout.M41 = matin[3];
+            matout.M12 = matin[4]; matout.M22 = matin[5]; matout.M32 = matin[6]; matout.M42 = matin[7];
+            matout.M13 = matin[8]; matout.M23 = matin[9]; matout.M33 = matin[10]; matout.M43 = matin[11];
+            matout.M14 = matin[12]; matout.M24 = matin[13]; matout.M34 = matin[14]; matout.M44 = matin[15];
+            return matout;
         }
         void SetVertexShader(byte[] bytecode)
         {
@@ -316,5 +409,13 @@ namespace RenderToy.WPF
         D3D11Texture2D d3d11Texture2D_DS;
         D3D11RenderTargetView d3d11RenderTargetView;
         D3D11DepthStencilView d3d11DepthStencilView;
+#if OPENVR_INSTALLED
+        D3D11Texture2D d3d11Texture2D_DS_Eye;
+        D3D11DepthStencilView d3d11DepthStencilView_Eye;
+        D3D11Texture2D d3d11Texture2D_RT_EyeLeft;
+        D3D11RenderTargetView d3d11RenderTargetView_EyeLeft;
+        D3D11Texture2D d3d11Texture2D_RT_EyeRight;
+        D3D11RenderTargetView d3d11RenderTargetView_EyeRight;
+#endif // OPENVR_INSTALLED
     }
 }

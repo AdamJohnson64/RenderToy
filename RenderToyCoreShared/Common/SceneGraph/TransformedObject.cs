@@ -49,7 +49,8 @@ namespace RenderToy.SceneGraph
                 }
             }
 #if OPENVR_INSTALLED
-            float scale = 10.0f;
+            /*
+            float scale = 1.0f;
             {
                 var matin = new float[4 * 3];
                 if (OpenVR.LocateDeviceId(matin, 0))
@@ -74,6 +75,7 @@ namespace RenderToy.SceneGraph
                     yield return new TransformedObject(new Node("Left Hand", new TransformMatrix(matout), VRTESTPRIMITIVE, StockMaterials.Red, StockMaterials.PlasticRed), matout);
                 }
             }
+            */
 #endif // OPENVR_INSTALLED
         }
 #if OPENVR_INSTALLED

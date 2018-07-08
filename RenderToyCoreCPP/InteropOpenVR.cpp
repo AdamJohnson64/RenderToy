@@ -19,7 +19,7 @@ namespace RenderToy
 	public ref class OpenVR
 	{
 	private:
-		static void ConvertMatrix(cli::array<float> ^matrixOut, const vr::HmdMatrix34_t &matrixIn)
+		static void ConvertMatrix43(cli::array<float> ^matrixOut, const vr::HmdMatrix34_t &matrixIn)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
@@ -29,10 +29,27 @@ namespace RenderToy
 				}
 			}
 		}
+		static void ConvertMatrix44(cli::array<float> ^matrixOut, const vr::HmdMatrix44_t &matrixIn)
+		{
+			for (int i = 0; i < 16; ++i)
+			{
+				matrixOut[i] = ((float*)&matrixIn)[i];
+			}
+		}
 	public:
 		static OpenVR()
 		{
 			vrsystem = vr::VR_Init(nullptr, vr::EVRApplicationType::VRApplication_Scene);
+		}
+		static void GetProjectionMatrix(cli::array<float> ^matrix44, Eye eEye, float fNearZ, float fFarZ)
+		{
+			auto projection = vrsystem->GetProjectionMatrix((vr::EVREye)eEye, fNearZ, fFarZ);
+			ConvertMatrix44(matrix44, projection);
+		}
+		static void GetEyeToHeadTransform(cli::array<float> ^matrix43, Eye eEye)
+		{
+			auto view = vrsystem->GetEyeToHeadTransform((vr::EVREye)eEye);
+			ConvertMatrix43(matrix43, view);
 		}
 		static void GetRecommendedRenderTargetSize(uint32_t %width, uint32_t %height)
 		{
@@ -48,7 +65,7 @@ namespace RenderToy
 			vrsystem->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseSeated, 0, trackedDevicePoseArray, 16);
 			if (vrsystem->IsTrackedDeviceConnected(deviceID))
 			{
-				ConvertMatrix(matrix43, trackedDevicePoseArray[deviceID].mDeviceToAbsoluteTracking);
+				ConvertMatrix43(matrix43, trackedDevicePoseArray[deviceID].mDeviceToAbsoluteTracking);
 				return true;
 			}
 			return false;
@@ -64,7 +81,7 @@ namespace RenderToy
 				{
 					if (vrsystem->GetControllerRoleForTrackedDeviceIndex(device) == (vr::ETrackedControllerRole)deviceRole)
 					{
-						ConvertMatrix(matrix43, trackedDevicePoseArray[device].mDeviceToAbsoluteTracking);
+						ConvertMatrix43(matrix43, trackedDevicePoseArray[device].mDeviceToAbsoluteTracking);
 						return true;
 					}
 				}
