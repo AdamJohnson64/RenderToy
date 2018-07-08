@@ -1,14 +1,9 @@
 using RenderToy.Cameras;
 using RenderToy.DirectX;
-using RenderToy.Materials;
 using RenderToy.Math;
-using RenderToy.Meshes;
-using RenderToy.ModelFormat;
 using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -54,8 +49,6 @@ namespace RenderToy.WPF
         }
         public ViewDirectX11()
         {
-            d3d11constantbufferCPU = new byte[256 * 1024];
-            d3d11constantbufferGPU = DirectX11Helper.d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, null);
 #if OPENVR_INSTALLED
             uint vrwidth = 0, vrheight = 0;
             OpenVR.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
@@ -99,58 +92,7 @@ namespace RenderToy.WPF
             if (Execute_SceneLast != AttachedView.GetScene(this))
             {
                 Execute_SceneLast = AttachedView.GetScene(this);
-                List<Action<Matrix3D>> execute_retransform = new List<Action<Matrix3D>>();
-                List<Action<D3D11DeviceContext4>> execute_drawprimitive = new List<Action<D3D11DeviceContext4>>();
-                // We're collecting constant buffers because DX11 hates to do actual work.
-                int constantbufferoffset = 0;
-                {
-                    var constantbufferlist = new[] { d3d11constantbufferGPU };
-                    foreach (var transformedobject in TransformedObject.Enumerate(AttachedView.GetScene(this)))
-                    {
-                        var vertexbuffer = DirectX11Helper.CreateVertexBuffer(transformedobject.Node.Primitive);
-                        if (vertexbuffer == null) continue;
-                        var thisconstantbufferoffset = constantbufferoffset;
-                        execute_retransform.Add((transformViewProjection) =>
-                        {
-                            var transformModelViewProjection = transformedobject.Transform * transformViewProjection;
-                            Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, thisconstantbufferoffset, 4 * 16);
-                        });
-                        var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
-                        var collecttextures = new[]
-                        {
-                            DirectX11Helper.CreateTextureView(objmat == null ? transformedobject.Node.Material : objmat.map_Kd, StockMaterials.PlasticWhite),
-                            DirectX11Helper.CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
-                            DirectX11Helper.CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
-                            DirectX11Helper.CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
-                        };
-                        execute_drawprimitive.Add((context2) =>
-                        {
-                            context2.VSSetConstantBuffers1(0, constantbufferlist, new[] { (uint)thisconstantbufferoffset / 16U }, new[] { 4U * 16U });
-                            context2.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
-                            context2.PSSetShaderResources(0, collecttextures);
-                            context2.Draw(vertexbuffer.vertexCount, 0);
-                        });
-                        // Pad up to 256 bytes.
-                        constantbufferoffset += 4 * 16;
-                        if ((constantbufferoffset & 0xFF) != 0)
-                        {
-                            constantbufferoffset = constantbufferoffset & (~0xFF);
-                            constantbufferoffset += 256;
-                        }
-                    }
-                }
-                Execute_DrawScene = (context2, transformViewProjection) =>
-                {
-                    foreach (var retransform in execute_retransform)
-                    {
-                        retransform(transformViewProjection);
-                    }
-                    context.UpdateSubresource1(d3d11constantbufferGPU, 0, new D3D11Box { right = (uint)constantbufferoffset }, d3d11constantbufferCPU, 0, 0, D3D11CopyFlags.Discard);
-                    foreach (var draw in execute_drawprimitive)
-                    {
-                        draw(context2);
-                    }
-                };
+                Execute_DrawScene = DirectX11Helper.CreateSceneDraw(AttachedView.GetScene(this));
             }
             // Draw the window view using the current camera.
             context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = width, bottom = height } });
@@ -227,8 +169,6 @@ namespace RenderToy.WPF
         Direct3DSurface9 d3d9backbuffer;
         D3DImage d3dimage = new D3DImage();
         // Direct3D11 Handling
-        byte[] d3d11constantbufferCPU;
-        D3D11Buffer d3d11constantbufferGPU;
         D3D11VertexShader d3d11VertexShader;
         D3D11PixelShader d3d11PixelShader;
         D3D11Texture2D d3d11Texture2D_RT;
