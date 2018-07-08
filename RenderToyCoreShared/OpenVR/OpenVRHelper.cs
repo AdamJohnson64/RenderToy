@@ -35,5 +35,23 @@ namespace RenderToy
             m.M13 = matrix[8]; m.M23 = matrix[9]; m.M33 = -matrix[10]; m.M43 = matrix[11] * -scale; m.M44 = 1;
             return m;
         }
+        public static Matrix3D GetEyeToHeadTransform(Eye eEye)
+        {
+            var matin = new float[12];
+            OpenVR.GetEyeToHeadTransform(matin, eEye);
+            return ConvertMatrix43(matin);
+        }
+        public static Matrix3D GetProjectionMatrix(Eye eEye, float fNear, float fFar)
+        {
+            var matin = new float[16];
+            OpenVR.GetProjectionMatrix(matin, eEye, fNear, fFar);
+            return ConvertMatrix44(matin);
+        }
+        public static Matrix3D LocateDeviceId(int deviceid)
+        {
+            var matin = new float[12];
+            if (!OpenVR.LocateDeviceId(matin, 0)) return Matrix3D.Identity;
+            return ConvertMatrix43(matin);
+        }
     }
 }

@@ -158,24 +158,8 @@ namespace RenderToy.WPF
             context.OMSetRenderTargets(new[] { d3d11RenderTargetView }, d3d11DepthStencilView);
             context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
             context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
-#if OPENVR_DRIVE_UI_VIEW
-            Matrix3D testTransformHead = Matrix3D.Identity;
-            {
-                var matin = new float[12];
-                if (OpenVR.LocateDeviceId(matin, 0))
-                {
-                    testTransformHead = ConvertMatrix43(matin);
-                    testTransformHead = testTransformHead;
-                    testTransformHead = MathHelp.Invert(testTransformHead);
-                }
-            }
-            Matrix3D testTransformProjection;
-            {
-                var matin = new float[16];
-                OpenVR.GetProjectionMatrix(matin, Eye.Left, 0.1f, 2000.0f);
-                testTransformProjection = ConvertMatrix44(matin);
-            }
-            Execute_DrawScene(context, testTransformHead * testTransformProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+#if !OPENVR_DRIVE_UI_VIEW
+            Execute_DrawScene(context, MathHelp.Invert(OpenVRHelper.LocateDeviceId(0)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
 #else
             Execute_DrawScene(context, AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
 #endif
@@ -191,59 +175,19 @@ namespace RenderToy.WPF
                 context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight } });
                 context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 } });
             }
-            Matrix3D transformHead;
+            Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.LocateDeviceId(0));
             {
-                var matin = new float[12];
-                if (OpenVR.LocateDeviceId(matin, 0))
-                {
-                    transformHead = OpenVRHelper.ConvertMatrix43(matin);
-                    transformHead = MathHelp.Invert(transformHead);                    
-                }
-                else
-                {
-                    transformHead = AttachedView.GetTransformView(this);
-                }
-            }
-            {
-                Matrix3D transformProjection;
-                {
-                    var matin = new float[16];
-                    OpenVR.GetProjectionMatrix(matin, Eye.Left, 0.1f, 2000.0f);
-                    transformProjection = OpenVRHelper.ConvertMatrix44(matin);
-                }
-                Matrix3D transformView;
-                {
-                    var matin = new float[12];
-                    OpenVR.GetEyeToHeadTransform(matin, Eye.Left);
-                    transformView = OpenVRHelper.ConvertMatrix43(matin);
-                }
                 context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
                 context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
                 context.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, 0, 0, 0, 0);
-                Execute_DrawScene(context, transformView * transformHead * transformProjection);
+                Execute_DrawScene(context, transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Left)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f));
                 OpenVRCompositor.Submit(Eye.Left, d3d11Texture2D_RT_EyeLeft.ManagedPtr);
             }
             {
-                Matrix3D transformProjection;
-                {
-                    var matin = new float[16];
-                    OpenVR.GetProjectionMatrix(matin, Eye.Right, 0.1f, 2000.0f);
-                    transformProjection = OpenVRHelper.ConvertMatrix44(matin);
-                }
-                Matrix3D transformView;
-                {
-                    var matin = new float[12];
-                    OpenVR.GetEyeToHeadTransform(matin, Eye.Right);
-                    transformView = OpenVRHelper.ConvertMatrix43(matin);
-                }
-                uint vrwidth = 0, vrheight = 0;
-                OpenVR.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
-                context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight } });
-                context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 } });
                 context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeRight }, d3d11DepthStencilView_Eye);
                 context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
                 context.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, 0, 0, 0, 0);
-                Execute_DrawScene(context, transformView * transformHead * transformProjection);
+                Execute_DrawScene(context, transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Right)) * OpenVRHelper.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f));
                 OpenVRCompositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
             }
 #endif // OPENVR_INSTALLED
