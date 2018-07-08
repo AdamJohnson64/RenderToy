@@ -42,6 +42,7 @@ namespace RenderToy.WPF
         public static ICommand CommandWindowDirect3D9 = new RoutedUICommand("Open a DirectX 9 View Window.", "CommandWindowDirect3D9", typeof(MainWindow));
         public static ICommand CommandWindowDirect3D11 = new RoutedUICommand("Open a DirectX 11 View Window.", "CommandWindowDirect3D11", typeof(MainWindow));
         public static ICommand CommandWindowDirect3D12 = new RoutedUICommand("Open a DirectX 12 View Window.", "CommandWindowDirect3D12", typeof(MainWindow));
+        public static ICommand CommandStartOpenVR = new RoutedUICommand("Start OpenVR.", "CommandStartOpenVR", typeof(MainWindow));
         public MainWindow()
         {
             InitializeComponent();
@@ -200,6 +201,13 @@ namespace RenderToy.WPF
                             }
                         }
                     }
+                }
+            }));
+            CommandBindings.Add(new CommandBinding(CommandStartOpenVR, (s, e) =>
+            {
+                if (DataContext is Document doc)
+                {
+                    new OpenVRPump(doc.Scene);
                 }
             }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));

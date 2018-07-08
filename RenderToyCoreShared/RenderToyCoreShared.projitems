@@ -84,6 +84,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\WorkQueue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\DirectXHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OpenVR\OpenVRHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OpenVR\OpenVRPump.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Common\Math\" />

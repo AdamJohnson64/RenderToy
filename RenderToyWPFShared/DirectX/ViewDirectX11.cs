@@ -8,9 +8,6 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
-#if OPENVR_INSTALLED
-using System.Windows.Threading;
-#endif // OPENVR_INSTALLED
 
 namespace RenderToy.WPF
 {
@@ -47,29 +44,6 @@ namespace RenderToy.WPF
                 ((ViewDirectX11)s).RenderDX();
             }));
         }
-        public ViewDirectX11()
-        {
-#if OPENVR_INSTALLED
-            uint vrwidth = 0, vrheight = 0;
-            OpenVR.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
-            var d3d11Texture2DDesc_DS_Eye = new D3D11Texture2DDesc { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.D32_Float, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.DepthStencil, CPUAccessFlags = 0 };
-            d3d11Texture2D_DS_Eye = DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS_Eye, null);
-            d3d11DepthStencilView_Eye = DirectX11Helper.d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS_Eye, new D3D11DepthStencilViewDesc { Format = DXGIFormat.D32_Float, ViewDimension = D3D11DsvDimension.Texture2D, Texture2D = new D3D11Tex2DDsv { MipSlice = 0 } });
-            var d3d11Texture2DDesc_RT_Eye = new D3D11Texture2DDesc { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.B8G8R8A8_Unorm, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.RenderTarget | D3D11BindFlag.ShaderResource, CPUAccessFlags = 0 };
-            d3d11Texture2D_RT_EyeLeft = DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, null);
-            d3d11RenderTargetView_EyeLeft = DirectX11Helper.d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeLeft, new D3D11RenderTargetViewDesc { Format = DXGIFormat.B8G8R8A8_Unorm, ViewDimension = D3D11RtvDimension.Texture2D, Texture2D = new D3D11Tex2DRtv { MipSlice = 0 } });
-            d3d11Texture2D_RT_EyeRight = DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, null);
-            d3d11RenderTargetView_EyeRight = DirectX11Helper.d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeRight, new D3D11RenderTargetViewDesc { Format = DXGIFormat.B8G8R8A8_Unorm, ViewDimension = D3D11RtvDimension.Texture2D, Texture2D = new D3D11Tex2DRtv { MipSlice = 0 } });
-            timer = new DispatcherTimer(TimeSpan.FromMilliseconds(10), DispatcherPriority.Normal, (s, e) =>
-            {
-                RenderDX();
-            }, Dispatcher.CurrentDispatcher);
-            timer.Start();
-#endif // OPENVR_INSTALLED
-        }
-#if OPENVR_INSTALLED
-        DispatcherTimer timer = new DispatcherTimer();
-#endif // OPENVR_INSTALLED
         IScene Execute_SceneLast = null;
         Action<D3D11DeviceContext4, Matrix3D> Execute_DrawScene = null;
         void RenderDX()
@@ -100,7 +74,7 @@ namespace RenderToy.WPF
             context.OMSetRenderTargets(new[] { d3d11RenderTargetView }, d3d11DepthStencilView);
             context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
             context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
-#if !OPENVR_DRIVE_UI_VIEW
+#if OPENVR_DRIVE_UI_VIEW
             Execute_DrawScene(context, MathHelp.Invert(OpenVRHelper.LocateDeviceId(0)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
 #else
             Execute_DrawScene(context, AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
@@ -109,30 +83,6 @@ namespace RenderToy.WPF
             d3dimage.Lock();
             d3dimage.AddDirtyRect(new Int32Rect(0, 0, d3d11Texture2D_RT.GetWidth(), d3d11Texture2D_RT.GetHeight()));
             d3dimage.Unlock();
-#if OPENVR_INSTALLED
-            OpenVRCompositor.WaitGetPoses();
-            {
-                uint vrwidth = 0, vrheight = 0;
-                OpenVR.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
-                context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight } });
-                context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 } });
-            }
-            Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.LocateDeviceId(0));
-            {
-                context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
-                context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
-                context.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, 0, 0, 0, 0);
-                Execute_DrawScene(context, transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Left)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f));
-                OpenVRCompositor.Submit(Eye.Left, d3d11Texture2D_RT_EyeLeft.ManagedPtr);
-            }
-            {
-                context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeRight }, d3d11DepthStencilView_Eye);
-                context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
-                context.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, 0, 0, 0, 0);
-                Execute_DrawScene(context, transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Right)) * OpenVRHelper.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f));
-                OpenVRCompositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
-            }
-#endif // OPENVR_INSTALLED
             RenderToyETWEventSource.Default.EndFrame();
         }
         void SetVertexShader(byte[] bytecode)
@@ -175,13 +125,5 @@ namespace RenderToy.WPF
         D3D11Texture2D d3d11Texture2D_DS;
         D3D11RenderTargetView d3d11RenderTargetView;
         D3D11DepthStencilView d3d11DepthStencilView;
-#if OPENVR_INSTALLED
-        D3D11Texture2D d3d11Texture2D_DS_Eye;
-        D3D11DepthStencilView d3d11DepthStencilView_Eye;
-        D3D11Texture2D d3d11Texture2D_RT_EyeLeft;
-        D3D11RenderTargetView d3d11RenderTargetView_EyeLeft;
-        D3D11Texture2D d3d11Texture2D_RT_EyeRight;
-        D3D11RenderTargetView d3d11RenderTargetView_EyeRight;
-#endif // OPENVR_INSTALLED
     }
 }

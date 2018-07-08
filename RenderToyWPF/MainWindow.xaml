@@ -25,6 +25,7 @@
                 <MenuItem Header="New Direct3D9 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D9}"/>
                 <MenuItem Header="New Direct3D11 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D11}"/>
                 <MenuItem Header="New Direct3D12 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D12}"/>
+                <MenuItem Header="Start OpenVR" Command="{x:Static rendertoy:MainWindow.CommandStartOpenVR}"/>
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="Open RenderToy Document" Command="{x:Static rendertoy:MainWindow.CommandDocumentOpen}"/>
