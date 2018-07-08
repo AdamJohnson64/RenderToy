@@ -181,7 +181,27 @@ namespace RenderToy.WPF
                     context.Draw(vertexbuffer.vertexCount, 0);
                 }
             };
+#if OPENVR_DRIVE_UI_VIEW
+            Matrix3D testTransformHead = Matrix3D.Identity;
+            {
+                var matin = new float[12];
+                if (OpenVR.LocateDeviceId(matin, 0))
+                {
+                    testTransformHead = ConvertMatrix43(matin);
+                    testTransformHead = testTransformHead;
+                    testTransformHead = MathHelp.Invert(testTransformHead);
+                }
+            }
+            Matrix3D testTransformProjection;
+            {
+                var matin = new float[16];
+                OpenVR.GetProjectionMatrix(matin, Eye.Left, 0.1f, 2000.0f);
+                testTransformProjection = ConvertMatrix44(matin);
+            }
+            drawscene(testTransformHead * testTransformProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+#else
             drawscene(AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+#endif
             context.Flush();
             d3dimage.Lock();
             d3dimage.AddDirtyRect(new Int32Rect(0, 0, d3d11Texture2D_RT.GetWidth(), d3d11Texture2D_RT.GetHeight()));
@@ -199,7 +219,7 @@ namespace RenderToy.WPF
                 if (OpenVR.LocateDeviceId(matin, 0))
                 {
                     transformHead = ConvertMatrix43(matin);
-                    transformHead = MathHelp.Invert(transformHead);
+                    transformHead = MathHelp.Invert(transformHead);                    
                 }
                 else
                 {
