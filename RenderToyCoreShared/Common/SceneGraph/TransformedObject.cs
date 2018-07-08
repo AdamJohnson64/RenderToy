@@ -55,7 +55,7 @@ namespace RenderToy.SceneGraph
                 if (OpenVR.LocateDeviceId(matin, 0))
                 {
                     var matout = ConvertMatrix(matin, scale);
-                    yield return new TransformedObject(new Node("Head", new TransformMatrix(matout), VRTESTPRIMITIVE, StockMaterials.Green, StockMaterials.PlasticGreen), matout);
+                    yield return new TransformedObject(new Node("Head", new TransformMatrix(matout), VRTESTPRIMITIVE, StockMaterials.White, StockMaterials.PlasticWhite), matout);
                 }
             }
             {
