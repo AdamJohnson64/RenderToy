@@ -18,6 +18,9 @@ using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+#if OPENVR_INSTALLED
+using System.Windows.Threading;
+#endif // OPENVR_INSTALLED
 
 namespace RenderToy.WPF
 {
@@ -85,7 +88,17 @@ namespace RenderToy.WPF
         {
             d3d11constantbufferCPU = new byte[256 * 1024];
             d3d11constantbufferGPU = d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, null);
+#if OPENVR_INSTALLED
+            timer = new DispatcherTimer(TimeSpan.FromMilliseconds(10), DispatcherPriority.Normal, (s, e) =>
+            {
+                RenderDX();
+            }, Dispatcher.CurrentDispatcher);
+            timer.Start();
+#endif // OPENVR_INSTALLED
         }
+#if OPENVR_INSTALLED
+        DispatcherTimer timer = new DispatcherTimer();
+#endif // OPENVR_INSTALLED
         void RenderDX()
         {
             if (d3d11VertexShader == null || d3d11PixelShader == null || d3d11DepthStencilView == null || d3d11RenderTargetView == null) return;

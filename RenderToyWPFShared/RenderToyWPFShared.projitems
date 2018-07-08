@@ -26,7 +26,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX9.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX12.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\ViewSoftwareCustomizable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\3D\ViewSoftwareWireframe.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\AttachedCamera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Xps\Figures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Material\MaterialBitmapConverter.cs" />

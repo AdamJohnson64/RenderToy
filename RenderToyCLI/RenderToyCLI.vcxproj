@@ -43,9 +43,11 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(SolutionDir)\Configuration\Common.cplusplus.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(SolutionDir)\Configuration\Common.cplusplus.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -88,6 +90,7 @@
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D12.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D9.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3DCompiler.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\InteropOpenVR.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportAMP.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
@@ -115,5 +118,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Condition="'$(CUDAInstalled)'=='True'" Project="$(CUDAPropsPath)\CUDA 8.0.targets" />
+    <Import Project="$(SolutionDir)\Configuration\Common.cplusplus.targets" />
   </ImportGroup>
 </Project>
