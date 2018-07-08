@@ -43,7 +43,7 @@ namespace RenderToy.WPF
                     {
                         D3DLockedRect lockit = texturescratch.LockRect((uint)level);
                         var thislevel = astexture.GetTextureLevel(level);
-                        MaterialBitmapConverter.ConvertToBitmap(thislevel, lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
+                        DirectXHelper.ConvertToBitmap(thislevel, lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
                         texturescratch.UnlockRect((uint)level);
                     }
                     device.UpdateTexture(texturescratch, texture);
@@ -51,11 +51,11 @@ namespace RenderToy.WPF
                 }
                 else
                 {
-                    var asimage = MaterialBitmapConverter.GetImageConverter(material, 512, 512);
+                    var asimage = DirectXHelper.GetImageConverter(material, 512, 512);
                     var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Default, null);
                     var texturescratch = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory, null);
                     D3DLockedRect lockit = texturescratch.LockRect(0);
-                    MaterialBitmapConverter.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
+                    DirectXHelper.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
                     texturescratch.UnlockRect(0);
                     device.UpdateTexture(texturescratch, texture);
                     return texture;
