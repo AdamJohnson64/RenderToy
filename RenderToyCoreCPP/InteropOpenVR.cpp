@@ -3,6 +3,11 @@
 
 namespace RenderToy
 {
+	public enum class Eye
+	{
+		Left = vr::Eye_Left,
+		Right = vr::Eye_Right,
+	};
 	public enum class TrackedControllerRole
 	{
 		Invalid = vr::TrackedControllerRole_Invalid,
@@ -27,7 +32,7 @@ namespace RenderToy
 	public:
 		static OpenVR()
 		{
-			vrsystem = vr::VR_Init(nullptr, vr::EVRApplicationType::VRApplication_Bootstrapper);
+			vrsystem = vr::VR_Init(nullptr, vr::EVRApplicationType::VRApplication_Scene);
 		}
 		static void GetRecommendedRenderTargetSize(uint32_t %width, uint32_t %height)
 		{
@@ -38,6 +43,7 @@ namespace RenderToy
 		}
 		static bool LocateDeviceId(cli::array<float> ^matrix43, int deviceID)
 		{
+			if (matrix43 == nullptr) return false;
 			vr::TrackedDevicePose_t trackedDevicePoseArray[16];
 			vrsystem->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseSeated, 0, trackedDevicePoseArray, 16);
 			if (vrsystem->IsTrackedDeviceConnected(deviceID))
@@ -49,6 +55,7 @@ namespace RenderToy
 		}
 		static bool LocateDeviceRole(cli::array<float> ^matrix43, TrackedControllerRole deviceRole)
 		{
+			if (matrix43 == nullptr) return false;
 			vr::TrackedDevicePose_t trackedDevicePoseArray[16];
 			vrsystem->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseSeated, 0, trackedDevicePoseArray, 16);
 			for (int device = vr::k_unTrackedDeviceIndex_Hmd; device < vr::k_unMaxTrackedDeviceCount; ++device)
@@ -64,8 +71,32 @@ namespace RenderToy
 			}
 			return false;
 		}
-	private:
+	public:
 		static vr::IVRSystem *vrsystem;
+	};
+
+	public ref class OpenVRCompositor
+	{
+	public:
+		static OpenVRCompositor()
+		{
+			vrcompositor = vr::VRCompositor();
+		}
+		static void WaitGetPoses()
+		{
+			vr::TrackedDevicePose_t poserender, posegame;
+			vrcompositor->WaitGetPoses(&poserender, 1, &posegame, 1);
+		}
+		static void Submit(Eye eEye, System::IntPtr pTexture)
+		{
+			vr::Texture_t texture;
+			texture.handle = pTexture.ToPointer();
+			texture.eType = vr::TextureType_DirectX;
+			texture.eColorSpace = vr::ColorSpace_Auto;
+			vrcompositor->Submit((vr::EVREye)eEye, &texture, nullptr);
+		}
+	private:
+		static vr::IVRCompositor *vrcompositor;
 	};
 }
 #endif // OPENVR_INSTALLED

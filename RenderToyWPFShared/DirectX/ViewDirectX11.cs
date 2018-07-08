@@ -173,6 +173,11 @@ namespace RenderToy.WPF
             d3dimage.Lock();
             d3dimage.AddDirtyRect(new Int32Rect(0, 0, d3d11Texture2D_RT.GetWidth(), d3d11Texture2D_RT.GetHeight()));
             d3dimage.Unlock();
+#if OPENVR_INSTALLED
+            OpenVRCompositor.WaitGetPoses();
+            OpenVRCompositor.Submit(Eye.Left, d3d11Texture2D_RT.ManagedPtr);
+            OpenVRCompositor.Submit(Eye.Right, d3d11Texture2D_RT.ManagedPtr);
+#endif // OPENVR_INSTALLED
         }
         void SetVertexShader(byte[] bytecode)
         {
