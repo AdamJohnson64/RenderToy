@@ -322,6 +322,13 @@ namespace RenderToy
 			return WrappedInterface();
 		}
 	};
+	public ref class D3D11CommandList : COMWrapper<ID3D11CommandList>
+	{
+	public:
+		D3D11CommandList(ID3D11CommandList *pObj) : COMWrapper(pObj)
+		{
+		}
+	};
 	public ref class D3D11DepthStencilView : COMWrapper<ID3D11DepthStencilView>
 	{
 	public:
@@ -433,6 +440,16 @@ namespace RenderToy
 		void End()
 		{
 			WrappedInterface()->End(nullptr);
+		}
+		void ExecuteCommandList(D3D11CommandList ^pCommandList, BOOL RestoreContextState)
+		{
+			WrappedInterface()->ExecuteCommandList(pCommandList->WrappedInterface(), RestoreContextState);
+		}
+		D3D11CommandList^ FinishCommandList(BOOL RestoreDeferredContextState)
+		{
+			ID3D11CommandList *ppCommandList = nullptr;
+			TRY_D3D(WrappedInterface()->FinishCommandList(RestoreDeferredContextState, &ppCommandList));
+			return gcnew D3D11CommandList(ppCommandList);
 		}
 		void Flush()
 		{
@@ -606,6 +623,12 @@ namespace RenderToy
 			pDescM.Texture2D.MipSlice = pDesc.Texture2D.MipSlice;
 			TRY_D3D(WrappedInterface()->CreateDepthStencilView(pResource->GetResource(), &pDescM, &ppDepthStencilView));
 			return gcnew D3D11DepthStencilView(ppDepthStencilView);
+		}
+		D3D11DeviceContext^ CreateDeferredContext(UINT ContextFlags)
+		{
+			ID3D11DeviceContext *ppDeferredContext = nullptr;
+			TRY_D3D(WrappedInterface()->CreateDeferredContext(ContextFlags, &ppDeferredContext));
+			return gcnew D3D11DeviceContext(ppDeferredContext);
 		}
 		D3D11InputLayout^ CreateInputLayout(cli::array<D3D11InputElementDesc> ^pInputElementDescs, cli::array<byte> ^pShaderBytecodeWithInputSignature)
 		{
