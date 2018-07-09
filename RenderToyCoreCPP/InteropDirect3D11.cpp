@@ -769,7 +769,13 @@ namespace RenderToy
 		{
 			ID3D11Device *ppDevice = nullptr;
 			D3D_FEATURE_LEVEL featurelevel = D3D_FEATURE_LEVEL_12_1;
-			TRY_D3D(::D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, &featurelevel, 1, D3D11_SDK_VERSION, &ppDevice, nullptr, nullptr));
+			D3D11_CREATE_DEVICE_FLAG flags;
+#ifdef DEBUG
+			flags = D3D11_CREATE_DEVICE_DEBUG;
+#else
+			flags = (D3D11_CREATE_DEVICE_FLAG)0;
+#endif
+			TRY_D3D(::D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, &featurelevel, 1, D3D11_SDK_VERSION, &ppDevice, nullptr, nullptr));
 			return gcnew D3D11Device(ppDevice);
 		}
 		static D3D11Device^ D3D11CreateDeviceAndSwapChain(System::IntPtr OutputWindow, DXGISwapChain ^%swapchain)
