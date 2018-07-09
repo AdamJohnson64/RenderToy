@@ -48,10 +48,10 @@ namespace RenderToy
             OpenVR.GetProjectionMatrix(matin, eEye, fNear, fFar);
             return ConvertMatrix44(matin);
         }
-        public static Matrix3D LocateDeviceId(int deviceid)
+        public static Matrix3D LocateDeviceId(int deviceid, TrackingUniverseOrigin eOrigin, float fPredictedSecondsToPhotonsFromNow)
         {
             var matin = new float[12];
-            if (!OpenVR.LocateDeviceId(matin, 0)) return Matrix3D.Identity;
+            if (!OpenVR.LocateDeviceId(matin, 0, eOrigin, fPredictedSecondsToPhotonsFromNow)) return Matrix3D.Identity;
             return ConvertMatrix43(matin);
         }
     }

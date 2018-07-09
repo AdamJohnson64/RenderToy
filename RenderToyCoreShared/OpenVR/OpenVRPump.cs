@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace RenderToy
 {
-    #if OPENVR_INSTALLED
+#if OPENVR_INSTALLED
     class OpenVRPump
     {
         public OpenVRPump(IScene scene)
@@ -41,7 +41,12 @@ namespace RenderToy
                         context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 } });
                     }
                     OpenVRCompositor.WaitGetPoses();
-                    Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.LocateDeviceId(0));
+                    float fPredictedSecondsToPhotonsFromNow = 0;
+                    while (!OpenVR.GetTimeToPhotons(ref fPredictedSecondsToPhotonsFromNow))
+                    {
+                        OpenVRCompositor.WaitGetPoses();
+                    }
+                    Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.LocateDeviceId(0, TrackingUniverseOrigin.Standing, fPredictedSecondsToPhotonsFromNow));
                     {
                         context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
                         context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
@@ -61,5 +66,5 @@ namespace RenderToy
             thread.Start();
         }
     }
-    #endif // OPENVR_INSTALLED
+#endif // OPENVR_INSTALLED
 }
