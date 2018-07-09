@@ -30,35 +30,6 @@ namespace RenderToy.SceneGraph
                     yield return tobj;
                 }
             }
-#if OPENVR_INSTALLED
-            /*
-            float scale = 1.0f;
-            {
-                var matin = new float[4 * 3];
-                if (OpenVR.LocateDeviceId(matin, 0))
-                {
-                    var matout = OpenVRHelper.ConvertMatrix44DX(matin, scale);
-                    yield return new TransformedObject(new Node("Head", new TransformMatrix(matout), VRTESTPRIMITIVE, StockMaterials.White, StockMaterials.PlasticWhite), matout);
-                }
-            }
-            {
-                var matin = new float[4 * 3];
-                if (OpenVR.LocateDeviceRole(matin, TrackedControllerRole.RightHand))
-                {
-                    var matout = OpenVRHelper.ConvertMatrix44DX(matin, scale);
-                    yield return new TransformedObject(new Node("Right Hand", new TransformMatrix(matout), VRTESTPRIMITIVE, StockMaterials.Green, StockMaterials.PlasticGreen), matout);
-                }
-            }
-            {
-                var matin = new float[4 * 3];
-                if (OpenVR.LocateDeviceRole(matin, TrackedControllerRole.LeftHand))
-                {
-                    var matout = OpenVRHelper.ConvertMatrix44DX(matin, scale);
-                    yield return new TransformedObject(new Node("Left Hand", new TransformMatrix(matout), VRTESTPRIMITIVE, StockMaterials.Red, StockMaterials.PlasticRed), matout);
-                }
-            }
-            */
-#endif // OPENVR_INSTALLED
         }
 #if OPENVR_INSTALLED
         static IPrimitive VRTESTPRIMITIVE = new Sphere();

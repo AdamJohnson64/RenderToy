@@ -10,9 +10,16 @@ namespace RenderToy
 	};
 	public value struct HmdMatrix34
 	{
-		float M11, M12, M13, M14;
-		float M21, M22, M23, M24;
-		float M31, M32, M33, M34;
+		float M11, M21, M31, M41;
+		float M12, M22, M32, M42;
+		float M13, M23, M33, M43;
+	};
+	public value struct HmdMatrix44
+	{
+		float M11, M21, M31, M41;
+		float M12, M22, M32, M42;
+		float M13, M23, M33, M43;
+		float M14, M24, M34, M44;
 	};
 	public value struct HmdVector3
 	{
@@ -51,43 +58,31 @@ namespace RenderToy
 	};
 	public ref class OpenVR
 	{
-	private:
-		static void ConvertMatrix43(cli::array<float> ^matrixOut, const vr::HmdMatrix34_t &matrixIn)
-		{
-			for (int j = 0; j < 3; ++j)
-			{
-				for (int i = 0; i < 4; ++i)
-				{
-					matrixOut[i + j * 4] = ((float*)&matrixIn)[i + j * 4];
-				}
-			}
-		}
-		static void ConvertMatrix44(cli::array<float> ^matrixOut, const vr::HmdMatrix44_t &matrixIn)
-		{
-			for (int i = 0; i < 16; ++i)
-			{
-				matrixOut[i] = ((float*)&matrixIn)[i];
-			}
-		}
 	public:
 		static OpenVR()
 		{
 			vrsystem = vr::VR_Init(nullptr, vr::EVRApplicationType::VRApplication_Scene);
 		}
-		void GetDeviceToAbsoluteTrackingPose(TrackingUniverseOrigin eOrigin, float fPredictedSecondsToPhotonsFromNow, cli::array<TrackedDevicePose> ^pTrackedDevicePoseArray)
+		static TrackedControllerRole GetControllerRoleForTrackedDeviceIndex(vr::TrackedDeviceIndex_t unDeviceIndex)
+		{
+			return (TrackedControllerRole)vrsystem->GetControllerRoleForTrackedDeviceIndex(unDeviceIndex);
+		}
+		static void GetDeviceToAbsoluteTrackingPose(TrackingUniverseOrigin eOrigin, float fPredictedSecondsToPhotonsFromNow, cli::array<TrackedDevicePose> ^pTrackedDevicePoseArray)
 		{
 			pin_ptr<TrackedDevicePose> pTrackedDevicePoseArrayM = &pTrackedDevicePoseArray[0];
 			vrsystem->GetDeviceToAbsoluteTrackingPose((vr::ETrackingUniverseOrigin)eOrigin, fPredictedSecondsToPhotonsFromNow, (vr::TrackedDevicePose_t*)&pTrackedDevicePoseArrayM[0], pTrackedDevicePoseArray->Length);
 		}
-		static void GetProjectionMatrix(cli::array<float> ^matrix44, Eye eEye, float fNearZ, float fFarZ)
+		static HmdMatrix44 GetProjectionMatrix(Eye eEye, float fNearZ, float fFarZ)
 		{
-			auto projection = vrsystem->GetProjectionMatrix((vr::EVREye)eEye, fNearZ, fFarZ);
-			ConvertMatrix44(matrix44, projection);
+			HmdMatrix44 result;
+			*reinterpret_cast<vr::HmdMatrix44_t*>(&result) = vrsystem->GetProjectionMatrix((vr::EVREye)eEye, fNearZ, fFarZ);
+			return result;
 		}
-		static void GetEyeToHeadTransform(cli::array<float> ^matrix43, Eye eEye)
+		static HmdMatrix34 GetEyeToHeadTransform(Eye eEye)
 		{
-			auto view = vrsystem->GetEyeToHeadTransform((vr::EVREye)eEye);
-			ConvertMatrix43(matrix43, view);
+			HmdMatrix34 result;
+			*reinterpret_cast<vr::HmdMatrix34_t*>(&result) = vrsystem->GetEyeToHeadTransform((vr::EVREye)eEye);
+			return result;
 		}
 		static void GetRecommendedRenderTargetSize(uint32_t %width, uint32_t %height)
 		{
@@ -113,36 +108,6 @@ namespace RenderToy
 			float fPredictedSecondsFromNow = fFrameDuration * 2 - fSecondsSinceLastVsync + fVsyncToPhotons;
 			time = fPredictedSecondsFromNow;
 			return true;
-		}
-		static bool LocateDeviceId(cli::array<float> ^matrix43, int deviceID, TrackingUniverseOrigin eOrigin, float fPredictedSecondsToPhotonsFromNow)
-		{
-			if (matrix43 == nullptr) return false;
-			vr::TrackedDevicePose_t trackedDevicePoseArray[16];
-			vrsystem->GetDeviceToAbsoluteTrackingPose((vr::ETrackingUniverseOrigin)eOrigin, fPredictedSecondsToPhotonsFromNow, trackedDevicePoseArray, 16);
-			if (trackedDevicePoseArray[deviceID].bDeviceIsConnected)
-			{
-				ConvertMatrix43(matrix43, trackedDevicePoseArray[deviceID].mDeviceToAbsoluteTracking);
-				return true;
-			}
-			return false;
-		}
-		static bool LocateDeviceRole(cli::array<float> ^matrix43, TrackedControllerRole deviceRole, TrackingUniverseOrigin eOrigin, float fPredictedSecondsToPhotonsFromNow)
-		{
-			if (matrix43 == nullptr) return false;
-			vr::TrackedDevicePose_t trackedDevicePoseArray[16];
-			vrsystem->GetDeviceToAbsoluteTrackingPose((vr::ETrackingUniverseOrigin)eOrigin, fPredictedSecondsToPhotonsFromNow, trackedDevicePoseArray, 16);
-			for (int device = vr::k_unTrackedDeviceIndex_Hmd; device < vr::k_unMaxTrackedDeviceCount; ++device)
-			{
-				if (vrsystem->IsTrackedDeviceConnected(device))
-				{
-					if (vrsystem->GetControllerRoleForTrackedDeviceIndex(device) == (vr::ETrackedControllerRole)deviceRole)
-					{
-						ConvertMatrix43(matrix43, trackedDevicePoseArray[device].mDeviceToAbsoluteTracking);
-						return true;
-					}
-				}
-			}
-			return false;
 		}
 	public:
 		static vr::IVRSystem *vrsystem;

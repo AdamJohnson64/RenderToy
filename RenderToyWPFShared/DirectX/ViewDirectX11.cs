@@ -74,11 +74,7 @@ namespace RenderToy.WPF
             context.OMSetRenderTargets(new[] { d3d11RenderTargetView }, d3d11DepthStencilView);
             context.ClearDepthStencilView(d3d11DepthStencilView, D3D11ClearFlag.Depth, 1, 0);
             context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
-#if OPENVR_DRIVE_UI_VIEW
-            Execute_DrawScene(context, MathHelp.Invert(OpenVRHelper.LocateDeviceId(0)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-#else
             Execute_DrawScene(context, AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-#endif
             context.Flush();
             d3dimage.Lock();
             d3dimage.AddDirtyRect(new Int32Rect(0, 0, d3d11Texture2D_RT.GetWidth(), d3d11Texture2D_RT.GetHeight()));

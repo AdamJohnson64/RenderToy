@@ -46,7 +46,9 @@ namespace RenderToy
                     {
                         OpenVRCompositor.WaitGetPoses();
                     }
-                    Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.LocateDeviceId(0, TrackingUniverseOrigin.Standing, fPredictedSecondsToPhotonsFromNow));
+                    TrackedDevicePose[] poses = new TrackedDevicePose[16];
+                    OpenVR.GetDeviceToAbsoluteTrackingPose(TrackingUniverseOrigin.Standing, fPredictedSecondsToPhotonsFromNow, poses);
+                    Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.ConvertMatrix43(poses[0].mDeviceToAbsoluteTracking));
                     {
                         context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
                         context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
