@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+#if OPENVR_INSTALLED
 using RenderToy.Math;
 
 namespace RenderToy
@@ -55,3 +56,4 @@ namespace RenderToy
         }
     }
 }
+#endif // OPENVR_INSTALLED

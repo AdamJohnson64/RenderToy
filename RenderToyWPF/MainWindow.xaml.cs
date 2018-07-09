@@ -205,10 +205,12 @@ namespace RenderToy.WPF
             }));
             CommandBindings.Add(new CommandBinding(CommandStartOpenVR, (s, e) =>
             {
+                #if OPENVR_INSTALLED
                 if (DataContext is Document doc)
                 {
                     new OpenVRPump(doc.Scene);
                 }
+                #endif // OPENVR_INSTALLED
             }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
