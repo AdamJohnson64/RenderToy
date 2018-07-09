@@ -2,6 +2,7 @@
 using RenderToy.Math;
 using RenderToy.SceneGraph;
 using RenderToy.Shaders;
+using System.Linq;
 using System.Threading;
 
 namespace RenderToy
@@ -24,6 +25,7 @@ namespace RenderToy
             var d3d11Texture2D_RT_EyeRight = DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, null);
             var d3d11RenderTargetView_EyeRight = DirectX11Helper.d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeRight, new D3D11RenderTargetViewDesc { Format = DXGIFormat.B8G8R8A8_Unorm, ViewDimension = D3D11RtvDimension.Texture2D, Texture2D = new D3D11Tex2DRtv { MipSlice = 0 } });
             var Execute_DrawScene = DirectX11Helper.CreateSceneDraw(scene);
+            var Execute_DrawWidget = DirectX11Helper.CreateWidgetDraw();
             var thread = new Thread((param) =>
             {
                 while (true)
@@ -48,19 +50,33 @@ namespace RenderToy
                     }
                     TrackedDevicePose[] poses = new TrackedDevicePose[16];
                     OpenVR.GetDeviceToAbsoluteTrackingPose(TrackingUniverseOrigin.Standing, fPredictedSecondsToPhotonsFromNow, poses);
+                    var hands = poses
+                        .Select((pose, index) => new { Pose = pose, Index = index })
+                        .Where((x) => x.Pose.bDeviceIsConnected && x.Pose.bPoseIsValid && (OpenVR.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == TrackedControllerRole.RightHand || OpenVR.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == TrackedControllerRole.LeftHand))
+                        .ToArray();
                     Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.ConvertMatrix43(poses[0].mDeviceToAbsoluteTracking));
                     {
                         context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
                         context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
                         context.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, 0, 0, 0, 0);
-                        Execute_DrawScene(context, transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Left)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f));
+                        var transformViewProjection = transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Left)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f);
+                        Execute_DrawScene(context, transformViewProjection);
+                        foreach (var hand in hands)
+                        {
+                            Execute_DrawWidget(context, MathHelp.CreateMatrixScale(0.1, 0.1, 0.1) * OpenVRHelper.ConvertMatrix43(hand.Pose.mDeviceToAbsoluteTracking) * transformViewProjection);
+                        }
                         OpenVRCompositor.Submit(Eye.Left, d3d11Texture2D_RT_EyeLeft.ManagedPtr);
                     }
                     {
                         context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeRight }, d3d11DepthStencilView_Eye);
                         context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
                         context.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, 0, 0, 0, 0);
-                        Execute_DrawScene(context, transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Right)) * OpenVRHelper.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f));
+                        var transformViewProjection = transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Right)) * OpenVRHelper.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f);
+                        Execute_DrawScene(context, transformViewProjection);
+                        foreach (var hand in hands)
+                        {
+                            Execute_DrawWidget(context, MathHelp.CreateMatrixScale(0.1, 0.1, 0.1) * OpenVRHelper.ConvertMatrix43(hand.Pose.mDeviceToAbsoluteTracking) * transformViewProjection);
+                        }
                         OpenVRCompositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
                     }
                 }

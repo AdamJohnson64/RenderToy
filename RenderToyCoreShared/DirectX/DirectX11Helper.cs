@@ -6,6 +6,7 @@ using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using RenderToy.Textures;
+using RenderToy.Transforms;
 using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
@@ -75,6 +76,12 @@ namespace RenderToy.DirectX
                     draw(context);
                 }
             };
+        }
+        public static Action<D3D11DeviceContext4, Matrix3D> CreateWidgetDraw()
+        {
+            Scene scene = new Scene();
+            scene.children.Add(new Node("Widget", new TransformMatrix(Matrix3D.Identity), new Sphere(), StockMaterials.White, StockMaterials.PlasticWhite));
+            return CreateSceneDraw(scene);
         }
         public static D3D11ShaderResourceView CreateTextureView(IMaterial material, IMaterial missing)
         {
