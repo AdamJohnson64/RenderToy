@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <OpenVRInstalled Condition="exists('$(SolutionDir)\..\openvr\CMakeLists.txt')">True</OpenVRInstalled>
+    <OpenVRInstalled Condition="exists('$(SolutionDir)\ThirdParty\openvr\CMakeLists.txt')">True</OpenVRInstalled>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(OpenVRInstalled)'=='True'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\openvr\headers</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\ThirdParty\openvr\headers</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OPENVR_INSTALLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>openvr_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\openvr\lib\win64;%(AdditionalIncludeDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\ThirdParty\openvr\lib\win64;%(AdditionalIncludeDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
 </Project>
