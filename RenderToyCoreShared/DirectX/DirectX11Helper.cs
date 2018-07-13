@@ -10,6 +10,7 @@ using RenderToy.Transforms;
 using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace RenderToy.DirectX
@@ -77,10 +78,21 @@ namespace RenderToy.DirectX
                 }
             };
         }
-        public static Action<D3D11DeviceContext4, Matrix3D> CreateWidgetDraw()
+        public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneSphere()
         {
             Scene scene = new Scene();
             scene.children.Add(new Node("Widget", new TransformMatrix(Matrix3D.Identity), new Sphere(), StockMaterials.White, StockMaterials.PlasticWhite));
+            return CreateSceneDraw(scene);
+        }
+        public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneMaracas()
+        {
+            Scene scene = new Scene();
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var file = Path.Combine(path, "maracas.obj");
+            foreach (var node in RenderToy.ModelFormat.LoaderOBJ.LoadFromPath(file))
+            {
+                scene.children.Add(node);
+            }
             return CreateSceneDraw(scene);
         }
         public static D3D11ShaderResourceView CreateTextureView(IMaterial material, IMaterial missing)

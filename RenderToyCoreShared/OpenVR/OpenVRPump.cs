@@ -25,7 +25,7 @@ namespace RenderToy
             var d3d11Texture2D_RT_EyeRight = DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, null);
             var d3d11RenderTargetView_EyeRight = DirectX11Helper.d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeRight, new D3D11RenderTargetViewDesc { Format = DXGIFormat.B8G8R8A8_Unorm, ViewDimension = D3D11RtvDimension.Texture2D, Texture2D = new D3D11Tex2DRtv { MipSlice = 0 } });
             var Execute_DrawScene = DirectX11Helper.CreateSceneDraw(scene);
-            var Execute_DrawWidget = DirectX11Helper.CreateWidgetDraw();
+            var Execute_DrawWidget = DirectX11Helper.CreateSceneSphere();
             var thread = new Thread((param) =>
             {
                 while (true)
