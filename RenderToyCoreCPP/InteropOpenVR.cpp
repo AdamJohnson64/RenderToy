@@ -62,6 +62,7 @@ namespace RenderToy
 		static OpenVR()
 		{
 			vrsystem = vr::VR_Init(nullptr, vr::EVRApplicationType::VRApplication_Scene);
+			if (vrsystem == nullptr) throw gcnew System::Exception("OpenVR could not be started; check your SteamVR and HMD setup.");
 		}
 		static TrackedControllerRole GetControllerRoleForTrackedDeviceIndex(vr::TrackedDeviceIndex_t unDeviceIndex)
 		{
