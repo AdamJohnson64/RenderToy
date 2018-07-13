@@ -14,6 +14,9 @@ using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
+using RenderToy.QueryEngine;
+using RenderToy.SceneGraph;
+using RenderToy.Transforms;
 using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
@@ -350,6 +353,110 @@ namespace RenderToy
         static ExpressionFlatten<Func<Vector3D, Vector4D>> TestExpression = TestExpressionFn.ReplaceCalls().Flatten();
         static Func<Vector3D, Vector4D> oldmethod = TestExpressionFn.Compile();
         static Func<Vector3D, Vector4D> newmethod = TestExpression.Call;
+    }
+    [TestClass]
+    public class QueryTests
+    {
+        [TestMethod]
+        public void QueryEquivalenceImmediate()
+        {
+            var data = "Data";
+            var query1 = Query.Create(data);
+            var query2 = Query.Create(data);
+            Debug.Assert(query1.Equals(query2));
+        }
+        [TestMethod]
+        public void QueryNonEquivalenceImmediate()
+        {
+            var query1 = Query.Create("Data1");
+            var query2 = Query.Create("Data2");
+            Debug.Assert(!query1.Equals(query2));
+        }
+        [TestMethod]
+        public void QueryEquivalenceDeferred()
+        {
+            var querydata = Query.Create("Data");
+            var query1 = Query.Create((x) => x, querydata);
+            var query2 = Query.Create((x) => x, querydata);
+            Debug.Assert(query1.Equals(query2));
+        }
+        [TestMethod]
+        public void QueryNonEquivalenceDeferred()
+        {
+            var querydata1 = Query.Create("Data1");
+            var querydata2 = Query.Create("Data2");
+            Debug.Assert(!querydata1.Equals(querydata2));
+            var query1 = Query.Create((x) => x, querydata1);
+            var query2 = Query.Create((x) => x, querydata2);
+            Debug.Assert(!query1.Equals(query2));
+        }
+        [TestMethod]
+        public void QueryNotifyDeferred()
+        {
+            var waitquery = new ManualResetEvent(false);
+            var query = Query.Create(() => { waitquery.WaitOne(); return "Done"; });
+            int triggercount = 0;
+            query.AddListener(() => { Interlocked.Increment(ref triggercount); });
+            Debug.Assert(triggercount == 1);
+            waitquery.Set();
+            while (triggercount < 2)
+            {
+                Thread.Sleep(1);
+            }
+            Debug.Assert(triggercount == 2);
+        }
+        [TestMethod]
+        public void QueryNotifyImmediate()
+        {
+            var query = Query.Create("Done");
+            int triggercount = 0;
+            query.AddListener(() => { Interlocked.Increment(ref triggercount); });
+            Debug.Assert(triggercount == 1);
+        }
+        [TestMethod]
+        public void QueryResultDeferred()
+        {
+            var result = "Done";
+            var waitquery = new AutoResetEvent(false);
+            var query = Query.Create(() => { waitquery.WaitOne(); return result; });
+            Debug.Assert(query.Result == null);
+            waitquery.Set();
+            while (query.Result != result)
+            {
+                Thread.Sleep(1);
+            }
+        }
+        [TestMethod]
+        public void QueryResultImmediate()
+        {
+            var result = "Done";
+            var query = Query.Create(result);
+            Debug.Assert(query.Result == result);
+        }
+        [TestMethod]
+        public void QueryLongRunning()
+        {
+            const int SPHERECOUNT = 100000;
+            Debug.WriteLine("Generating fake scene");
+            var scene = new Scene();
+            var transform = new TransformMatrix(Matrix3D.Identity);
+            var sphere = new Sphere();
+            for (int i = 0; i < SPHERECOUNT; ++i)
+            scene.children.Add(new Node("Sphere " + i, transform, sphere, StockMaterials.White, StockMaterials.PlasticWhite));
+            Debug.WriteLine("Creating immediate scene query.");
+            var queryscene = Query.Create(scene);
+            var waitresult = new AutoResetEvent(false);
+            Debug.WriteLine("Creating deferred transformed scene query.");
+            var querytransformed = Query.Create((input) => (IReadOnlyList<TransformedObject>)TransformedObject.Enumerate(input).ToArray(), queryscene);
+            querytransformed.AddListener(() => waitresult.Set());
+            waitresult.Reset();
+            Debug.Assert(querytransformed.Result == null);
+            Debug.WriteLine("Waiting for query ready.");
+            bool waitcomplete = waitresult.WaitOne(10000);
+            Debug.Assert(waitcomplete);
+            Debug.Assert(querytransformed.Result != null);
+            Debug.Assert(querytransformed.Result.Count == SPHERECOUNT);
+        }
     }
     [TestClass]
     public class WorkQueueTests
