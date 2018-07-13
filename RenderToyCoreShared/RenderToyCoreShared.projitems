@@ -37,6 +37,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\Common.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\Rasterization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Pipeline\PrimitiveAssemblyLines.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Query\Query.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Query\QueryImmediate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Query\QueryDeferred.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\RenderControl\AccumulateBuffer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\RenderControl\BitmapBuffer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\RenderControl\IMultiPass.cs" />
