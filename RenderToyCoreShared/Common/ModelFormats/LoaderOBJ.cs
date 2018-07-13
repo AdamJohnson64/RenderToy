@@ -89,6 +89,10 @@ namespace RenderToy.ModelFormat
                         groupname = parts[1];
                         continue;
                     }
+                    if (line == "g")
+                    {
+                        continue;
+                    }
                     if (line.StartsWith("s "))
                     {
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
@@ -165,12 +169,18 @@ namespace RenderToy.ModelFormat
                 // Flush this mesh to the caller.
                 var primitive = new Mesh(collectedvertexfaces, vertices);
                 yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
-                // Reset our state.
-                materialname = null;
-                collectedvertexfaces = null;
-                collectednormalfaces = null;
-                collectedtexcoordfaces = null;
             }
+            else
+            {
+                // Flush this mesh to the caller.
+                var primitive = new Mesh(collectedvertexfaces, vertices);
+                yield return new Node("NoMaterial", new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite);
+            }
+            // Reset our state.
+            materialname = null;
+            collectedvertexfaces = null;
+            collectednormalfaces = null;
+            collectedtexcoordfaces = null;
         }
         static Dictionary<string, IMaterial> LoadMaterialLibrary(string objpath, string mtlrelative)
         {
