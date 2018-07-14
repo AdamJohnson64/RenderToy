@@ -4,35 +4,34 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{44234705-FBD6-4D0E-885F-D01B4E2D23CE}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RenderToyCoreLibrary</RootNamespace>
-    <AssemblyName>RenderToyCoreLibrary</AssemblyName>
+    <ProjectGuid>{66A303AB-013C-4F5F-A227-490A4B4D1138}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>RenderToyOpenVR</RootNamespace>
+    <AssemblyName>RenderToyOpenVR</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\Configuration\Common.csharp.props" />
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -44,16 +43,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RenderToyOpenVR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RenderToyCLI\RenderToyCLI.vcxproj">
       <Project>{e68e5ecf-2731-45dc-a334-4fc4651ee0af}</Project>
       <Name>RenderToyCLI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\RenderToyCoreLibrary\RenderToyCoreLibrary.csproj">
+      <Project>{44234705-fbd6-4d0e-885f-d01b4e2d23ce}</Project>
+      <Name>RenderToyCoreLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="..\RenderToyCoreShared\RenderToyCoreShared.projitems" Label="Shared" />
-  <Import Project="..\RenderToyMathShared\RenderToyMathShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\Configuration\Common.csharp.targets" />
 </Project>
