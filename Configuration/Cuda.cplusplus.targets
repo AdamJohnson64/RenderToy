@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="CUDAMessage" AfterTargets="Build">
+    <Message Condition="'$(CUDAInstalled)'!='True'" Importance="High" Text="WARNING: CUDA is not available and will be disabled for this build." />
+  </Target>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Condition="'$(CUDAInstalled)'=='True'" Project="$(CUDAPropsPath)\CUDA 8.0.targets" />
+  </ImportGroup>
+</Project>

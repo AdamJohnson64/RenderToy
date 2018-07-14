@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CUDAPropsPath Condition="'$(CUDAPropsPath)'==''">$(VCTargetsPath)\BuildCustomizations</CUDAPropsPath>
+    <CUDAInstalled Condition="exists('$(CUDAPropsPath)\CUDA 8.0.props') AND exists('$(CUDAPropsPath)\CUDA 8.0.targets')">True</CUDAInstalled>
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+    <Import Condition="'$(CUDAInstalled)'=='True'" Project="$(CUDAPropsPath)\CUDA 8.0.props" />
+  </ImportGroup>
+  <ItemDefinitionGroup Condition="'$(CUDAInstalled)'=='True'">
+    <ClCompile>
+      <PreprocessorDefinitions>CUDA_INSTALLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

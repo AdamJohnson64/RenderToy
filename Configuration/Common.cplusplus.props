@@ -24,6 +24,7 @@
     <IntDir>$(SolutionDir)Output\$(ProjectName)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="Cuda.cplusplus.props" />
     <Import Project="OpenVR.cplusplus.props" />
   </ImportGroup>
 </Project>

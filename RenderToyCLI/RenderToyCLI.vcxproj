@@ -1,12 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <CUDAPropsPath Condition="'$(CUDAPropsPath)'==''">$(VCTargetsPath)\BuildCustomizations</CUDAPropsPath>
-    <CUDAInstalled Condition="exists('$(CUDAPropsPath)\CUDA 8.0.props') AND exists('$(CUDAPropsPath)\CUDA 8.0.targets')">True</CUDAInstalled>
-  </PropertyGroup>
-  <Target Name="CUDAMessage" AfterTargets="Build">
-    <Message Condition="'$(CUDAInstalled)'!='True'" Importance="High" Text="WARNING: CUDA is not available and will be disabled for this build." />
-  </Target>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -28,9 +21,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-    <Import Condition="'$(CUDAInstalled)'=='True'" Project="$(CUDAPropsPath)\CUDA 8.0.props" />
-  </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -50,14 +40,6 @@
     <IntDir>$(SolutionDir)Output\$(ProjectName)_$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Output\$(Platform)_$(Configuration)\</OutDir>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(CUDAInstalled)'=='True'">
-    <ClCompile>
-      <PreprocessorDefinitions>CUDA_INSTALLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>cudart.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PreprocessorDefinitions>RENDERTOY_NO_AMP;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -103,7 +85,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Condition="'$(CUDAInstalled)'=='True'" Project="$(CUDAPropsPath)\CUDA 8.0.targets" />
     <Import Project="$(SolutionDir)\Configuration\Common.cplusplus.targets" />
   </ImportGroup>
 </Project>
