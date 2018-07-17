@@ -20,7 +20,7 @@
     </Link>
   </ItemDefinitionGroup>
   <PropertyGroup>
-    <OutDir>$(SolutionDir)Output\$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Output\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Output\$(ProjectName)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <ImportGroup Label="ExtensionTargets">
