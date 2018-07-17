@@ -2,14 +2,14 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <AssemblyName>$(ProjectName)</AssemblyName>
-    <IntermediateOutputPath>$(SolutionDir)Output\$(ProjectName)_$(Configuration)\</IntermediateOutputPath>
+    <!-- <IntermediateOutputPath>$(SolutionDir)Output\$(ProjectName)_$(Configuration)\</IntermediateOutputPath> -->
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <ErrorReport>prompt</ErrorReport>
     <OutputPath>$(SolutionDir)Output\$(Configuration)\</OutputPath>
     <PlatformTarget>x64</PlatformTarget>
     <Prefer32Bit>true</Prefer32Bit>
     <RootNamespace>$(ProjectName)</RootNamespace>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
