@@ -4,9 +4,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.DirectX;
+using RenderToy.Materials;
 using RenderToy.Math;
+using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Shaders;
+using RenderToy.Textures;
+using RenderToy.Transforms;
 using System;
 using System.Linq;
 using System.Threading;
@@ -58,29 +62,27 @@ namespace RenderToy
                     .Select((pose, index) => new { Pose = pose, Index = index })
                     .Where((x) => x.Pose.bDeviceIsConnected && x.Pose.bPoseIsValid && (OpenVR.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == TrackedControllerRole.RightHand || OpenVR.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == TrackedControllerRole.LeftHand))
                     .ToArray();
-                Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.ConvertMatrix43(poses[0].mDeviceToAbsoluteTracking));
+                Action<Matrix3D> RenderOneEye = (transformViewProjection) =>
                 {
-                    context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
-                    context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
-                    context.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, 0, 0, 0, 0);
-                    var transformViewProjection = transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Left)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f);
                     Execute_DrawScene(context, transformViewProjection);
                     foreach (var hand in hands)
                     {
                         Execute_DrawWidget(context, MathHelp.CreateMatrixScale(0.1, 0.1, 0.1) * OpenVRHelper.ConvertMatrix43(hand.Pose.mDeviceToAbsoluteTracking) * transformViewProjection);
                     }
+                };
+                Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.ConvertMatrix43(poses[0].mDeviceToAbsoluteTracking));
+                {
+                    context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
+                    context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
+                    context.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, 0, 0, 0, 0);
+                    RenderOneEye(transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Left)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f));
                     OpenVRCompositor.Submit(Eye.Left, d3d11Texture2D_RT_EyeLeft.ManagedPtr);
                 }
                 {
                     context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeRight }, d3d11DepthStencilView_Eye);
                     context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
                     context.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, 0, 0, 0, 0);
-                    var transformViewProjection = transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Right)) * OpenVRHelper.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f);
-                    Execute_DrawScene(context, transformViewProjection);
-                    foreach (var hand in hands)
-                    {
-                        Execute_DrawWidget(context, MathHelp.CreateMatrixScale(0.1, 0.1, 0.1) * OpenVRHelper.ConvertMatrix43(hand.Pose.mDeviceToAbsoluteTracking) * transformViewProjection);
-                    }
+                    RenderOneEye(transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Right)) * OpenVRHelper.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f));
                     OpenVRCompositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
                 }
             };
