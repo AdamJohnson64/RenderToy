@@ -34,6 +34,20 @@ namespace RenderToy.ModelFormat
             string materialname = null;
             int smoothinggroup = -1;
             var materials = new Dictionary<string, IMaterial>();
+            Func<Mesh> FlushMesh = () =>
+            {
+                // Flush this mesh to the caller.
+                var primitive = new Mesh();
+                primitive.Vertices = new MeshChannel<Vector3D>(vertices, collectedvertexfaces);
+                primitive.Normals = new MeshChannel<Vector3D>(normals, collectednormalfaces);
+                primitive.TexCoords = new MeshChannel<Vector2D>(texcoords, collectedtexcoordfaces);
+                primitive.GenerateTangentSpace();
+                // Reset our state.
+                collectedvertexfaces = new List<int>();
+                collectednormalfaces = new List<int>();
+                collectedtexcoordfaces = new List<int>();
+                return primitive;
+            };
             using (var stream = File.OpenText(path))
             {
                 string line;
@@ -107,18 +121,8 @@ namespace RenderToy.ModelFormat
                     {
                         if (materialname != null)
                         {
-                            // Flush this mesh to the caller.
-                            var primitive = new Mesh();
-                            primitive.Vertices = new MeshChannel<Vector3D>(vertices, collectedvertexfaces);
-                            primitive.Normals = new MeshChannel<Vector3D>(normals, collectednormalfaces);
-                            primitive.TexCoords = new MeshChannel<Vector2D>(texcoords, collectedtexcoordfaces);
-                            primitive.GenerateTangentSpace();
-                            yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
-                            // Reset our state.
+                            yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, materials[materialname]);
                             materialname = null;
-                            collectedvertexfaces = new List<int>();
-                            collectednormalfaces = new List<int>();
-                            collectedtexcoordfaces = new List<int>();
                         }
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
                         if (parts.Length != 2) throw new FileLoadException("Malformed usemtl '" + line + "'.");
@@ -158,21 +162,14 @@ namespace RenderToy.ModelFormat
             }
             if (materialname != null)
             {
-                // Flush this mesh to the caller.
-                var primitive = new Mesh(collectedvertexfaces, vertices);
-                yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
+                yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, materials[materialname]);
+                materialname = null;
             }
             else
             {
-                // Flush this mesh to the caller.
-                var primitive = new Mesh(collectedvertexfaces, vertices);
-                yield return new Node("NoMaterial", new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite);
+                yield return new Node("NoMaterial", new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, StockMaterials.PlasticWhite);
+                materialname = null;
             }
-            // Reset our state.
-            materialname = null;
-            collectedvertexfaces = null;
-            collectednormalfaces = null;
-            collectedtexcoordfaces = null;
         }
         static Dictionary<string, IMaterial> LoadMaterialLibrary(string objpath, string mtlrelative)
         {
