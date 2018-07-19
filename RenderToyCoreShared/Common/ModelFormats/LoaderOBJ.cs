@@ -191,7 +191,8 @@ namespace RenderToy.ModelFormat
                 IMaterial found = null;
                 if (texturebyname.TryGetValue(name, out found)) return found;
                 var texfile = Path.Combine(objdir, name);
-                return texturebyname[name] = File.Exists(texfile) ? new Texture(name, LoaderTGA.LoadFromPath(texfile), true) : null;
+                var image = LoaderImage.LoadFromPath(texfile);
+                return texturebyname[name] = image == null ? null : new Texture(name, image, true);
             };
             using (var streamreader = File.OpenText(mtlfile))
             {

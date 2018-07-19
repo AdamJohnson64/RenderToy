@@ -12,6 +12,7 @@ namespace RenderToy.TextureFormats
     {
         public static ImageBgra32 LoadFromPath(string path)
         {
+            if (!File.Exists(path)) return null;
             using (var streamreader = File.OpenRead(path))
             {
                 var binaryreader = new BinaryReader(streamreader);
