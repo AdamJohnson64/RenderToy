@@ -14,6 +14,10 @@ namespace RenderToy.Primitives
     /// </summary>
     public class Sphere : IPrimitive, IParametricUV
     {
+        public static Sphere Default = new Sphere();
+        private Sphere()
+        {
+        }
         public Vector3D GetPointUV(double u, double v)
         {
             // The central axis of the sphere points through world Y.

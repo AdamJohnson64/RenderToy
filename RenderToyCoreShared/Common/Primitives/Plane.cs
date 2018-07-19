@@ -15,6 +15,10 @@ namespace RenderToy.Primitives
     /// </summary>
     public class Plane : IPrimitive, IParametricUV
     {
+        public static Plane Default = new Plane();
+        private Plane()
+        {
+        }
         public Vector3D GetPointUV(double u, double v)
         {
             return new Vector3D(-1 + u * 2, 0, -1 + v * 2);

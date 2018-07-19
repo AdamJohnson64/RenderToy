@@ -91,7 +91,7 @@ namespace RenderToy.DirectX
         public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneSphere()
         {
             Scene scene = new Scene();
-            scene.children.Add(new Node("Widget", new TransformMatrix(Matrix3D.Identity), new Sphere(), StockMaterials.White, StockMaterials.PlasticWhite));
+            scene.children.Add(new Node("Widget", new TransformMatrix(Matrix3D.Identity), Sphere.Default, StockMaterials.White, StockMaterials.PlasticWhite));
             return CreateSceneDraw(scene);
         }
         public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneMaracas()

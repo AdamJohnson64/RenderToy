@@ -31,9 +31,6 @@ namespace RenderToy.SceneGraph
                 }
             }
         }
-#if OPENVR_INSTALLED
-        static IPrimitive VRTESTPRIMITIVE = new Sphere();
-#endif // OPENVR_INSTALLED
         static IEnumerable<TransformedObject> Enumerate(INode node, Matrix3D parenttransform)
         {
             Matrix3D localtransform = parenttransform * node.Transform.Transform;

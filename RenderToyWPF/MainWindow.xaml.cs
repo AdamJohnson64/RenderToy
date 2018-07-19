@@ -91,14 +91,14 @@ namespace RenderToy.WPF
                 };
                 material.map_bump = new BumpGenerate { U = new MNTexCoordU(), V = new MNTexCoordV(), Displacement = displace };
                 material.displacement = new MNVector4D { R = displace, G = displace, B = displace, A = new MNConstant { Value = 1 } };
-                scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), new Plane(), StockMaterials.White, material));
+                scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), Plane.Default, StockMaterials.White, material));
                 DataContext = new Document(scene);
             }));
             CommandBindings.Add(new CommandBinding(CommandSceneAddSphere, (s, e) => 
             {
                 var root = ((Document)DataContext).Scene as Scene;
                 if (root == null) return;
-                root.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), new Sphere(), StockMaterials.White, StockMaterials.Brick));
+                root.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), Sphere.Default, StockMaterials.White, StockMaterials.Brick));
             }));
             CommandBindings.Add(new CommandBinding(CommandDebugToolPerformanceTrace, (s, e) => {
                 var window = new Window { Title = "Performance Trace Tool", Content = new PerformanceTrace() };
