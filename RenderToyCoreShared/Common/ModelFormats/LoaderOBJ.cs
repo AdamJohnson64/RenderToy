@@ -74,7 +74,7 @@ namespace RenderToy.ModelFormat
                     if (line.StartsWith("vt "))
                     {
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
-                        if (parts.Length != 4) throw new FileLoadException("Malformed texture coordinate '" + line + "'.");
+                        if (parts.Length < 3) throw new FileLoadException("Malformed texture coordinate '" + line + "'.");
                         var v = new Vector2D();
                         v.X = double.Parse(parts[1]);
                         // OpenGL texture coordinates :(
@@ -84,9 +84,7 @@ namespace RenderToy.ModelFormat
                     }
                     if (line.StartsWith("g "))
                     {
-                        var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
-                        if (parts.Length != 2) throw new FileLoadException("Malformed group '" + line + "'.");
-                        groupname = parts[1];
+                        groupname = line.Substring(2);
                         continue;
                     }
                     if (line == "g")
@@ -131,7 +129,6 @@ namespace RenderToy.ModelFormat
                     {
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
                         if (parts.Length < 4) throw new FileLoadException("Insufficient indices '" + line + "'.");
-                        if (parts.Length > 5) throw new FileLoadException("Too many indices '" + line + "'.");
                         var f = parts.Skip(1).Select(i => i.Split(new char[] { '/' })).ToArray();
                         if (!f.All(i => i.Length == f[0].Length)) throw new FileLoadException("Inconsistent face setups '" + line + "'.");
                         if (f[0].Length < 1 || f[0].Length > 3) throw new FileLoadException("Bad face component count '" + line + "'.");
@@ -150,14 +147,9 @@ namespace RenderToy.ModelFormat
                             collectedtexcoordfaces.Add(idxt[i1]);
                             collectedtexcoordfaces.Add(idxt[i2]);
                         };
-                        if (parts.Length == 4)
+                        for (int fan = 0; fan < parts.Length - 3; ++fan)
                         {
-                            FlushFace(0, 1, 2);
-                        }
-                        if (parts.Length == 5)
-                        {
-                            FlushFace(0, 1, 2);
-                            FlushFace(0, 2, 3);
+                            FlushFace(0, fan + 1, fan + 2);
                         }
                         continue;
                     }
@@ -190,6 +182,7 @@ namespace RenderToy.ModelFormat
             var mtlfile = Path.Combine(objdir, mtlrelative);
             IMaterial map_Ka = null;
             IMaterial map_Kd = null;
+            IMaterial map_Ks = null;
             IMaterial map_d = null;
             IMaterial map_bump = null;
             IMaterial bump = null;
@@ -211,6 +204,7 @@ namespace RenderToy.ModelFormat
                     materialname = null;
                     map_Ka = null;
                     map_Kd = null;
+                    map_Ks = null;
                     map_d = null;
                     map_bump = null;
                     bump = null;
@@ -281,6 +275,12 @@ namespace RenderToy.ModelFormat
                     {
                         int find = line.IndexOf(' ');
                         map_Kd = LoadUniqueTexture(line.Substring(find + 1));
+                        continue;
+                    }
+                    if (line.StartsWith("map_Ks "))
+                    {
+                        int find = line.IndexOf(' ');
+                        map_Ks = LoadUniqueTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_d "))
