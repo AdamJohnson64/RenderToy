@@ -11,11 +11,18 @@ namespace RenderToy.Textures
     {
         public static ImageBgra32 LoadFromPath(string path)
         {
-            if (path.ToUpperInvariant().EndsWith(".TGA"))
+            if (path.ToUpperInvariant().EndsWith(".PNG"))
+            {
+                return LoaderPNG.LoadFromPath(path);
+            }
+            else if (path.ToUpperInvariant().EndsWith(".TGA"))
             {
                 return LoaderTGA.LoadFromPath(path);
             }
-            return null;
+            else
+            {
+                return null;
+            }
         }
     }
 }

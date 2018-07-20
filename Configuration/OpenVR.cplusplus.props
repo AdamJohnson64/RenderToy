@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(OpenVRInstalled)'=='True'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)\ThirdParty\openvr\headers</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\ThirdParty\openvr\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>OPENVR_INSTALLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

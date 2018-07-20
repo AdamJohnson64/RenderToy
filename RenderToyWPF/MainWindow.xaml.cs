@@ -80,8 +80,8 @@ namespace RenderToy.WPF
                     try
                     {
                         var controller = LoaderOBJ.LoadFromPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj").First();
-                        scene.children.Add(new Node("Left Hand", new TransformLeftHand(), controller.Primitive, StockMaterials.White, StockMaterials.PlasticWhite));
-                        scene.children.Add(new Node("Right Hand", new TransformRightHand(), controller.Primitive, StockMaterials.White, StockMaterials.PlasticWhite));
+                        scene.children.Add(new Node("Left Hand", new TransformLeftHand(), controller.Primitive, StockMaterials.White, controller.Material));
+                        scene.children.Add(new Node("Right Hand", new TransformRightHand(), controller.Primitive, StockMaterials.White, controller.Material));
                     }
                     catch
                     {

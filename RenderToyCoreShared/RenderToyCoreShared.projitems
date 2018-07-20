@@ -68,6 +68,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\ExpressionSubstitution.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\FieldExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\TextureFormats\LoaderImage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\TextureFormats\LoaderPNG.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\DirectX11Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\HLSL.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\HLSLGenerator.cs" />

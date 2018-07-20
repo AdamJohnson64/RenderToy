@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <LibPNGInstalled Condition="exists('$(SolutionDir)\ThirdParty\zlib\zlib.h')">True</LibPNGInstalled>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(LibPNGInstalled)'=='True'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\ThirdParty\libpng;$(SolutionDir)\ThirdParty\libpngconf;$(SolutionDir)\ThirdParty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>
