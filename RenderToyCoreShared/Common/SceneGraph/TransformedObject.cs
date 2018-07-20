@@ -13,12 +13,14 @@ namespace RenderToy.SceneGraph
 {
     public class TransformedObject
     {
-        TransformedObject(INode node, Matrix3D transform)
+        TransformedObject(INode node, Matrix3D transformparent, Matrix3D transform)
         {
             Node = node;
+            TransformParent = transformparent;
             Transform = transform;
         }
         public readonly INode Node;
+        public readonly Matrix3D TransformParent;
         public readonly Matrix3D Transform;
         public static IEnumerable<TransformedObject> Enumerate(IScene scene)
         {
@@ -34,7 +36,7 @@ namespace RenderToy.SceneGraph
         static IEnumerable<TransformedObject> Enumerate(INode node, Matrix3D parenttransform)
         {
             Matrix3D localtransform = parenttransform * node.Transform.Transform;
-            yield return new TransformedObject(node, localtransform);
+            yield return new TransformedObject(node, parenttransform, localtransform);
             foreach (INode child in node.Children)
             {
                 foreach (TransformedObject transformedchild in Enumerate(child, localtransform))

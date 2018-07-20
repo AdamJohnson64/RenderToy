@@ -5,6 +5,7 @@
 
 #if OPENVR_INSTALLED
 using RenderToy.Math;
+using RenderToy.Transforms;
 
 namespace RenderToy
 {
@@ -36,6 +37,36 @@ namespace RenderToy
         {
             return ConvertMatrix44(OpenVR.GetProjectionMatrix(eEye, fNear, fFar));
         }
+        public static void SubmitLeftHand(Matrix3D hand)
+        {
+            _lefthand = hand;
+        }
+        public static void SubmitRightHand(Matrix3D hand)
+        {
+            _righthand = hand;
+        }
+        public static Matrix3D _lefthand;
+        public static Matrix3D _righthand;
     }
+    public class TransformLeftHand : ITransform
+    {
+        public Matrix3D Transform
+        {
+            get
+            {
+                return OpenVRHelper._lefthand;
+            }
+        }
+    };
+    public class TransformRightHand : ITransform
+    {
+        public Matrix3D Transform
+        {
+            get
+            {
+                return OpenVRHelper._righthand;
+            }
+        }
+    };
 }
 #endif // OPENVR_INSTALLED

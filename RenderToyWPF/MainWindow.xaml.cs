@@ -15,6 +15,7 @@ using RenderToy.WPF.Xps;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -75,6 +76,16 @@ namespace RenderToy.WPF
                     else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".PLY")
                     {
                         scene.children.Add(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.White, StockMaterials.PlasticWhite));
+                    }
+                    try
+                    {
+                        var controller = LoaderOBJ.LoadFromPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj").First();
+                        scene.children.Add(new Node("Left Hand", new TransformLeftHand(), controller.Primitive, StockMaterials.White, StockMaterials.PlasticWhite));
+                        scene.children.Add(new Node("Right Hand", new TransformRightHand(), controller.Primitive, StockMaterials.White, StockMaterials.PlasticWhite));
+                    }
+                    catch
+                    {
+                        Debug.WriteLine("WARNING: Unable to load controller model.");
                     }
                     DataContext = new Document(scene);
                 }

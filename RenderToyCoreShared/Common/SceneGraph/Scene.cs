@@ -6,9 +6,12 @@
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
+using RenderToy.ModelFormat;
 using RenderToy.Primitives;
 using RenderToy.Transforms;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace RenderToy.SceneGraph
 {
@@ -38,6 +41,16 @@ namespace RenderToy.SceneGraph
             scene.children.Add(new Node("Cube (Magenta)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+3, 1, 0)), Cube.Default, StockMaterials.Magenta, StockMaterials.Brick));
             scene.children.Add(new Node("Sphere (Cyan)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+5, 1, 0)), Sphere.Default, StockMaterials.Cyan, StockMaterials.PlasticCyan));
             scene.children.Add(new Node("Sphere (Glass)", new TransformMatrix(MathHelp.CreateMatrixTranslate(0, 3, 0)), Sphere.Default, StockMaterials.Black, StockMaterials.Glass));
+            try
+            {
+                var controller = LoaderOBJ.LoadFromPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj").First();
+                scene.children.Add(new Node("Left Hand", new TransformLeftHand(), controller.Primitive, StockMaterials.White, StockMaterials.PlasticWhite));
+                scene.children.Add(new Node("Right Hand", new TransformRightHand(), controller.Primitive, StockMaterials.White, StockMaterials.PlasticWhite));
+            }
+            catch
+            {
+                Debug.WriteLine("WARNING: Unable to load controller model.");
+            }
         }
         static Scene scene;
     }

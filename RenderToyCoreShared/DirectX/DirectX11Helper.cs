@@ -11,6 +11,7 @@ using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace RenderToy.DirectX
@@ -38,16 +39,17 @@ namespace RenderToy.DirectX
                     var thisconstantbufferoffset = constantbufferoffset;
                     execute_retransform.Add((transformViewProjection) =>
                     {
-                        var transformModelViewProjection = transformedobject.Transform * transformViewProjection;
+                        Matrix3D newtransform = transformedobject.TransformParent * transformedobject.Node.Transform.Transform;
+                        var transformModelViewProjection = newtransform * transformViewProjection;
                         Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, thisconstantbufferoffset, 4 * 16);
                     });
                     var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
                     var collecttextures = new[]
                     {
-                            DirectX11Helper.CreateTextureView(objmat == null ? transformedobject.Node.Material : objmat.map_Kd, StockMaterials.PlasticWhite),
-                            DirectX11Helper.CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
-                            DirectX11Helper.CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
-                            DirectX11Helper.CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
+                            CreateTextureView(objmat == null ? transformedobject.Node.Material : objmat.map_Kd, StockMaterials.PlasticWhite),
+                            CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
+                            CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
+                            CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
                         };
                     execute_drawprimitive.Add((context2) =>
                     {
@@ -72,6 +74,10 @@ namespace RenderToy.DirectX
                     retransform(transformViewProjection);
                 }
                 context.UpdateSubresource1(d3d11constantbufferGPU, 0, new D3D11Box { right = (uint)constantbufferoffset }, d3d11constantbufferCPU, 0, 0, D3D11CopyFlags.Discard);
+                context.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
+                context.IASetInputLayout(d3d11InputLayout);
+                context.RSSetState(d3d11RasterizerState);
+                context.PSSetSamplers(0, new[] { d3d11SamplerState });
                 foreach (var draw in execute_drawprimitive)
                 {
                     draw(context);
@@ -205,7 +211,7 @@ namespace RenderToy.DirectX
                 new D3D11InputElementDesc { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 36, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
                 new D3D11InputElementDesc { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGIFormat.R32G32B32_Float, InputSlot = 0, AlignedByteOffset = 48, InputSlotClass = D3D11InputClassification.PerVertexData, InstanceDataStepRate = 0 },
             }, HLSL.D3D11VS);
-            d3d11RasterizerState = d3d11Device.CreateRasterizerState(new D3D11RasterizerDesc { FillMode = D3D11FillMode.Solid, CullMode = D3D11CullMode.None });
+            d3d11RasterizerState = d3d11Device.CreateRasterizerState(new D3D11RasterizerDesc { FillMode = D3D11FillMode.Solid, CullMode = D3D11CullMode.Back });
             {
                 D3D11SamplerDesc pSamplerDesc;
                 pSamplerDesc.Filter = D3D11Filter.MinMagMipLinear;
