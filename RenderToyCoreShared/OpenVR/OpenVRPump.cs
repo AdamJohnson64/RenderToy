@@ -4,9 +4,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.DirectX;
+using RenderToy.Materials;
 using RenderToy.Math;
+using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Shaders;
+using RenderToy.Textures;
+using RenderToy.Transforms;
 using System;
 using System.Linq;
 using System.Threading;
@@ -31,21 +35,14 @@ namespace RenderToy
             var d3d11Texture2D_RT_EyeRight = DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, null);
             var d3d11RenderTargetView_EyeRight = DirectX11Helper.d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeRight, new D3D11RenderTargetViewDesc { Format = DXGIFormat.B8G8R8A8_Unorm, ViewDimension = D3D11RtvDimension.Texture2D, Texture2D = new D3D11Tex2DRtv { MipSlice = 0 } });
             var Execute_DrawScene = DirectX11Helper.CreateSceneDraw(scene);
-            var Execute_DrawWidget = DirectX11Helper.CreateSceneSphere();
             return () =>
             {
                 var contextold = DirectX11Helper.d3d11Device.GetImmediateContext();
                 var context = contextold.QueryInterfaceD3D11DeviceContext4();
-                context.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
-                context.IASetInputLayout(DirectX11Helper.d3d11InputLayout);
                 context.VSSetShader(d3d11VertexShader);
                 context.PSSetShader(d3d11PixelShader);
-                context.RSSetState(DirectX11Helper.d3d11RasterizerState);
-                context.PSSetSamplers(0, new[] { DirectX11Helper.d3d11SamplerState });
-                {
-                    context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight } });
-                    context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 } });
-                }
+                context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight } });
+                context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 } });
                 OpenVRCompositor.WaitGetPoses();
                 float fPredictedSecondsToPhotonsFromNow = 0;
                 while (!OpenVR.GetTimeToPhotons(ref fPredictedSecondsToPhotonsFromNow))
@@ -58,29 +55,33 @@ namespace RenderToy
                     .Select((pose, index) => new { Pose = pose, Index = index })
                     .Where((x) => x.Pose.bDeviceIsConnected && x.Pose.bPoseIsValid && (OpenVR.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == TrackedControllerRole.RightHand || OpenVR.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == TrackedControllerRole.LeftHand))
                     .ToArray();
+                {
+                    var lefthand = hands.Where(i => OpenVR.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == TrackedControllerRole.LeftHand).FirstOrDefault();
+                    if (lefthand != null)
+                    {
+                        OpenVRHelper.SubmitLeftHand(OpenVRHelper.ConvertMatrix43(lefthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX);
+                    }
+                }
+                {
+                    var righthand = hands.Where(i => OpenVR.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == TrackedControllerRole.RightHand).FirstOrDefault();
+                    if (righthand != null)
+                    {
+                        OpenVRHelper.SubmitRightHand(OpenVRHelper.ConvertMatrix43(righthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX);
+                    }
+                }
                 Matrix3D transformHead = MathHelp.Invert(OpenVRHelper.ConvertMatrix43(poses[0].mDeviceToAbsoluteTracking));
                 {
                     context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
                     context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
                     context.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, 0, 0, 0, 0);
-                    var transformViewProjection = transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Left)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f);
-                    Execute_DrawScene(context, transformViewProjection);
-                    foreach (var hand in hands)
-                    {
-                        Execute_DrawWidget(context, MathHelp.CreateMatrixScale(0.1, 0.1, 0.1) * OpenVRHelper.ConvertMatrix43(hand.Pose.mDeviceToAbsoluteTracking) * transformViewProjection);
-                    }
+                    Execute_DrawScene(context, transformGLtoDX * transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Left)) * OpenVRHelper.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f));
                     OpenVRCompositor.Submit(Eye.Left, d3d11Texture2D_RT_EyeLeft.ManagedPtr);
                 }
                 {
                     context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeRight }, d3d11DepthStencilView_Eye);
                     context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
                     context.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, 0, 0, 0, 0);
-                    var transformViewProjection = transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Right)) * OpenVRHelper.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f);
-                    Execute_DrawScene(context, transformViewProjection);
-                    foreach (var hand in hands)
-                    {
-                        Execute_DrawWidget(context, MathHelp.CreateMatrixScale(0.1, 0.1, 0.1) * OpenVRHelper.ConvertMatrix43(hand.Pose.mDeviceToAbsoluteTracking) * transformViewProjection);
-                    }
+                    Execute_DrawScene(context, transformGLtoDX * transformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(Eye.Right)) * OpenVRHelper.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f));
                     OpenVRCompositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
                 }
             };
@@ -97,6 +98,11 @@ namespace RenderToy
             });
             thread.Start();
         }
+        static Matrix3D transformGLtoDX = new Matrix3D(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, -1, 0,
+            0, 0, 0, 1);
     }
 #endif // OPENVR_INSTALLED
 }

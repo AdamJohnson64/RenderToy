@@ -34,6 +34,20 @@ namespace RenderToy.ModelFormat
             string materialname = null;
             int smoothinggroup = -1;
             var materials = new Dictionary<string, IMaterial>();
+            Func<Mesh> FlushMesh = () =>
+            {
+                // Flush this mesh to the caller.
+                var primitive = new Mesh();
+                primitive.Vertices = new MeshChannel<Vector3D>(vertices, collectedvertexfaces);
+                primitive.Normals = new MeshChannel<Vector3D>(normals, collectednormalfaces);
+                primitive.TexCoords = new MeshChannel<Vector2D>(texcoords, collectedtexcoordfaces);
+                primitive.GenerateTangentSpace();
+                // Reset our state.
+                collectedvertexfaces = new List<int>();
+                collectednormalfaces = new List<int>();
+                collectedtexcoordfaces = new List<int>();
+                return primitive;
+            };
             using (var stream = File.OpenText(path))
             {
                 string line;
@@ -74,7 +88,7 @@ namespace RenderToy.ModelFormat
                     if (line.StartsWith("vt "))
                     {
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
-                        if (parts.Length != 4) throw new FileLoadException("Malformed texture coordinate '" + line + "'.");
+                        if (parts.Length < 3) throw new FileLoadException("Malformed texture coordinate '" + line + "'.");
                         var v = new Vector2D();
                         v.X = double.Parse(parts[1]);
                         // OpenGL texture coordinates :(
@@ -84,9 +98,7 @@ namespace RenderToy.ModelFormat
                     }
                     if (line.StartsWith("g "))
                     {
-                        var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
-                        if (parts.Length != 2) throw new FileLoadException("Malformed group '" + line + "'.");
-                        groupname = parts[1];
+                        groupname = line.Substring(2);
                         continue;
                     }
                     if (line == "g")
@@ -109,18 +121,8 @@ namespace RenderToy.ModelFormat
                     {
                         if (materialname != null)
                         {
-                            // Flush this mesh to the caller.
-                            var primitive = new Mesh();
-                            primitive.Vertices = new MeshChannel<Vector3D>(vertices, collectedvertexfaces);
-                            primitive.Normals = new MeshChannel<Vector3D>(normals, collectednormalfaces);
-                            primitive.TexCoords = new MeshChannel<Vector2D>(texcoords, collectedtexcoordfaces);
-                            primitive.GenerateTangentSpace();
-                            yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
-                            // Reset our state.
+                            yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, materials[materialname]);
                             materialname = null;
-                            collectedvertexfaces = new List<int>();
-                            collectednormalfaces = new List<int>();
-                            collectedtexcoordfaces = new List<int>();
                         }
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
                         if (parts.Length != 2) throw new FileLoadException("Malformed usemtl '" + line + "'.");
@@ -131,7 +133,6 @@ namespace RenderToy.ModelFormat
                     {
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
                         if (parts.Length < 4) throw new FileLoadException("Insufficient indices '" + line + "'.");
-                        if (parts.Length > 5) throw new FileLoadException("Too many indices '" + line + "'.");
                         var f = parts.Skip(1).Select(i => i.Split(new char[] { '/' })).ToArray();
                         if (!f.All(i => i.Length == f[0].Length)) throw new FileLoadException("Inconsistent face setups '" + line + "'.");
                         if (f[0].Length < 1 || f[0].Length > 3) throw new FileLoadException("Bad face component count '" + line + "'.");
@@ -150,14 +151,9 @@ namespace RenderToy.ModelFormat
                             collectedtexcoordfaces.Add(idxt[i1]);
                             collectedtexcoordfaces.Add(idxt[i2]);
                         };
-                        if (parts.Length == 4)
+                        for (int fan = 0; fan < parts.Length - 3; ++fan)
                         {
-                            FlushFace(0, 1, 2);
-                        }
-                        if (parts.Length == 5)
-                        {
-                            FlushFace(0, 1, 2);
-                            FlushFace(0, 2, 3);
+                            FlushFace(0, fan + 1, fan + 2);
                         }
                         continue;
                     }
@@ -166,21 +162,14 @@ namespace RenderToy.ModelFormat
             }
             if (materialname != null)
             {
-                // Flush this mesh to the caller.
-                var primitive = new Mesh(collectedvertexfaces, vertices);
-                yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, materials[materialname]);
+                yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, materials[materialname]);
+                materialname = null;
             }
             else
             {
-                // Flush this mesh to the caller.
-                var primitive = new Mesh(collectedvertexfaces, vertices);
-                yield return new Node("NoMaterial", new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite);
+                yield return new Node("NoMaterial", new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, StockMaterials.PlasticWhite);
+                materialname = null;
             }
-            // Reset our state.
-            materialname = null;
-            collectedvertexfaces = null;
-            collectednormalfaces = null;
-            collectedtexcoordfaces = null;
         }
         static Dictionary<string, IMaterial> LoadMaterialLibrary(string objpath, string mtlrelative)
         {
@@ -190,6 +179,7 @@ namespace RenderToy.ModelFormat
             var mtlfile = Path.Combine(objdir, mtlrelative);
             IMaterial map_Ka = null;
             IMaterial map_Kd = null;
+            IMaterial map_Ks = null;
             IMaterial map_d = null;
             IMaterial map_bump = null;
             IMaterial bump = null;
@@ -198,7 +188,8 @@ namespace RenderToy.ModelFormat
                 IMaterial found = null;
                 if (texturebyname.TryGetValue(name, out found)) return found;
                 var texfile = Path.Combine(objdir, name);
-                return texturebyname[name] = File.Exists(texfile) ? new Texture(name, LoaderTGA.LoadFromPath(texfile), true) : null;
+                var image = LoaderImage.LoadFromPath(texfile);
+                return texturebyname[name] = image == null ? null : new Texture(name, image, true);
             };
             using (var streamreader = File.OpenText(mtlfile))
             {
@@ -211,6 +202,7 @@ namespace RenderToy.ModelFormat
                     materialname = null;
                     map_Ka = null;
                     map_Kd = null;
+                    map_Ks = null;
                     map_d = null;
                     map_bump = null;
                     bump = null;
@@ -281,6 +273,12 @@ namespace RenderToy.ModelFormat
                     {
                         int find = line.IndexOf(' ');
                         map_Kd = LoadUniqueTexture(line.Substring(find + 1));
+                        continue;
+                    }
+                    if (line.StartsWith("map_Ks "))
+                    {
+                        int find = line.IndexOf(' ');
+                        map_Ks = LoadUniqueTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_d "))

@@ -34,7 +34,7 @@ namespace RenderToy
         [TestMethod]
         public void BVHTimingTest()
         {
-            var mesh = Mesh.CreateMesh(new Sphere(), 100, 100);
+            var mesh = Mesh.CreateMesh(Sphere.Default, 100, 100);
             var triangles = Triangle3D.ExtractTriangles(mesh.Vertices.GetVertices(), mesh.Vertices.GetIndices()).ToArray();
             Performance.LogBegin("BVH Octree (Reference)");
             try
@@ -343,7 +343,7 @@ namespace RenderToy
             Console.WriteLine(time2);
             Debug.Assert(time1 > time2);
         }
-        static IEnumerable<Vector3D> triangles = PrimitiveAssembly.CreateTriangles((IParametricUV)new Sphere(), 2000, 2000);
+        static IEnumerable<Vector3D> triangles = PrimitiveAssembly.CreateTriangles((IParametricUV)Sphere.Default, 2000, 2000);
         static Matrix3D mvp = Perspective.CreateProjection(0.01, 100.0, 60.0 * System.Math.PI / 180.0, 60.0 * System.Math.PI / 180.0);
         static Expression<Func<Vector3D, Vector4D>> TestExpressionFn = (v) =>
             Transformation.TransformToScreen.Call(
@@ -440,9 +440,8 @@ namespace RenderToy
             Debug.WriteLine("Generating fake scene");
             var scene = new Scene();
             var transform = new TransformMatrix(Matrix3D.Identity);
-            var sphere = new Sphere();
             for (int i = 0; i < SPHERECOUNT; ++i)
-            scene.children.Add(new Node("Sphere " + i, transform, sphere, StockMaterials.White, StockMaterials.PlasticWhite));
+            scene.children.Add(new Node("Sphere " + i, transform, Sphere.Default, StockMaterials.White, StockMaterials.PlasticWhite));
             Debug.WriteLine("Creating immediate scene query.");
             var queryscene = Query.Create(scene);
             var waitresult = new AutoResetEvent(false);

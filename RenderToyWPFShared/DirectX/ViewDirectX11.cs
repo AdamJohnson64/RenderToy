@@ -55,12 +55,8 @@ namespace RenderToy.WPF
             int height = d3d11Texture2D_RT.GetHeight();
             RenderToyETWEventSource.Default.BeginFrame();
             // Setup common global render state.
-            context.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
-            context.IASetInputLayout(DirectX11Helper.d3d11InputLayout);
             context.VSSetShader(d3d11VertexShader);
             context.PSSetShader(d3d11PixelShader);
-            context.RSSetState(DirectX11Helper.d3d11RasterizerState);
-            context.PSSetSamplers(0, new[] { DirectX11Helper.d3d11SamplerState });
             ////////////////////////////////////////////////////////////////////////////////
             // Assemble the scene parts.
             if (Execute_SceneLast != AttachedView.GetScene(this))
