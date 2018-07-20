@@ -1,3 +1,6 @@
 [submodule "ThirdParty/openvr"]
 	path = ThirdParty/openvr
 	url = https://github.com/ValveSoftware/openvr.git
+[submodule "ThirdParty/libpng"]
+	path = ThirdParty/libpng
+	url = https://github.com/glennrp/libpng
