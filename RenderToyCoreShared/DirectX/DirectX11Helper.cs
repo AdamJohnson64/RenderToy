@@ -84,33 +84,6 @@ namespace RenderToy.DirectX
                 }
             };
         }
-        public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneController()
-        {
-            Scene scene = new Scene();
-            var file = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj";
-            foreach (var node in RenderToy.ModelFormat.LoaderOBJ.LoadFromPath(file))
-            {
-                scene.children.Add(node);
-            }
-            return CreateSceneDraw(scene);
-        }
-        public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneSphere()
-        {
-            Scene scene = new Scene();
-            scene.children.Add(new Node("Widget", new TransformMatrix(Matrix3D.Identity), Sphere.Default, StockMaterials.White, StockMaterials.PlasticWhite));
-            return CreateSceneDraw(scene);
-        }
-        public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneMaracas()
-        {
-            Scene scene = new Scene();
-            var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            var file = Path.Combine(path, "maracas.obj");
-            foreach (var node in LoaderOBJ.LoadFromPath(file))
-            {
-                scene.children.Add(node);
-            }
-            return CreateSceneDraw(scene);
-        }
         public static D3D11ShaderResourceView CreateTextureView(IMaterial material, IMaterial missing)
         {
             if (material == null) material = missing;
