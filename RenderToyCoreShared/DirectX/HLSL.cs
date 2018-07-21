@@ -35,11 +35,11 @@ struct VS_OUTPUT {
 VS_OUTPUT vs(VS_INPUT input) {
     VS_OUTPUT result;
     result.Position = mul(TransformModelViewProjection, float4(input.Position, 1));
-    result.Normal = input.Normal;
+    result.Normal = mul(TransformModel, float4(input.Normal, 0)).xyz;
     result.Color = input.Color;
     result.TexCoord = input.TexCoord;
-    result.Tangent = input.Tangent;
-    result.Bitangent = input.Bitangent;
+    result.Tangent = mul(TransformModel, float4(input.Tangent, 0)).xyz;
+    result.Bitangent = mul(TransformModel, float4(input.Bitangent, 0)).xyz;
     result.EyeVector = float3(TransformCamera[0].w, TransformCamera[1].w, TransformCamera[2].w) - input.Position.xyz;
     return result;
 }
@@ -84,7 +84,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
 
     ////////////////////////////////////////////////////////////////////////////////
     // Simple Lighting
-    float light = clamp(dot(normal, normalize(float3(1,1,1))), 0, 1);
+    float light = clamp(dot(normal, normalize(float3(1,1,-1))), 0, 1);
 
     ////////////////////////////////////////////////////////////////////////////////
     // Final Color

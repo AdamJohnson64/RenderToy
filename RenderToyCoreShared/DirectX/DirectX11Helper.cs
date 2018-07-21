@@ -31,6 +31,7 @@ namespace RenderToy.DirectX
             // We're collecting constant buffers because DX11 hates to do actual work.
             int constantbufferoffset = 0;
             {
+                const int SIZEOF_MATRIX = 4 * 4 * 4;
                 var constantbufferlist = new[] { d3d11constantbufferGPU };
                 foreach (var transformedobject in TransformedObject.Enumerate(scene))
                 {
@@ -39,9 +40,10 @@ namespace RenderToy.DirectX
                     var thisconstantbufferoffset = constantbufferoffset;
                     execute_retransform.Add((transformViewProjection) =>
                     {
-                        Matrix3D newtransform = transformedobject.TransformParent * transformedobject.Node.Transform.Transform;
-                        var transformModelViewProjection = newtransform * transformViewProjection;
-                        Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, thisconstantbufferoffset, 4 * 16);
+                        Matrix3D transformModel = transformedobject.TransformParent * transformedobject.Node.Transform.Transform;
+                        var transformModelViewProjection = transformModel * transformViewProjection;
+                        Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, thisconstantbufferoffset, SIZEOF_MATRIX);
+                        Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, thisconstantbufferoffset + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
                     });
                     var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
                     execute_drawprimitive.Add((context2) =>
@@ -53,13 +55,13 @@ namespace RenderToy.DirectX
                             CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
                             CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
                         };
-                        context2.VSSetConstantBuffers1(0, constantbufferlist, new[] { (uint)thisconstantbufferoffset / 16U }, new[] { 4U * 16U });
+                        context2.VSSetConstantBuffers1(0, constantbufferlist, new[] { (uint)thisconstantbufferoffset / 16U }, new[] { 5U * SIZEOF_MATRIX });
                         context2.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
                         context2.PSSetShaderResources(0, collecttextures);
                         context2.Draw(vertexbuffer.vertexCount, 0);
                     });
                     // Pad up to 256 bytes.
-                    constantbufferoffset += 4 * 16;
+                    constantbufferoffset += 5 * SIZEOF_MATRIX;
                     if ((constantbufferoffset & 0xFF) != 0)
                     {
                         constantbufferoffset = constantbufferoffset & (~0xFF);

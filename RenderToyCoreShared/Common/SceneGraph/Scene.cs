@@ -54,8 +54,8 @@ namespace RenderToy.SceneGraph
             {
                 Matrix3D transform = new Matrix3D(
                     1, 0, 0, 0,
-                    0, 0, 1, 0,
-                    0, -1, 0, 0,
+                    0, 0, -1, 0,
+                    0, 1, 0, 0,
                     0, 1, 2, 1
                 );
                 scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted()));
