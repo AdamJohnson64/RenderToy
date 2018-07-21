@@ -56,49 +56,49 @@ namespace RenderToy
 		bool bPoseIsValid;
 		bool bDeviceIsConnected;
 	};
-	public ref class OpenVR
+	public enum class VRTrackedCameraFrameType
+	{
+		Distorted = vr::VRTrackedCameraFrameType_Distorted,
+		Undistorted = vr::VRTrackedCameraFrameType_Undistorted,
+		MaximumUndistorted = vr::VRTrackedCameraFrameType_MaximumUndistorted,
+	};
+	public ref class VRSystem
 	{
 	public:
-		static OpenVR()
+		VRSystem()
 		{
 			vrsystem = vr::VR_Init(nullptr, vr::EVRApplicationType::VRApplication_Scene);
 			if (vrsystem == nullptr) throw gcnew System::Exception("OpenVR could not be started; check your SteamVR and HMD setup.");
-			vrtrackedcamera = vr::VRTrackedCamera();
-			if (vrtrackedcamera == nullptr) throw gcnew System::Exception("OpenVR camera could not be started; check your SteamVR and HMD setup.");
-			vr::TrackedCameraHandle_t handle = { 0 };
-			auto error = vrtrackedcamera->AcquireVideoStreamingService(0, &handle);
-			if (error != vr::VRTrackedCameraError_None) throw gcnew System::Exception("OpenVR camera handle could not be acquired; check your SteamVR and HMD setup.");
-			vrtrackedcamerahandle = handle;
 		}
-		static TrackedControllerRole GetControllerRoleForTrackedDeviceIndex(vr::TrackedDeviceIndex_t unDeviceIndex)
+		TrackedControllerRole GetControllerRoleForTrackedDeviceIndex(vr::TrackedDeviceIndex_t unDeviceIndex)
 		{
 			return (TrackedControllerRole)vrsystem->GetControllerRoleForTrackedDeviceIndex(unDeviceIndex);
 		}
-		static void GetDeviceToAbsoluteTrackingPose(TrackingUniverseOrigin eOrigin, float fPredictedSecondsToPhotonsFromNow, cli::array<TrackedDevicePose> ^pTrackedDevicePoseArray)
+		void GetDeviceToAbsoluteTrackingPose(TrackingUniverseOrigin eOrigin, float fPredictedSecondsToPhotonsFromNow, cli::array<TrackedDevicePose> ^pTrackedDevicePoseArray)
 		{
 			pin_ptr<TrackedDevicePose> pTrackedDevicePoseArrayM = &pTrackedDevicePoseArray[0];
 			vrsystem->GetDeviceToAbsoluteTrackingPose((vr::ETrackingUniverseOrigin)eOrigin, fPredictedSecondsToPhotonsFromNow, (vr::TrackedDevicePose_t*)&pTrackedDevicePoseArrayM[0], pTrackedDevicePoseArray->Length);
 		}
-		static HmdMatrix44 GetProjectionMatrix(Eye eEye, float fNearZ, float fFarZ)
+		HmdMatrix44 GetProjectionMatrix(Eye eEye, float fNearZ, float fFarZ)
 		{
 			HmdMatrix44 result;
 			*reinterpret_cast<vr::HmdMatrix44_t*>(&result) = vrsystem->GetProjectionMatrix((vr::EVREye)eEye, fNearZ, fFarZ);
 			return result;
 		}
-		static HmdMatrix34 GetEyeToHeadTransform(Eye eEye)
+		HmdMatrix34 GetEyeToHeadTransform(Eye eEye)
 		{
 			HmdMatrix34 result;
 			*reinterpret_cast<vr::HmdMatrix34_t*>(&result) = vrsystem->GetEyeToHeadTransform((vr::EVREye)eEye);
 			return result;
 		}
-		static void GetRecommendedRenderTargetSize(uint32_t %width, uint32_t %height)
+		void GetRecommendedRenderTargetSize(uint32_t %width, uint32_t %height)
 		{
 			uint32_t vrwidth, vrheight;
 			vrsystem->GetRecommendedRenderTargetSize(&vrwidth, &vrheight);
 			width = vrwidth;
 			height = vrheight;
 		}
-		static bool GetTimeToPhotons(float %time)
+		bool GetTimeToPhotons(float %time)
 		{
 			float fSecondsSinceLastVsync;
 			// TODO: Figure out why this value is sometimes 3E+12 (37642607.2 years)
@@ -116,42 +116,69 @@ namespace RenderToy
 			time = fPredictedSecondsFromNow;
 			return true;
 		}
-		static System::IntPtr GetVideoStreamTextureD3D11(System::IntPtr device)
+	private:
+		vr::IVRSystem *vrsystem;
+	};
+	public ref class VRTrackedCamera
+	{
+	public:
+		VRTrackedCamera()
+		{
+			vrtrackedcamera = vr::VRTrackedCamera();
+			if (vrtrackedcamera == nullptr)
+			{
+				throw gcnew System::Exception("OpenVR camera could not be started; check your SteamVR and HMD setup.");
+			}
+		}
+		vr::TrackedCameraHandle_t AcquireVideoStreamingService(int nDeviceIndex)
+		{
+			vr::TrackedCameraHandle_t handle = { 0 };
+			if (vrtrackedcamera->AcquireVideoStreamingService(0, &handle) != vr::VRTrackedCameraError_None)
+			{
+				throw gcnew System::Exception("OpenVR camera handle could not be acquired; check your SteamVR and HMD setup.");
+			}
+			return handle;
+		}
+		System::IntPtr GetVideoStreamTextureD3D11(vr::TrackedCameraHandle_t hTrackedCamera, VRTrackedCameraFrameType eFrameType, System::IntPtr device)
 		{
 			if (vrtrackedcamera == nullptr) return System::IntPtr::Zero;
 			void *pShaderResourceView = nullptr;
 			vr::CameraVideoStreamFrameHeader_t header;
-			auto error = vrtrackedcamera->GetVideoStreamTextureD3D11(vrtrackedcamerahandle, vr::VRTrackedCameraFrameType_Distorted, device.ToPointer(), &pShaderResourceView, &header, sizeof(header));
+			auto error = vrtrackedcamera->GetVideoStreamTextureD3D11(hTrackedCamera, (vr::EVRTrackedCameraFrameType)eFrameType, device.ToPointer(), &pShaderResourceView, &header, sizeof(header));
+			if (error != vr::EVRTrackedCameraError::VRTrackedCameraError_None && error != vr::EVRTrackedCameraError::VRTrackedCameraError_NotSupportedForThisDevice)
+			{
+				throw gcnew System::Exception("Unable to get video buffer for OpenVR camera.");
+			}
 			return System::IntPtr(pShaderResourceView);
 		}
-	public:
-		static vr::IVRSystem *vrsystem;
-		static vr::IVRTrackedCamera *vrtrackedcamera;
-		static vr::TrackedCameraHandle_t vrtrackedcamerahandle;
+	private:
+		vr::IVRTrackedCamera *vrtrackedcamera;
 	};
-
 	public ref class OpenVRCompositor
 	{
 	public:
-		static OpenVRCompositor()
+		OpenVRCompositor()
 		{
 			vrcompositor = vr::VRCompositor();
 		}
-		static void WaitGetPoses()
+		void WaitGetPoses()
 		{
 			vr::TrackedDevicePose_t poserender, posegame;
 			vrcompositor->WaitGetPoses(&poserender, 1, &posegame, 1);
 		}
-		static void Submit(Eye eEye, System::IntPtr pTexture)
+		void Submit(Eye eEye, System::IntPtr pTexture)
 		{
 			vr::Texture_t texture;
 			texture.handle = pTexture.ToPointer();
 			texture.eType = vr::TextureType_DirectX;
 			texture.eColorSpace = vr::ColorSpace_Auto;
-			vrcompositor->Submit((vr::EVREye)eEye, &texture, nullptr);
+			if (vrcompositor->Submit((vr::EVREye)eEye, &texture, nullptr) != vr::EVRCompositorError::VRCompositorError_None)
+			{
+				throw gcnew System::Exception("Unable to submit frame to OpenVR compositor.");
+			}
 		}
 	private:
-		static vr::IVRCompositor *vrcompositor;
+		vr::IVRCompositor *vrcompositor;
 	};
 }
 #endif // OPENVR_INSTALLED

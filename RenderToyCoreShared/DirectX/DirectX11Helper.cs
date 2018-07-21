@@ -90,7 +90,7 @@ namespace RenderToy.DirectX
             if (material == null) material = StockMaterials.Missing;
             if (material is MaterialOpenVRCameraDistorted)
             {
-                return D3D11ShaderResourceView.WrapUnowned(OpenVR.GetVideoStreamTextureD3D11(d3d11Device.ManagedPtr));
+                return D3D11ShaderResourceView.WrapUnowned(OpenVRHelper.TrackedCamera.GetVideoStreamTextureD3D11(OpenVRHelper.TrackedCameraHandle, VRTrackedCameraFrameType.Distorted, d3d11Device.ManagedPtr));
             }
             return MementoServer.Default.Get(material, DX11TextureView, () =>
             {

@@ -32,11 +32,11 @@ namespace RenderToy
         }
         public static Matrix3D GetEyeToHeadTransform(Eye eEye)
         {
-            return ConvertMatrix43(OpenVR.GetEyeToHeadTransform(eEye));
+            return ConvertMatrix43(System.GetEyeToHeadTransform(eEye));
         }
         public static Matrix3D GetProjectionMatrix(Eye eEye, float fNear, float fFar)
         {
-            return ConvertMatrix44(OpenVR.GetProjectionMatrix(eEye, fNear, fFar));
+            return ConvertMatrix44(System.GetProjectionMatrix(eEye, fNear, fFar));
         }
         public static void SubmitLeftHand(Matrix3D hand)
         {
@@ -48,6 +48,10 @@ namespace RenderToy
         }
         public static Matrix3D _lefthand;
         public static Matrix3D _righthand;
+        public static VRSystem System = new VRSystem();
+        public static OpenVRCompositor Compositor = new OpenVRCompositor();
+        public static VRTrackedCamera TrackedCamera = new VRTrackedCamera();
+        public static ulong TrackedCameraHandle = TrackedCamera.AcquireVideoStreamingService(0);
     }
     public class TransformLeftHand : ITransform
     {
