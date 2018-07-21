@@ -377,6 +377,23 @@ namespace RenderToy
 		D3D11ShaderResourceView(ID3D11ShaderResourceView *pObj) : COMWrapper(pObj)
 		{
 		}
+		~D3D11ShaderResourceView()
+		{
+			if (donotrelease)
+			{
+				// Setting this pointer to null will remove the pointer before the base destructor is called.
+				// This prevents the release of a resource which isn't owned by us (e.g. OpenVR).
+				pWrapped = nullptr;
+			}
+		}
+		static D3D11ShaderResourceView^ WrapUnowned(System::IntPtr d3d11srv)
+		{
+			auto result = gcnew D3D11ShaderResourceView(reinterpret_cast<ID3D11ShaderResourceView*>(d3d11srv.ToPointer()));
+			result->donotrelease = true;
+			return result;
+		}
+	private:
+		bool donotrelease = false;
 	};
 	public ref class D3D11Texture2D : COMWrapper<ID3D11Texture2D>, D3D11Resource
 	{

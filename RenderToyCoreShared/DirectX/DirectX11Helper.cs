@@ -44,15 +44,15 @@ namespace RenderToy.DirectX
                         Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, thisconstantbufferoffset, 4 * 16);
                     });
                     var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
-                    var collecttextures = new[]
+                    execute_drawprimitive.Add((context2) =>
                     {
+                        var collecttextures = new[]
+                        {
                             CreateTextureView(objmat == null ? transformedobject.Node.Material : objmat.map_Kd, StockMaterials.PlasticWhite),
                             CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
                             CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
                             CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
                         };
-                    execute_drawprimitive.Add((context2) =>
-                    {
                         context2.VSSetConstantBuffers1(0, constantbufferlist, new[] { (uint)thisconstantbufferoffset / 16U }, new[] { 4U * 16U });
                         context2.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
                         context2.PSSetShaderResources(0, collecttextures);
@@ -88,6 +88,10 @@ namespace RenderToy.DirectX
         {
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
+            if (material is MaterialOpenVRCameraDistorted)
+            {
+                return D3D11ShaderResourceView.WrapUnowned(OpenVR.GetVideoStreamTextureD3D11(d3d11Device.ManagedPtr));
+            }
             return MementoServer.Default.Get(material, DX11TextureView, () =>
             {
                 var astexture = material as ITexture;

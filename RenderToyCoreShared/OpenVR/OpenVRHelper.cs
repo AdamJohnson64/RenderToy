@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #if OPENVR_INSTALLED
+using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Transforms;
 
@@ -66,6 +67,13 @@ namespace RenderToy
             {
                 return OpenVRHelper._righthand;
             }
+        }
+    };
+    public class MaterialOpenVRCameraDistorted : IMaterial
+    {
+        public bool IsConstant()
+        {
+            return false;
         }
     };
 }

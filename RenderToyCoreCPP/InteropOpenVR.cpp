@@ -63,6 +63,12 @@ namespace RenderToy
 		{
 			vrsystem = vr::VR_Init(nullptr, vr::EVRApplicationType::VRApplication_Scene);
 			if (vrsystem == nullptr) throw gcnew System::Exception("OpenVR could not be started; check your SteamVR and HMD setup.");
+			vrtrackedcamera = vr::VRTrackedCamera();
+			if (vrtrackedcamera == nullptr) throw gcnew System::Exception("OpenVR camera could not be started; check your SteamVR and HMD setup.");
+			vr::TrackedCameraHandle_t handle = { 0 };
+			auto error = vrtrackedcamera->AcquireVideoStreamingService(0, &handle);
+			if (error != vr::VRTrackedCameraError_None) throw gcnew System::Exception("OpenVR camera handle could not be acquired; check your SteamVR and HMD setup.");
+			vrtrackedcamerahandle = handle;
 		}
 		static TrackedControllerRole GetControllerRoleForTrackedDeviceIndex(vr::TrackedDeviceIndex_t unDeviceIndex)
 		{
@@ -110,8 +116,18 @@ namespace RenderToy
 			time = fPredictedSecondsFromNow;
 			return true;
 		}
+		static System::IntPtr GetVideoStreamTextureD3D11(System::IntPtr device)
+		{
+			if (vrtrackedcamera == nullptr) return System::IntPtr::Zero;
+			void *pShaderResourceView = nullptr;
+			vr::CameraVideoStreamFrameHeader_t header;
+			auto error = vrtrackedcamera->GetVideoStreamTextureD3D11(vrtrackedcamerahandle, vr::VRTrackedCameraFrameType_Distorted, device.ToPointer(), &pShaderResourceView, &header, sizeof(header));
+			return System::IntPtr(pShaderResourceView);
+		}
 	public:
 		static vr::IVRSystem *vrsystem;
+		static vr::IVRTrackedCamera *vrtrackedcamera;
+		static vr::TrackedCameraHandle_t vrtrackedcamerahandle;
 	};
 
 	public ref class OpenVRCompositor
