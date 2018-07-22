@@ -23,7 +23,7 @@ namespace RenderToy.PipelineModel
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 Matrix3D modeltransform = transformedobject.Transform;
-                foreach (var x in CreatePoints(transformedobject.Node.Primitive))
+                foreach (var x in CreatePoints(transformedobject.NodePrimitive))
                 {
                     yield return MathHelp.TransformPoint(modeltransform, x);
                 }

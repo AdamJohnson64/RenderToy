@@ -16,46 +16,46 @@ namespace RenderToy.RenderMode
         public static void PointCPUF64(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var pixels = TransformedObject.Enumerate(scene).SelectMany(transformednode => {
-                var triangles = PrimitiveAssembly.CreatePoints(transformednode.Node.Primitive);
+                var triangles = PrimitiveAssembly.CreatePoints(transformednode.NodePrimitive);
                 var v3tov4 = Transformation.Vector3ToVector4All(triangles);
                 var clipspace = Transformation.TransformAll(v3tov4, transformednode.Transform * mvp);
                 var clipped = Clipping.ClipPoint(clipspace);
                 var hdiv = Transformation.HomogeneousDivideAll(clipped);
                 var screenspace = Transformation.TransformToScreenAll(hdiv, render_width, render_height);
-                return Rasterization.RasterizePoint(screenspace, Rasterization.ColorToUInt32(transformednode.Node.WireColor));
+                return Rasterization.RasterizePoint(screenspace, Rasterization.ColorToUInt32(transformednode.NodeWireColor));
             });
             Rasterization.FillBitmap(pixels, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
         public static void WireframeCPUF64(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var pixels = TransformedObject.Enumerate(scene).SelectMany(transformednode => {
-                var triangles = PrimitiveAssembly.CreateLines(transformednode.Node.Primitive);
+                var triangles = PrimitiveAssembly.CreateLines(transformednode.NodePrimitive);
                 var v3tov4 = Transformation.Vector3ToVector4All(triangles);
                 var clipspace = Transformation.TransformAll(v3tov4, transformednode.Transform * mvp);
                 var clipped = Clipping.ClipLine(clipspace);
                 var hdiv = Transformation.HomogeneousDivideAll(clipped);
                 var screenspace = Transformation.TransformToScreenAll(hdiv, render_width, render_height);
-                return Rasterization.RasterizeLine(screenspace, Rasterization.ColorToUInt32(transformednode.Node.WireColor));
+                return Rasterization.RasterizeLine(screenspace, Rasterization.ColorToUInt32(transformednode.NodeWireColor));
             });
             Rasterization.FillBitmap(pixels, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
         public static void RasterCPUF64(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var pixels = TransformedObject.Enumerate(scene).SelectMany(transformednode => {
-                var triangles = PrimitiveAssembly.CreateTriangles(transformednode.Node.Primitive);
+                var triangles = PrimitiveAssembly.CreateTriangles(transformednode.NodePrimitive);
                 var v3tov4 = Transformation.Vector3ToVector4All(triangles);
                 var clipspace = Transformation.TransformAll(v3tov4, transformednode.Transform * mvp);
                 var clipped = Clipping.ClipTriangle(clipspace);
                 var hdiv = Transformation.HomogeneousDivideAll(clipped);
                 var screenspace = Transformation.TransformToScreenAll (hdiv, render_width, render_height);
-                return Rasterization.RasterizeTriangle(screenspace, Rasterization.ColorToUInt32(transformednode.Node.WireColor));
+                return Rasterization.RasterizeTriangle(screenspace, Rasterization.ColorToUInt32(transformednode.NodeWireColor));
             });
             Rasterization.FillBitmap(pixels, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
         public static void RasterHomogeneousCPUF64(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
             var pixels = TransformedObject.Enumerate(scene).SelectMany(transformednode => {
-                var triangles = PrimitiveAssembly.CreateTriangles(transformednode.Node.Primitive);
+                var triangles = PrimitiveAssembly.CreateTriangles(transformednode.NodePrimitive);
                 var v3tov4 = Transformation.Vector3ToVector4All(triangles);
                 var clipspace = Transformation.TransformAll(v3tov4, transformednode.Transform * mvp);
                 return Rasterization.RasterizeHomogeneous(clipspace, (ushort)render_width, (ushort)render_height);

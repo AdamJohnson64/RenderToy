@@ -35,22 +35,22 @@ namespace RenderToy.DirectX
                 var constantbufferlist = new[] { d3d11constantbufferGPU };
                 foreach (var transformedobject in TransformedObject.Enumerate(scene))
                 {
-                    var vertexbuffer = DirectX11Helper.CreateVertexBuffer(transformedobject.Node.Primitive);
+                    var vertexbuffer = DirectX11Helper.CreateVertexBuffer(transformedobject.NodePrimitive);
                     if (vertexbuffer == null) continue;
                     var thisconstantbufferoffset = constantbufferoffset;
                     execute_retransform.Add((transformViewProjection) =>
                     {
-                        Matrix3D transformModel = transformedobject.TransformParent * transformedobject.Node.Transform.Transform;
+                        Matrix3D transformModel = transformedobject.TransformParent * transformedobject.NodeTransform.Transform;
                         var transformModelViewProjection = transformModel * transformViewProjection;
                         Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, thisconstantbufferoffset, SIZEOF_MATRIX);
                         Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, thisconstantbufferoffset + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
                     });
-                    var objmat = transformedobject.Node.Material as LoaderOBJ.OBJMaterial;
+                    var objmat = transformedobject.NodeMaterial as LoaderOBJ.OBJMaterial;
                     execute_drawprimitive.Add((context2) =>
                     {
                         var collecttextures = new[]
                         {
-                            CreateTextureView(objmat == null ? transformedobject.Node.Material : objmat.map_Kd, StockMaterials.PlasticWhite),
+                            CreateTextureView(objmat == null ? transformedobject.NodeMaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
                             CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
                             CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
                             CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)

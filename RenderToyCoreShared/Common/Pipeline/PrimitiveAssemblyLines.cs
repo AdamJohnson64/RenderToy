@@ -25,8 +25,8 @@ namespace RenderToy.PipelineModel
             foreach (var transformedobject in TransformedObject.Enumerate(scene))
             {
                 Matrix3D modeltransform = transformedobject.Transform;
-                uint color = Rasterization.ColorToUInt32(transformedobject.Node.WireColor);
-                foreach (var x in CreateLines(transformedobject.Node.Primitive))
+                uint color = Rasterization.ColorToUInt32(transformedobject.NodeWireColor);
+                foreach (var x in CreateLines(transformedobject.NodePrimitive))
                 {
                     yield return MathHelp.TransformPoint(modeltransform, x);
                 }

@@ -13,15 +13,21 @@ namespace RenderToy.SceneGraph
 {
     public class TransformedObject
     {
-        TransformedObject(INode node, Matrix3D transformparent, Matrix3D transform)
+        TransformedObject(IMaterial nodematerial, IPrimitive nodeprimitive, ITransform nodetransform, Vector4D nodewirecolor, Matrix3D transformparent, Matrix3D transform)
         {
-            Node = node;
             TransformParent = transformparent;
             Transform = transform;
+            NodeMaterial = nodematerial;
+            NodePrimitive = nodeprimitive;
+            NodeTransform = nodetransform;
+            NodeWireColor = nodewirecolor;
         }
-        public readonly INode Node;
         public readonly Matrix3D TransformParent;
         public readonly Matrix3D Transform;
+        public readonly IMaterial NodeMaterial;
+        public readonly IPrimitive NodePrimitive;
+        public readonly ITransform NodeTransform;
+        public readonly Vector4D NodeWireColor;
         public static IEnumerable<TransformedObject> Enumerate(IScene scene)
         {
             if (scene == null) yield break;
@@ -36,7 +42,7 @@ namespace RenderToy.SceneGraph
         static IEnumerable<TransformedObject> Enumerate(INode node, Matrix3D parenttransform)
         {
             Matrix3D localtransform = parenttransform * node.Transform.Transform;
-            yield return new TransformedObject(node, parenttransform, localtransform);
+            yield return new TransformedObject(node.Material, node.Primitive, node.Transform, node.WireColor, parenttransform, localtransform);
             foreach (INode child in node.Children)
             {
                 foreach (TransformedObject transformedchild in Enumerate(child, localtransform))

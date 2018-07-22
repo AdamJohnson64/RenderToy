@@ -111,7 +111,7 @@ namespace RenderToy.WPF
             {
                 var transformModel = transformedobject.Transform;
                 var transformModelViewProjection = transformModel * transformViewProjection;
-                var vertexbuffer = CreateVertexBuffer(transformedobject.Node.Primitive);
+                var vertexbuffer = CreateVertexBuffer(transformedobject.NodePrimitive);
                 if (vertexbuffer == null) continue;
                 d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0);
                 d3d12CommandList.IASetVertexBuffers(0, new[] { new D3D12VertexBufferView { BufferLocation = vertexbuffer.d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = vertexbuffer.size, StrideInBytes = (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) } });

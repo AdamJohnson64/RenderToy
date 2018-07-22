@@ -23,7 +23,7 @@ namespace RenderToy
     {
         public static Action CreateRenderer(IScene scene)
         {
-            var openvr = TransformedObject.Enumerate(scene).Select(i => i.Node.Transform).OfType<IVRHost>().Select(i => i.VRHost).Distinct().SingleOrDefault();
+            var openvr = TransformedObject.Enumerate(scene).Select(i => i.NodeTransform).OfType<IVRHost>().Select(i => i.VRHost).Distinct().SingleOrDefault();
             if (openvr == null) return () => { };
             var d3d11VertexShader = DirectX11Helper.d3d11Device.CreateVertexShader(HLSL.D3D11VS);
             var d3d11PixelShader = DirectX11Helper.d3d11Device.CreatePixelShader(HLSL.D3D11PS);

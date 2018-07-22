@@ -147,7 +147,7 @@ namespace RenderToy.RenderMode
             // Write the inverse transform.
             Serialize(MathHelp.Invert(obj.Transform), Serialize);
             // Write the object type.
-            var primitive = obj.Node.Primitive;
+            var primitive = obj.NodePrimitive;
             if (primitive is Plane)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_PLANE);
@@ -195,7 +195,7 @@ namespace RenderToy.RenderMode
                 binarywriter.Write((int)0);
             }
             // Write the material type.
-            var material = obj.Node.Material;
+            var material = obj.NodeMaterial;
             if (material is GenericMaterial)
             {
                 binarywriter.Write((int)Material.MATERIAL_COMMON);
