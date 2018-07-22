@@ -28,10 +28,10 @@ namespace RenderToy
             var d3d11VertexShader = DirectX11Helper.d3d11Device.CreateVertexShader(HLSL.D3D11VS);
             var d3d11PixelShader = DirectX11Helper.d3d11Device.CreatePixelShader(HLSL.D3D11PS);
             var Execute_RenderScene = DirectX11Helper.CreateSceneDraw(scene);
-            uint vrwidth = 0, vrheight = 0;
-            openvr.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
             Action<D3D11DeviceContext4> Execute_RenderAllTargets = null;
             {
+                uint vrwidth = 0, vrheight = 0;
+                openvr.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
                 var d3d11Texture2DDesc_DS_Eye = new D3D11Texture2DDesc { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGIFormat.D32_Float, SampleDesc = new DXGISampleDesc { Count = 1, Quality = 0 }, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.DepthStencil, CPUAccessFlags = 0 };
                 var d3d11Texture2D_DS_Eye = DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS_Eye, null);
                 var d3d11DepthStencilView_Eye = DirectX11Helper.d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS_Eye, new D3D11DepthStencilViewDesc { Format = DXGIFormat.D32_Float, ViewDimension = D3D11DsvDimension.Texture2D, Texture2D = new D3D11Tex2DDsv { MipSlice = 0 } });
