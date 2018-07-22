@@ -77,16 +77,6 @@ namespace RenderToy.WPF
                     {
                         scene.children.Add(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.White, StockMaterials.PlasticWhite));
                     }
-                    try
-                    {
-                        var controller = LoaderOBJ.LoadFromPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj").First();
-                        scene.children.Add(new Node("Left Hand", new TransformLeftHand(), controller.Primitive, StockMaterials.White, controller.Material));
-                        scene.children.Add(new Node("Right Hand", new TransformRightHand(), controller.Primitive, StockMaterials.White, controller.Material));
-                    }
-                    catch
-                    {
-                        Debug.WriteLine("WARNING: Unable to load controller model.");
-                    }
                     DataContext = new Document(scene);
                 }
                 e.Handled = true;

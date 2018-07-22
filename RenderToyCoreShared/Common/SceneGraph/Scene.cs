@@ -43,22 +43,21 @@ namespace RenderToy.SceneGraph
             scene.children.Add(new Node("Sphere (Glass)", new TransformMatrix(MathHelp.CreateMatrixTranslate(0, 3, 0)), Sphere.Default, StockMaterials.Black, StockMaterials.Glass));
             try
             {
+                var openvr = new OpenVRHelper();
                 var controller = LoaderOBJ.LoadFromPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj").First();
-                scene.children.Add(new Node("Left Hand", new TransformLeftHand(), controller.Primitive, StockMaterials.White, controller.Material));
-                scene.children.Add(new Node("Right Hand", new TransformRightHand(), controller.Primitive, StockMaterials.White, controller.Material));
-            }
-            catch
-            {
-                Debug.WriteLine("WARNING: Unable to load controller model.");
-            }
-            {
+                scene.children.Add(new Node("Left Hand", new TransformLeftHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
+                scene.children.Add(new Node("Right Hand", new TransformRightHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
                 Matrix3D transform = new Matrix3D(
                     1, 0, 0, 0,
                     0, 0, -1, 0,
                     0, 1, 0, 0,
                     0, 1, 2, 1
                 );
-                scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted()));
+                scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted(openvr)));
+            }
+            catch
+            {
+                Debug.WriteLine("WARNING: Unable to load controller model.");
             }
         }
         static Scene scene;
