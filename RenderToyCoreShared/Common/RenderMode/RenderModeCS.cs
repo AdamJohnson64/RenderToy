@@ -7,15 +7,16 @@ using RenderToy.Math;
 using RenderToy.PipelineModel;
 using RenderToy.SceneGraph;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RenderToy.RenderMode
 {
     public static class RenderModeCS
     {
-        public static void PointCPUF64(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+        public static void PointCPUF64(IEnumerable<TransformedObject> scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            var pixels = TransformedObject.Enumerate(scene).SelectMany(transformednode => {
+            var pixels = scene.SelectMany(transformednode => {
                 var triangles = PrimitiveAssembly.CreatePoints(transformednode.NodePrimitive);
                 var v3tov4 = Transformation.Vector3ToVector4All(triangles);
                 var clipspace = Transformation.TransformAll(v3tov4, transformednode.Transform * mvp);
@@ -26,9 +27,9 @@ namespace RenderToy.RenderMode
             });
             Rasterization.FillBitmap(pixels, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
-        public static void WireframeCPUF64(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+        public static void WireframeCPUF64(IEnumerable<TransformedObject> scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            var pixels = TransformedObject.Enumerate(scene).SelectMany(transformednode => {
+            var pixels = scene.SelectMany(transformednode => {
                 var triangles = PrimitiveAssembly.CreateLines(transformednode.NodePrimitive);
                 var v3tov4 = Transformation.Vector3ToVector4All(triangles);
                 var clipspace = Transformation.TransformAll(v3tov4, transformednode.Transform * mvp);
@@ -39,9 +40,9 @@ namespace RenderToy.RenderMode
             });
             Rasterization.FillBitmap(pixels, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
-        public static void RasterCPUF64(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+        public static void RasterCPUF64(IEnumerable<TransformedObject> scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            var pixels = TransformedObject.Enumerate(scene).SelectMany(transformednode => {
+            var pixels = scene.SelectMany(transformednode => {
                 var triangles = PrimitiveAssembly.CreateTriangles(transformednode.NodePrimitive);
                 var v3tov4 = Transformation.Vector3ToVector4All(triangles);
                 var clipspace = Transformation.TransformAll(v3tov4, transformednode.Transform * mvp);
@@ -52,9 +53,9 @@ namespace RenderToy.RenderMode
             });
             Rasterization.FillBitmap(pixels, bitmap_ptr, render_width, render_height, bitmap_stride);
         }
-        public static void RasterHomogeneousCPUF64(IScene scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
+        public static void RasterHomogeneousCPUF64(IEnumerable<TransformedObject> scene, Matrix3D mvp, IntPtr bitmap_ptr, int render_width, int render_height, int bitmap_stride)
         {
-            var pixels = TransformedObject.Enumerate(scene).SelectMany(transformednode => {
+            var pixels = scene.SelectMany(transformednode => {
                 var triangles = PrimitiveAssembly.CreateTriangles(transformednode.NodePrimitive);
                 var v3tov4 = Transformation.Vector3ToVector4All(triangles);
                 var clipspace = Transformation.TransformAll(v3tov4, transformednode.Transform * mvp);

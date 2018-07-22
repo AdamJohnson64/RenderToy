@@ -5,6 +5,7 @@
 
 using RenderToy.Math;
 using RenderToy.SceneGraph;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace RenderToy.WPF
@@ -48,12 +49,12 @@ namespace RenderToy.WPF
         {
             on.SetValue(TransformModelViewProjectionProperty, value);
         }
-        public static DependencyProperty SceneProperty = DependencyProperty.RegisterAttached("Scene", typeof(IScene), typeof(AttachedView), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
-        public static IScene GetScene(DependencyObject from)
+        public static DependencyProperty SceneProperty = DependencyProperty.RegisterAttached("Scene", typeof(IEnumerable<TransformedObject>), typeof(AttachedView), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static IEnumerable<TransformedObject> GetScene(DependencyObject from)
         {
-            return (IScene)from.GetValue(SceneProperty);
+            return (IEnumerable<TransformedObject>)from.GetValue(SceneProperty);
         }
-        public static void SetScene(DependencyObject on, IScene value)
+        public static void SetScene(DependencyObject on, IEnumerable<TransformedObject> value)
         {
             on.SetValue(SceneProperty, value);
         }

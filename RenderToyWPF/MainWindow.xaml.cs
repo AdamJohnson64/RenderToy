@@ -77,7 +77,7 @@ namespace RenderToy.WPF
                     {
                         scene.children.Add(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.White, StockMaterials.PlasticWhite));
                     }
-                    DataContext = new Document(scene);
+                    DataContext = new Document(TransformedObject.Enumerate(scene));
                 }
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -93,7 +93,7 @@ namespace RenderToy.WPF
                 material.map_bump = new BumpGenerate { U = new MNTexCoordU(), V = new MNTexCoordV(), Displacement = displace };
                 material.displacement = new MNVector4D { R = displace, G = displace, B = displace, A = new MNConstant { Value = 1 } };
                 scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), Plane.Default, StockMaterials.White, material));
-                DataContext = new Document(scene);
+                DataContext = new Document(TransformedObject.Enumerate(scene));
             }));
             CommandBindings.Add(new CommandBinding(CommandSceneAddSphere, (s, e) => 
             {
@@ -255,54 +255,18 @@ namespace RenderToy.WPF
     }
     class Document
     {
-        public IScene Scene { get; private set; }
+        public IEnumerable<TransformedObject> Scene { get; private set; }
         public ObservableCollection<IMaterial> Materials { get; private set; }
-        public static Document Default = new Document(TestScenes.DefaultScene);
-        public Document(IScene scene)
+        public static Document Default = new Document(TransformedObject.Enumerate(TestScenes.DefaultScene));
+        public Document(IEnumerable<TransformedObject> scene)
         {
             Scene = scene;
-            var materials = EnumerateSceneRoot(scene)
-                .Select(i => i.Material)
+            var materials = scene
+                .Select(i => i.NodeMaterial)
                 .OfType<IMaterial>()
                 .Distinct();
             //.SelectMany(i => EnumerateNodes(i));
             Materials = new ObservableCollection<IMaterial>(materials);
-        }
-        static IEnumerable<INode> EnumerateSceneRoot(IScene root)
-        {
-            if (root == null) yield break;
-            foreach (var child in root.Children)
-            {
-                foreach (var next in EnumerateSceneGraph(child))
-                {
-                    yield return next;
-                }
-            }
-        }
-        static IEnumerable<INode> EnumerateSceneGraph(INode root)
-        {
-            if (root == null) yield break;
-            yield return root;
-            foreach (var next in EnumerateSceneRoot(root))
-            {
-                yield return next;
-            }
-        }
-        static IEnumerable<IMaterial> EnumerateMaterialNodes(IMaterial node)
-        {
-            if (node == null) yield break;
-            yield return node;
-            System.Type type = node.GetType();
-            foreach (var property in type.GetProperties())
-            {
-                if (typeof(IMaterial).IsAssignableFrom(property.PropertyType))
-                {
-                    foreach (var next in EnumerateMaterialNodes((IMaterial)property.GetValue(node)))
-                    {
-                        yield return next;
-                    }
-                }
-            }
         }
     }
 }

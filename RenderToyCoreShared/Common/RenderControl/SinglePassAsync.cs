@@ -7,6 +7,7 @@ using RenderToy.Math;
 using RenderToy.RenderMode;
 using RenderToy.SceneGraph;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -70,7 +71,10 @@ namespace RenderToy.RenderControl
                         GCHandle handle_buffer = GCHandle.Alloc(Next.Buffer, GCHandleType.Pinned);
                         try
                         {
-                            host.fillwith.Action(Next.Scene, Next.MVP, handle_buffer.AddrOfPinnedObject(), Next.Width, Next.Height, 4 * Next.Width, null);
+                            if (Next.Scene != null)
+                            {
+                                host.fillwith.Action(Next.Scene, Next.MVP, handle_buffer.AddrOfPinnedObject(), Next.Width, Next.Height, 4 * Next.Width, null);
+                            }
                         }
                         finally
                         {
@@ -99,7 +103,7 @@ namespace RenderToy.RenderControl
         Mutex lock_desc = new Mutex();
         #endregion
         public override string ToString() { return RenderCall.GetDisplayNameFull(fillwith.MethodInfo.Name); }
-        public void SetScene(IScene scene)
+        public void SetScene(IEnumerable<TransformedObject> scene)
         {
             try
             {

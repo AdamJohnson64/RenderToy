@@ -5,12 +5,13 @@
 
 using RenderToy.Math;
 using RenderToy.SceneGraph;
+using System.Collections.Generic;
 
 namespace RenderToy.RenderControl
 {
     struct AccumulateBuffer
     {
-        public AccumulateBuffer(IScene scene, Matrix3D mvp, int width, int height, byte[] accumulator)
+        public AccumulateBuffer(IEnumerable<TransformedObject> scene, Matrix3D mvp, int width, int height, byte[] accumulator)
         {
             Scene = scene;
             MVP = mvp;
@@ -19,7 +20,7 @@ namespace RenderToy.RenderControl
             Buffer = accumulator;
             Pass = 0;
         }
-        public IScene Scene;
+        public IEnumerable<TransformedObject> Scene;
         public Matrix3D MVP;
         public int Width;
         public int Height;

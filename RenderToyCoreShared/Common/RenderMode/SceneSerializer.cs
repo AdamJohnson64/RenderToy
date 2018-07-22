@@ -26,12 +26,12 @@ namespace RenderToy.RenderMode
         struct FlatSceneF64Token
         {
         }
-        public static byte[] CreateFlatMemoryF32(IScene scene)
+        public static byte[] CreateFlatMemoryF32(IEnumerable<TransformedObject> scene)
         {
             Func<byte[]> build = () => new SceneSerializer(scene, false).m.ToArray();
             return MementoServer.Default.Get(scene, typeof(FlatSceneF32Token), build);
         }
-        public static byte[] CreateFlatMemoryF64(IScene scene)
+        public static byte[] CreateFlatMemoryF64(IEnumerable<TransformedObject> scene)
         {
             Func<byte[]> build = () => new SceneSerializer(scene, true).m.ToArray();
             return MementoServer.Default.Get(scene, typeof(FlatSceneF64Token), build);
@@ -54,13 +54,13 @@ namespace RenderToy.RenderMode
             }
             return memory.ToArray();
         }
-        SceneSerializer(IScene scene, bool use_f64)
+        SceneSerializer(IEnumerable<TransformedObject> scene, bool use_f64)
         {
             UseF64 = use_f64;
             // Prepare the scene definition for the renderer.
             using (binarywriter = new BinaryWriter(m))
             {
-                var transformedobjects = TransformedObject.Enumerate(scene).ToList();
+                var transformedobjects = scene.ToList();
                 // Write the file size and object count.
                 binarywriter.Write((int)0);
                 binarywriter.Write((int)transformedobjects.Count);

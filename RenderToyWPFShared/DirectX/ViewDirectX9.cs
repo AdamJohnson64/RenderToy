@@ -154,7 +154,7 @@ namespace RenderToy.WPF
         protected override void RenderD3D()
         {
             var mvp = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            foreach (var transformedobject in TransformedObject.Enumerate(AttachedView.GetScene(this)))
+            foreach (var transformedobject in AttachedView.GetScene(this))
             {
                 var createdvertexbuffer = CreateVertexBuffer(transformedobject.NodePrimitive);
                 if (createdvertexbuffer.VertexBuffer == null) continue;
@@ -190,7 +190,7 @@ namespace RenderToy.WPF
             var transformView = AttachedView.GetTransformView(this);
             var transformProjection = AttachedView.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             var transformViewProjection = transformView * transformProjection;
-            foreach (var transformedobject in TransformedObject.Enumerate(AttachedView.GetScene(this)))
+            foreach (var transformedobject in AttachedView.GetScene(this))
             {
                 if (transformedobject.NodePrimitive == null) continue;
                 var transformModel = transformedobject.Transform;

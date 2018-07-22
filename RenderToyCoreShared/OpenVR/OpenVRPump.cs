@@ -21,9 +21,9 @@ namespace RenderToy
 #if OPENVR_INSTALLED
     public static class OpenVRPump
     {
-        public static Action CreateRenderer(IScene scene)
+        public static Action CreateRenderer(IEnumerable<TransformedObject> scene)
         {
-            var openvr = TransformedObject.Enumerate(scene).Select(i => i.NodeTransform).OfType<IVRHost>().Select(i => i.VRHost).Distinct().SingleOrDefault();
+            var openvr = scene.Select(i => i.NodeTransform).OfType<IVRHost>().Select(i => i.VRHost).Distinct().SingleOrDefault();
             if (openvr == null) return () => { };
             var d3d11VertexShader = DirectX11Helper.d3d11Device.CreateVertexShader(HLSL.D3D11VS);
             var d3d11PixelShader = DirectX11Helper.d3d11Device.CreatePixelShader(HLSL.D3D11PS);
@@ -59,7 +59,7 @@ namespace RenderToy
                 openvr.Compositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
             };
         }
-        public static void CreateThread(IScene scene)
+        public static void CreateThread(IEnumerable<TransformedObject> scene)
         {
             var renderer = CreateRenderer(scene);
             var thread = new Thread((param) =>

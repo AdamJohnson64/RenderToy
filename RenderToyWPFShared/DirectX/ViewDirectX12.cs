@@ -107,7 +107,7 @@ namespace RenderToy.WPF
             // Create a vertex buffer to draw.
             var maintainBuffers = new List<D3D12Resource>();
             var transformViewProjection = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            foreach (var transformedobject in TransformedObject.Enumerate(AttachedView.GetScene(this)))
+            foreach (var transformedobject in AttachedView.GetScene(this))
             {
                 var transformModel = transformedobject.Transform;
                 var transformModelViewProjection = transformModel * transformViewProjection;

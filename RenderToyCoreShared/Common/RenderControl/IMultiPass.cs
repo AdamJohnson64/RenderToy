@@ -6,6 +6,7 @@
 using RenderToy.Math;
 using RenderToy.SceneGraph;
 using System;
+using System.Collections.Generic;
 
 namespace RenderToy.RenderControl
 {
@@ -22,8 +23,8 @@ namespace RenderToy.RenderControl
         /// <summary>
         /// Configure the scene for the render.
         /// </summary>
-        /// <param name="scene">The scene graph object.</param>
-        void SetScene(IScene scene);
+        /// <param name="scene">The scene object.</param>
+        void SetScene(IEnumerable<TransformedObject> scene);
         /// <summary>
         /// Configure the output target dimensions for the render.
         /// </summary>

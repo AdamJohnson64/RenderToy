@@ -18,9 +18,9 @@ namespace RenderToy.PipelineModel
         /// </summary>
         /// <param name="scene">The source scene.</param>
         /// <returns>A stream of vertices.</returns>
-        public static IEnumerable<Vector3D> CreatePoints(IScene scene)
+        public static IEnumerable<Vector3D> CreatePoints(IEnumerable<TransformedObject> scene)
         {
-            foreach (var transformedobject in TransformedObject.Enumerate(scene))
+            foreach (var transformedobject in scene)
             {
                 Matrix3D modeltransform = transformedobject.Transform;
                 foreach (var x in CreatePoints(transformedobject.NodePrimitive))

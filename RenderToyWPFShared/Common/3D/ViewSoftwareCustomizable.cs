@@ -51,8 +51,9 @@ namespace RenderToy.WPF
                 menu_group.Items.Add(new MenuItem { Command = CommandResolution10 });
                 menu.Items.Add(menu_group);
             }
-            var scene = new Scene();
-            scene.children.Add(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), Sphere.Default, StockMaterials.Red, StockMaterials.PlasticRed));
+            var scenehierarchy = new Scene();
+            scenehierarchy.children.Add(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixIdentity()), Sphere.Default, StockMaterials.Red, StockMaterials.PlasticRed));
+            var scene = TransformedObject.Enumerate(scenehierarchy);
             foreach (var group in RenderCallCommands.Calls.GroupBy(x => RenderCall.GetDisplayNameBare(x.MethodInfo.Name)))
             {
                 var menu_group = new MenuItem { Header = group.Key };
@@ -114,7 +115,7 @@ namespace RenderToy.WPF
             if (e.Property == AttachedView.SceneProperty)
             {
                 if (RenderMode == null) return;
-                RenderMode.SetScene((IScene)e.NewValue);
+                RenderMode.SetScene((IEnumerable<TransformedObject>)e.NewValue);
             }
         }
         protected override void OnRender(DrawingContext drawingContext)

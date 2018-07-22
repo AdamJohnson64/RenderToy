@@ -7,6 +7,7 @@ using RenderToy.Math;
 using RenderToy.RenderMode;
 using RenderToy.SceneGraph;
 using System;
+using System.Collections.Generic;
 
 namespace RenderToy.RenderControl
 {
@@ -24,7 +25,7 @@ namespace RenderToy.RenderControl
             this.onbitmapready = onbitmapready;
         }
         public override string ToString() { return RenderCall.GetDisplayNameFull(fillwith.MethodInfo.Name); }
-        public void SetScene(IScene scene) { this.scene = scene; InvalidateFrame(); }
+        public void SetScene(IEnumerable<TransformedObject> scene) { this.scene = scene; InvalidateFrame(); }
         public void SetCamera(Matrix3D mvp)
         {
             if (this.mvp == mvp) return;
@@ -47,7 +48,7 @@ namespace RenderToy.RenderControl
             if (onbitmapready != null) onbitmapready();
         }
         RenderCall fillwith;
-        IScene scene;
+        IEnumerable<TransformedObject> scene;
         Matrix3D mvp;
         int width, height;
         BitmapReady onbitmapready;

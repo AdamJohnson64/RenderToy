@@ -5,12 +5,13 @@
 
 using RenderToy.Math;
 using RenderToy.SceneGraph;
+using System.Collections.Generic;
 
 namespace RenderToy.RenderControl
 {
     struct BitmapBuffer
     {
-        public BitmapBuffer(IScene scene, Matrix3D mvp, int width, int height, byte[] buffer)
+        public BitmapBuffer(IEnumerable<TransformedObject> scene, Matrix3D mvp, int width, int height, byte[] buffer)
         {
             Scene = scene;
             MVP = mvp;
@@ -18,7 +19,7 @@ namespace RenderToy.RenderControl
             Height = height;
             Buffer = buffer;
         }
-        public IScene Scene;
+        public IEnumerable<TransformedObject> Scene;
         public Matrix3D MVP;
         public int Width;
         public int Height;

@@ -53,9 +53,9 @@ namespace RenderToy.RenderMode
             var generateargs = new List<Func<Dictionary<string, object>, Argument>>();
             foreach (var param in method.GetParameters())
             {
-                if (param.ParameterType == typeof(IScene) && param.Name == SCENE)
+                if (param.ParameterType == typeof(IEnumerable<TransformedObject>) && param.Name == SCENE)
                 {
-                    generateargs.Add((args) => new ArgumentFixed((IScene)args[SCENE]));
+                    generateargs.Add((args) => new ArgumentFixed((IEnumerable<TransformedObject>)args[SCENE]));
                 }
                 else if (param.ParameterType == typeof(Matrix3D) && param.Name == MVP)
                 {
@@ -67,8 +67,8 @@ namespace RenderToy.RenderMode
                 }
                 else if (param.ParameterType == typeof(byte[]) && param.Name == SCENE)
                 {
-                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF32((IScene)args[SCENE])));
-                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF64((IScene)args[SCENE])));
+                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF32((IEnumerable<TransformedObject>)args[SCENE])));
+                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF64((IEnumerable<TransformedObject>)args[SCENE])));
                 }
                 else if (param.ParameterType == typeof(byte[]) && param.Name == MVP)
                 {
@@ -285,7 +285,7 @@ namespace RenderToy.RenderMode
             Action = action;
             IsMultipass = ismultipass;
         }
-        public delegate void FillFunction(IScene scene, Matrix3D mvp, object buffer_ptr, int render_width, int render_height, int buffer_stride, Dictionary<string, object> overrides);
+        public delegate void FillFunction(IEnumerable<TransformedObject> scene, Matrix3D mvp, object buffer_ptr, int render_width, int render_height, int buffer_stride, Dictionary<string, object> overrides);
         public readonly MethodInfo MethodInfo;
         public readonly FillFunction Action;
         public readonly bool IsMultipass;
