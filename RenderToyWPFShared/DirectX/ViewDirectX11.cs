@@ -37,6 +37,7 @@ namespace RenderToy.WPF
         {
             AttachedView.SceneProperty.OverrideMetadata(typeof(ViewDirectX11), new FrameworkPropertyMetadata(null, (s, e) =>
             {
+                ((ViewDirectX11)s).Execute_DrawScene = DirectX11Helper.CreateSceneDraw((IScene)e.NewValue);
                 ((ViewDirectX11)s).RenderDX();
             }));
             AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewDirectX11), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>
@@ -44,7 +45,6 @@ namespace RenderToy.WPF
                 ((ViewDirectX11)s).RenderDX();
             }));
         }
-        IScene Execute_SceneLast = null;
         Action<D3D11DeviceContext4, Matrix3D> Execute_DrawScene = null;
         void RenderDX()
         {
@@ -57,13 +57,6 @@ namespace RenderToy.WPF
             // Setup common global render state.
             context.VSSetShader(d3d11VertexShader);
             context.PSSetShader(d3d11PixelShader);
-            ////////////////////////////////////////////////////////////////////////////////
-            // Assemble the scene parts.
-            if (Execute_SceneLast != AttachedView.GetScene(this))
-            {
-                Execute_SceneLast = AttachedView.GetScene(this);
-                Execute_DrawScene = DirectX11Helper.CreateSceneDraw(AttachedView.GetScene(this));
-            }
             // Draw the window view using the current camera.
             context.RSSetScissorRects(new[] { new D3D11Rect { left = 0, top = 0, right = width, bottom = height } });
             context.RSSetViewports(new[] { new D3D11Viewport { TopLeftX = 0, TopLeftY = 0, Width = width, Height = height, MinDepth = 0, MaxDepth = 1 } });
