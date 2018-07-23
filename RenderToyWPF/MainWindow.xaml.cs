@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using Microsoft.Win32;
+using RenderToy.DocumentModel;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.ModelFormat;
@@ -34,7 +35,6 @@ namespace RenderToy.WPF
         public static ICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandSceneOpen = new RoutedUICommand("Open Scene", "CommandSceneLoad", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandScenePlane = new RoutedUICommand("Open Plane", "CommandScenePlane", typeof(ViewSoftwareCustomizable));
-        public static ICommand CommandSceneAddSphere = new RoutedUICommand("Add Sphere", "CommandSceneAddSphere", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandDocumentOpen = new RoutedUICommand("Open the RenderToy document.", "CommandDocumentOpen", typeof(MainWindow));
         public static ICommand CommandDocumentExport = new RoutedUICommand("Export the RenderToy document to XPS.", "CommandDocumentExport", typeof(MainWindow));
@@ -77,7 +77,7 @@ namespace RenderToy.WPF
                     {
                         scene.children.Add(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.White, StockMaterials.PlasticWhite));
                     }
-                    DataContext = new Document(TransformedObject.Enumerate(scene));
+                    DataContext = new Document(scene);
                 }
                 e.Handled = true;
             }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
@@ -93,13 +93,7 @@ namespace RenderToy.WPF
                 material.map_bump = new BumpGenerate { U = new MNTexCoordU(), V = new MNTexCoordV(), Displacement = displace };
                 material.displacement = new MNVector4D { R = displace, G = displace, B = displace, A = new MNConstant { Value = 1 } };
                 scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), Plane.Default, StockMaterials.White, material));
-                DataContext = new Document(TransformedObject.Enumerate(scene));
-            }));
-            CommandBindings.Add(new CommandBinding(CommandSceneAddSphere, (s, e) => 
-            {
-                var root = ((Document)DataContext).Scene as Scene;
-                if (root == null) return;
-                root.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), Sphere.Default, StockMaterials.White, StockMaterials.Brick));
+                DataContext = new Document(scene);
             }));
             CommandBindings.Add(new CommandBinding(CommandDebugToolPerformanceTrace, (s, e) => {
                 var window = new Window { Title = "Performance Trace Tool", Content = new PerformanceTrace() };
@@ -255,13 +249,13 @@ namespace RenderToy.WPF
     }
     class Document
     {
-        public IEnumerable<TransformedObject> Scene { get; private set; }
+        public SparseScene Scene { get; private set; }
         public ObservableCollection<IMaterial> Materials { get; private set; }
-        public static Document Default = new Document(TransformedObject.Enumerate(TestScenes.DefaultScene));
-        public Document(IEnumerable<TransformedObject> scene)
+        public static Document Default = new Document(TestScenes.DefaultScene);
+        public Document(IScene scene)
         {
-            Scene = scene;
-            var materials = scene
+            Scene = TransformedObject.ConvertToSparseScene(scene);
+            var materials = Scene
                 .Select(i => i.NodeMaterial)
                 .OfType<IMaterial>()
                 .Distinct();

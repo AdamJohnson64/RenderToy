@@ -15,7 +15,7 @@ namespace RenderToy.OpenVR
             try
             {
                 Console.WriteLine("Initializing renderer...");
-                var renderer = OpenVRPump.CreateRenderer(TransformedObject.Enumerate(TestScenes.DefaultScene));
+                var renderer = OpenVRPump.CreateRenderer(TransformedObject.ConvertToSparseScene(TestScenes.DefaultScene));
                 Console.WriteLine("Render pump starting...");
                 while (true)
                 {

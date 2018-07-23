@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.DirectX;
+using RenderToy.DocumentModel;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Primitives;
@@ -21,7 +22,7 @@ namespace RenderToy
 #if OPENVR_INSTALLED
     public static class OpenVRPump
     {
-        public static Action CreateRenderer(IEnumerable<TransformedObject> scene)
+        public static Action CreateRenderer(SparseScene scene)
         {
             var openvr = scene.Select(i => i.NodeTransform).OfType<IVRHost>().Select(i => i.VRHost).Distinct().SingleOrDefault();
             if (openvr == null) return () => { };
@@ -59,7 +60,7 @@ namespace RenderToy
                 openvr.Compositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
             };
         }
-        public static void CreateThread(IEnumerable<TransformedObject> scene)
+        public static void CreateThread(SparseScene scene)
         {
             var renderer = CreateRenderer(scene);
             var thread = new Thread((param) =>

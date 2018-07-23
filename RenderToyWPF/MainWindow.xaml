@@ -14,7 +14,6 @@
                 <MenuItem Header="New" Command="{x:Static rendertoy:MainWindow.CommandSceneNew}"/>
                 <MenuItem Header="Open" Command="{x:Static rendertoy:MainWindow.CommandSceneOpen}"/>
                 <MenuItem Header="Plane" Command="{x:Static rendertoy:MainWindow.CommandScenePlane}"/>
-                <MenuItem Header="Add Sphere" Command="{x:Static rendertoy:MainWindow.CommandSceneAddSphere}"/>
             </MenuItem>
             <MenuItem Header="Debug">
                 <MenuItem Header="Performance Trace" Command="{x:Static rendertoy:MainWindow.CommandDebugToolPerformanceTrace}"/>

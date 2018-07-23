@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.DocumentModel;
 using RenderToy.Math;
 using RenderToy.SceneGraph;
 using System.Collections.Generic;
@@ -49,12 +50,12 @@ namespace RenderToy.WPF
         {
             on.SetValue(TransformModelViewProjectionProperty, value);
         }
-        public static DependencyProperty SceneProperty = DependencyProperty.RegisterAttached("Scene", typeof(IEnumerable<TransformedObject>), typeof(AttachedView), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
-        public static IEnumerable<TransformedObject> GetScene(DependencyObject from)
+        public static DependencyProperty SceneProperty = DependencyProperty.RegisterAttached("Scene", typeof(SparseScene), typeof(AttachedView), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static SparseScene GetScene(DependencyObject from)
         {
-            return (IEnumerable<TransformedObject>)from.GetValue(SceneProperty);
+            return (SparseScene)from.GetValue(SceneProperty);
         }
-        public static void SetScene(DependencyObject on, IEnumerable<TransformedObject> value)
+        public static void SetScene(DependencyObject on, SparseScene value)
         {
             on.SetValue(SceneProperty, value);
         }

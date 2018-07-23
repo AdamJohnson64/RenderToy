@@ -1,4 +1,5 @@
-﻿using RenderToy.Materials;
+﻿using RenderToy.DocumentModel;
+using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.ModelFormat;
@@ -22,7 +23,7 @@ namespace RenderToy.DirectX
         public static D3D11InputLayout d3d11InputLayout;
         public static D3D11RasterizerState d3d11RasterizerState;
         public static D3D11SamplerState d3d11SamplerState;
-        public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneDraw(IEnumerable<TransformedObject> scene)
+        public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneDraw(SparseScene scene)
         {
             var d3d11constantbufferCPU = new byte[256 * 1024];
             var d3d11constantbufferGPU = DirectX11Helper.d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, null);

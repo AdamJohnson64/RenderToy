@@ -1,5 +1,6 @@
 using RenderToy.Cameras;
 using RenderToy.DirectX;
+using RenderToy.DocumentModel;
 using RenderToy.Math;
 using RenderToy.SceneGraph;
 using RenderToy.Shaders;
@@ -38,7 +39,7 @@ namespace RenderToy.WPF
         {
             AttachedView.SceneProperty.OverrideMetadata(typeof(ViewDirectX11), new FrameworkPropertyMetadata(null, (s, e) =>
             {
-                ((ViewDirectX11)s).Execute_DrawScene = DirectX11Helper.CreateSceneDraw((IEnumerable<TransformedObject>)e.NewValue);
+                ((ViewDirectX11)s).Execute_DrawScene = DirectX11Helper.CreateSceneDraw((SparseScene)e.NewValue);
                 ((ViewDirectX11)s).RenderDX();
             }));
             AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewDirectX11), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>

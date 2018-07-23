@@ -126,7 +126,7 @@ namespace RenderToy.WPF.Xps
         {
             var scene = new Scene();
             scene.children.Add(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), Plane.Default, StockMaterials.Red, StockMaterials.PlasticRed));
-            AttachedView.SetScene(this, TransformedObject.Enumerate(scene));
+            AttachedView.SetScene(this, TransformedObject.ConvertToSparseScene(scene));
             this.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.Self), Path = new PropertyPath("(0).(1)", AttachedCamera.CameraProperty, Camera.TransformModelViewProjectionProperty) });
             ClipToBounds = true;
         }

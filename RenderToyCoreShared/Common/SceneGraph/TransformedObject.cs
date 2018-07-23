@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.DocumentModel;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Primitives;
@@ -50,6 +51,24 @@ namespace RenderToy.SceneGraph
                     yield return transformedchild;
                 }
             }
+        }
+        public static SparseScene ConvertToSparseScene(IScene scene)
+        {
+            var output = new SparseScene();
+            foreach (var t in Enumerate(scene))
+            {
+                output.IndexToNodeMaterial.Add(output.TableNodeMaterial.Count);
+                output.TableNodeMaterial.Add(t.NodeMaterial);
+                output.IndexToNodePrimitive.Add(output.TableNodePrimitive.Count);
+                output.TableNodePrimitive.Add(t.NodePrimitive);
+                output.IndexToNodeTransform.Add(output.TableNodeTransform.Count);
+                output.TableNodeTransform.Add(t.NodeTransform);
+                output.IndexToNodeWireColor.Add(output.TableNodeWireColor.Count);
+                output.TableNodeWireColor.Add(t.NodeWireColor);
+                output.IndexToTransform.Add(output.TableTransform.Count);
+                output.TableTransform.Add(t.Transform);
+            }
+            return output;
         }
     }
 }
