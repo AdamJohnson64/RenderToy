@@ -5,15 +5,9 @@
 
 using RenderToy.DirectX;
 using RenderToy.DocumentModel;
-using RenderToy.Materials;
 using RenderToy.Math;
-using RenderToy.Primitives;
-using RenderToy.SceneGraph;
 using RenderToy.Shaders;
-using RenderToy.Textures;
-using RenderToy.Transforms;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 

@@ -4,7 +4,6 @@ using RenderToy.Expressions;
 using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.Primitives;
-using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using RenderToy.Utility;
 using System;

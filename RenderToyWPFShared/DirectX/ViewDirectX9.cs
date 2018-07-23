@@ -9,7 +9,6 @@ using RenderToy.Materials;
 using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.Primitives;
-using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using RenderToy.Textures;
 using RenderToy.Utility;

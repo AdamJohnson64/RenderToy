@@ -5,8 +5,6 @@
 
 using RenderToy.DocumentModel;
 using RenderToy.Math;
-using RenderToy.SceneGraph;
-using System.Collections.Generic;
 using System.Windows;
 
 namespace RenderToy.WPF

@@ -7,7 +7,6 @@ using RenderToy.Materials;
 using RenderToy.Meshes;
 using RenderToy.SceneGraph;
 using RenderToy.Textures;
-using RenderToy.TextureFormats;
 using RenderToy.Transforms;
 using RenderToy.Utility;
 using System;

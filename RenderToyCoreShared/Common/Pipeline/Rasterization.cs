@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.Math;
-using RenderToy.SceneGraph;
 using System;
 using System.Collections.Generic;
 using System.Linq;

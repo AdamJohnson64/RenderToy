@@ -4,15 +4,11 @@ using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.Primitives;
-using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using RenderToy.Textures;
-using RenderToy.Transforms;
 using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace RenderToy.DirectX
