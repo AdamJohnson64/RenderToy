@@ -25,65 +25,46 @@ namespace RenderToy.DirectX
         public static D3D11SamplerState d3d11SamplerState;
         public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneDraw(SparseScene scene)
         {
+            const int SIZEOF_CONSTANTBLOCK = 256;
+            const int SIZEOF_MATRIX = 4 * 4 * 4;
             var d3d11constantbufferCPU = new byte[256 * 1024];
             var d3d11constantbufferGPU = DirectX11Helper.d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, null);
-            var execute_retransform = new List<Action<Matrix3D>>();
-            var execute_drawprimitive = new List<Action<D3D11DeviceContext4>>();
             // We're collecting constant buffers because DX11 hates to do actual work.
-            int constantbufferoffset = 0;
-            {
-                const int SIZEOF_MATRIX = 4 * 4 * 4;
-                var constantbufferlist = new[] { d3d11constantbufferGPU };
-                foreach (var transformedobject in scene)
-                {
-                    var vertexbuffer = DirectX11Helper.CreateVertexBuffer(transformedobject.NodePrimitive);
-                    if (vertexbuffer == null) continue;
-                    var thisconstantbufferoffset = constantbufferoffset;
-                    execute_retransform.Add((transformViewProjection) =>
-                    {
-                        Matrix3D transformModel = transformedobject.TransformParent * transformedobject.NodeTransform.Transform;
-                        var transformModelViewProjection = transformModel * transformViewProjection;
-                        Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, thisconstantbufferoffset, SIZEOF_MATRIX);
-                        Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, thisconstantbufferoffset + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
-                    });
-                    var objmat = transformedobject.NodeMaterial as LoaderOBJ.OBJMaterial;
-                    execute_drawprimitive.Add((context2) =>
-                    {
-                        var collecttextures = new[]
-                        {
-                            CreateTextureView(objmat == null ? transformedobject.NodeMaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
-                            CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
-                            CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
-                            CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
-                        };
-                        context2.VSSetConstantBuffers1(0, constantbufferlist, new[] { (uint)thisconstantbufferoffset / 16U }, new[] { 5U * SIZEOF_MATRIX });
-                        context2.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
-                        context2.PSSetShaderResources(0, collecttextures);
-                        context2.Draw(vertexbuffer.vertexCount, 0);
-                    });
-                    // Pad up to 256 bytes.
-                    constantbufferoffset += 5 * SIZEOF_MATRIX;
-                    if ((constantbufferoffset & 0xFF) != 0)
-                    {
-                        constantbufferoffset = constantbufferoffset & (~0xFF);
-                        constantbufferoffset += 256;
-                    }
-                }
-            }
+            var constantbufferlist = new[] { d3d11constantbufferGPU };
             return (context, transformViewProjection) =>
             {
-                foreach (var retransform in execute_retransform)
+                int COUNT_OBJECTS = scene.IndexToNodePrimitive.Count;
+                for (int i = 0; i < COUNT_OBJECTS; ++i)
                 {
-                    retransform(transformViewProjection);
+                    Matrix3D transformModel = scene.TableNodeTransform[i].Transform;
+                    var transformModelViewProjection = transformModel * transformViewProjection;
+                    Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK, SIZEOF_MATRIX);
+                    Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
                 }
-                context.UpdateSubresource1(d3d11constantbufferGPU, 0, new D3D11Box { right = (uint)constantbufferoffset }, d3d11constantbufferCPU, 0, 0, D3D11CopyFlags.Discard);
+                context.UpdateSubresource1(d3d11constantbufferGPU, 0, new D3D11Box { right = (uint)(SIZEOF_CONSTANTBLOCK * scene.TableTransform.Count) }, d3d11constantbufferCPU, 0, 0, D3D11CopyFlags.Discard);
                 context.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
                 context.IASetInputLayout(d3d11InputLayout);
                 context.RSSetState(d3d11RasterizerState);
                 context.PSSetSamplers(0, new[] { d3d11SamplerState });
-                foreach (var draw in execute_drawprimitive)
+                for (int i = 0; i < COUNT_OBJECTS; ++i)
                 {
-                    draw(context);
+                    var thistransformindex = scene.IndexToTransform[i];
+                    var thisprimitive = scene.TableNodePrimitive[scene.IndexToNodePrimitive[i]];
+                    var thismaterial = scene.TableNodeMaterial[scene.IndexToNodeMaterial[i]];
+                    var vertexbuffer = DirectX11Helper.CreateVertexBuffer(thisprimitive);
+                    if (vertexbuffer == null) continue;
+                    var objmat = thismaterial as LoaderOBJ.OBJMaterial;
+                    var collecttextures = new[]
+                    {
+                        CreateTextureView(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
+                        CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
+                        CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
+                        CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
+                    };
+                    context.VSSetConstantBuffers1(0, constantbufferlist, new[] { (uint)(thistransformindex * SIZEOF_CONSTANTBLOCK / 16U) }, new[] { 5U * SIZEOF_MATRIX });
+                    context.IASetVertexBuffers(0, new[] { vertexbuffer.d3d11Buffer }, new[] { (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) }, new[] { 0U });
+                    context.PSSetShaderResources(0, collecttextures);
+                    context.Draw(vertexbuffer.vertexCount, 0);
                 }
             };
         }
