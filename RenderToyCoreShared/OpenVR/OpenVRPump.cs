@@ -36,6 +36,11 @@ namespace RenderToy
             return () =>
             {
                 openvr.Update();
+                int COUNT_OBJECT = scene.IndexToNodePrimitive.Count;
+                for (int i = 0; i < COUNT_OBJECT; ++i)
+                {
+                    scene.TableTransform[i] = scene.TableNodeTransform[scene.IndexToNodeTransform[i]].Transform;
+                }
                 var contextold = DirectX11Helper.d3d11Device.GetImmediateContext();
                 var context = contextold.QueryInterfaceD3D11DeviceContext4();
                 context.VSSetShader(d3d11VertexShader);

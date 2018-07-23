@@ -32,7 +32,7 @@ namespace RenderToy.DirectX
                 int COUNT_OBJECTS = scene.IndexToNodePrimitive.Count;
                 for (int i = 0; i < COUNT_OBJECTS; ++i)
                 {
-                    Matrix3D transformModel = scene.TableNodeTransform[i].Transform;
+                    Matrix3D transformModel = scene.TableTransform[i];
                     var transformModelViewProjection = transformModel * transformViewProjection;
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK, SIZEOF_MATRIX);
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
