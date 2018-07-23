@@ -17,15 +17,15 @@ namespace RenderToy.WPF
     {
         public PerformanceView()
         {
-            WeakEventManager<RenderToyETWListener, EventWrittenEventArgs>.AddHandler(listener, "HACKEventWritten", HandleEvent);
+            WeakEventManager<RenderToyEventListener, EventWrittenEventArgs>.AddHandler(listener, "HACKEventWritten", HandleEvent);
         }
         void HandleEvent(object sender, EventWrittenEventArgs eventData)
         {
-            if (eventData.EventId == RenderToyETWEventSource._RenderBegin)
+            if (eventData.EventId == RenderToyEventSource._RenderBegin)
             {
                 stopwatch.Restart();
             }
-            if (eventData.EventId == RenderToyETWEventSource._RenderEnd)
+            if (eventData.EventId == RenderToyEventSource._RenderEnd)
             {
                 stopwatch.Stop();
                 InvalidateVisual();
@@ -37,7 +37,7 @@ namespace RenderToy.WPF
             var formattedtext = new FormattedText(milliseconds.ToString("0.0") + "ms (" + (1000.0 / milliseconds).ToString("0.0") + " FPS)", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 24, Brushes.Green);
             drawingContext.DrawText(formattedtext, new Point(0, 0));
         }
-        RenderToyETWListener listener = new RenderToyETWListener();
+        RenderToyEventListener listener = new RenderToyEventListener();
         Stopwatch stopwatch = new Stopwatch();
         DateTime datetimestart;
         DateTime datetimeend;
