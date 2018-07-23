@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Diagnostics;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
@@ -20,11 +21,11 @@ namespace RenderToy.WPF
         }
         void HandleEvent(object sender, EventWrittenEventArgs eventData)
         {
-            if (eventData.EventId == RenderToyETWEventSource.RenderBegin)
+            if (eventData.EventId == RenderToyETWEventSource._RenderBegin)
             {
                 stopwatch.Restart();
             }
-            if (eventData.EventId == RenderToyETWEventSource.RenderEnd)
+            if (eventData.EventId == RenderToyETWEventSource._RenderEnd)
             {
                 stopwatch.Stop();
                 InvalidateVisual();

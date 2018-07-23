@@ -41,7 +41,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)RenderToyDocument.xaml.cs">
       <DependentUpon>RenderToyDocument.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\RenderToyEventSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)DirectX\ShaderEditor.xaml">

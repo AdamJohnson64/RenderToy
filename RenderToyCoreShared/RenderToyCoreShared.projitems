@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\BoundingVolumeHierarchy\KDTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\BoundingVolumeHierarchy\OctreeREF.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\BoundingVolumeHierarchy\Octree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Document\RenderToyEventSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Document\SparseScene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\ExpressionComparator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\ExpressionCounter.cs" />

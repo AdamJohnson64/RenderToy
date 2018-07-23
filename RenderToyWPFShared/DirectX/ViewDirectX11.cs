@@ -1,4 +1,5 @@
 using RenderToy.Cameras;
+using RenderToy.Diagnostics;
 using RenderToy.DirectX;
 using RenderToy.DocumentModel;
 using RenderToy.Math;
@@ -53,7 +54,7 @@ namespace RenderToy.WPF
             var context = contextold.QueryInterfaceD3D11DeviceContext4();
             int width = d3d11Texture2D_RT.GetWidth();
             int height = d3d11Texture2D_RT.GetHeight();
-            RenderToyETWEventSource.Default.BeginFrame();
+            RenderToyETWEventSource.Default.RenderBegin();
             // Setup common global render state.
             context.VSSetShader(d3d11VertexShader);
             context.PSSetShader(d3d11PixelShader);
@@ -71,7 +72,7 @@ namespace RenderToy.WPF
             d3dimage.Lock();
             d3dimage.AddDirtyRect(new Int32Rect(0, 0, d3d11Texture2D_RT.GetWidth(), d3d11Texture2D_RT.GetHeight()));
             d3dimage.Unlock();
-            RenderToyETWEventSource.Default.EndFrame();
+            RenderToyETWEventSource.Default.RenderEnd();
         }
         void SetVertexShader(byte[] bytecode)
         {

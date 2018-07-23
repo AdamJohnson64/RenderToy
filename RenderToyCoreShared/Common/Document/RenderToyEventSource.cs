@@ -6,7 +6,7 @@
 using System;
 using System.Diagnostics.Tracing;
 
-namespace RenderToy.WPF
+namespace RenderToy.Diagnostics
 {
     [EventSource(Name = "RenderToy", Guid = "0bd0db6d-fb7b-4adf-9e04-866e249f26a4")]
     public class RenderToyETWEventSource : EventSource
@@ -14,17 +14,29 @@ namespace RenderToy.WPF
         RenderToyETWEventSource() : base("RenderToy", EventSourceSettings.ThrowOnEventWriteErrors)
         {
         }
-        public const int RenderBegin = 1;
-        public const int RenderEnd = 2;
-        [Event(RenderBegin, Message = "RenderBegin", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
-        public void BeginFrame()
+        public const int _RenderBegin = 1;
+        public const int _RenderEnd = 2;
+        public const int _UpdateBegin = 3;
+        public const int _UpdateEnd = 4;
+        [Event(_RenderBegin, Message = "RenderBegin", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
+        public void RenderBegin()
         {
-            WriteEvent(RenderBegin);
+            WriteEvent(_RenderBegin);
         }
-        [Event(RenderEnd, Message = "RenderEnd", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
-        public void EndFrame()
+        [Event(_RenderEnd, Message = "RenderEnd", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
+        public void RenderEnd()
         {
-            WriteEvent(RenderEnd);
+            WriteEvent(_RenderEnd);
+        }
+        [Event(_UpdateBegin, Message = "RenderBegin", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
+        public void UpdateBegin()
+        {
+            WriteEvent(_UpdateBegin);
+        }
+        [Event(_UpdateEnd, Message = "RenderEnd", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
+        public void UpdateEnd()
+        {
+            WriteEvent(_UpdateEnd);
         }
         public class Keywords
         {
