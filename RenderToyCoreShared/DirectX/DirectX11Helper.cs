@@ -1,4 +1,5 @@
-﻿using RenderToy.DocumentModel;
+﻿using RenderToy.Diagnostics;
+using RenderToy.DocumentModel;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
@@ -19,7 +20,7 @@ namespace RenderToy.DirectX
         public static D3D11InputLayout d3d11InputLayout;
         public static D3D11RasterizerState d3d11RasterizerState;
         public static D3D11SamplerState d3d11SamplerState;
-        public static Action<D3D11DeviceContext4, Matrix3D> CreateSceneDraw(SparseScene scene)
+        public static Action<D3D11DeviceContext4, Matrix3D, string> CreateSceneDraw(SparseScene scene)
         {
             const int SIZEOF_CONSTANTBLOCK = 256;
             const int SIZEOF_MATRIX = 4 * 4 * 4;
@@ -27,8 +28,10 @@ namespace RenderToy.DirectX
             var d3d11constantbufferGPU = DirectX11Helper.d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, null);
             // We're collecting constant buffers because DX11 hates to do actual work.
             var constantbufferlist = new[] { d3d11constantbufferGPU };
-            return (context, transformViewProjection) =>
+            return (context, transformViewProjection, name) =>
             {
+                string constantbufferblock = "Constant Buffer (" + name + ")";
+                RenderToyEventSource.Default.MarkerBegin(constantbufferblock);
                 int COUNT_OBJECTS = scene.IndexToNodePrimitive.Count;
                 for (int i = 0; i < COUNT_OBJECTS; ++i)
                 {
@@ -37,6 +40,9 @@ namespace RenderToy.DirectX
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK, SIZEOF_MATRIX);
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
                 }
+                RenderToyEventSource.Default.MarkerEnd(constantbufferblock);
+                string commandbufferblock = "Command Buffer (" + name + ")";
+                RenderToyEventSource.Default.MarkerBegin(commandbufferblock);
                 context.UpdateSubresource1(d3d11constantbufferGPU, 0, new D3D11Box { right = (uint)(SIZEOF_CONSTANTBLOCK * scene.TableTransform.Count) }, d3d11constantbufferCPU, 0, 0, D3D11CopyFlags.Discard);
                 context.IASetPrimitiveTopology(D3DPrimitiveTopology.TriangleList);
                 context.IASetInputLayout(d3d11InputLayout);
@@ -62,6 +68,7 @@ namespace RenderToy.DirectX
                     context.PSSetShaderResources(0, collecttextures);
                     context.Draw(vertexbuffer.vertexCount, 0);
                 }
+                RenderToyEventSource.Default.MarkerEnd(commandbufferblock);
             };
         }
         public static D3D11ShaderResourceView CreateTextureView(IMaterial material, IMaterial missing)

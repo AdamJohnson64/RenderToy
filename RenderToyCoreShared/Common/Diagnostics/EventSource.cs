@@ -16,8 +16,8 @@ namespace RenderToy.Diagnostics
         }
         public const int _RenderBegin = 1;
         public const int _RenderEnd = 2;
-        public const int _UpdateBegin = 3;
-        public const int _UpdateEnd = 4;
+        public const int _MarkerBegin = 3;
+        public const int _MarkerEnd = 4;
         [Event(_RenderBegin, Message = "RenderBegin", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
         public void RenderBegin()
         {
@@ -28,15 +28,15 @@ namespace RenderToy.Diagnostics
         {
             WriteEvent(_RenderEnd);
         }
-        [Event(_UpdateBegin, Message = "RenderBegin", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
-        public void UpdateBegin()
+        [Event(_MarkerBegin, Message = "MarkerBegin", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
+        public void MarkerBegin(string name)
         {
-            WriteEvent(_UpdateBegin);
+            WriteEvent(_MarkerBegin, name);
         }
-        [Event(_UpdateEnd, Message = "RenderEnd", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
-        public void UpdateEnd()
+        [Event(_MarkerEnd, Message = "MarkerEnd", Keywords = Keywords.Rendering, Level = EventLevel.LogAlways)]
+        public void MarkerEnd(string name)
         {
-            WriteEvent(_UpdateEnd);
+            WriteEvent(_MarkerEnd, name);
         }
         public class Keywords
         {

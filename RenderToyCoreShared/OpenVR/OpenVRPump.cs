@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Diagnostics;
 using RenderToy.DirectX;
 using RenderToy.DocumentModel;
 using RenderToy.Math;
@@ -36,11 +37,14 @@ namespace RenderToy
             return () =>
             {
                 openvr.Update();
+                RenderToyEventSource.Default.RenderBegin();
+                RenderToyEventSource.Default.MarkerBegin("Update");
                 int COUNT_OBJECT = scene.IndexToNodePrimitive.Count;
                 for (int i = 0; i < COUNT_OBJECT; ++i)
                 {
                     scene.TableTransform[i] = scene.TableNodeTransform[scene.IndexToNodeTransform[i]].Transform;
                 }
+                RenderToyEventSource.Default.MarkerEnd("Update");
                 var contextold = DirectX11Helper.d3d11Device.GetImmediateContext();
                 var context = contextold.QueryInterfaceD3D11DeviceContext4();
                 context.VSSetShader(d3d11VertexShader);
@@ -50,13 +54,14 @@ namespace RenderToy
                 context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_Eye);
                 context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
                 context.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, 0, 0, 0, 0);
-                Execute_RenderScene(context, openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Left)) * openvr.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f));
+                Execute_RenderScene(context, openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Left)) * openvr.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f), "Left Eye");
                 openvr.Compositor.Submit(Eye.Left, d3d11Texture2D_RT_EyeLeft.ManagedPtr);
                 context.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeRight }, d3d11DepthStencilView_Eye);
                 context.ClearDepthStencilView(d3d11DepthStencilView_Eye, D3D11ClearFlag.Depth, 1, 0);
                 context.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, 0, 0, 0, 0);
-                Execute_RenderScene(context, openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Right)) * openvr.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f));
+                Execute_RenderScene(context, openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Right)) * openvr.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f), "Right Eye");
                 openvr.Compositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
+                RenderToyEventSource.Default.RenderEnd();
             };
         }
         public static void CreateThread(SparseScene scene)

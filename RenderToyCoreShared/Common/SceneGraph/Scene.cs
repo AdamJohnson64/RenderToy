@@ -45,15 +45,16 @@ namespace RenderToy.SceneGraph
             {
                 var openvr = new OpenVRHelper();
                 var controller = LoaderOBJ.LoadFromPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj").First();
-                scene.children.Add(new Node("Left Hand", new TransformLeftHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
-                scene.children.Add(new Node("Right Hand", new TransformRightHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
+                scene.children.Add(new Node("OpenVR HMD", new TransformHMD(openvr), controller.Primitive, StockMaterials.White, controller.Material));
+                scene.children.Add(new Node("OpenVR Left Controller", new TransformLeftHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
+                scene.children.Add(new Node("OpenVR Right Controller", new TransformRightHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
                 Matrix3D transform = new Matrix3D(
                     1, 0, 0, 0,
                     0, 0, -1, 0,
                     0, 1, 0, 0,
                     0, 1, 2, 1
                 );
-                scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted(openvr)));
+                //scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted(openvr)));
             }
             catch
             {

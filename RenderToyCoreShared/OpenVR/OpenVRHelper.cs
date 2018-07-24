@@ -100,6 +100,21 @@ namespace RenderToy
     {
         OpenVRHelper VRHost { get; }
     }
+    public class TransformHMD : ITransform, IVRHost
+    {
+        public TransformHMD(OpenVRHelper vrhost)
+        {
+            VRHost = vrhost;
+        }
+        public Matrix3D Transform
+        {
+            get
+            {
+                return VRHost._head;
+            }
+        }
+        public OpenVRHelper VRHost { get; protected set; }
+    };
     public class TransformLeftHand : ITransform, IVRHost
     {
         public TransformLeftHand(OpenVRHelper vrhost)
