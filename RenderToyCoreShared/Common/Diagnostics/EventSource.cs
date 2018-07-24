@@ -52,9 +52,12 @@ namespace RenderToy.Diagnostics
         }
         protected override void OnEventWritten(EventWrittenEventArgs eventData)
         {
-            if (HACKEventWritten != null)
+            try
             {
                 HACKEventWritten(this, eventData);
+            }
+            catch
+            {
             }
         }
         public event EventHandler<EventWrittenEventArgs> HACKEventWritten;
