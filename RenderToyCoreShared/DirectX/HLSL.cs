@@ -40,7 +40,7 @@ VS_OUTPUT vs(VS_INPUT input) {
     result.TexCoord = input.TexCoord;
     result.Tangent = mul(TransformModel, float4(input.Tangent, 0)).xyz;
     result.Bitangent = mul(TransformModel, float4(input.Bitangent, 0)).xyz;
-    result.EyeVector = float3(TransformCamera[0].w, TransformCamera[1].w, TransformCamera[2].w) - input.Position.xyz;
+    result.EyeVector = float3(TransformCamera[0].w, TransformCamera[1].w, TransformCamera[2].w) - mul(TransformModel, input.Position.xyz);
     return result;
 }
 
@@ -59,7 +59,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
     ////////////////////////////////////////////////////////////////////////////////
     // Displacement Mapping (Steep Parallax)
     float height = 1.0;
-    float bumpScale = 0.02;
+    float bumpScale = 0.005;
     float numSteps = 20;
     float2 offsetCoord = input.TexCoord.xy;
     float sampledHeight = SampleTexture(TextureDisplacement, offsetCoord).r;

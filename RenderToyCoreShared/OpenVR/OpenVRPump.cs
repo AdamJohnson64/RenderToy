@@ -70,7 +70,9 @@ namespace RenderToy
                     deferred_left.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeLeft }, d3d11DepthStencilView_EyeLeft);
                     deferred_left.ClearDepthStencilView(d3d11DepthStencilView_EyeLeft, D3D11ClearFlag.Depth, 1, 0);
                     deferred_left.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, 0, 0, 0, 0);
-                    Execute_RenderSceneLeft(deferred_left, openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Left)) * openvr.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f), "Left Eye");
+                    Matrix3D transformView = openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Left));
+                    Matrix3D transformProjection = openvr.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f);
+                    Execute_RenderSceneLeft(deferred_left, MathHelp.Invert(transformView), transformView * transformProjection, "Left Eye");
                     return deferred_left.FinishCommandList(0);
                 });
                 Task<D3D11CommandList> do_right = Task.Factory.StartNew(() =>
@@ -84,7 +86,9 @@ namespace RenderToy
                     deferred_right.OMSetRenderTargets(new[] { d3d11RenderTargetView_EyeRight }, d3d11DepthStencilView_EyeRight);
                     deferred_right.ClearDepthStencilView(d3d11DepthStencilView_EyeRight, D3D11ClearFlag.Depth, 1, 0);
                     deferred_right.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, 0, 0, 0, 0);
-                    Execute_RenderSceneRight(deferred_right, openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Right)) * openvr.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f), "Right Eye");
+                    Matrix3D transformView = openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Right));
+                    Matrix3D transformProjection = openvr.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f);
+                    Execute_RenderSceneRight(deferred_right, MathHelp.Invert(transformView), transformView * transformProjection, "Right Eye");
                     return deferred_right.FinishCommandList(0);
                 });
                 RenderToyEventSource.Default.MarkerEnd("Prepare All RTs");

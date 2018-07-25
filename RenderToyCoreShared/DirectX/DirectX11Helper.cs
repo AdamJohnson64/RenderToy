@@ -20,7 +20,7 @@ namespace RenderToy.DirectX
         public static D3D11InputLayout d3d11InputLayout;
         public static D3D11RasterizerState d3d11RasterizerState;
         public static D3D11SamplerState d3d11SamplerState;
-        public static Action<D3D11DeviceContext4, Matrix3D, string> CreateSceneDraw(SparseScene scene)
+        public static Action<D3D11DeviceContext4, Matrix3D, Matrix3D, string> CreateSceneDraw(SparseScene scene)
         {
             const int SIZEOF_CONSTANTBLOCK = 256;
             const int SIZEOF_MATRIX = 4 * 4 * 4;
@@ -28,7 +28,7 @@ namespace RenderToy.DirectX
             var d3d11constantbufferGPU = DirectX11Helper.d3d11Device.CreateBuffer(new D3D11BufferDesc { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11Usage.Default, BindFlags = D3D11BindFlag.ConstantBuffer, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, null);
             // We're collecting constant buffers because DX11 hates to do actual work.
             var constantbufferlist = new[] { d3d11constantbufferGPU };
-            return (context, transformViewProjection, name) =>
+            return (context, transformCamera, transformViewProjection, name) =>
             {
                 string constantbufferblock = "Constant Buffer (" + name + ")";
                 RenderToyEventSource.Default.MarkerBegin(constantbufferblock);
@@ -38,6 +38,7 @@ namespace RenderToy.DirectX
                     Matrix3D transformModel = scene.TableTransform[i];
                     var transformModelViewProjection = transformModel * transformViewProjection;
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK, SIZEOF_MATRIX);
+                    Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformCamera), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 1 * SIZEOF_MATRIX, SIZEOF_MATRIX);
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
                 }
                 RenderToyEventSource.Default.MarkerEnd(constantbufferblock);

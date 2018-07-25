@@ -46,7 +46,7 @@ namespace RenderToy.WPF
                 ((ViewDirectX11)s).RenderDX();
             }));
         }
-        Action<D3D11DeviceContext4, Matrix3D, string> Execute_DrawScene = null;
+        Action<D3D11DeviceContext4, Matrix3D, Matrix3D, string> Execute_DrawScene = null;
         void RenderDX()
         {
             if (d3d11VertexShader == null || d3d11PixelShader == null || d3d11DepthStencilView == null || d3d11RenderTargetView == null) return;
@@ -66,7 +66,7 @@ namespace RenderToy.WPF
             context.ClearRenderTargetView(d3d11RenderTargetView, 0, 0, 0, 0);
             if (Execute_DrawScene != null)
             {
-                Execute_DrawScene(context, AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight), "Window");
+                Execute_DrawScene(context, AttachedView.GetTransformCamera(this), AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight), "Window");
             }
             context.Flush();
             d3dimage.Lock();
