@@ -3,7 +3,6 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Diagnostics.Tracing;
 
 namespace RenderToy.Diagnostics
@@ -43,23 +42,5 @@ namespace RenderToy.Diagnostics
             public const EventKeywords Rendering = (EventKeywords)0x0001;
         }
         public static RenderToyEventSource Default = new RenderToyEventSource();
-    }
-    public class RenderToyEventListener : EventListener
-    {
-        public RenderToyEventListener()
-        {
-            EnableEvents(RenderToyEventSource.Default, EventLevel.LogAlways);
-        }
-        protected override void OnEventWritten(EventWrittenEventArgs eventData)
-        {
-            try
-            {
-                HACKEventWritten(this, eventData);
-            }
-            catch
-            {
-            }
-        }
-        public event EventHandler<EventWrittenEventArgs> HACKEventWritten;
     }
 }

@@ -13,6 +13,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\BoundingVolumeHierarchy\KDTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\BoundingVolumeHierarchy\OctreeREF.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\BoundingVolumeHierarchy\Octree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\EventListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\EventRecording.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\EventSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Document\SparseScene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\ExpressionComparator.cs" />
@@ -95,7 +97,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Common\Math\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Common\Diagnostics\" />
     <Folder Include="$(MSBuildThisFileDirectory)Common\RenderMode\" />
   </ItemGroup>
 </Project>
