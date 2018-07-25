@@ -63,7 +63,7 @@ namespace RenderToy.Diagnostics
                     var markerend = stopwatch.ElapsedTicks;
                     var key = eventData.Payload[0];
                     long markerstart;
-                    if (markersActive.TryGetValue(key, out markerstart))
+                    if (markersActive.TryRemove(key, out markerstart))
                     {
                         markersCollected.Add(new MarkerRegion { TickStart = markerstart, TickEnd = markerend, Name = key as string });
                     }

@@ -31,7 +31,7 @@
                 <MenuItem Header="Export RenderToy Document" Command="{x:Static rendertoy:MainWindow.CommandDocumentExport}"/>
             </MenuItem>
         </Menu>
-        <rendertoy:PerformanceView DockPanel.Dock="Top" Height="32"/>
+        <rendertoy:PerformanceView DockPanel.Dock="Top" Height="64"/>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="192"/>

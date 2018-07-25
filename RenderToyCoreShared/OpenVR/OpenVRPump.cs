@@ -56,6 +56,7 @@ namespace RenderToy
                     scene.TableTransform[i] = scene.TableNodeTransform[scene.IndexToNodeTransform[i]].Transform;
                 }
                 RenderToyEventSource.Default.MarkerEnd("Update");
+                RenderToyEventSource.Default.MarkerBegin("Prepare All RTs");
                 var contextold = DirectX11Helper.d3d11Device.GetImmediateContext();
                 var context = contextold.QueryInterfaceD3D11DeviceContext4();
                 Task<D3D11CommandList> do_left = Task.Factory.StartNew(() =>
@@ -86,12 +87,17 @@ namespace RenderToy
                     Execute_RenderSceneRight(deferred_right, openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Right)) * openvr.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f), "Right Eye");
                     return deferred_right.FinishCommandList(0);
                 });
+                RenderToyEventSource.Default.MarkerEnd("Prepare All RTs");
                 do_left.Wait();
                 do_right.Wait();
+                RenderToyEventSource.Default.MarkerBegin("Execute All RTs");
                 context.ExecuteCommandList(do_left.Result, 1);
                 context.ExecuteCommandList(do_right.Result, 1);
+                RenderToyEventSource.Default.MarkerEnd("Execute All RTs");
+                RenderToyEventSource.Default.MarkerBegin("Submit To OpenVR");
                 openvr.Compositor.Submit(Eye.Left, d3d11Texture2D_RT_EyeLeft.ManagedPtr);
                 openvr.Compositor.Submit(Eye.Right, d3d11Texture2D_RT_EyeRight.ManagedPtr);
+                RenderToyEventSource.Default.MarkerEnd("Submit To OpenVR");
                 RenderToyEventSource.Default.RenderEnd();
             };
         }
