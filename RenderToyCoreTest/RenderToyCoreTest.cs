@@ -229,6 +229,33 @@ namespace RenderToy
         }
     }
     [TestClass]
+    public class GeomTests
+    {
+        [TestMethod]
+        public void GeomSphereTBNTest()
+        {
+            var sphere = Sphere.Default;
+            for (int iv = 1; iv <= 9; ++iv)
+            {
+                for (int iu = 0; iu <= 10; ++iu)
+                {
+                    var tu = iu / 10.0;
+                    var tv = iv / 10.0;
+                    var pu0 = sphere.GetPointUV(tu - 0.01, tv);
+                    var pu1 = sphere.GetPointUV(tu + 0.01, tv);
+                    var TAN_APPROX = MathHelp.Normalized(pu1 - pu0);
+                    var TAN_EXACT = sphere.GetTangentUV(tu, tv);
+                    Debug.Assert(MathHelp.Dot(TAN_APPROX, TAN_EXACT) > 0.9);
+                    var pv0 = sphere.GetPointUV(tu, tv - 0.01);
+                    var pv1 = sphere.GetPointUV(tu, tv + 0.01);
+                    var BIN_APPROX = MathHelp.Normalized(pv1 - pv0);
+                    var BIN_EXACT = sphere.GetBitangentUV(tu, tv);
+                    Debug.Assert(MathHelp.Dot(BIN_APPROX, BIN_EXACT) > 0.9);
+                }
+            }
+        }
+    }
+    [TestClass]
     public class MathTests
     {
         [TestMethod]

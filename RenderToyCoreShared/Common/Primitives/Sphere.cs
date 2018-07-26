@@ -36,11 +36,19 @@ namespace RenderToy.Primitives
         }
         public Vector3D GetTangentUV(double u, double v)
         {
-            return new Vector3D(0, 0, 0);
+            double ucos = System.Math.Cos(u * System.Math.PI * 2);
+            double usin = System.Math.Sin(u * System.Math.PI * 2);
+            double vcos = System.Math.Cos(v * System.Math.PI);
+            double vsin = System.Math.Sin(v * System.Math.PI);
+            return MathHelp.Normalized(new Vector3D(-ucos, 0, -usin));
         }
         public Vector3D GetBitangentUV(double u, double v)
         {
-            return new Vector3D(0, 0, 0);
+            double ucos = System.Math.Cos(u * System.Math.PI * 2);
+            double usin = System.Math.Sin(u * System.Math.PI * 2);
+            double vcos = System.Math.Cos(v * System.Math.PI);
+            double vsin = System.Math.Sin(v * System.Math.PI);
+            return MathHelp.Normalized(new Vector3D(-usin * vcos, -vsin, ucos * vcos));
         }
     }
 }
