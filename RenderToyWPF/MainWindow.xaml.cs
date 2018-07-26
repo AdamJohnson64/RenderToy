@@ -225,7 +225,7 @@ namespace RenderToy.WPF
             tabcontrolleft.Items.Add(new TabItem { Header = titlenavigation, Content = controlnavigation });
             Grid.SetColumn(tabcontrolleft, 0);
             grid.Children.Add(tabcontrolleft);
-            var splitter = new GridSplitter { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Stretch, Width = 4 };
+            var splitter = new GridSplitter { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Stretch, Width = 4 };
             Grid.SetColumn(splitter, 1);
             grid.Children.Add(splitter);
             TabControl tabcontrolmain = new TabControl();
