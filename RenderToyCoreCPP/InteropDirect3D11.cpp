@@ -743,9 +743,17 @@ namespace RenderToy
 		D3D11VertexShader^ CreateVertexShader(cli::array<byte> ^pShaderBytecode)
 		{
 			ID3D11VertexShader *ppVertexShader = nullptr;
-			pin_ptr<byte> pShaderBytecodeM = &pShaderBytecode[0];
-			TRY_D3D(WrappedInterface()->CreateVertexShader(pShaderBytecodeM, pShaderBytecode->Length, nullptr, &ppVertexShader));
-			return gcnew D3D11VertexShader(ppVertexShader);
+			if (pShaderBytecode == nullptr)
+			{
+				TRY_D3D(WrappedInterface()->CreateVertexShader(nullptr, 0, nullptr, &ppVertexShader));
+				return gcnew D3D11VertexShader(ppVertexShader);
+			}
+			else
+			{
+				pin_ptr<byte> pShaderBytecodeM = &pShaderBytecode[0];
+				TRY_D3D(WrappedInterface()->CreateVertexShader(pShaderBytecodeM, pShaderBytecode->Length, nullptr, &ppVertexShader));
+				return gcnew D3D11VertexShader(ppVertexShader);
+			}
 		}
 		D3D11DeviceContext^ GetImmediateContext()
 		{

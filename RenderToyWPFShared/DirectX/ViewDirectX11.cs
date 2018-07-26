@@ -5,6 +5,7 @@ using RenderToy.DocumentModel;
 using RenderToy.Math;
 using RenderToy.Shaders;
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -76,11 +77,17 @@ namespace RenderToy.WPF
         }
         void SetVertexShader(byte[] bytecode)
         {
-            d3d11VertexShader = DirectX11Helper.d3d11Device.CreateVertexShader(bytecode);
+            if (bytecode != null)
+            {
+                d3d11VertexShader = DirectX11Helper.d3d11Device.CreateVertexShader(bytecode);
+            }
         }
         void SetPixelShader(byte[] bytecode)
         {
-            d3d11PixelShader = DirectX11Helper.d3d11Device.CreatePixelShader(bytecode);
+            if (bytecode != null)
+            {
+                d3d11PixelShader = DirectX11Helper.d3d11Device.CreatePixelShader(bytecode);
+            }
         }
         protected override Size MeasureOverride(Size availableSize)
         {
