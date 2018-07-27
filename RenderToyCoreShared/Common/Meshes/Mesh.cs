@@ -53,11 +53,19 @@ namespace RenderToy.Meshes
         public static Mesh CreateMesh(IParametricUV shape, int usteps, int vsteps)
         {
             var vertices = new List<Vector3D>();
+            var normals = new List<Vector3D>();
+            var texcoords = new List<Vector2D>();
+            var tangents = new List<Vector3D>();
+            var bitangents = new List<Vector3D>();
             for (int v = 0; v <= vsteps; ++v)
             {
                 for (int u = 0; u <= usteps; ++u)
                 {
                     vertices.Add(shape.GetPointUV((double)u / usteps, (double)v / vsteps));
+                    normals.Add(shape.GetNormalUV((double)u / usteps, (double)v / vsteps));
+                    texcoords.Add(new Vector2D((double)u / usteps, (double)v / vsteps));
+                    tangents.Add(shape.GetTangentUV((double)u / usteps, (double)v / vsteps));
+                    bitangents.Add(shape.GetBitangentUV((double)u / usteps, (double)v / vsteps));
                 }
             }
             var indices = new List<int>();
@@ -73,7 +81,9 @@ namespace RenderToy.Meshes
                     indices.Add((u + 0) + (v + 0) * (usteps + 1));
                 }
             }
-            return new Mesh(indices, vertices);
+            var mesh = new Mesh(indices, vertices, normals, texcoords, tangents, bitangents);
+            mesh.GenerateTangentSpace();
+            return mesh;
         }
         public void GenerateTangentSpace()
         {
