@@ -80,7 +80,8 @@ namespace RenderToy.SceneGraph
                     0, 1, 0, 0,
                     0, 1, 2, 1
                 );
-                //scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted(openvr)));
+                //public VRTrackedCamera trackedCamera = new VRTrackedCamera();
+                //scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted(openvr, trackedCamera)));
             }
             catch
             {

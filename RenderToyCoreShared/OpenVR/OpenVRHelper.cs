@@ -13,10 +13,6 @@ namespace RenderToy
 {
     public class OpenVRHelper
     {
-        public OpenVRHelper()
-        {
-            TrackedCameraHandle = TrackedCamera.AcquireVideoStreamingService(0);
-        }
         public static Matrix3D ConvertMatrix43(HmdMatrix34 matrix)
         {
             Matrix3D m = new Matrix3D();
@@ -88,8 +84,6 @@ namespace RenderToy
         public Matrix3D _righthand;
         public VRSystem System = new VRSystem();
         public OpenVRCompositor Compositor = new OpenVRCompositor();
-        public VRTrackedCamera TrackedCamera = new VRTrackedCamera();
-        public ulong TrackedCameraHandle;
         static Matrix3D transformGLtoDX = new Matrix3D(
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -147,15 +141,19 @@ namespace RenderToy
     };
     public class MaterialOpenVRCameraDistorted : IMaterial, IVRHost
     {
-        public MaterialOpenVRCameraDistorted(OpenVRHelper vrhost)
+        public MaterialOpenVRCameraDistorted(OpenVRHelper vrhost, VRTrackedCamera camera)
         {
             VRHost = vrhost;
+            TrackedCamera = camera;
+            TrackedCameraHandle = TrackedCamera.AcquireVideoStreamingService(0);
         }
         public bool IsConstant()
         {
             return false;
         }
         public OpenVRHelper VRHost { get; protected set; }
+        public VRTrackedCamera TrackedCamera { get; protected set; }
+        public ulong TrackedCameraHandle { get; protected set; }
     };
 }
 #endif // OPENVR_INSTALLED
