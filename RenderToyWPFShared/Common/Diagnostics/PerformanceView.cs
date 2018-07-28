@@ -99,13 +99,13 @@ namespace RenderToy.WPF
             // Draw FPS counter.
             {
                 double milliseconds = (double)(capturecurrent.tickendframe - capturecurrent.tickstartframe) / Stopwatch.Frequency * 1000.0;
-                var formattedtext = new FormattedText(milliseconds.ToString("0.0") + "ms (" + (1000.0 / milliseconds).ToString("0.0") + " FPS)", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 16, Brushes.Black);
+                var formattedtext = new FormattedText(milliseconds.ToString("0.0") + "ms (" + (1000.0 / milliseconds).ToString("0.0") + " FPS)", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 16, Brushes.Black, 1.0);
                 drawingContext.DrawText(formattedtext, new Point(0, 0));
             }
         }
         static void DrawText(DrawingContext drawingContext, string text, Point p, Brush brush)
         {
-            var formattedtext = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, brush);
+            var formattedtext = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, brush, 1.0);
             drawingContext.DrawText(formattedtext, p);
         }
         static Brush brush_30Hz = Brushes.Red;

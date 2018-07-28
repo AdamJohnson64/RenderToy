@@ -41,7 +41,7 @@ namespace RenderToy.WPF
                 double y = (i + 0.5) * ActualHeight / properties.Length;
                 drawingContext.DrawLine(pen, new Point(ActualWidth - 64, y), new Point(ActualWidth, y));
                 drawingContext.DrawEllipse(Brushes.White, pen, new Point(ActualWidth - 2, y), 2, 2);
-                var formattedtext = new FormattedText(properties[i].Name, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 10, brush);
+                var formattedtext = new FormattedText(properties[i].Name, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 10, brush, 1.0);
                 drawingContext.DrawText(formattedtext, new Point(ActualWidth - 32 - formattedtext.Width / 2, y - formattedtext.Height));
             }
         }

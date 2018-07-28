@@ -617,16 +617,16 @@ namespace RenderToy.WPF.Xps
             drawingContext.DrawLine(penSpoke, new Point(Ba.X * ActualWidth, Ba.Y * ActualHeight), new Point(P2.X * ActualWidth, P2.Y * ActualHeight));
             var typeface = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
             // Print total triangle area.
-            var formattedtext = new FormattedText("Total Area = " + area.ToString("N3") + "\nɑ = " + alpha.ToString("N3") + "\nβ = " + beta.ToString("N3") + "\nɣ = " + gamma.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black);
+            var formattedtext = new FormattedText("Total Area = " + area.ToString("N3") + "\nɑ = " + alpha.ToString("N3") + "\nβ = " + beta.ToString("N3") + "\nɣ = " + gamma.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black, 1.0);
             drawingContext.DrawText(formattedtext, new Point(0, 0));
             // Print ɣ area.
-            formattedtext = new FormattedText("ɣ = " + gamma.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black);
+            formattedtext = new FormattedText("ɣ = " + gamma.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black, 1.0);
             drawingContext.DrawText(formattedtext, new Point((Ba.X + P0.X + P1.X) * ActualWidth / 3 - formattedtext.Width / 2, (Ba.Y + P0.Y + P1.Y) * ActualHeight / 3 - formattedtext.Height / 2));
             // Print ɑ area.
-            formattedtext = new FormattedText("Area = " + alphaarea.ToString("N3") + "\nɑ = " + alpha.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black);
+            formattedtext = new FormattedText("Area = " + alphaarea.ToString("N3") + "\nɑ = " + alpha.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black, 1.0);
             drawingContext.DrawText(formattedtext, new Point((Ba.X + P1.X + P2.X) * ActualWidth / 3 - formattedtext.Width / 2, (Ba.Y + P1.Y + P2.Y) * ActualHeight / 3 - formattedtext.Height / 2));
             // Print β area.
-            formattedtext = new FormattedText("Area = " + betaarea.ToString("N3") + "\nβ = " + beta.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black);
+            formattedtext = new FormattedText("Area = " + betaarea.ToString("N3") + "\nβ = " + beta.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, Brushes.Black, 1.0);
             drawingContext.DrawText(formattedtext, new Point((Ba.X + P2.X + P0.X) * ActualWidth / 3 - formattedtext.Width / 2, (Ba.Y + P2.Y + P0.Y) * ActualHeight / 3 - formattedtext.Height / 2));
             base.OnRender(drawingContext);
         }
@@ -682,9 +682,9 @@ namespace RenderToy.WPF.Xps
             var C = B + edgeBeta * betaValue;
             drawingContext.DrawLine(penAlpha, new Point(A.X * ActualWidth, A.Y * ActualHeight), new Point(B.X * ActualWidth, B.Y * ActualHeight));
             drawingContext.DrawLine(penBeta, new Point(B.X * ActualWidth, B.Y * ActualHeight), new Point(C.X * ActualWidth, C.Y * ActualHeight));
-            var formattedtext = new FormattedText("ɑ = " + alphaValue.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 16, Brushes.Red);
+            var formattedtext = new FormattedText("ɑ = " + alphaValue.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 16, Brushes.Red, 1.0);
             drawingContext.DrawText(formattedtext, new Point((A.X + B.X) * ActualWidth / 2, (A.Y + B.Y) * ActualHeight / 2 - formattedtext.Height));
-            formattedtext = new FormattedText("β = " + betaValue.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 16, Brushes.Green);
+            formattedtext = new FormattedText("β = " + betaValue.ToString("N3"), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 16, Brushes.Green, 1.0);
             drawingContext.DrawText(formattedtext, new Point((B.X + C.X) * ActualWidth / 2, (B.Y + C.Y) * ActualHeight / 2));
             base.OnRender(drawingContext);
         }

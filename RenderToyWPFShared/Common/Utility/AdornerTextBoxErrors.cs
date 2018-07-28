@@ -38,7 +38,7 @@ namespace RenderToy.WPF
                     var rect2 = hosttextbox.GetRectFromCharacterIndex(linestart + error.charend + 1);
                     rect1.Union(rect2);
                     drawingContext.DrawRectangle(brushTransparent, penTransparent, rect1);
-                    var formattedtext = new FormattedText(error.error, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.Red);
+                    var formattedtext = new FormattedText(error.error, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.Red, 1.0);
                     drawingContext.DrawRectangle(Brushes.Black, penSolid, new Rect(rect1.Left, rect1.Bottom, formattedtext.Width, formattedtext.Height));
                     drawingContext.DrawText(formattedtext, new Point(rect1.Left, rect1.Bottom));
                 }

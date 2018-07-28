@@ -213,7 +213,7 @@ namespace RenderToy.WPF
                     double rulerx = (rulermap - TraceTimeMin) / (TraceTimeMax - TraceTimeMin) * ActualWidth;
                     drawingContext.DrawLine(pen_black, new Point(rulerx, RULER_OFFSET + 2), new Point(rulerx, RULER_OFFSET + RULER_HEIGHT - 2));
                     drawingContext.DrawLine(pen_gray, new Point(rulerx, TRACE_OFFSET), new Point(rulerx, TRACE_OFFSET + TRACE_HEIGHT));
-                    drawingContext.DrawText(new FormattedText(rulertime.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 8, Brushes.Black), new Point(rulerx + 2, RULER_OFFSET + 2));
+                    drawingContext.DrawText(new FormattedText(rulertime.ToString(), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 8, Brushes.Black, 1.0), new Point(rulerx + 2, RULER_OFFSET + 2));
                 }
             }
             ////////////////////////////////////////////////////////////////////////////////
@@ -237,7 +237,7 @@ namespace RenderToy.WPF
                         drawingContext.DrawRectangle(Brushes.LightGray, pen_black, rect);
                         if (x2 - x1 < 32) continue;
                         drawingContext.PushClip(new RectangleGeometry(new Rect(x1, y1, x2 - x1, y2 - y1)));
-                        drawingContext.DrawText(new FormattedText(block.Begin.Text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 10, Brushes.Black), new Point(x1, y1));
+                        drawingContext.DrawText(new FormattedText(block.Begin.Text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 10, Brushes.Black, 1.0), new Point(x1, y1));
                         drawingContext.Pop();
                     }
                     ++trackcount;

@@ -150,9 +150,9 @@ namespace RenderToy.WPF
         }
         static ArrangedPart AddBinaryOperator(ArrangedPart lhs, string op, ArrangedPart rhs, object expressioninner, object expressionouter)
         {
-            var textparenopen = new FormattedText("(", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, fontface, fontsize, Brushes.Black);
-            var textoperator = new FormattedText(op, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, fontface, fontsize, Brushes.Black);
-            var textparenclose = new FormattedText(")", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, fontface, fontsize, Brushes.Black);
+            var textparenopen = new FormattedText("(", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, fontface, fontsize, Brushes.Black, 1.0);
+            var textoperator = new FormattedText(op, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, fontface, fontsize, Brushes.Black, 1.0);
+            var textparenclose = new FormattedText(")", CultureInfo.InvariantCulture, FlowDirection.LeftToRight, fontface, fontsize, Brushes.Black, 1.0);
             var sizeoperator = FrameText(textoperator);
             var heighttotal = System.Math.Max(sizeoperator.Height, System.Math.Max(lhs.Size.Height, rhs.Size.Height));
             var needparen = MatrixExtensions.Precedence(expressioninner) < MatrixExtensions.Precedence(expressionouter);
@@ -182,7 +182,7 @@ namespace RenderToy.WPF
         }
         static ArrangedPart AddText(string text)
         {
-            var formattedtext = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, fontface, fontsize, Brushes.Black);
+            var formattedtext = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, fontface, fontsize, Brushes.Black, 1.0);
             var part = new ArrangedPart();
             part.Size = FrameText(formattedtext);
             part.Draw = (drawingContext, area) => DrawTextCenter(drawingContext, formattedtext, area);

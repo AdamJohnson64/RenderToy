@@ -59,7 +59,7 @@ namespace RenderToy.WPF
                 if (region.Children.Count == 1)
                 {
                     dc.DrawRectangle(Brushes.DarkSlateGray, new Pen(new SolidColorBrush(Colors.DarkGray), 1), region.Area);
-                    var formattedtext = new FormattedText(GetTitle(region.Children[0]), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.LightGray);
+                    var formattedtext = new FormattedText(GetTitle(region.Children[0]), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.LightGray, 1.0);
                     dc.DrawText(formattedtext, new Point(region.Area.X + 4, region.Area.Y + 4));
                 }
                 else
@@ -68,7 +68,7 @@ namespace RenderToy.WPF
                     double tabOffsetX = 0;
                     foreach (var child in region.Children)
                     {
-                        var formattedtext = new FormattedText(GetTitle(child), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.DarkGray);
+                        var formattedtext = new FormattedText(GetTitle(child), CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Arial"), 12, Brushes.DarkGray, 1.0);
                         dc.DrawRectangle(Brushes.Black, new Pen(new SolidColorBrush(Colors.DarkGray), 1), new Rect(region.Area.X + 2 + tabOffsetX, region.Area.Y + 2, formattedtext.Width + 4, 16));
                         dc.DrawText(formattedtext, new Point(region.Area.X + 4 + tabOffsetX, region.Area.Y + 4));
                         tabOffsetX += formattedtext.Width + 8;
