@@ -8,7 +8,5 @@
 	path = ThirdParty/zlib
 	url = https://github.com/madler/zlib
 [submodule "ThirdParty/RenderToyAssets"]
-
 	path = ThirdParty/RenderToyAssets
-
 	url = https://github.com/AdamJohnson64/RenderToyAssets.git
