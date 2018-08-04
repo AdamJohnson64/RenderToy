@@ -30,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\Spike.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Meshes\VertexFormat.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderBPT.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderOBJ.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderPLY.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\ExpressionReplaceCalls.cs" />

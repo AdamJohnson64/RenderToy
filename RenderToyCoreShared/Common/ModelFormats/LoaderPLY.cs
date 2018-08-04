@@ -3,9 +3,12 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.Primitives;
+using RenderToy.SceneGraph;
+using RenderToy.Transforms;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,9 +17,10 @@ namespace RenderToy.ModelFormat
 {
     public static partial class LoaderPLY
     {
-        public static IPrimitive LoadFromPath(string path)
+        public static IEnumerable<INode> LoadFromPath(string path)
         {
-            return LoadFromPath(path, (v,i) => new Mesh(i, v));
+            var primitive = LoadFromPath(path, (v,i) => new Mesh(i, v));
+            return new[] { new Node(path, new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite) };
         }
         delegate IPrimitive ConditionMesh(IReadOnlyList<Vector3D> vertices, IReadOnlyList<int> triangles);
         static IPrimitive LoadFromPath(string path, ConditionMesh conditioner)

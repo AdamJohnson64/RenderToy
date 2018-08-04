@@ -82,22 +82,20 @@ namespace RenderToy.WPF
                     if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".BPT")
                     {
                         var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
-                        foreach (var primitive in LoaderBPT.LoadFromPath(ofd.FileName))
-                        {
-                            root.children.Add(new Node("Bezier Patch", new TransformMatrix(Matrix3D.Identity), primitive, StockMaterials.White, StockMaterials.PlasticWhite));
-                        }
+                        root.children.AddRange(LoaderBPT.LoadFromPath(ofd.FileName));
                         scene.children.Add(root);
                     }
                     else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".OBJ")
                     {
-                        foreach (var node in LoaderOBJ.LoadFromPath(ofd.FileName))
-                        {
-                            scene.children.Add(node);
-                        }
+                        var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
+                        root.children.AddRange(LoaderOBJ.LoadFromPath(ofd.FileName));
+                        scene.children.Add(root);
                     }
                     else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".PLY")
                     {
-                        scene.children.Add(new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(MathHelp.CreateMatrixScale(100, 100, 100)), LoaderPLY.LoadFromPath(ofd.FileName), StockMaterials.White, StockMaterials.PlasticWhite));
+                        var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
+                        root.children.AddRange(LoaderPLY.LoadFromPath(ofd.FileName));
+                        scene.children.Add(root);
                     }
                     DataContext = new Document(scene);
                 }
