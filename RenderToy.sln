@@ -13,6 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCLI", "RenderToyCLI\RenderToyCLI.vcxproj", "{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F0F75962-767A-4906-A338-F5E1BD6FB606} = {F0F75962-767A-4906-A338-F5E1BD6FB606}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderToy Core", "RenderToy Core", "{538E759D-CC5D-4EBB-90BC-8938046A925B}"
 EndProject
@@ -33,6 +36,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderToy UI OpenVR", "RenderToy UI OpenVR", "{546840B0-02F2-45DE-80A8-CAE753F5B394}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyOpenVR", "RenderToyOpenVR\RenderToyOpenVR.csproj", "{66A303AB-013C-4F5F-A227-490A4B4D1138}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCOM", "RenderToyCOM\RenderToyCOM.vcxproj", "{F0F75962-767A-4906-A338-F5E1BD6FB606}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -77,6 +82,10 @@ Global
 		{66A303AB-013C-4F5F-A227-490A4B4D1138}.Debug|x64.Build.0 = Debug|x64
 		{66A303AB-013C-4F5F-A227-490A4B4D1138}.Release|x64.ActiveCfg = Release|x64
 		{66A303AB-013C-4F5F-A227-490A4B4D1138}.Release|x64.Build.0 = Release|x64
+		{F0F75962-767A-4906-A338-F5E1BD6FB606}.Debug|x64.ActiveCfg = Debug|x64
+		{F0F75962-767A-4906-A338-F5E1BD6FB606}.Debug|x64.Build.0 = Debug|x64
+		{F0F75962-767A-4906-A338-F5E1BD6FB606}.Release|x64.ActiveCfg = Release|x64
+		{F0F75962-767A-4906-A338-F5E1BD6FB606}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -91,6 +100,7 @@ Global
 		{9C6F2652-2992-447E-8A45-A347549D35BC} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 		{44234705-FBD6-4D0E-885F-D01B4E2D23CE} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 		{66A303AB-013C-4F5F-A227-490A4B4D1138} = {546840B0-02F2-45DE-80A8-CAE753F5B394}
+		{F0F75962-767A-4906-A338-F5E1BD6FB606} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B8307FCD-BF35-462A-A7E7-62A533E764D5}

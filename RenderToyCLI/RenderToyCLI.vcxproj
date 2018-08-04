@@ -216,6 +216,11 @@
   <ItemGroup>
     <Text Include="README.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <COMFileReference Include="$(OutDir)RenderToyCOM.tlb">
+      <WrapperTool>tlbimp</WrapperTool>
+    </COMFileReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(SolutionDir)\Configuration\Common.cplusplus.targets" />
