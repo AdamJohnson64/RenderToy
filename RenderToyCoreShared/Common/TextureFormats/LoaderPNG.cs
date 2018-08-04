@@ -7,7 +7,7 @@ using RenderToy.Textures;
 
 namespace RenderToy.TextureFormats
 {
-    static class LoaderPNG
+    public static class LoaderPNG
     {
         public static ImageBgra32 LoadFromPath(string path)
         {

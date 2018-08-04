@@ -17,19 +17,19 @@ namespace RenderToy.WPF
     class ViewMaterial : FrameworkElement
     {
         #region - Section : Dependency Properties -
-        static DependencyProperty MaterialSourceProperty = DependencyProperty.Register("MaterialSource", typeof(IMaterial), typeof(ViewMaterial), new FrameworkPropertyMetadata(null, InvalidateBitmap));
+        public static DependencyProperty MaterialSourceProperty = DependencyProperty.Register("MaterialSource", typeof(IMaterial), typeof(ViewMaterial), new FrameworkPropertyMetadata(null, InvalidateBitmap));
         public IMaterial MaterialSource
         {
             get { return (IMaterial)GetValue(MaterialSourceProperty); }
             set { SetValue(MaterialSourceProperty, value); }
         }
-        static DependencyProperty MaterialWidthProperty = DependencyProperty.Register("MaterialWidth", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(DirectXHelper.ThumbnailSize, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
+        public static DependencyProperty MaterialWidthProperty = DependencyProperty.Register("MaterialWidth", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(DirectXHelper.ThumbnailSize, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
         public int MaterialWidth
         {
             get { return (int)GetValue(MaterialWidthProperty); }
             set { SetValue(MaterialWidthProperty, value); }
         }
-        static DependencyProperty MaterialHeightProperty = DependencyProperty.Register("MaterialHeight", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(DirectXHelper.ThumbnailSize, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
+        public static DependencyProperty MaterialHeightProperty = DependencyProperty.Register("MaterialHeight", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(DirectXHelper.ThumbnailSize, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
         public int MaterialHeight
         {
             get { return (int)GetValue(MaterialHeightProperty); }

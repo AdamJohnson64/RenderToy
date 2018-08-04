@@ -8,7 +8,7 @@ using System.IO;
 
 namespace RenderToy.TextureFormats
 {
-    static class LoaderTGA
+    public static class LoaderTGA
     {
         public static ImageBgra32 LoadFromPath(string path)
         {

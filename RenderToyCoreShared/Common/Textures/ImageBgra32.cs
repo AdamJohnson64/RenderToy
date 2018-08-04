@@ -15,7 +15,7 @@ namespace RenderToy.Textures
         int GetImageHeight();
         uint GetImagePixel(int x, int y);
     }
-    class ImageBgra32 : IImageBgra32, INamed
+    public class ImageBgra32 : IImageBgra32, INamed
     {
         public ImageBgra32(string name, int width, int height, byte[] data)
         {
