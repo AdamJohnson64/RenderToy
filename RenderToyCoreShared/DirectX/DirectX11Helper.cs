@@ -88,7 +88,7 @@ namespace RenderToy.DirectX
                     List<D3D11SubresourceData> pInitialData = new List<D3D11SubresourceData>();
                     for (int miplevel = 0; miplevel < astexture.GetTextureLevelCount(); ++miplevel)
                     {
-                        var level = astexture.GetTextureLevel(miplevel);
+                        var level = astexture.GetSurface(0, miplevel);
                         if (level == null) return null;
                         D3D11SubresourceData FillpInitialData;
                         byte[] texturedata = new byte[4 * level.GetImageWidth() * level.GetImageHeight()];
@@ -98,7 +98,7 @@ namespace RenderToy.DirectX
                         FillpInitialData.SysMemSlicePitch = (uint)(4 * level.GetImageWidth() * level.GetImageHeight());
                         pInitialData.Add(FillpInitialData);
                     }
-                    var level0 = astexture.GetTextureLevel(0);
+                    var level0 = astexture.GetSurface(0, 0);
                     D3D11Texture2DDesc desc = new D3D11Texture2DDesc();
                     desc.Width = (uint)level0.GetImageWidth();
                     desc.Height = (uint)level0.GetImageHeight();

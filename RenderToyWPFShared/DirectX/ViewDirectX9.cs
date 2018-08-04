@@ -34,14 +34,14 @@ namespace RenderToy.WPF
                 var astexture = material as ITexture;
                 if (astexture != null)
                 {
-                    var level0 = astexture.GetTextureLevel(0);
+                    var level0 = astexture.GetSurface(0, 0);
                     if (level0 == null) return null;
                     var texture = device.CreateTexture((uint)level0.GetImageWidth(), (uint)level0.GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.Default, null);
                     var texturescratch = device.CreateTexture((uint)level0.GetImageWidth(), (uint)level0.GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory, null);
                     for (int level = 0; level < astexture.GetTextureLevelCount(); ++level)
                     {
                         D3DLockedRect lockit = texturescratch.LockRect((uint)level);
-                        var thislevel = astexture.GetTextureLevel(level);
+                        var thislevel = astexture.GetSurface(0, level);
                         DirectXHelper.ConvertToBitmap(thislevel, lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
                         texturescratch.UnlockRect((uint)level);
                     }

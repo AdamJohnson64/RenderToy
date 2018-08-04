@@ -354,15 +354,19 @@ namespace RenderToy.ModelFormat
                     (_map_bump == null ? true : _map_bump.IsConstant()) &&
                     (_bump == null ? true : _bump.IsConstant());
             }
+            public int GetTextureArrayCount()
+            {
+                return 1;
+            }
             public int GetTextureLevelCount()
             {
                 var kd = _map_Kd as ITexture;
                 return kd == null ? 0 : kd.GetTextureLevelCount();
             }
-            public IImageBgra32 GetTextureLevel(int level)
+            public IImageBgra32 GetSurface(int array, int level)
             {
                 var kd = _map_Kd as ITexture;
-                return kd == null ? null : kd.GetTextureLevel(level);
+                return kd == null ? null : kd.GetSurface(array, level);
             }
             string _name;
             IMaterial _map_Ka;

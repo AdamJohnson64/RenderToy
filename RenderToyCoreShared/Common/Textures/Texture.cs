@@ -11,8 +11,9 @@ namespace RenderToy.Textures
 {
     public interface ITexture : IMaterial
     {
+        int GetTextureArrayCount();
         int GetTextureLevelCount();
-        IImageBgra32 GetTextureLevel(int level);
+        IImageBgra32 GetSurface(int array, int level);
     }
     class Texture : ITexture, INamed
     {
@@ -44,11 +45,15 @@ namespace RenderToy.Textures
         {
             return false;
         }
+        public int GetTextureArrayCount()
+        {
+            return 1;
+        }
         public int GetTextureLevelCount()
         {
             return Levels.Length;
         }
-        public IImageBgra32 GetTextureLevel(int level)
+        public IImageBgra32 GetSurface(int array, int level)
         {
             return Levels[level];
         }

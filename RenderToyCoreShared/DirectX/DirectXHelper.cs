@@ -71,7 +71,7 @@ namespace RenderToy.DirectX
             System.Type type = node.GetType();
             if (node is ITexture)
             {
-                return GetImageConverter(((ITexture)node).GetTextureLevel(0), suggestedWidth, suggestedHeight);
+                return GetImageConverter(((ITexture)node).GetSurface(0, 0), suggestedWidth, suggestedHeight);
             }
             else if (node is IImageBgra32)
             {
