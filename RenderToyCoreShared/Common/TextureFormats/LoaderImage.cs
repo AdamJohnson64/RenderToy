@@ -11,7 +11,11 @@ namespace RenderToy.Textures
     {
         public static ImageBgra32 LoadFromPath(string path)
         {
-            if (path.ToUpperInvariant().EndsWith(".PNG"))
+            if (path.ToUpperInvariant().EndsWith(".HDR"))
+            {
+                return LoaderHDR.LoadFromPath(path);
+            }
+            else if (path.ToUpperInvariant().EndsWith(".PNG"))
             {
                 return LoaderPNG.LoadFromPath(path);
             }

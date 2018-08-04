@@ -16,6 +16,7 @@ using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using RenderToy.QueryEngine;
 using RenderToy.SceneGraph;
+using RenderToy.TextureFormats;
 using RenderToy.Transforms;
 using RenderToy.Utility;
 using System;
@@ -24,10 +25,39 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 
 namespace RenderToy
 {
+    public static class TestUtil
+    {
+        public static void AllAssets(string wildcard, Action<string> execute)
+        {
+            var rootassembly = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var rootassets = Path.Combine(rootassembly, "..\\..\\ThirdParty\\RenderToyAssets");
+            var results = Directory.EnumerateFiles(rootassets, wildcard, SearchOption.AllDirectories)
+                .Select(filename => Path.Combine(rootassets, filename))
+                .Select(pathname =>
+                {
+                    try
+                    {
+                        Performance.LogEvent("Loading '" + pathname + "'.");
+                        execute(pathname);
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        Performance.LogEvent("Exception while loading '" + pathname + "': " + e.Message);
+                        return false;
+                    }
+                }).ToArray();
+            if (results.Any(x => !x))
+            {
+                throw new Exception("There were errors processing some files; refer to output for details.");
+            }
+        }
+    }
     [TestClass]
     public class BVHTests
     {
@@ -304,43 +334,20 @@ namespace RenderToy
     [TestClass]
     public class MeshPLYTests
     {
-        static void ForAllTestModels(string wildcard, Action<string> execute)
-        {
-            var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "RenderToyModels");
-            var results = Directory.EnumerateFiles(root, wildcard, SearchOption.AllDirectories)
-                .Select(filename => Path.Combine(root, filename))
-                .Select(pathname => {
-                    try
-                    {
-                        Performance.LogEvent("Loading mesh '" + pathname + "'.");
-                        execute(pathname);
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Performance.LogEvent("Exception while loading '" + pathname + "': " + e.Message);
-                        return false;
-                    }
-                }).ToArray();
-            if (results.Any(x => !x))
-            {
-                throw new Exception("There were errors processing some files; refer to output for details.");
-            }
-        }
         [TestMethod]
         public void LoadAllBPTFilesTest()
         {
-            ForAllTestModels("*.bpt", (pathname) => LoaderBPT.LoadFromPath(pathname));
+            TestUtil.AllAssets("*.bpt", (pathname) => LoaderBPT.LoadFromPath(pathname));
         }
         [TestMethod]
         public void LoadAllOBJFilesTest()
         {
-            ForAllTestModels("*.obj", (pathname) => LoaderOBJ.LoadFromPath(pathname));
+            TestUtil.AllAssets("*.obj", (pathname) => LoaderOBJ.LoadFromPath(pathname));
         }
         [TestMethod]
         public void LoadAllPLYFilesTest()
         {
-            ForAllTestModels("*.ply", (pathname) => LoaderPLY.LoadFromPath(pathname));
+            TestUtil.AllAssets("*.ply", (pathname) => LoaderPLY.LoadFromPath(pathname));
         }
     }
     [TestClass]
@@ -482,6 +489,25 @@ namespace RenderToy
             Debug.Assert(waitcomplete);
             Debug.Assert(querytransformed.Result != null);
             Debug.Assert(querytransformed.Result.Count == SPHERECOUNT);
+        }
+    }
+    [TestClass]
+    public class TextureTests
+    {
+        [TestMethod]
+        public void TextureLoadAllHDR()
+        {
+            TestUtil.AllAssets("*.hdr", (filename) => LoaderHDR.LoadFromPath(filename));
+        }
+        [TestMethod]
+        public void TextureLoadAllPNG()
+        {
+            TestUtil.AllAssets("*.png", (filename) => LoaderPNG.LoadFromPath(filename));
+        }
+        [TestMethod]
+        public void TextureLoadAllTGA()
+        {
+            TestUtil.AllAssets("*.tga", (filename) => LoaderTGA.LoadFromPath(filename));
         }
     }
     [TestClass]

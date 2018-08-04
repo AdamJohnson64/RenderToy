@@ -11,13 +11,16 @@ using RenderToy.ModelFormat;
 using RenderToy.Primitives;
 using RenderToy.SceneGraph;
 using RenderToy.Shaders;
+using RenderToy.Textures;
 using RenderToy.Transforms;
 using RenderToy.WPF.Xps;
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -28,6 +31,26 @@ using System.Windows.Xps.Serialization;
 
 namespace RenderToy.WPF
 {
+    public class LoadImageConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var filename = value as string;
+            if (filename == null) return null;
+            try
+            {
+                return LoaderImage.LoadFromPath(filename);
+            }
+            catch (Exception e)
+            {
+                return e;
+            }
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
     public partial class MainWindow : Window, IToolWindowCreator
     {
         public static ICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(ViewSoftwareCustomizable));
@@ -41,6 +64,7 @@ namespace RenderToy.WPF
         public static ICommand CommandWindowDirect3D9 = new RoutedUICommand("Open a DirectX 9 View Window.", "CommandWindowDirect3D9", typeof(MainWindow));
         public static ICommand CommandWindowDirect3D11 = new RoutedUICommand("Open a DirectX 11 View Window.", "CommandWindowDirect3D11", typeof(MainWindow));
         public static ICommand CommandWindowDirect3D12 = new RoutedUICommand("Open a DirectX 12 View Window.", "CommandWindowDirect3D12", typeof(MainWindow));
+        public static ICommand CommandWindowTextureLab = new RoutedUICommand("Open a Texture Lab Window.", "CommandWindowTextureLab", typeof(MainWindow));
         public static ICommand CommandStartOpenVR = new RoutedUICommand("Start OpenVR.", "CommandStartOpenVR", typeof(MainWindow));
         public MainWindow()
         {
@@ -158,6 +182,20 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
                 CreatePanelDefault(view, "Direct3D12 Render");
+            }));
+            CommandBindings.Add(new CommandBinding(CommandWindowTextureLab, (s, e) =>
+            {
+                var browser = new ListBox();
+                var rootassembly = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var rootassets = Path.Combine(rootassembly, "..\\..\\ThirdParty\\RenderToyAssets");
+                var files = Directory.EnumerateFiles(rootassets, "*", SearchOption.AllDirectories)
+                    .Where(i => new[] { ".HDR", ".PNG", ".TGA" }.Contains(Path.GetExtension(i).ToUpperInvariant()));
+                browser.SetBinding(ListBox.ItemsSourceProperty, new Binding { Source = files });
+                var imagezoom = new ViewZoom();
+                var image = new ViewMaterial();
+                image.SetBinding(ViewMaterial.MaterialSourceProperty, new Binding { Source = browser, Path = new PropertyPath(ListBox.SelectedItemProperty), Converter = new LoadImageConverter() });
+                imagezoom.Content = image;
+                CreatePanelNavigation("Texture Lab", imagezoom, "Image", browser, "Browser");
             }));
             CommandBindings.Add(new CommandBinding(CommandDocumentOpen, (s, e) =>
             {
