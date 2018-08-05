@@ -67,6 +67,7 @@ namespace RenderToy.SceneGraph
         }
         static void AddOpenVR(Scene scene)
         {
+#if OPENVR_INSTALLED
             try
             {
                 var openvr = new OpenVRHelper();
@@ -87,6 +88,7 @@ namespace RenderToy.SceneGraph
             {
                 Debug.WriteLine("WARNING: Unable to load controller model.");
             }
+#endif
         }
     }
 }

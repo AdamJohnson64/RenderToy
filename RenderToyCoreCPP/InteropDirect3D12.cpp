@@ -333,7 +333,7 @@ namespace RenderToy
 	};
 	public value struct D3D12RenderTargetViewDesc
 	{
-		DXGIFormat			Format;
+		RenderToyCOM::DXGI_FORMAT			Format;
 		D3D12RtvDimension	ViewDimension;
 		D3D12Tex2DRtv		Texture2D;
 	};
@@ -370,7 +370,7 @@ namespace RenderToy
 	};
 	public value struct D3D12ClearValue
 	{
-		DXGIFormat Format;
+		RenderToyCOM::DXGI_FORMAT Format;
 		float R, G, B, A;
 	};
 	public value struct D3D12CPUDescriptorHandle
@@ -388,7 +388,7 @@ namespace RenderToy
 	{
 		System::String^				SemanticName;
 		UINT						SemanticIndex;
-		DXGIFormat					Format;
+		RenderToyCOM::DXGI_FORMAT					Format;
 		UINT						InputSlot;
 		UINT						AlignedByteOffset;
 		D3D12InputClassification	InputSlotClass;
@@ -439,16 +439,16 @@ namespace RenderToy
 		D3D12IndexBufferStripCutValue	IBStripCutValue;
 		D3D12PrimitiveTopologyType      PrimitiveTopologyType;
 		UINT                            NumRenderTargets;
-		DXGIFormat                      RTVFormats0;
-		DXGIFormat                      RTVFormats1;
-		DXGIFormat                      RTVFormats2;
-		DXGIFormat                      RTVFormats3;
-		DXGIFormat                      RTVFormats4;
-		DXGIFormat                      RTVFormats5;
-		DXGIFormat                      RTVFormats6;
-		DXGIFormat                      RTVFormats7;
-		DXGIFormat                      DSVFormat;
-		DXGISampleDesc                  SampleDesc;
+		RenderToyCOM::DXGI_FORMAT                      RTVFormats0;
+		RenderToyCOM::DXGI_FORMAT                      RTVFormats1;
+		RenderToyCOM::DXGI_FORMAT                      RTVFormats2;
+		RenderToyCOM::DXGI_FORMAT                      RTVFormats3;
+		RenderToyCOM::DXGI_FORMAT                      RTVFormats4;
+		RenderToyCOM::DXGI_FORMAT                      RTVFormats5;
+		RenderToyCOM::DXGI_FORMAT                      RTVFormats6;
+		RenderToyCOM::DXGI_FORMAT                      RTVFormats7;
+		RenderToyCOM::DXGI_FORMAT                      DSVFormat;
+		RenderToyCOM::DXGI_SAMPLE_DESC                  SampleDesc;
 		UINT                            NodeMask;
 		D3D12CachedPipelineState		CachedPSO;
 		D3D12PipelineStateFlags			Flags;
@@ -468,8 +468,8 @@ namespace RenderToy
 		UINT                   Height;
 		UINT16                 DepthOrArraySize;
 		UINT16                 MipLevels;
-		DXGIFormat             Format;
-		DXGISampleDesc         SampleDesc;
+		RenderToyCOM::DXGI_FORMAT             Format;
+		RenderToyCOM::DXGI_SAMPLE_DESC         SampleDesc;
 		D3D12TextureLayout     Layout;
 		D3D12ResourceFlags     Flags;
 	};
@@ -602,7 +602,7 @@ namespace RenderToy
 		{
 			WrappedInterface()->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
 		}
-		void IASetPrimitiveTopology(D3DPrimitiveTopology PrimitiveTopology)
+		void IASetPrimitiveTopology(RenderToyCOM::D3D_PRIMITIVE_TOPOLOGY PrimitiveTopology)
 		{
 			WrappedInterface()->IASetPrimitiveTopology((D3D12_PRIMITIVE_TOPOLOGY)PrimitiveTopology);
 		}
