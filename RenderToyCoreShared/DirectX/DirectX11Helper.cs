@@ -107,15 +107,18 @@ namespace RenderToy.DirectX
                 var astexture = material as ITexture;
                 if (astexture != null)
                 {
-                    var pInitialData = new List<D3D11_SUBRESOURCE_DATA>();
+                    var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
+                    var retainMips = new List<UnmanagedCopy>();
                     for (int miplevel = 0; miplevel < astexture.GetTextureLevelCount(); ++miplevel)
                     {
                         var level = astexture.GetSurface(0, miplevel);
                         if (level == null) return null;
-                        D3D11_SUBRESOURCE_DATA FillpInitialData;
+                        MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
                         byte[] texturedata = new byte[4 * level.GetImageWidth() * level.GetImageHeight()];
                         DirectXHelper.ConvertToBitmap(level, Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
-                        FillpInitialData.pSysMem = UnmanagedCopy.Create(texturedata);
+                        var access = UnmanagedCopy.Create(texturedata);
+                        retainMips.Add(access);
+                        FillpInitialData.pSysMem = access;
                         FillpInitialData.SysMemPitch = (uint)(4 * level.GetImageWidth());
                         FillpInitialData.SysMemSlicePitch = (uint)(4 * level.GetImageWidth() * level.GetImageHeight());
                         pInitialData.Add(FillpInitialData);
@@ -132,7 +135,7 @@ namespace RenderToy.DirectX
                     desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
                     ID3D11Texture2D texture = null;
                     var pInitialDataArray = pInitialData.ToArray();
-                    DirectX11Helper.d3d11Device.CreateTexture2D(desc, ref pInitialDataArray[0], ref texture);
+                    D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref texture);
                     var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
                     vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
                     vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;

@@ -25,7 +25,7 @@ namespace RenderToy
         public static Action CreateRenderer(SparseScene scene)
         {
             var openvr = scene.Select(i => i.NodeTransform).OfType<IVRHost>().Select(i => i.VRHost).Distinct().SingleOrDefault();
-            if (openvr == null) return () => { };
+            if (openvr == null) throw new Exception("There are no VR actors in this scene.");
             uint vrwidth = 0, vrheight = 0;
             openvr.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
             ID3D11VertexShader d3d11VertexShader = null;
