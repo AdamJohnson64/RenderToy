@@ -75,14 +75,16 @@ namespace RenderToy.SceneGraph
                 scene.children.Add(new Node("OpenVR HMD", new TransformHMD(openvr), controller.Primitive, StockMaterials.White, controller.Material));
                 scene.children.Add(new Node("OpenVR Left Controller", new TransformLeftHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
                 scene.children.Add(new Node("OpenVR Right Controller", new TransformRightHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
+                /*
                 Matrix3D transform = new Matrix3D(
                     1, 0, 0, 0,
                     0, 0, -1, 0,
                     0, 1, 0, 0,
                     0, 1, 2, 1
                 );
-                //public VRTrackedCamera trackedCamera = new VRTrackedCamera();
-                //scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted(openvr, trackedCamera)));
+                VRTrackedCamera trackedCamera = new VRTrackedCamera();
+                scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted(openvr, trackedCamera)));
+                */
             }
             catch
             {
