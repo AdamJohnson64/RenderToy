@@ -21,6 +21,7 @@ using System.IO;
 using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -78,26 +79,32 @@ namespace RenderToy.WPF
                 ofd.Title = "Choose Model File";
                 if (ofd.ShowDialog() == true)
                 {
-                    var scene = new Scene();
-                    if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".BPT")
+                    Task.Factory.StartNew(() =>
                     {
-                        var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
-                        root.children.AddRange(LoaderBPT.LoadFromPath(ofd.FileName));
-                        scene.children.Add(root);
-                    }
-                    else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".OBJ")
-                    {
-                        var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
-                        root.children.AddRange(LoaderOBJ.LoadFromPath(ofd.FileName));
-                        scene.children.Add(root);
-                    }
-                    else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".PLY")
-                    {
-                        var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
-                        root.children.AddRange(LoaderPLY.LoadFromPath(ofd.FileName));
-                        scene.children.Add(root);
-                    }
-                    DataContext = new Document(scene);
+                        var scene = new Scene();
+                        if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".BPT")
+                        {
+                            var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
+                            root.children.AddRange(LoaderBPT.LoadFromPath(ofd.FileName));
+                            scene.children.Add(root);
+                        }
+                        else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".OBJ")
+                        {
+                            var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
+                            root.children.AddRange(LoaderOBJ.LoadFromPath(ofd.FileName));
+                            scene.children.Add(root);
+                        }
+                        else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".PLY")
+                        {
+                            var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
+                            root.children.AddRange(LoaderPLY.LoadFromPath(ofd.FileName));
+                            scene.children.Add(root);
+                        }
+                        TestScenes.AddOpenVR(scene);
+                        Dispatcher.Invoke(() => { DataContext = new Document(scene); });
+                        return scene;
+                    });
+                    ;
                 }
                 e.Handled = true;
             }));
@@ -243,7 +250,11 @@ namespace RenderToy.WPF
             }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
-            DataContext = Document.Default;
+            Task.Factory.StartNew(() =>
+            {
+                var initialscene = Document.Default;
+                Dispatcher.Invoke(() => { DataContext = Document.Default; });
+            });
         }
         void CreatePanelDefault(FrameworkElement control, string title)
         {

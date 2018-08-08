@@ -65,7 +65,7 @@ namespace RenderToy.SceneGraph
                 DefaultScene2 = scene;
             }
         }
-        static void AddOpenVR(Scene scene)
+        public static void AddOpenVR(Scene scene)
         {
 #if OPENVR_INSTALLED
             try

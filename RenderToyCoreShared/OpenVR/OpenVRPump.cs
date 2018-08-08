@@ -138,15 +138,14 @@ namespace RenderToy
         }
         public static void CreateThread(SparseScene scene)
         {
-            var renderer = CreateRenderer(scene);
-            var thread = new Thread((param) =>
+            Task.Factory.StartNew(() =>
             {
+                var renderer = CreateRenderer(scene);
                 while (true)
                 {
                     renderer();
                 }
-            });
-            thread.Start();
+            }, TaskCreationOptions.LongRunning);
         }
     }
 #endif // OPENVR_INSTALLED
