@@ -72,7 +72,7 @@ namespace RenderToy.WPF
             CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => {
                 DataContext = Document.Default;
                 e.Handled = true;
-            }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            }));
             CommandBindings.Add(new CommandBinding(CommandSceneOpen, (s, e) => {
                 OpenFileDialog ofd = new OpenFileDialog();
                 ofd.Title = "Choose Model File";
@@ -100,7 +100,7 @@ namespace RenderToy.WPF
                     DataContext = new Document(scene);
                 }
                 e.Handled = true;
-            }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            }));
             CommandBindings.Add(new CommandBinding(CommandScenePlane, (s, e) =>
             {
                 var scene = new Scene();
@@ -119,7 +119,7 @@ namespace RenderToy.WPF
                 var window = new Window { Title = "Performance Trace Tool", Content = new PerformanceTrace() };
                 window.ShowDialog();
                 e.Handled = true;
-            }, (s, e) => { e.CanExecute = true; e.Handled = true; }));
+            }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9FF, (s, e) =>
             {
                 var view = new ViewDirectX9FixedFunction();
