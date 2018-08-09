@@ -22,6 +22,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ShaderEditor.xaml.cs">
       <DependentUpon>ShaderEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3DImage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3DImageBuffered.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3DImageDirect.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirect3D9FixedFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX11.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX9.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewDirectX12.cs" />
