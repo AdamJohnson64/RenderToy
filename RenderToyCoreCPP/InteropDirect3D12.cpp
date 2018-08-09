@@ -13,317 +13,57 @@
 
 namespace RenderToy
 {
-	#pragma region - Direct3D12 Enumerations -
-	public enum struct D3D12Blend
-	{
-		Zero = D3D12_BLEND_ZERO,
-		One = D3D12_BLEND_ONE,
-		SrcColor = D3D12_BLEND_SRC_COLOR,
-		InvSrcColor = D3D12_BLEND_INV_SRC_COLOR,
-		SrcAlpha = D3D12_BLEND_SRC_ALPHA,
-		InvSrcAlpha = D3D12_BLEND_INV_SRC_ALPHA,
-		DestAlpha = D3D12_BLEND_DEST_ALPHA,
-		InvDestAlpha = D3D12_BLEND_INV_DEST_ALPHA,
-		DestColor = D3D12_BLEND_DEST_COLOR,
-		InvDestColor = D3D12_BLEND_INV_DEST_COLOR,
-		SrcAlphaSat = D3D12_BLEND_SRC_ALPHA_SAT,
-		BlendFactor = D3D12_BLEND_BLEND_FACTOR,
-		InvBlendFactor = D3D12_BLEND_INV_BLEND_FACTOR,
-		Src1Color = D3D12_BLEND_SRC1_COLOR,
-		InvSrc1Color = D3D12_BLEND_INV_SRC1_COLOR,
-		Src1Alpha = D3D12_BLEND_SRC1_ALPHA,
-		InvSrc1Alpha = D3D12_BLEND_INV_SRC1_ALPHA,
-	};
-	public enum struct D3D12BlendOp
-	{
-		Add = D3D12_BLEND_OP_ADD,
-		Subtract = D3D12_BLEND_OP_SUBTRACT,
-		RevSubtract = D3D12_BLEND_OP_REV_SUBTRACT,
-		Min = D3D12_BLEND_OP_MIN,
-		Max = D3D12_BLEND_OP_MAX,
-	};
-	public enum struct D3D12CPUPageProperty
-	{
-		Unknown = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
-		NotAvailable = D3D12_CPU_PAGE_PROPERTY_NOT_AVAILABLE,
-		WriteCombine = D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE,
-		WriteBack = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK,
-	};
-	public enum struct D3D12CommandListType
-	{
-		Direct = D3D12_COMMAND_LIST_TYPE_DIRECT,
-		Bundle = D3D12_COMMAND_LIST_TYPE_BUNDLE,
-		Compute = D3D12_COMMAND_LIST_TYPE_COMPUTE,
-		Copy = D3D12_COMMAND_LIST_TYPE_COPY,
-		VideoDecode = D3D12_COMMAND_LIST_TYPE_VIDEO_DECODE,
-		VideoProcess = D3D12_COMMAND_LIST_TYPE_VIDEO_PROCESS,
-	};
-	public enum struct D3D12CommandQueueFlags
-	{
-		None = D3D12_COMMAND_QUEUE_FLAG_NONE,
-		DisableGpuTimeout = D3D12_COMMAND_QUEUE_FLAG_DISABLE_GPU_TIMEOUT,
-	};
-	public enum struct D3D12ComparisonFunc
-	{
-		Never = D3D12_COMPARISON_FUNC_NEVER,
-		Less = D3D12_COMPARISON_FUNC_LESS,
-		Equal = D3D12_COMPARISON_FUNC_EQUAL,
-		LessEqual = D3D12_COMPARISON_FUNC_LESS_EQUAL,
-		Greater = D3D12_COMPARISON_FUNC_GREATER,
-		NotEqual = D3D12_COMPARISON_FUNC_NOT_EQUAL,
-		GreaterEqual = D3D12_COMPARISON_FUNC_GREATER_EQUAL,
-		Always = D3D12_COMPARISON_FUNC_ALWAYS,
-	};
-	public enum struct D3D12ConservativeRasterizationMode
-	{
-		Off = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF,
-		On = D3D12_CONSERVATIVE_RASTERIZATION_MODE_ON,
-	};
-	public enum struct D3D12CullMode
-	{
-		None = D3D12_CULL_MODE_NONE,
-		Front = D3D12_CULL_MODE_FRONT,
-		Back = D3D12_CULL_MODE_BACK,
-	};
-	public enum struct D3D12DepthWriteMask
-	{
-		Zero = D3D12_DEPTH_WRITE_MASK_ZERO,
-		All = D3D12_DEPTH_WRITE_MASK_ALL,
-	};
-	public enum struct D3D12DescriptorHeapFlags {
-		None = D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
-		ShaderVisible = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
-	};
-	public enum struct D3D12DescriptorHeapType
-	{
-		CbvSrvUav = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-		Sampler = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
-		Rtv = D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
-		Dsv = D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
-		NumTypes = D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES,
-	};
-	public enum struct D3D12FenceFlags
-	{
-		None = D3D12_FENCE_FLAG_NONE,
-		Shared = D3D12_FENCE_FLAG_SHARED,
-		SharedCrossAdapter = D3D12_FENCE_FLAG_SHARED_CROSS_ADAPTER,
-		NonMonitored = D3D12_FENCE_FLAG_NON_MONITORED,
-	};
-	public enum struct D3D12FillMode
-	{
-		Wireframe = D3D12_FILL_MODE_WIREFRAME,
-		Solid = D3D12_FILL_MODE_SOLID,
-	};
-	public enum struct D3D12HeapFlags
-	{
-		None = D3D12_HEAP_FLAG_NONE,
-		Shared = D3D12_HEAP_FLAG_SHARED,
-		DenyBuffers = D3D12_HEAP_FLAG_DENY_BUFFERS,
-		AllowDisplay = D3D12_HEAP_FLAG_ALLOW_DISPLAY,
-		SharedCrossAdapter = D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER,
-		DenyRTDSTextures = D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES,
-		DenyNonRTDSTextures = D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES,
-		HardwareProtected = D3D12_HEAP_FLAG_HARDWARE_PROTECTED,
-		AllowWriteWatch = D3D12_HEAP_FLAG_ALLOW_WRITE_WATCH,
-		AllowAllBuffersAndTextures = D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
-		AllowOnlyBuffers = D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS,
-		AllowOnlyNonRTDSTextures = D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES,
-		AllowOnlyRTDSTextures = D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES,
-	};
-	public enum struct D3D12HeapType
-	{
-		Default = D3D12_HEAP_TYPE_DEFAULT,
-		Upload = D3D12_HEAP_TYPE_UPLOAD,
-		Readback = D3D12_HEAP_TYPE_READBACK,
-		Custom = D3D12_HEAP_TYPE_CUSTOM,
-	};
-	public enum struct D3D12IndexBufferStripCutValue
-	{
-		Disabled = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED,
-		CutFFFF = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_0xFFFF,
-		CutFFFFFFFFF = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_0xFFFFFFFF,
-	};
-	public enum struct D3D12InputClassification
-	{
-		PerVertexData = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-		PerInstanceData = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA,
-	};
-	public enum struct D3D12LogicOp
-	{
-		Clear = D3D12_LOGIC_OP_CLEAR,
-		Set = D3D12_LOGIC_OP_SET,
-		Copy = D3D12_LOGIC_OP_COPY,
-		CopyInverted = D3D12_LOGIC_OP_COPY_INVERTED,
-		NoOp = D3D12_LOGIC_OP_NOOP,
-		Invert = D3D12_LOGIC_OP_INVERT,
-		And = D3D12_LOGIC_OP_AND,
-		Nand = D3D12_LOGIC_OP_NAND,
-		Or = D3D12_LOGIC_OP_OR,
-		Nor = D3D12_LOGIC_OP_NOR,
-		Xor = D3D12_LOGIC_OP_XOR,
-		Equiv = D3D12_LOGIC_OP_EQUIV,
-		AndReverse = D3D12_LOGIC_OP_AND_REVERSE,
-		AndInverted = D3D12_LOGIC_OP_AND_INVERTED,
-		OrReverse = D3D12_LOGIC_OP_OR_REVERSE,
-		OrInverted = D3D12_LOGIC_OP_OR_INVERTED,
-	};
-	public enum struct D3D12MemoryPool
-	{
-		Unknown = D3D12_MEMORY_POOL_UNKNOWN,
-		L0 = D3D12_MEMORY_POOL_L0,
-		L1 = D3D12_MEMORY_POOL_L1,
-	};
-	public enum struct D3D12PipelineStateFlags
-	{
-		None = D3D12_PIPELINE_STATE_FLAG_NONE,
-		ToolDebug = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG,
-	};
-	public enum struct D3D12PrimitiveTopologyType
-	{
-		Undefined = D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED,
-		Point = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,
-		Line = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE,
-		Triangle = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-		Patch = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH,
-	};
-	public enum struct D3D12ResourceBarrierFlags
-	{
-		None = D3D12_RESOURCE_BARRIER_FLAG_NONE,
-		BeginOnly = D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY,
-		EndOnly = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY,
-	};
-	public enum struct D3D12ResourceBarrierType
-	{
-		Transition = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION,
-		Aliasing = D3D12_RESOURCE_BARRIER_TYPE_ALIASING,
-		UAV = D3D12_RESOURCE_BARRIER_TYPE_UAV,
-	};
-	public enum struct D3D12ResourceDimension
-	{
-		Unknown = D3D12_RESOURCE_DIMENSION_UNKNOWN,
-		Buffer = D3D12_RESOURCE_DIMENSION_BUFFER,
-		Texture1D = D3D12_RESOURCE_DIMENSION_TEXTURE1D,
-		Texture2D = D3D12_RESOURCE_DIMENSION_TEXTURE2D,
-		Texture3D = D3D12_RESOURCE_DIMENSION_TEXTURE3D,
-	};
-	public enum struct D3D12ResourceFlags
-	{
-		None = D3D12_RESOURCE_FLAG_NONE,
-		AllowRenderTarget = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET,
-		AllowDepthStencil = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL,
-		AllowUnorderedAccess = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS,
-		DenyShaderResource = D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE,
-		AllowCrossAdapter = D3D12_RESOURCE_FLAG_ALLOW_CROSS_ADAPTER,
-		AllowSimultaneousAccess = D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS,
-		VideoDecodeReferenceOnly = D3D12_RESOURCE_FLAG_VIDEO_DECODE_REFERENCE_ONLY,
-	};
-	public enum struct D3D12ResourceStates
-	{
-		Common = D3D12_RESOURCE_STATE_COMMON,
-		VertexAndConstantBuffer = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-		IndexBuffer = D3D12_RESOURCE_STATE_INDEX_BUFFER,
-		RenderTarget = D3D12_RESOURCE_STATE_RENDER_TARGET,
-		UnordererdAccess = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-		DepthWrite = D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		DepthRead = D3D12_RESOURCE_STATE_DEPTH_READ,
-		NonPixelShaderResource = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-		PixelShaderResource = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-		StreamOut = D3D12_RESOURCE_STATE_STREAM_OUT,
-		IndirectArgument = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT,
-		CopyDest = D3D12_RESOURCE_STATE_COPY_DEST,
-		CopySource = D3D12_RESOURCE_STATE_COPY_SOURCE,
-		ResolveDest = D3D12_RESOURCE_STATE_RESOLVE_DEST,
-		ResolveSource = D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
-		GenericRead = D3D12_RESOURCE_STATE_GENERIC_READ,
-		Present = D3D12_RESOURCE_STATE_PRESENT,
-		Predication = D3D12_RESOURCE_STATE_PREDICATION,
-		VideoDecodeRead = D3D12_RESOURCE_STATE_VIDEO_DECODE_READ,
-		VideoDecodeWrite = D3D12_RESOURCE_STATE_VIDEO_DECODE_WRITE,
-		VideoProcessRead = D3D12_RESOURCE_STATE_VIDEO_PROCESS_READ,
-		VideoProcessWrite = D3D12_RESOURCE_STATE_VIDEO_PROCESS_WRITE,
-	};
-	public enum struct D3D12RtvDimension
-	{
-		Unknown = D3D12_RTV_DIMENSION_UNKNOWN,
-		Buffer = D3D12_RTV_DIMENSION_BUFFER,
-		Texture1D = D3D12_RTV_DIMENSION_TEXTURE1D,
-		Texture1DArray = D3D12_RTV_DIMENSION_TEXTURE1DARRAY,
-		Texture2D = D3D12_RTV_DIMENSION_TEXTURE2D,
-		Texture2DArray = D3D12_RTV_DIMENSION_TEXTURE2DARRAY,
-		Texture2DMS = D3D12_RTV_DIMENSION_TEXTURE2DMS,
-		Texture2DMSArray = D3D12_RTV_DIMENSION_TEXTURE2DMSARRAY,
-		Texture3D = D3D12_RTV_DIMENSION_TEXTURE3D,
-	};
-	public enum struct D3D12StencilOp
-	{
-		Keep = D3D12_STENCIL_OP_KEEP,
-		Zero = D3D12_STENCIL_OP_ZERO,
-		Replace = D3D12_STENCIL_OP_REPLACE,
-		IncrSat = D3D12_STENCIL_OP_INCR_SAT,
-		DecrSat = D3D12_STENCIL_OP_DECR_SAT,
-		Invert = D3D12_STENCIL_OP_INVERT,
-		Incr = D3D12_STENCIL_OP_INCR,
-		Decr = D3D12_STENCIL_OP_DECR,
-	};
-	public enum struct D3D12TextureLayout
-	{
-		Unknown = D3D12_TEXTURE_LAYOUT_UNKNOWN,
-		RowMajor = D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-		UndefinedSwizzle = D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE,
-		StandardSwizzle = D3D12_TEXTURE_LAYOUT_64KB_STANDARD_SWIZZLE,
-	};
-	#pragma endregion
 	#pragma region - Direct3D12 Structures -
 	public value struct D3D12CommandQueueDesc
 	{
-		D3D12CommandListType	Type;
-		INT                     Priority;
-		D3D12CommandQueueFlags	Flags;
-		UINT                    NodeMask;
+		RenderToyCOM::D3D12_COMMAND_LIST_TYPE	Type;
+		INT										Priority;
+		RenderToyCOM::D3D12_COMMAND_QUEUE_FLAGS	Flags;
+		UINT									NodeMask;
 	};
 	public value struct D3D12DepthStencilOpDesc
 	{
-		D3D12StencilOp      StencilFailOp;
-		D3D12StencilOp      StencilDepthFailOp;
-		D3D12StencilOp      StencilPassOp;
-		D3D12ComparisonFunc StencilFunc;
+		RenderToyCOM::D3D12_STENCIL_OP		StencilFailOp;
+		RenderToyCOM::D3D12_STENCIL_OP		StencilDepthFailOp;
+		RenderToyCOM::D3D12_STENCIL_OP		StencilPassOp;
+		RenderToyCOM::D3D12_COMPARISON_FUNC StencilFunc;
 	};
 	public value struct D3D12DepthStencilDesc
 	{
-		BOOL                    DepthEnable;
-		D3D12DepthWriteMask     DepthWriteMask;
-		D3D12ComparisonFunc     DepthFunc;
-		BOOL                    StencilEnable;
-		UINT8                   StencilReadMask;
-		UINT8                   StencilWriteMask;
-		D3D12DepthStencilOpDesc	FrontFace;
-		D3D12DepthStencilOpDesc	BackFace;
+		BOOL									DepthEnable;
+		RenderToyCOM::D3D12_DEPTH_WRITE_MASK	DepthWriteMask;
+		RenderToyCOM::D3D12_COMPARISON_FUNC		DepthFunc;
+		BOOL									StencilEnable;
+		UINT8									StencilReadMask;
+		UINT8									StencilWriteMask;
+		D3D12DepthStencilOpDesc					FrontFace;
+		D3D12DepthStencilOpDesc					BackFace;
 	};
 	public value struct D3D12RasterizerDesc
 	{
-		D3D12FillMode                       FillMode;
-		D3D12CullMode                       CullMode;
-		BOOL                                FrontCounterClockwise;
-		INT                                 DepthBias;
-		FLOAT                               DepthBiasClamp;
-		FLOAT                               SlopeScaledDepthBias;
-		BOOL                                DepthClipEnable;
-		BOOL                                MultisampleEnable;
-		BOOL                                AntialiasedLineEnable;
-		UINT                                ForcedSampleCount;
-		D3D12ConservativeRasterizationMode	ConservativeRaster;
+		RenderToyCOM::D3D12_FILL_MODE						FillMode;
+		RenderToyCOM::D3D12_CULL_MODE						CullMode;
+		BOOL												FrontCounterClockwise;
+		INT													DepthBias;
+		FLOAT												DepthBiasClamp;
+		FLOAT												SlopeScaledDepthBias;
+		BOOL												DepthClipEnable;
+		BOOL												MultisampleEnable;
+		BOOL												AntialiasedLineEnable;
+		UINT												ForcedSampleCount;
+		RenderToyCOM::D3D12_CONSERVATIVE_RASTERIZATION_MODE	ConservativeRaster;
 	};
 	public value struct D3D12RenderTargetBlendDesc
 	{
 		BOOL			BlendEnable;
 		BOOL			LogicOpEnable;
-		D3D12Blend		SrcBlend;
-		D3D12Blend		DestBlend;
-		D3D12BlendOp	BlendOp;
-		D3D12Blend		SrcBlendAlpha;
-		D3D12Blend		DestBlendAlpha;
-		D3D12BlendOp    BlendOpAlpha;
-		D3D12LogicOp	LogicOp;
+		RenderToyCOM::D3D12_BLEND		SrcBlend;
+		RenderToyCOM::D3D12_BLEND		DestBlend;
+		RenderToyCOM::D3D12_BLEND_OP	BlendOp;
+		RenderToyCOM::D3D12_BLEND		SrcBlendAlpha;
+		RenderToyCOM::D3D12_BLEND		DestBlendAlpha;
+		RenderToyCOM::D3D12_BLEND_OP    BlendOpAlpha;
+		RenderToyCOM::D3D12_LOGIC_OP	LogicOp;
 		UINT8			RenderTargetWriteMask;
 	};
 	public value struct D3D12Tex2DRtv
@@ -334,35 +74,35 @@ namespace RenderToy
 	public value struct D3D12RenderTargetViewDesc
 	{
 		RenderToyCOM::DXGI_FORMAT			Format;
-		D3D12RtvDimension	ViewDimension;
+		RenderToyCOM::D3D12_RTV_DIMENSION	ViewDimension;
 		D3D12Tex2DRtv		Texture2D;
 	};
 	ref class D3D12Resource;
 	public value struct D3D12ResourceTransitionBarrier
 	{
-		D3D12Resource^			pResource;
-		UINT					Subresource;
-		D3D12ResourceStates		StateBefore;
-		D3D12ResourceStates		StateAfter;
+		D3D12Resource^						pResource;
+		UINT								Subresource;
+		RenderToyCOM::D3D12_RESOURCE_STATES	StateBefore;
+		RenderToyCOM::D3D12_RESOURCE_STATES	StateAfter;
 	};
 	public value struct D3D12ResourceBarrier
 	{
-		D3D12ResourceBarrierType Type;
-		D3D12ResourceBarrierFlags Flags;
-		D3D12ResourceTransitionBarrier Transition;
+		RenderToyCOM::D3D12_RESOURCE_BARRIER_TYPE		Type;
+		RenderToyCOM::D3D12_RESOURCE_BARRIER_FLAGS		Flags;
+		D3D12ResourceTransitionBarrier					Transition;
 	};
 	public value struct D3D12BlendDesc
 	{
-		BOOL                        AlphaToCoverageEnable;
-		BOOL						IndependentBlendEnable;
-		D3D12RenderTargetBlendDesc	RenderTarget0;
-		D3D12RenderTargetBlendDesc	RenderTarget1;
-		D3D12RenderTargetBlendDesc	RenderTarget2;
-		D3D12RenderTargetBlendDesc	RenderTarget3;
-		D3D12RenderTargetBlendDesc	RenderTarget4;
-		D3D12RenderTargetBlendDesc	RenderTarget5;
-		D3D12RenderTargetBlendDesc	RenderTarget6;
-		D3D12RenderTargetBlendDesc	RenderTarget7;
+		BOOL											AlphaToCoverageEnable;
+		BOOL											IndependentBlendEnable;
+		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget0;
+		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget1;
+		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget2;
+		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget3;
+		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget4;
+		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget5;
+		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget6;
+		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget7;
 	};
 	public value struct D3D12CachedPipelineState
 	{
@@ -379,20 +119,20 @@ namespace RenderToy
 	};
 	public value struct D3D12DescriptorHeapDesc
 	{
-		D3D12DescriptorHeapType		Type;
-		UINT                        NumDescriptors;
-		D3D12DescriptorHeapFlags	Flags;
-		UINT                        NodeMask;
+		RenderToyCOM::D3D12_DESCRIPTOR_HEAP_TYPE	Type;
+		UINT										NumDescriptors;
+		RenderToyCOM::D3D12_DESCRIPTOR_HEAP_FLAGS	Flags;
+		UINT										NodeMask;
 	};
 	public value struct D3D12InputElementDesc
 	{
-		System::String^				SemanticName;
-		UINT						SemanticIndex;
+		System::String^								SemanticName;
+		UINT										SemanticIndex;
 		RenderToyCOM::DXGI_FORMAT					Format;
-		UINT						InputSlot;
-		UINT						AlignedByteOffset;
-		D3D12InputClassification	InputSlotClass;
-		UINT						InstanceDataStepRate;
+		UINT										InputSlot;
+		UINT										AlignedByteOffset;
+		RenderToyCOM::D3D12_INPUT_CLASSIFICATION	InputSlotClass;
+		UINT										InstanceDataStepRate;
 	};
 	public value struct D3D12InputLayoutDesc
 	{
@@ -400,11 +140,11 @@ namespace RenderToy
 	};
 	public value struct D3D12HeapProperties
 	{
-		D3D12HeapType			Type;
-		D3D12CPUPageProperty	CPUPageProperty;
-		D3D12MemoryPool			MemoryPoolPreference;
-		UINT					CreationNodeMask;
-		UINT					VisibleNodeMask;
+		RenderToyCOM::D3D12_HEAP_TYPE			Type;
+		RenderToyCOM::D3D12_CPU_PAGE_PROPERTY	CPUPageProperty;
+		RenderToyCOM::D3D12_MEMORY_POOL			MemoryPoolPreference;
+		UINT									CreationNodeMask;
+		UINT									VisibleNodeMask;
 	};
 	public value struct D3D12SODeclarationEntry
 	{
@@ -424,34 +164,34 @@ namespace RenderToy
 	ref class D3D12RootSignature;
 	public value struct D3D12GraphicsPipelineStateDesc
 	{
-		D3D12RootSignature^				pRootSignature;
-		cli::array<byte>^				VS;
-		cli::array<byte>^				PS;
-		cli::array<byte>^				DS;
-		cli::array<byte>^				HS;
-		cli::array<byte>^				GS;
-		D3D12StreamOutputDesc			StreamOutput;
-		D3D12BlendDesc					BlendState;
-		UINT							SampleMask;
-		D3D12RasterizerDesc				RasterizerState;
-		D3D12DepthStencilDesc			DepthStencilState;
-		D3D12InputLayoutDesc			InputLayout;
-		D3D12IndexBufferStripCutValue	IBStripCutValue;
-		D3D12PrimitiveTopologyType      PrimitiveTopologyType;
-		UINT                            NumRenderTargets;
-		RenderToyCOM::DXGI_FORMAT                      RTVFormats0;
-		RenderToyCOM::DXGI_FORMAT                      RTVFormats1;
-		RenderToyCOM::DXGI_FORMAT                      RTVFormats2;
-		RenderToyCOM::DXGI_FORMAT                      RTVFormats3;
-		RenderToyCOM::DXGI_FORMAT                      RTVFormats4;
-		RenderToyCOM::DXGI_FORMAT                      RTVFormats5;
-		RenderToyCOM::DXGI_FORMAT                      RTVFormats6;
-		RenderToyCOM::DXGI_FORMAT                      RTVFormats7;
-		RenderToyCOM::DXGI_FORMAT                      DSVFormat;
-		RenderToyCOM::DXGI_SAMPLE_DESC                  SampleDesc;
+		D3D12RootSignature^									pRootSignature;
+		cli::array<byte>^									VS;
+		cli::array<byte>^									PS;
+		cli::array<byte>^									DS;
+		cli::array<byte>^									HS;
+		cli::array<byte>^									GS;
+		RenderToyCOM::D3D12_STREAM_OUTPUT_DESC				StreamOutput;
+		D3D12BlendDesc 										BlendState;
+		UINT												SampleMask;
+		RenderToyCOM::D3D12_RASTERIZER_DESC					RasterizerState;
+		RenderToyCOM::D3D12_DEPTH_STENCIL_DESC				DepthStencilState;
+		D3D12InputLayoutDesc								InputLayout;
+		RenderToyCOM::D3D12_INDEX_BUFFER_STRIP_CUT_VALUE	IBStripCutValue;
+		RenderToyCOM::D3D12_PRIMITIVE_TOPOLOGY_TYPE			PrimitiveTopologyType;
+		UINT												NumRenderTargets;
+		RenderToyCOM::DXGI_FORMAT							RTVFormats0;
+		RenderToyCOM::DXGI_FORMAT							RTVFormats1;
+		RenderToyCOM::DXGI_FORMAT							RTVFormats2;
+		RenderToyCOM::DXGI_FORMAT							RTVFormats3;
+		RenderToyCOM::DXGI_FORMAT							RTVFormats4;
+		RenderToyCOM::DXGI_FORMAT							RTVFormats5;
+		RenderToyCOM::DXGI_FORMAT							RTVFormats6;
+		RenderToyCOM::DXGI_FORMAT							RTVFormats7;
+		RenderToyCOM::DXGI_FORMAT							DSVFormat;
+		RenderToyCOM::DXGI_SAMPLE_DESC						SampleDesc;
 		UINT                            NodeMask;
-		D3D12CachedPipelineState		CachedPSO;
-		D3D12PipelineStateFlags			Flags;
+		RenderToyCOM::D3D12_CACHED_PIPELINE_STATE			CachedPSO;
+		RenderToyCOM::D3D12_PIPELINE_STATE_FLAGS			Flags;
 	};
 	public value struct D3D12Rect
 	{
@@ -462,16 +202,16 @@ namespace RenderToy
 	};
 	public value struct D3D12ResourceDesc
 	{
-		D3D12ResourceDimension Dimension;
-		UINT64                 Alignment;
-		UINT64                 Width;
-		UINT                   Height;
-		UINT16                 DepthOrArraySize;
-		UINT16                 MipLevels;
-		RenderToyCOM::DXGI_FORMAT             Format;
-		RenderToyCOM::DXGI_SAMPLE_DESC         SampleDesc;
-		D3D12TextureLayout     Layout;
-		D3D12ResourceFlags     Flags;
+		RenderToyCOM::D3D12_RESOURCE_DIMENSION	Dimension;
+		UINT64									Alignment;
+		UINT64									Width;
+		UINT									Height;
+		UINT16									DepthOrArraySize;
+		UINT16									MipLevels;
+		RenderToyCOM::DXGI_FORMAT				Format;
+		RenderToyCOM::DXGI_SAMPLE_DESC			SampleDesc;
+		RenderToyCOM::D3D12_TEXTURE_LAYOUT		Layout;
+		RenderToyCOM::D3D12_RESOURCE_FLAGS		Flags;
 	};
 	public value struct D3D12VertexBufferView
 	{
@@ -704,13 +444,13 @@ namespace RenderToy
 		D3D12Device(ID3D12Device3 *obj) : COMWrapper(obj)
 		{
 		}
-		D3D12CommandAllocator^ CreateCommandAllocator(D3D12CommandListType type)
+		D3D12CommandAllocator^ CreateCommandAllocator(RenderToyCOM::D3D12_COMMAND_LIST_TYPE type)
 		{
 			void *ppCommandAllocator = nullptr;
 			TRY_D3D(WrappedInterface()->CreateCommandAllocator((D3D12_COMMAND_LIST_TYPE)type, __uuidof(ID3D12CommandAllocator), &ppCommandAllocator));
 			return gcnew D3D12CommandAllocator(reinterpret_cast<ID3D12CommandAllocator*>(ppCommandAllocator));
 		}
-		D3D12GraphicsCommandList1^ CreateCommandList(UINT nodeMask, D3D12CommandListType type, D3D12CommandAllocator ^pCommandAllocator, D3D12PipelineState ^pInitialState)
+		D3D12GraphicsCommandList1^ CreateCommandList(UINT nodeMask, RenderToyCOM::D3D12_COMMAND_LIST_TYPE type, D3D12CommandAllocator ^pCommandAllocator, D3D12PipelineState ^pInitialState)
 		{
 			void *ppCommandList = nullptr;
 			TRY_D3D(WrappedInterface()->CreateCommandList(nodeMask, (D3D12_COMMAND_LIST_TYPE)type, pCommandAllocator->WrappedInterface(), pInitialState->WrappedInterface(), __uuidof(ID3D12GraphicsCommandList1), &ppCommandList));
@@ -722,7 +462,7 @@ namespace RenderToy
 			TRY_D3D(WrappedInterface()->CreateCommandQueue((D3D12_COMMAND_QUEUE_DESC*)&pDesc, __uuidof(ID3D12CommandQueue), &ppCommandQueue));
 			return gcnew D3D12CommandQueue(reinterpret_cast<ID3D12CommandQueue*>(ppCommandQueue));
 		}
-		D3D12Resource^ CreateCommittedResource(D3D12HeapProperties pHeapProperties, D3D12HeapFlags HeapFlags, D3D12ResourceDesc pDesc, D3D12ResourceStates InitialResourceState, System::Nullable<D3D12ClearValue> pOptimizedClearValue)
+		D3D12Resource^ CreateCommittedResource(D3D12HeapProperties pHeapProperties, RenderToyCOM::D3D12_HEAP_FLAGS HeapFlags, D3D12ResourceDesc pDesc, RenderToyCOM::D3D12_RESOURCE_STATES InitialResourceState, System::Nullable<D3D12ClearValue> pOptimizedClearValue)
 		{
 			void *ppvResource = nullptr;
 			TRY_D3D(WrappedInterface()->CreateCommittedResource(reinterpret_cast<D3D12_HEAP_PROPERTIES*>(&pHeapProperties), (D3D12_HEAP_FLAGS)HeapFlags, reinterpret_cast<D3D12_RESOURCE_DESC*>(&pDesc), (D3D12_RESOURCE_STATES)InitialResourceState, pOptimizedClearValue.HasValue ? reinterpret_cast<D3D12_CLEAR_VALUE*>(&pOptimizedClearValue.Value) : nullptr, __uuidof(ID3D12Resource), &ppvResource));
@@ -734,7 +474,7 @@ namespace RenderToy
 			TRY_D3D(WrappedInterface()->CreateDescriptorHeap((D3D12_DESCRIPTOR_HEAP_DESC*)&pDescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), &ppvHeap));
 			return gcnew D3D12DescriptorHeap(reinterpret_cast<ID3D12DescriptorHeap*>(ppvHeap));
 		}
-		D3D12Fence^ CreateFence(UINT64 InitialValue, D3D12FenceFlags Flags)
+		D3D12Fence^ CreateFence(UINT64 InitialValue, RenderToyCOM::D3D12_FENCE_FLAGS Flags)
 		{
 			void *ppFence = nullptr;
 			TRY_D3D(WrappedInterface()->CreateFence(InitialValue, (D3D12_FENCE_FLAGS)Flags, __uuidof(ID3D12Fence), &ppFence));

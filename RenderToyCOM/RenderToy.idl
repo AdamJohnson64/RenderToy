@@ -7,6 +7,7 @@ import "dxgi1_6.idl";
 [uuid(12345678-1234-1234-1234-123456789ABC)]
 library RenderToyCOM
 {
+	// Direct3D 11
 	interface ID3D11Device;
 	interface ID3D11DeviceContext4;
 	enum D3D11_BIND_FLAG;
@@ -14,4 +15,9 @@ library RenderToyCOM
 	enum D3D11_COPY_FLAGS;
 	enum D3D11_CPU_ACCESS_FLAG;
 	enum D3D11_MAP_FLAG;
+	// Direct3D 12
+	interface ID3D12Device3;
+	enum D3D12_RESOURCE_BARRIER_FLAGS;
+	enum D3D12_RESOURCE_BARRIER_TYPE;
+	enum D3D12_RESOURCE_TRANSITION_BARRIER;
 }
