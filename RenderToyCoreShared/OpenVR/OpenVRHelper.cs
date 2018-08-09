@@ -7,41 +7,43 @@
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Transforms;
+using System;
 using System.Linq;
+using Valve.VR;
 
 namespace RenderToy
 {
     public class OpenVRHelper
     {
-        public static Matrix3D ConvertMatrix43(HmdMatrix34 matrix)
+        public static Matrix3D ConvertMatrix43(HmdMatrix34_t matrix)
         {
             Matrix3D m = new Matrix3D();
-            m.M11 = matrix.M11; m.M21 = matrix.M21; m.M31 = matrix.M31; m.M41 = matrix.M41;
-            m.M12 = matrix.M12; m.M22 = matrix.M22; m.M32 = matrix.M32; m.M42 = matrix.M42;
-            m.M13 = matrix.M13; m.M23 = matrix.M23; m.M33 = matrix.M33; m.M43 = matrix.M43;
+            m.M11 = matrix.m0; m.M21 = matrix.m1; m.M31 = matrix.m2; m.M41 = matrix.m3;
+            m.M12 = matrix.m4; m.M22 = matrix.m5; m.M32 = matrix.m6; m.M42 = matrix.m7;
+            m.M13 = matrix.m8; m.M23 = matrix.m9; m.M33 = matrix.m10; m.M43 = matrix.m11;
             m.M14 = 0; m.M24 = 0; m.M34 = 0; m.M44 = 1;
             return m;
         }
-        public static Matrix3D ConvertMatrix44(HmdMatrix44 matrix)
+        public static Matrix3D ConvertMatrix44(HmdMatrix44_t matrix)
         {
             Matrix3D m = new Matrix3D();
-            m.M11 = matrix.M11; m.M21 = matrix.M21; m.M31 = matrix.M31; m.M41 = matrix.M41;
-            m.M12 = matrix.M12; m.M22 = matrix.M22; m.M32 = matrix.M32; m.M42 = matrix.M42;
-            m.M13 = matrix.M13; m.M23 = matrix.M23; m.M33 = matrix.M33; m.M43 = matrix.M43;
-            m.M14 = matrix.M14; m.M24 = matrix.M24; m.M34 = matrix.M34; m.M44 = matrix.M44;
+            m.M11 = matrix.m0; m.M21 = matrix.m1; m.M31 = matrix.m2; m.M41 = matrix.m3;
+            m.M12 = matrix.m4; m.M22 = matrix.m5; m.M32 = matrix.m6; m.M42 = matrix.m7;
+            m.M13 = matrix.m8; m.M23 = matrix.m9; m.M33 = matrix.m10; m.M43 = matrix.m11;
+            m.M14 = matrix.m12; m.M24 = matrix.m13; m.M34 = matrix.m14; m.M44 = matrix.m15;
             return m;
         }
-        public Matrix3D GetEyeToHeadTransform(Eye eEye)
+        public Matrix3D GetEyeToHeadTransform(EVREye eEye)
         {
             return ConvertMatrix43(System.GetEyeToHeadTransform(eEye));
         }
-        public Matrix3D GetProjectionMatrix(Eye eEye, float fNear, float fFar)
+        public Matrix3D GetProjectionMatrix(EVREye eEye, float fNear, float fFar)
         {
             return ConvertMatrix44(System.GetProjectionMatrix(eEye, fNear, fFar));
         }
         public void SubmitLeftHand(Matrix3D hand)
         {
-            
+            _lefthand = hand;   
         }
         public void SubmitRightHand(Matrix3D hand)
         {
@@ -49,30 +51,46 @@ namespace RenderToy
         }
         public void Update()
         {
-            Compositor.WaitGetPoses();
-            float fPredictedSecondsToPhotonsFromNow = 0;
-            while (!System.GetTimeToPhotons(ref fPredictedSecondsToPhotonsFromNow))
+            TrackedDevicePose_t[] renderPose = new TrackedDevicePose_t[16];
+            TrackedDevicePose_t[] gamePose = new TrackedDevicePose_t[16];
+        AGAIN:
+            Compositor.WaitGetPoses(renderPose, gamePose);
+            float SecondsFromVsyncToPhotons = 0;
             {
-                Compositor.WaitGetPoses();
+                float fSecondsSinceLastVsync = 0;
+                ulong pullFrameCounter = 0;
+                // TODO: Figure out why this value is sometimes 3E+12 (37642607.2 years)
+                // This value is outside my lifetime so I can't really confirm it.
+                if (!System.GetTimeSinceLastVsync(ref fSecondsSinceLastVsync, ref pullFrameCounter) || fSecondsSinceLastVsync > 1)
+                {
+                    goto AGAIN;
+                }
+                ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_UnknownProperty;
+                float fDisplayFrequency = System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_DisplayFrequency_Float, ref error);
+                float fFrameDuration = 1.0f / fDisplayFrequency;
+                float fVsyncToPhotons = System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_SecondsFromVsyncToPhotons_Float, ref error);
+                // TODO: Figure out why the suggested solution from Valve is incorrect? (see https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetDeviceToAbsoluteTrackingPose)
+                // Scan out requires 2 frames to deliver photons to the eyes so we need double the duration.
+                SecondsFromVsyncToPhotons = fFrameDuration * 2 - fSecondsSinceLastVsync + fVsyncToPhotons;
             }
-            TrackedDevicePose[] poses = new TrackedDevicePose[16];
-            System.GetDeviceToAbsoluteTrackingPose(TrackingUniverseOrigin.Standing, fPredictedSecondsToPhotonsFromNow, poses);
+            TrackedDevicePose_t[] trackedPoses = new TrackedDevicePose_t[16];
+            System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, SecondsFromVsyncToPhotons, trackedPoses);
             {
-                _head = transformGLtoDX * MathHelp.Invert(OpenVRHelper.ConvertMatrix43(poses[0].mDeviceToAbsoluteTracking));
+                _head = transformGLtoDX * MathHelp.Invert(OpenVRHelper.ConvertMatrix43(trackedPoses[0].mDeviceToAbsoluteTracking));
             }
-            var hands = poses
+            var hands = trackedPoses
                 .Select((pose, index) => new { Pose = pose, Index = index })
-                .Where((x) => x.Pose.bDeviceIsConnected && x.Pose.bPoseIsValid && (System.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == TrackedControllerRole.RightHand || System.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == TrackedControllerRole.LeftHand))
+                .Where((x) => x.Pose.bDeviceIsConnected && x.Pose.bPoseIsValid && (System.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == ETrackedControllerRole.RightHand || System.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == ETrackedControllerRole.LeftHand))
                 .ToArray();
             {
-                var lefthand = hands.Where(i => System.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == TrackedControllerRole.LeftHand).FirstOrDefault();
+                var lefthand = hands.Where(i => System.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == ETrackedControllerRole.LeftHand).FirstOrDefault();
                 if (lefthand != null)
                 {
                     _lefthand = OpenVRHelper.ConvertMatrix43(lefthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX;
                 }
             }
             {
-                var righthand = hands.Where(i => System.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == TrackedControllerRole.RightHand).FirstOrDefault();
+                var righthand = hands.Where(i => System.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == ETrackedControllerRole.RightHand).FirstOrDefault();
                 if (righthand != null)
                 {
                     _righthand = OpenVRHelper.ConvertMatrix43(righthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX;
@@ -82,8 +100,9 @@ namespace RenderToy
         public Matrix3D _head;
         public Matrix3D _lefthand;
         public Matrix3D _righthand;
-        public VRSystem System = new VRSystem();
-        public OpenVRCompositor Compositor = new OpenVRCompositor();
+        public static EVRInitError error;
+        public static CVRSystem System = OpenVR.Init(ref error);
+        public static CVRCompositor Compositor = OpenVR.Compositor;
         static Matrix3D transformGLtoDX = new Matrix3D(
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -141,18 +160,20 @@ namespace RenderToy
     };
     public class MaterialOpenVRCameraDistorted : IMaterial, IVRHost
     {
-        public MaterialOpenVRCameraDistorted(OpenVRHelper vrhost, VRTrackedCamera camera)
+        public MaterialOpenVRCameraDistorted(OpenVRHelper vrhost, CVRTrackedCamera camera)
         {
             VRHost = vrhost;
             TrackedCamera = camera;
-            TrackedCameraHandle = TrackedCamera.AcquireVideoStreamingService(0);
+            ulong handle = 0;
+            TrackedCamera.AcquireVideoStreamingService(0, ref handle);
+            TrackedCameraHandle = handle;
         }
         public bool IsConstant()
         {
             return false;
         }
         public OpenVRHelper VRHost { get; protected set; }
-        public VRTrackedCamera TrackedCamera { get; protected set; }
+        public CVRTrackedCamera TrackedCamera { get; protected set; }
         public ulong TrackedCameraHandle { get; protected set; }
     };
 }

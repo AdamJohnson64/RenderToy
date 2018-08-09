@@ -98,6 +98,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\DirectXHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OpenVR\OpenVRHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OpenVR\OpenVRPump.cs" />
+    <Compile Include="$(SolutionDir)ThirdParty\OpenVR\headers\openvr_api.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Common\Math\" />

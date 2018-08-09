@@ -48,7 +48,6 @@
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D12.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D9.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3DCompiler.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropOpenVR.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportAMP.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>

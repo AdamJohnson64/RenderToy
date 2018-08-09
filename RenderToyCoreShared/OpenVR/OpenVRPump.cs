@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using Valve.VR;
 
 namespace RenderToy
 {
@@ -26,7 +27,7 @@ namespace RenderToy
             var openvr = scene.Select(i => i.NodeTransform).OfType<IVRHost>().Select(i => i.VRHost).Distinct().SingleOrDefault();
             if (openvr == null) throw new Exception("There are no VR actors in this scene.");
             uint vrwidth = 0, vrheight = 0;
-            openvr.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
+            OpenVRHelper.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
             ID3D11VertexShader d3d11VertexShader = null;
             ID3D11PixelShader d3d11PixelShader = null;
             ID3D11Texture2D d3d11Texture2D_RT_EyeLeft = null;
@@ -92,14 +93,14 @@ namespace RenderToy
                     deferred_left.OMSetRenderTargets(1, d3d11RenderTargetView_EyeLeft, d3d11DepthStencilView_EyeLeft);
                     deferred_left.ClearDepthStencilView(d3d11DepthStencilView_EyeLeft, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
                     deferred_left.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, new float[] { 0, 0, 0, 0 });
-                    var transformView = openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Left));
+                    var transformView = openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(EVREye.Eye_Left));
                     var transformCamera = MathHelp.Invert(transformView);
                     var constants = new Dictionary<string, object>();
                     constants["profilingName"] = "Left Eye";
                     constants["transformAspect"] = Matrix3D.Identity;
                     constants["transformCamera"] = transformCamera;
                     constants["transformView"] = transformView;
-                    constants["transformProjection"] = openvr.GetProjectionMatrix(Eye.Left, 0.1f, 2000.0f);
+                    constants["transformProjection"] = openvr.GetProjectionMatrix(EVREye.Eye_Left, 0.1f, 2000.0f);
                     Execute_RenderSceneLeft(deferred_left, constants);
                     ID3D11CommandList commandList = null;
                     deferred_left.FinishCommandList(0, ref commandList);
@@ -120,14 +121,14 @@ namespace RenderToy
                     deferred_right.OMSetRenderTargets(1, ref d3d11RenderTargetView_EyeRight, d3d11DepthStencilView_EyeRight);
                     deferred_right.ClearDepthStencilView(d3d11DepthStencilView_EyeRight, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
                     deferred_right.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, new float[] { 0, 0, 0, 0 });
-                    var transformView = openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(Eye.Right));
+                    var transformView = openvr._head * MathHelp.Invert(openvr.GetEyeToHeadTransform(EVREye.Eye_Right));
                     var transformCamera = MathHelp.Invert(transformView);
                     var constants = new Dictionary<string, object>();
                     constants["profilingName"] = "Right Eye";
                     constants["transformAspect"] = Matrix3D.Identity;
                     constants["transformCamera"] = transformCamera;
                     constants["transformView"] = transformView;
-                    constants["transformProjection"] = openvr.GetProjectionMatrix(Eye.Right, 0.1f, 2000.0f);
+                    constants["transformProjection"] = openvr.GetProjectionMatrix(EVREye.Eye_Right, 0.1f, 2000.0f);
                     Execute_RenderSceneRight(deferred_right, constants);
                     ID3D11CommandList commandList = null;
                     deferred_right.FinishCommandList(0, ref commandList);
@@ -141,8 +142,14 @@ namespace RenderToy
                 context.ExecuteCommandList(do_right.Result, 1);
                 RenderToyEventSource.Default.MarkerEnd("Execute All RTs");
                 RenderToyEventSource.Default.MarkerBegin("Submit To OpenVR");
-                openvr.Compositor.Submit(Eye.Left, Marshal.GetComInterfaceForObject<ID3D11Texture2D, ID3D11Texture2D>(d3d11Texture2D_RT_EyeLeft));
-                openvr.Compositor.Submit(Eye.Right, Marshal.GetComInterfaceForObject<ID3D11Texture2D, ID3D11Texture2D>(d3d11Texture2D_RT_EyeRight));
+                unsafe
+                {
+                    VRTextureBounds_t *pBounds = null;
+                    var textureLeft = new Texture_t { handle = Marshal.GetComInterfaceForObject<ID3D11Texture2D, ID3D11Texture2D>(d3d11Texture2D_RT_EyeLeft), eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto };
+                    OpenVRHelper.Compositor.Submit(EVREye.Eye_Left, ref textureLeft, ref *pBounds, EVRSubmitFlags.Submit_Default);
+                    var textureRight = new Texture_t { handle = Marshal.GetComInterfaceForObject<ID3D11Texture2D, ID3D11Texture2D>(d3d11Texture2D_RT_EyeRight), eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto };
+                    OpenVRHelper.Compositor.Submit(EVREye.Eye_Right, ref textureRight, ref *pBounds, EVRSubmitFlags.Submit_Default);
+                }
                 RenderToyEventSource.Default.MarkerEnd("Submit To OpenVR");
                 RenderToyEventSource.Default.RenderEnd();
             };

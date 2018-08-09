@@ -109,7 +109,9 @@ namespace RenderToy.DirectX
             if (material is MaterialOpenVRCameraDistorted vr)
             {
                 var dev = Marshal.GetComInterfaceForObject(d3d11Device, typeof(ID3D11Device));
-                var srv = vr.TrackedCamera.GetVideoStreamTextureD3D11(vr.TrackedCameraHandle, VRTrackedCameraFrameType.Distorted, dev);
+                var srv = IntPtr.Zero;
+                var header = new Valve.VR.CameraVideoStreamFrameHeader_t();
+                vr.TrackedCamera.GetVideoStreamTextureD3D11(vr.TrackedCameraHandle, Valve.VR.EVRTrackedCameraFrameType.Distorted, dev, ref srv, ref header, (uint)Marshal.SizeOf(header));
                 return (ID3D11ShaderResourceView)Marshal.GetTypedObjectForIUnknown(srv, typeof(ID3D11Texture2D));
             }
 #endif // OPENVR_INSTALLED

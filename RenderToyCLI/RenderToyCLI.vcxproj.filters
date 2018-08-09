@@ -5,7 +5,6 @@
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D12.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D9.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3DCompiler.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropOpenVR.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportAMP.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCPU.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCUDA.cpp" />
