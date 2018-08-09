@@ -9,6 +9,7 @@ import "dxgi1_6.idl";
 library RenderToyCOM
 {
 	// Direct3D 11
+	interface ID3D11Debug;
 	interface ID3D11Device;
 	interface ID3D11DeviceContext4;
 	enum D3D11_BIND_FLAG;
