@@ -14,69 +14,6 @@
 namespace RenderToy
 {
 	#pragma region - Direct3D12 Structures -
-	public value struct D3D12CommandQueueDesc
-	{
-		RenderToyCOM::D3D12_COMMAND_LIST_TYPE	Type;
-		INT										Priority;
-		RenderToyCOM::D3D12_COMMAND_QUEUE_FLAGS	Flags;
-		UINT									NodeMask;
-	};
-	public value struct D3D12DepthStencilOpDesc
-	{
-		RenderToyCOM::D3D12_STENCIL_OP		StencilFailOp;
-		RenderToyCOM::D3D12_STENCIL_OP		StencilDepthFailOp;
-		RenderToyCOM::D3D12_STENCIL_OP		StencilPassOp;
-		RenderToyCOM::D3D12_COMPARISON_FUNC StencilFunc;
-	};
-	public value struct D3D12DepthStencilDesc
-	{
-		BOOL									DepthEnable;
-		RenderToyCOM::D3D12_DEPTH_WRITE_MASK	DepthWriteMask;
-		RenderToyCOM::D3D12_COMPARISON_FUNC		DepthFunc;
-		BOOL									StencilEnable;
-		UINT8									StencilReadMask;
-		UINT8									StencilWriteMask;
-		D3D12DepthStencilOpDesc					FrontFace;
-		D3D12DepthStencilOpDesc					BackFace;
-	};
-	public value struct D3D12RasterizerDesc
-	{
-		RenderToyCOM::D3D12_FILL_MODE						FillMode;
-		RenderToyCOM::D3D12_CULL_MODE						CullMode;
-		BOOL												FrontCounterClockwise;
-		INT													DepthBias;
-		FLOAT												DepthBiasClamp;
-		FLOAT												SlopeScaledDepthBias;
-		BOOL												DepthClipEnable;
-		BOOL												MultisampleEnable;
-		BOOL												AntialiasedLineEnable;
-		UINT												ForcedSampleCount;
-		RenderToyCOM::D3D12_CONSERVATIVE_RASTERIZATION_MODE	ConservativeRaster;
-	};
-	public value struct D3D12RenderTargetBlendDesc
-	{
-		BOOL			BlendEnable;
-		BOOL			LogicOpEnable;
-		RenderToyCOM::D3D12_BLEND		SrcBlend;
-		RenderToyCOM::D3D12_BLEND		DestBlend;
-		RenderToyCOM::D3D12_BLEND_OP	BlendOp;
-		RenderToyCOM::D3D12_BLEND		SrcBlendAlpha;
-		RenderToyCOM::D3D12_BLEND		DestBlendAlpha;
-		RenderToyCOM::D3D12_BLEND_OP    BlendOpAlpha;
-		RenderToyCOM::D3D12_LOGIC_OP	LogicOp;
-		UINT8			RenderTargetWriteMask;
-	};
-	public value struct D3D12Tex2DRtv
-	{
-		UINT MipSlice;
-		UINT PlaneSlice;
-	};
-	public value struct D3D12RenderTargetViewDesc
-	{
-		RenderToyCOM::DXGI_FORMAT			Format;
-		RenderToyCOM::D3D12_RTV_DIMENSION	ViewDimension;
-		D3D12Tex2DRtv		Texture2D;
-	};
 	ref class D3D12Resource;
 	public value struct D3D12ResourceTransitionBarrier
 	{
@@ -91,19 +28,6 @@ namespace RenderToy
 		RenderToyCOM::D3D12_RESOURCE_BARRIER_FLAGS		Flags;
 		D3D12ResourceTransitionBarrier					Transition;
 	};
-	public value struct D3D12BlendDesc
-	{
-		BOOL											AlphaToCoverageEnable;
-		BOOL											IndependentBlendEnable;
-		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget0;
-		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget1;
-		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget2;
-		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget3;
-		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget4;
-		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget5;
-		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget6;
-		RenderToyCOM::D3D12_RENDER_TARGET_BLEND_DESC	RenderTarget7;
-	};
 	public value struct D3D12CachedPipelineState
 	{
 		cli::array<byte>^	pCachedBlob;
@@ -116,13 +40,6 @@ namespace RenderToy
 	public value struct D3D12CPUDescriptorHandle
 	{
 		System::IntPtr ptr;
-	};
-	public value struct D3D12DescriptorHeapDesc
-	{
-		RenderToyCOM::D3D12_DESCRIPTOR_HEAP_TYPE	Type;
-		UINT										NumDescriptors;
-		RenderToyCOM::D3D12_DESCRIPTOR_HEAP_FLAGS	Flags;
-		UINT										NodeMask;
 	};
 	public value struct D3D12InputElementDesc
 	{
@@ -137,14 +54,6 @@ namespace RenderToy
 	public value struct D3D12InputLayoutDesc
 	{
 		cli::array<D3D12InputElementDesc>^	pInputElementDescs;
-	};
-	public value struct D3D12HeapProperties
-	{
-		RenderToyCOM::D3D12_HEAP_TYPE			Type;
-		RenderToyCOM::D3D12_CPU_PAGE_PROPERTY	CPUPageProperty;
-		RenderToyCOM::D3D12_MEMORY_POOL			MemoryPoolPreference;
-		UINT									CreationNodeMask;
-		UINT									VisibleNodeMask;
 	};
 	public value struct D3D12SODeclarationEntry
 	{
@@ -171,7 +80,7 @@ namespace RenderToy
 		cli::array<byte>^									HS;
 		cli::array<byte>^									GS;
 		RenderToyCOM::D3D12_STREAM_OUTPUT_DESC				StreamOutput;
-		D3D12BlendDesc 										BlendState;
+		RenderToyCOM::D3D12_BLEND_DESC						BlendState;
 		UINT												SampleMask;
 		RenderToyCOM::D3D12_RASTERIZER_DESC					RasterizerState;
 		RenderToyCOM::D3D12_DEPTH_STENCIL_DESC				DepthStencilState;
@@ -189,44 +98,9 @@ namespace RenderToy
 		RenderToyCOM::DXGI_FORMAT							RTVFormats7;
 		RenderToyCOM::DXGI_FORMAT							DSVFormat;
 		RenderToyCOM::DXGI_SAMPLE_DESC						SampleDesc;
-		UINT                            NodeMask;
+		UINT												NodeMask;
 		RenderToyCOM::D3D12_CACHED_PIPELINE_STATE			CachedPSO;
 		RenderToyCOM::D3D12_PIPELINE_STATE_FLAGS			Flags;
-	};
-	public value struct D3D12Rect
-	{
-		LONG    left;
-		LONG    top;
-		LONG    right;
-		LONG    bottom;
-	};
-	public value struct D3D12ResourceDesc
-	{
-		RenderToyCOM::D3D12_RESOURCE_DIMENSION	Dimension;
-		UINT64									Alignment;
-		UINT64									Width;
-		UINT									Height;
-		UINT16									DepthOrArraySize;
-		UINT16									MipLevels;
-		RenderToyCOM::DXGI_FORMAT				Format;
-		RenderToyCOM::DXGI_SAMPLE_DESC			SampleDesc;
-		RenderToyCOM::D3D12_TEXTURE_LAYOUT		Layout;
-		RenderToyCOM::D3D12_RESOURCE_FLAGS		Flags;
-	};
-	public value struct D3D12VertexBufferView
-	{
-		D3D12_GPU_VIRTUAL_ADDRESS	BufferLocation;
-		UINT						SizeInBytes;
-		UINT						StrideInBytes;
-	};
-	public value struct D3D12Viewport
-	{
-		FLOAT TopLeftX;
-		FLOAT TopLeftY;
-		FLOAT Width;
-		FLOAT Height;
-		FLOAT MinDepth;
-		FLOAT MaxDepth;
 	};
 	#pragma endregion
 	#pragma region - D3D12CommandAllocator -
@@ -346,9 +220,9 @@ namespace RenderToy
 		{
 			WrappedInterface()->IASetPrimitiveTopology((D3D12_PRIMITIVE_TOPOLOGY)PrimitiveTopology);
 		}
-		void IASetVertexBuffers(UINT StartSlot, cli::array<D3D12VertexBufferView> ^pViews)
+		void IASetVertexBuffers(UINT StartSlot, cli::array<RenderToyCOM::D3D12_VERTEX_BUFFER_VIEW> ^pViews)
 		{
-			pin_ptr<D3D12VertexBufferView> pViewsM = &pViews[0];
+			pin_ptr<RenderToyCOM::D3D12_VERTEX_BUFFER_VIEW> pViewsM = &pViews[0];
 			WrappedInterface()->IASetVertexBuffers(StartSlot, pViews->Length, (D3D12_VERTEX_BUFFER_VIEW*)&pViewsM[0]);
 		}
 		void OMSetRenderTargets(cli::array<D3D12CPUDescriptorHandle> ^pRenderTargetDescriptors, BOOL RTsSingleHandleToDescriptorRange, System::Nullable<D3D12CPUDescriptorHandle> pDepthStencilDescriptor)
@@ -362,14 +236,14 @@ namespace RenderToy
 			pDepthStencilDescriptorM.ptr = (SIZE_T)(pDepthStencilDescriptor.HasValue ? pDepthStencilDescriptor.Value.ptr.ToPointer() : nullptr);
 			WrappedInterface()->OMSetRenderTargets(pRenderTargetDescriptors->Length, pRenderTargetDescriptorsM.get(), RTsSingleHandleToDescriptorRange, pDepthStencilDescriptor.HasValue ? &pDepthStencilDescriptorM : nullptr);
 		}
-		void RSSetScissorRects(cli::array<D3D12Rect> ^pRects)
+		void RSSetScissorRects(cli::array<RenderToyCOM::tagRECT> ^pRects)
 		{
-			pin_ptr<D3D12Rect> pRectsM = &pRects[0];
+			pin_ptr<RenderToyCOM::tagRECT> pRectsM = &pRects[0];
 			WrappedInterface()->RSSetScissorRects(pRects->Length, reinterpret_cast<D3D12_RECT*>(&pRectsM[0]));
 		}
-		void RSSetViewports(cli::array<D3D12Viewport> ^pViewports)
+		void RSSetViewports(cli::array<RenderToyCOM::D3D12_VIEWPORT> ^pViewports)
 		{
-			pin_ptr<D3D12Viewport> pViewportsM = &pViewports[0];
+			pin_ptr<RenderToyCOM::D3D12_VIEWPORT> pViewportsM = &pViewports[0];
 			WrappedInterface()->RSSetViewports(pViewports->Length, reinterpret_cast<D3D12_VIEWPORT*>(&pViewportsM[0]));
 		}
 		void SetDescriptorHeaps(cli::array<D3D12DescriptorHeap^> ^ppDescriptorHeaps)
@@ -456,19 +330,19 @@ namespace RenderToy
 			TRY_D3D(WrappedInterface()->CreateCommandList(nodeMask, (D3D12_COMMAND_LIST_TYPE)type, pCommandAllocator->WrappedInterface(), pInitialState->WrappedInterface(), __uuidof(ID3D12GraphicsCommandList1), &ppCommandList));
 			return gcnew D3D12GraphicsCommandList1(reinterpret_cast<ID3D12GraphicsCommandList1*>(ppCommandList));
 		}
-		D3D12CommandQueue^ CreateCommandQueue(D3D12CommandQueueDesc pDesc)
+		D3D12CommandQueue^ CreateCommandQueue(RenderToyCOM::D3D12_COMMAND_QUEUE_DESC pDesc)
 		{
 			void *ppCommandQueue = nullptr;
 			TRY_D3D(WrappedInterface()->CreateCommandQueue((D3D12_COMMAND_QUEUE_DESC*)&pDesc, __uuidof(ID3D12CommandQueue), &ppCommandQueue));
 			return gcnew D3D12CommandQueue(reinterpret_cast<ID3D12CommandQueue*>(ppCommandQueue));
 		}
-		D3D12Resource^ CreateCommittedResource(D3D12HeapProperties pHeapProperties, RenderToyCOM::D3D12_HEAP_FLAGS HeapFlags, D3D12ResourceDesc pDesc, RenderToyCOM::D3D12_RESOURCE_STATES InitialResourceState, System::Nullable<D3D12ClearValue> pOptimizedClearValue)
+		D3D12Resource^ CreateCommittedResource(RenderToyCOM::D3D12_HEAP_PROPERTIES pHeapProperties, RenderToyCOM::D3D12_HEAP_FLAGS HeapFlags, RenderToyCOM::D3D12_RESOURCE_DESC pDesc, RenderToyCOM::D3D12_RESOURCE_STATES InitialResourceState, System::Nullable<D3D12ClearValue> pOptimizedClearValue)
 		{
 			void *ppvResource = nullptr;
 			TRY_D3D(WrappedInterface()->CreateCommittedResource(reinterpret_cast<D3D12_HEAP_PROPERTIES*>(&pHeapProperties), (D3D12_HEAP_FLAGS)HeapFlags, reinterpret_cast<D3D12_RESOURCE_DESC*>(&pDesc), (D3D12_RESOURCE_STATES)InitialResourceState, pOptimizedClearValue.HasValue ? reinterpret_cast<D3D12_CLEAR_VALUE*>(&pOptimizedClearValue.Value) : nullptr, __uuidof(ID3D12Resource), &ppvResource));
 			return gcnew D3D12Resource(reinterpret_cast<ID3D12Resource*>(ppvResource));
 		}
-		D3D12DescriptorHeap^ CreateDescriptorHeap(D3D12DescriptorHeapDesc pDescriptorHeapDesc)
+		D3D12DescriptorHeap^ CreateDescriptorHeap(RenderToyCOM::D3D12_DESCRIPTOR_HEAP_DESC pDescriptorHeapDesc)
 		{
 			void *ppvHeap = nullptr;
 			TRY_D3D(WrappedInterface()->CreateDescriptorHeap((D3D12_DESCRIPTOR_HEAP_DESC*)&pDescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), &ppvHeap));
@@ -496,16 +370,16 @@ namespace RenderToy
 			pDesc2.GS.BytecodeLength = pDesc.GS == nullptr ? 0 : pDesc.GS->Length;
 			pDesc2.BlendState.AlphaToCoverageEnable = pDesc.BlendState.AlphaToCoverageEnable;
 			pDesc2.BlendState.IndependentBlendEnable = pDesc.BlendState.IndependentBlendEnable;
-			pDesc2.BlendState.RenderTarget[0].BlendEnable = pDesc.BlendState.RenderTarget0.BlendEnable;
-			pDesc2.BlendState.RenderTarget[0].LogicOpEnable = pDesc.BlendState.RenderTarget0.LogicOpEnable;
-			pDesc2.BlendState.RenderTarget[0].SrcBlend = (D3D12_BLEND)pDesc.BlendState.RenderTarget0.SrcBlend;
-			pDesc2.BlendState.RenderTarget[0].DestBlend = (D3D12_BLEND)pDesc.BlendState.RenderTarget0.DestBlend;
-			pDesc2.BlendState.RenderTarget[0].BlendOp = (D3D12_BLEND_OP)pDesc.BlendState.RenderTarget0.BlendOp;
-			pDesc2.BlendState.RenderTarget[0].SrcBlendAlpha = (D3D12_BLEND)pDesc.BlendState.RenderTarget0.SrcBlendAlpha;
-			pDesc2.BlendState.RenderTarget[0].DestBlendAlpha = (D3D12_BLEND)pDesc.BlendState.RenderTarget0.DestBlendAlpha;
-			pDesc2.BlendState.RenderTarget[0].BlendOpAlpha = (D3D12_BLEND_OP)pDesc.BlendState.RenderTarget0.BlendOpAlpha;
-			pDesc2.BlendState.RenderTarget[0].LogicOp = (D3D12_LOGIC_OP)pDesc.BlendState.RenderTarget0.LogicOp;
-			pDesc2.BlendState.RenderTarget[0].RenderTargetWriteMask = pDesc.BlendState.RenderTarget0.RenderTargetWriteMask;
+			pDesc2.BlendState.RenderTarget[0].BlendEnable = pDesc.BlendState.RenderTarget[0].BlendEnable;
+			pDesc2.BlendState.RenderTarget[0].LogicOpEnable = pDesc.BlendState.RenderTarget[0].LogicOpEnable;
+			pDesc2.BlendState.RenderTarget[0].SrcBlend = (D3D12_BLEND)pDesc.BlendState.RenderTarget[0].SrcBlend;
+			pDesc2.BlendState.RenderTarget[0].DestBlend = (D3D12_BLEND)pDesc.BlendState.RenderTarget[0].DestBlend;
+			pDesc2.BlendState.RenderTarget[0].BlendOp = (D3D12_BLEND_OP)pDesc.BlendState.RenderTarget[0].BlendOp;
+			pDesc2.BlendState.RenderTarget[0].SrcBlendAlpha = (D3D12_BLEND)pDesc.BlendState.RenderTarget[0].SrcBlendAlpha;
+			pDesc2.BlendState.RenderTarget[0].DestBlendAlpha = (D3D12_BLEND)pDesc.BlendState.RenderTarget[0].DestBlendAlpha;
+			pDesc2.BlendState.RenderTarget[0].BlendOpAlpha = (D3D12_BLEND_OP)pDesc.BlendState.RenderTarget[0].BlendOpAlpha;
+			pDesc2.BlendState.RenderTarget[0].LogicOp = (D3D12_LOGIC_OP)pDesc.BlendState.RenderTarget[0].LogicOp;
+			pDesc2.BlendState.RenderTarget[0].RenderTargetWriteMask = pDesc.BlendState.RenderTarget[0].RenderTargetWriteMask;
 			pDesc2.SampleMask = pDesc.SampleMask;
 			pDesc2.RasterizerState.CullMode = (D3D12_CULL_MODE)pDesc.RasterizerState.CullMode;
 			pDesc2.RasterizerState.FillMode = (D3D12_FILL_MODE)pDesc.RasterizerState.FillMode;
@@ -531,13 +405,13 @@ namespace RenderToy
 			TRY_D3D(WrappedInterface()->CreateGraphicsPipelineState(&pDesc2, __uuidof(ID3D12PipelineState), &ppPipelineState));
 			return gcnew D3D12PipelineState(reinterpret_cast<ID3D12PipelineState*>(ppPipelineState));
 		}
-		void CreateRenderTargetView(D3D12Resource ^pResource, D3D12RenderTargetViewDesc pDesc, D3D12CPUDescriptorHandle DestDescriptor)
+		void CreateRenderTargetView(D3D12Resource ^pResource, RenderToyCOM::D3D12_RENDER_TARGET_VIEW_DESC pDesc, D3D12CPUDescriptorHandle DestDescriptor)
 		{
 			D3D12_RENDER_TARGET_VIEW_DESC pDesc2;
 			pDesc2.Format = (DXGI_FORMAT)pDesc.Format;
 			pDesc2.ViewDimension = (D3D12_RTV_DIMENSION)pDesc.ViewDimension;
-			pDesc2.Texture2D.MipSlice = pDesc.Texture2D.MipSlice;
-			pDesc2.Texture2D.PlaneSlice = pDesc.Texture2D.PlaneSlice;
+			pDesc2.Texture2D.MipSlice = pDesc.__MIDL____MIDL_itf_RenderToy_0001_00180005.Texture2D.MipSlice;
+			pDesc2.Texture2D.PlaneSlice = pDesc.__MIDL____MIDL_itf_RenderToy_0001_00180005.Texture2D.PlaneSlice;
 			D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor2;
 			DestDescriptor2.ptr = (SIZE_T)DestDescriptor.ptr.ToPointer();
 			WrappedInterface()->CreateRenderTargetView(pResource->WrappedInterface(), &pDesc2, DestDescriptor2);

@@ -34,7 +34,7 @@ namespace RenderToy.WPF
         {
             Direct3D12.D3D12GetDebugInterface().EnableDebugLayer();
             d3d12Device = Direct3D12.D3D12CreateDevice();
-            d3d12CommandQueue = d3d12Device.CreateCommandQueue(new D3D12CommandQueueDesc { Type = D3D12_COMMAND_LIST_TYPE.D3D12_COMMAND_LIST_TYPE_DIRECT });
+            d3d12CommandQueue = d3d12Device.CreateCommandQueue(new D3D12_COMMAND_QUEUE_DESC { Type = D3D12_COMMAND_LIST_TYPE.D3D12_COMMAND_LIST_TYPE_DIRECT });
             d3d12CommandAllocator = d3d12Device.CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE.D3D12_COMMAND_LIST_TYPE_DIRECT);
             ////////////////////////////////////////////////////////////////////////////////
             // Create the Vertex Shader and Pixel Shader
@@ -50,15 +50,16 @@ namespace RenderToy.WPF
             d3d12GraphicsPipelineStateDesc.pRootSignature = d3d12RootSignature;
             d3d12GraphicsPipelineStateDesc.VS = bytecode_VertexShader;
             d3d12GraphicsPipelineStateDesc.PS = bytecode_PixelShader;
-            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget0.BlendEnable = 0;
-            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget0.SrcBlend = D3D12_BLEND.D3D12_BLEND_ONE;
-            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget0.DestBlend = D3D12_BLEND.D3D12_BLEND_ZERO;
-            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget0.BlendOp = D3D12_BLEND_OP.D3D12_BLEND_OP_ADD;
-            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget0.SrcBlendAlpha = D3D12_BLEND.D3D12_BLEND_ONE;
-            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget0.DestBlendAlpha = D3D12_BLEND.D3D12_BLEND_ZERO;
-            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget0.BlendOpAlpha = D3D12_BLEND_OP.D3D12_BLEND_OP_ADD;
-            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget0.LogicOp = D3D12_LOGIC_OP.D3D12_LOGIC_OP_NOOP;
-            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget0.RenderTargetWriteMask = 15;
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget = new D3D12_RENDER_TARGET_BLEND_DESC[8];
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget[0].BlendEnable = 0;
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND.D3D12_BLEND_ONE;
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND.D3D12_BLEND_ZERO;
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP.D3D12_BLEND_OP_ADD;
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND.D3D12_BLEND_ONE;
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND.D3D12_BLEND_ZERO;
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP.D3D12_BLEND_OP_ADD;
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget[0].LogicOp = D3D12_LOGIC_OP.D3D12_LOGIC_OP_NOOP;
+            d3d12GraphicsPipelineStateDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = 15;
             d3d12GraphicsPipelineStateDesc.SampleMask = uint.MaxValue;
             d3d12GraphicsPipelineStateDesc.RasterizerState.FillMode = D3D12_FILL_MODE.D3D12_FILL_MODE_SOLID;
             d3d12GraphicsPipelineStateDesc.RasterizerState.CullMode = D3D12_CULL_MODE.D3D12_CULL_MODE_NONE;
@@ -86,8 +87,9 @@ namespace RenderToy.WPF
             if (wpfFrontBuffer == null || !IsVisible) return;
             ////////////////////////////////////////////////////////////////////////////////
             // Create Render Target View.
-            var d3d12DescriptorHeap_Rtv = d3d12Device.CreateDescriptorHeap(new D3D12DescriptorHeapDesc { Type = D3D12_DESCRIPTOR_HEAP_TYPE.D3D12_DESCRIPTOR_HEAP_TYPE_RTV, NumDescriptors = 1, Flags = D3D12_DESCRIPTOR_HEAP_FLAGS.D3D12_DESCRIPTOR_HEAP_FLAG_NONE });
-            var d3d12RenderTargetViewDesc = new D3D12RenderTargetViewDesc { Format = RenderToyCOM.DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, ViewDimension = D3D12_RTV_DIMENSION.D3D12_RTV_DIMENSION_TEXTURE2D, Texture2D = new D3D12Tex2DRtv { MipSlice = 0, PlaneSlice = 0 } };
+            var d3d12DescriptorHeap_Rtv = d3d12Device.CreateDescriptorHeap(new D3D12_DESCRIPTOR_HEAP_DESC { Type = D3D12_DESCRIPTOR_HEAP_TYPE.D3D12_DESCRIPTOR_HEAP_TYPE_RTV, NumDescriptors = 1, Flags = D3D12_DESCRIPTOR_HEAP_FLAGS.D3D12_DESCRIPTOR_HEAP_FLAG_NONE });
+            var d3d12RenderTargetViewDesc = new D3D12_RENDER_TARGET_VIEW_DESC { Format = RenderToyCOM.DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, ViewDimension = D3D12_RTV_DIMENSION.D3D12_RTV_DIMENSION_TEXTURE2D };
+            d3d12RenderTargetViewDesc.__MIDL____MIDL_itf_RenderToy_0001_00180005.Texture2D = new D3D12_TEX2D_RTV { MipSlice = 0, PlaneSlice = 0 };
             d3d12Device.CreateRenderTargetView(d3d12Resource_RenderTarget, d3d12RenderTargetViewDesc, d3d12DescriptorHeap_Rtv.GetCPUDescriptorHandleForHeapStart());
             ////////////////////////////////////////////////////////////////////////////////
             // Create Fence for end of frame.
@@ -100,8 +102,8 @@ namespace RenderToy.WPF
             d3d12CommandList.SetGraphicsRootSignature(d3d12RootSignature);
             d3d12CommandList.SetPipelineState(d3d12GraphicsPipelineState);
             d3d12CommandList.IASetPrimitiveTopology(RenderToyCOM.D3D_PRIMITIVE_TOPOLOGY.D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            d3d12CommandList.RSSetScissorRects(new[] { new D3D12Rect { left = 0, top = 0, right = wpfFrontBuffer.PixelWidth, bottom = wpfFrontBuffer.PixelHeight } });
-            d3d12CommandList.RSSetViewports(new[] { new D3D12Viewport { TopLeftX = 0, TopLeftY = 0, Width = wpfFrontBuffer.PixelWidth, Height = wpfFrontBuffer.PixelHeight, MinDepth = 0, MaxDepth = 1 } });
+            d3d12CommandList.RSSetScissorRects(new[] { new tagRECT { left = 0, top = 0, right = wpfFrontBuffer.PixelWidth, bottom = wpfFrontBuffer.PixelHeight } });
+            d3d12CommandList.RSSetViewports(new[] { new D3D12_VIEWPORT { TopLeftX = 0, TopLeftY = 0, Width = wpfFrontBuffer.PixelWidth, Height = wpfFrontBuffer.PixelHeight, MinDepth = 0, MaxDepth = 1 } });
             d3d12CommandList.OMSetRenderTargets(new[] { d3d12DescriptorHeap_Rtv.GetCPUDescriptorHandleForHeapStart() }, 0, null);
             ////////////////////////////////////////////////////////////////////////////////
             // Create a vertex buffer to draw.
@@ -114,7 +116,7 @@ namespace RenderToy.WPF
                 var vertexbuffer = CreateVertexBuffer(transformedobject.NodePrimitive);
                 if (vertexbuffer == null) continue;
                 d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0);
-                d3d12CommandList.IASetVertexBuffers(0, new[] { new D3D12VertexBufferView { BufferLocation = vertexbuffer.d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = vertexbuffer.size, StrideInBytes = (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) } });
+                d3d12CommandList.IASetVertexBuffers(0, new[] { new D3D12_VERTEX_BUFFER_VIEW { BufferLocation = vertexbuffer.d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = vertexbuffer.size, StrideInBytes = (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) } });
                 d3d12CommandList.DrawInstanced((uint)vertexbuffer.length, 1, 0, 0);
             }
             d3d12CommandList.Close();
@@ -155,7 +157,7 @@ namespace RenderToy.WPF
                 var verticesout = DirectXHelper.ConvertToXYZNorDiffuseTex1(primitive);
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * verticesout.Length);
-                var d3d12ResourceDesc_Buffer = new D3D12ResourceDesc();
+                var d3d12ResourceDesc_Buffer = new D3D12_RESOURCE_DESC();
                 d3d12ResourceDesc_Buffer.Dimension = D3D12_RESOURCE_DIMENSION.D3D12_RESOURCE_DIMENSION_BUFFER;
                 d3d12ResourceDesc_Buffer.Width = size;
                 d3d12ResourceDesc_Buffer.Height = 1;
@@ -165,7 +167,7 @@ namespace RenderToy.WPF
                 d3d12ResourceDesc_Buffer.Format = RenderToyCOM.DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
                 d3d12ResourceDesc_Buffer.Layout = D3D12_TEXTURE_LAYOUT.D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
                 d3d12ResourceDesc_Buffer.Flags = D3D12_RESOURCE_FLAGS.D3D12_RESOURCE_FLAG_NONE;
-                var d3d12HeapProperties_Upload = new D3D12HeapProperties { Type = D3D12_HEAP_TYPE.D3D12_HEAP_TYPE_UPLOAD, CPUPageProperty = D3D12_CPU_PAGE_PROPERTY.D3D12_CPU_PAGE_PROPERTY_UNKNOWN, MemoryPoolPreference = D3D12_MEMORY_POOL.D3D12_MEMORY_POOL_UNKNOWN };
+                var d3d12HeapProperties_Upload = new D3D12_HEAP_PROPERTIES { Type = D3D12_HEAP_TYPE.D3D12_HEAP_TYPE_UPLOAD, CPUPageProperty = D3D12_CPU_PAGE_PROPERTY.D3D12_CPU_PAGE_PROPERTY_UNKNOWN, MemoryPoolPreference = D3D12_MEMORY_POOL.D3D12_MEMORY_POOL_UNKNOWN };
                 var d3d12Resource_Buffer = d3d12Device.CreateCommittedResource(d3d12HeapProperties_Upload, D3D12_HEAP_FLAGS.D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, d3d12ResourceDesc_Buffer, D3D12_RESOURCE_STATES.D3D12_RESOURCE_STATE_GENERIC_READ, null);
                 IntPtr fillvertex = d3d12Resource_Buffer.Map(0);
                 unsafe
@@ -181,8 +183,8 @@ namespace RenderToy.WPF
             wpfFrontBuffer = new WriteableBitmap((int)availableSize.Width, (int)availableSize.Height, 0, 0, PixelFormats.Bgra32, null);
             ////////////////////////////////////////////////////////////////////////////////
             // Create RenderTarget.
-            var d3d12HeapProperties_Writeback = new D3D12HeapProperties { Type = D3D12_HEAP_TYPE.D3D12_HEAP_TYPE_CUSTOM, CPUPageProperty = D3D12_CPU_PAGE_PROPERTY.D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, MemoryPoolPreference = D3D12_MEMORY_POOL.D3D12_MEMORY_POOL_L0 };
-            var d3d12ResourceDesc_RenderTarget = new D3D12ResourceDesc();
+            var d3d12HeapProperties_Writeback = new D3D12_HEAP_PROPERTIES { Type = D3D12_HEAP_TYPE.D3D12_HEAP_TYPE_CUSTOM, CPUPageProperty = D3D12_CPU_PAGE_PROPERTY.D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, MemoryPoolPreference = D3D12_MEMORY_POOL.D3D12_MEMORY_POOL_L0 };
+            var d3d12ResourceDesc_RenderTarget = new D3D12_RESOURCE_DESC();
             d3d12ResourceDesc_RenderTarget.Dimension = D3D12_RESOURCE_DIMENSION.D3D12_RESOURCE_DIMENSION_TEXTURE2D;
             d3d12ResourceDesc_RenderTarget.Width = (ulong)wpfFrontBuffer.PixelWidth;
             d3d12ResourceDesc_RenderTarget.Height = (uint)wpfFrontBuffer.PixelHeight;
