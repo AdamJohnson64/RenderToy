@@ -33,78 +33,53 @@
             </MenuItem>
         </Menu>
         <rendertoy:PerformanceView DockPanel.Dock="Top" Height="64"/>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="192"/>
-                <ColumnDefinition Width="4"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <TabControl x:Name="TabControlLeft" Grid.Column="0" rendertoy:DockTarget.DockTarget="True">
-                <!-- ==================== Scene Graph ==================== -->
-                <TabItem Header="Scene">
-                    <TreeView ItemsSource="{Binding Path=Scene.Children}">
-                        <TreeView.ItemTemplate>
-                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                                <TextBlock Text="{Binding Name}"/>
-                                <HierarchicalDataTemplate.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" />
-                                    </DataTemplate>
-                                </HierarchicalDataTemplate.ItemTemplate>
-                            </HierarchicalDataTemplate>
-                        </TreeView.ItemTemplate>
-                    </TreeView>
-                </TabItem>
-            </TabControl>
-            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
-            <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
-                <!-- ==================== Software Render ==================== -->
-                <TabItem Header="Software Render">
-                    <rendertoy:ViewSoftwareCustomizable rendertoy:AttachedView.Scene="{Binding Path=Scene}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}"/>
-                </TabItem>
-                <!-- ==================== Texture View ==================== -->
-                <TabItem Header="Textures">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="192"/>
-                            <ColumnDefinition Width="4"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <!-- ==================== Material List ==================== -->
-                        <TabControl Grid.Column="0">
-                            <TabItem Header="Materials">
-                                <ListView x:Name="MaterialList" DockPanel.Dock="Left" ItemsSource="{Binding Path=Materials}" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource GraphNodeTemplate}">
-                                    <ListView.ItemContainerStyle>
-                                        <Style TargetType="ListViewItem">
-                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                        </Style>
-                                    </ListView.ItemContainerStyle>
-                                </ListView>
-                            </TabItem>
-                        </TabControl>
-                        <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
-                        <!-- ==================== Material Views ==================== -->
-                        <TabControl Grid.Column="2">
-                            <TabItem Header="Graph" DataContext="{Binding ElementName=MaterialList, Path=SelectedItem}">
-                                <rendertoy:ViewZoom x:Name="ViewZoomGraph">
-                                    <rendertoy:ViewMaterialGraph Root="{Binding}" NodeTemplate="{StaticResource GraphNode}"/>
-                                </rendertoy:ViewZoom>
-                            </TabItem>
-                            <TabItem Header="Preview" DataContext="{Binding ElementName=MaterialList, Path=SelectedItem}">
-                                <rendertoy:ViewZoom x:Name="ViewZoomPreview">
-                                    <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                                </rendertoy:ViewZoom>
-                            </TabItem>
-                            <TabItem Header="MSIL">
-                                <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem,Converter={StaticResource MaterialToMSILConverter}}"/>
-                            </TabItem>
-                            <TabItem Header="HLSL">
-                                <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem,Converter={StaticResource MaterialToHLSLConverter}}"/>
-                            </TabItem>
-                        </TabControl>
-                    </Grid>
-                </TabItem>
-            </TabControl>
-        </Grid>
+        <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
+            <!-- ==================== Software Render ==================== -->
+            <TabItem Header="Software Render">
+                <rendertoy:ViewSoftwareCustomizable rendertoy:AttachedView.Scene="{Binding Path=Scene}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}"/>
+            </TabItem>
+            <!-- ==================== Texture View ==================== -->
+            <TabItem Header="Textures">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="192"/>
+                        <ColumnDefinition Width="4"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- ==================== Material List ==================== -->
+                    <TabControl Grid.Column="0">
+                        <TabItem Header="Materials">
+                            <ListView x:Name="MaterialList" DockPanel.Dock="Left" ItemsSource="{Binding Path=Materials}" IsSynchronizedWithCurrentItem="True" ItemTemplate="{StaticResource GraphNodeTemplate}">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                            </ListView>
+                        </TabItem>
+                    </TabControl>
+                    <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                    <!-- ==================== Material Views ==================== -->
+                    <TabControl Grid.Column="2">
+                        <TabItem Header="Graph" DataContext="{Binding ElementName=MaterialList, Path=SelectedItem}">
+                            <rendertoy:ViewZoom x:Name="ViewZoomGraph">
+                                <rendertoy:ViewMaterialGraph Root="{Binding}" NodeTemplate="{StaticResource GraphNode}"/>
+                            </rendertoy:ViewZoom>
+                        </TabItem>
+                        <TabItem Header="Preview" DataContext="{Binding ElementName=MaterialList, Path=SelectedItem}">
+                            <rendertoy:ViewZoom x:Name="ViewZoomPreview">
+                                <rendertoy:ViewMaterial MaterialSource="{Binding}" MaterialWidth="256" MaterialHeight="256" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                            </rendertoy:ViewZoom>
+                        </TabItem>
+                        <TabItem Header="MSIL">
+                            <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem,Converter={StaticResource MaterialToMSILConverter}}"/>
+                        </TabItem>
+                        <TabItem Header="HLSL">
+                            <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem,Converter={StaticResource MaterialToHLSLConverter}}"/>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>
