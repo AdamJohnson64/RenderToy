@@ -332,7 +332,7 @@ namespace RenderToy
         }
     }
     [TestClass]
-    public class MeshPLYTests
+    public class MeshTests
     {
         [TestMethod]
         public void LoadAllBPTFilesTest()

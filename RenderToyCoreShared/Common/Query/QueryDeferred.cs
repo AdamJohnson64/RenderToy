@@ -25,7 +25,7 @@ namespace RenderToy.QueryEngine
                 });
                 return query;
             }
-            internal static IQuery<TResult> CreateInner<T1, TResult>(Func<T1, TResult> generator, IQuery<T1> arg1)
+            internal static IQuery<TResult> CreateInner<T1>(Func<T1, TResult> generator, IQuery<T1> arg1)
             {
                 var query = new QueryDeferred<TResult>();
                 query.Generator = () => generator(arg1.Result);
