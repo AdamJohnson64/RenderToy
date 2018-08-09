@@ -1,4 +1,9 @@
-﻿using RenderToyCOM;
+﻿////////////////////////////////////////////////////////////////////////////////
+// RenderToy - A bit of history that's now a bit of silicon...
+// Copyright (C) Adam Johnson 2018
+////////////////////////////////////////////////////////////////////////////////
+
+using RenderToyCOM;
 using RenderToy.Diagnostics;
 using RenderToy.DocumentModel;
 using RenderToy.Materials;
@@ -15,7 +20,7 @@ using System.Runtime.InteropServices;
 
 namespace RenderToy.DirectX
 {
-    class DirectX11Helper
+    class Direct3D11Helper
     {
         public static ID3D11Device d3d11Device = Direct3D11.D3D11CreateDevice();
         public static ID3D11InputLayout d3d11InputLayout;
@@ -30,7 +35,7 @@ namespace RenderToy.DirectX
             unsafe
             {
                 D3D11_SUBRESOURCE_DATA *subresource = null;
-                DirectX11Helper.d3d11Device.CreateBuffer(new D3D11_BUFFER_DESC { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, ref *subresource, ref d3d11constantbufferGPU);
+                Direct3D11Helper.d3d11Device.CreateBuffer(new D3D11_BUFFER_DESC { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, ref *subresource, ref d3d11constantbufferGPU);
             }
             // We're collecting constant buffers because DX11 hates to do actual work.
             var constantbufferlist = new[] { d3d11constantbufferGPU };
@@ -61,7 +66,7 @@ namespace RenderToy.DirectX
                     var thistransformindex = scene.IndexToTransform[i];
                     var thisprimitive = scene.TableNodePrimitive[scene.IndexToNodePrimitive[i]];
                     var thismaterial = scene.TableNodeMaterial[scene.IndexToNodeMaterial[i]];
-                    var vertexbuffer = DirectX11Helper.CreateVertexBuffer(thisprimitive);
+                    var vertexbuffer = Direct3D11Helper.CreateVertexBuffer(thisprimitive);
                     if (vertexbuffer == null) continue;
                     var objmat = thismaterial as LoaderOBJ.OBJMaterial;
                     var collecttextures = new[]
@@ -142,7 +147,7 @@ namespace RenderToy.DirectX
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
                     ID3D11ShaderResourceView srview = null;
-                    DirectX11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
+                    Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
                     return srview;
                 }
                 else
@@ -164,14 +169,14 @@ namespace RenderToy.DirectX
                     pInitialData.SysMemPitch = (uint)(4 * asimage.GetImageWidth());
                     pInitialData.SysMemSlicePitch = (uint)(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
                     ID3D11Texture2D texture = null;
-                    DirectX11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref texture);
+                    Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref texture);
                     var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
                     vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
                     vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D10_SRV_DIMENSION_TEXTURE2D;
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = 1;
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
                     ID3D11ShaderResourceView srview = null;
-                    DirectX11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
+                    Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
                     return srview;
                 }
             });
@@ -185,7 +190,7 @@ namespace RenderToy.DirectX
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * verticesout.Length);
                 ID3D11Buffer d3d11Buffer = null;
-                DirectX11Helper.d3d11Device.CreateBuffer(
+                Direct3D11Helper.d3d11Device.CreateBuffer(
                     new D3D11_BUFFER_DESC { ByteWidth = size, Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = (uint)Marshal.SizeOf(typeof(XYZ)) },
                     new D3D11_SUBRESOURCE_DATA { pSysMem = UnmanagedCopy.Create(verticesout), SysMemPitch = 0, SysMemSlicePitch = 0 },
                     ref d3d11Buffer);
@@ -197,7 +202,7 @@ namespace RenderToy.DirectX
             public ID3D11Buffer d3d11Buffer;
             public uint vertexCount;
         }
-        static DirectX11Helper()
+        static Direct3D11Helper()
         {
             var inputelements = new[]
             {

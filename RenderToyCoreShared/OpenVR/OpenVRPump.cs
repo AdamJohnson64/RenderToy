@@ -40,8 +40,8 @@ namespace RenderToy
             ID3D11DepthStencilView d3d11DepthStencilView_EyeRight = null;
             {
                 ID3D11ClassLinkage linkage = null;
-                DirectX11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, linkage, ref d3d11VertexShader);
-                DirectX11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, linkage, ref d3d11PixelShader);
+                Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, linkage, ref d3d11VertexShader);
+                Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, linkage, ref d3d11PixelShader);
                 var d3d11Texture2DDesc_RT_Eye = new D3D11_TEXTURE2D_DESC { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, SampleDesc = new DXGI_SAMPLE_DESC { Count = 1, Quality = 0 }, Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET | (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE, CPUAccessFlags = 0 };
                 var d3d11Texture2DDesc_DS_Eye = new D3D11_TEXTURE2D_DESC { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT, SampleDesc = new DXGI_SAMPLE_DESC { Count = 1, Quality = 0 }, Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL, CPUAccessFlags = 0 };
                 var d3d11RenderTargetView_RT_Eye = new D3D11_RENDER_TARGET_VIEW_DESC { Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, ViewDimension = D3D11_RTV_DIMENSION.D3D11_RTV_DIMENSION_TEXTURE2D };
@@ -51,18 +51,18 @@ namespace RenderToy
                 unsafe
                 {
                     D3D11_SUBRESOURCE_DATA *pInitialData = null;
-                    DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, ref *pInitialData, ref d3d11Texture2D_RT_EyeLeft);
-                    DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS_Eye, ref *pInitialData, ref d3d11Texture2D_DS_EyeLeft);
-                    DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, ref *pInitialData, ref d3d11Texture2D_RT_EyeRight);
-                    DirectX11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS_Eye, ref *pInitialData, ref d3d11Texture2D_DS_EyeRight);
+                    Direct3D11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, ref *pInitialData, ref d3d11Texture2D_RT_EyeLeft);
+                    Direct3D11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS_Eye, ref *pInitialData, ref d3d11Texture2D_DS_EyeLeft);
+                    Direct3D11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_RT_Eye, ref *pInitialData, ref d3d11Texture2D_RT_EyeRight);
+                    Direct3D11Helper.d3d11Device.CreateTexture2D(d3d11Texture2DDesc_DS_Eye, ref *pInitialData, ref d3d11Texture2D_DS_EyeRight);
                 }
-                DirectX11Helper.d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeLeft, d3d11RenderTargetView_RT_Eye, ref d3d11RenderTargetView_EyeLeft);
-                DirectX11Helper.d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeRight, d3d11RenderTargetView_RT_Eye, ref d3d11RenderTargetView_EyeRight);
-                DirectX11Helper.d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS_EyeLeft, d3d11DepthStencilView_DS_Eye, ref d3d11DepthStencilView_EyeLeft);
-                DirectX11Helper.d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS_EyeRight, d3d11DepthStencilView_DS_Eye, ref d3d11DepthStencilView_EyeRight);
+                Direct3D11Helper.d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeLeft, d3d11RenderTargetView_RT_Eye, ref d3d11RenderTargetView_EyeLeft);
+                Direct3D11Helper.d3d11Device.CreateRenderTargetView(d3d11Texture2D_RT_EyeRight, d3d11RenderTargetView_RT_Eye, ref d3d11RenderTargetView_EyeRight);
+                Direct3D11Helper.d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS_EyeLeft, d3d11DepthStencilView_DS_Eye, ref d3d11DepthStencilView_EyeLeft);
+                Direct3D11Helper.d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS_EyeRight, d3d11DepthStencilView_DS_Eye, ref d3d11DepthStencilView_EyeRight);
             }
-            var Execute_RenderSceneLeft = DirectX11Helper.CreateSceneDraw(scene);
-            var Execute_RenderSceneRight = DirectX11Helper.CreateSceneDraw(scene);
+            var Execute_RenderSceneLeft = Direct3D11Helper.CreateSceneDraw(scene);
+            var Execute_RenderSceneRight = Direct3D11Helper.CreateSceneDraw(scene);
             return () =>
             {
                 openvr.Update();
@@ -76,12 +76,12 @@ namespace RenderToy
                 RenderToyEventSource.Default.MarkerEnd("Update");
                 RenderToyEventSource.Default.MarkerBegin("Prepare All RTs");
                 ID3D11DeviceContext context_old = null;
-                DirectX11Helper.d3d11Device.GetImmediateContext(ref context_old);
+                Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
                 var context = (ID3D11DeviceContext4)context_old;
                 Task<ID3D11CommandList> do_left = Task.Factory.StartNew(() =>
                 {
                     ID3D11DeviceContext deferred_left_old = null;
-                    DirectX11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
+                    Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
                     ID3D11DeviceContext4 deferred_left = (ID3D11DeviceContext4)deferred_left_old;
                     ID3D11ClassInstance classInstance = null;
                     deferred_left.VSSetShader(d3d11VertexShader, classInstance, 0);
@@ -103,7 +103,7 @@ namespace RenderToy
                 Task<ID3D11CommandList> do_right = Task.Factory.StartNew(() =>
                 {
                     ID3D11DeviceContext deferred_right_old = null;
-                    DirectX11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_right_old);
+                    Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_right_old);
                     ID3D11DeviceContext4 deferred_right = (ID3D11DeviceContext4)deferred_right_old;
                     ID3D11ClassInstance classInstance = null;
                     deferred_right.VSSetShader(d3d11VertexShader, ref classInstance, 0);

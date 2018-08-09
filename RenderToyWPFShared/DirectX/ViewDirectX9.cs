@@ -10,108 +10,52 @@ using RenderToy.Meshes;
 using RenderToy.ModelFormat;
 using RenderToy.Primitives;
 using RenderToy.Shaders;
-using RenderToy.Textures;
-using RenderToy.Utility;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
 
 namespace RenderToy.WPF
 {
-    public abstract class ViewDirectX9Base : FrameworkElement
+    // Use a D3DImage to push the buffer directly to WDDM.
+    // No copy is made; Fast but not always viable.
+    public class ViewD3DSource : FrameworkElement
     {
-        #region - Section : Direct3D Resource Factory -
-        static readonly string GeneratedTextureToken = "DirectX9Texture";
-        protected Direct3DTexture9 CreateTexture(IMaterial material, IMaterial missing)
+        protected override void OnRender(DrawingContext drawingContext)
         {
-            if (material == null) material = missing;
-            if (material == null) material = StockMaterials.Missing;
-            return MementoServer.Default.Get(material, GeneratedTextureToken, () =>
-            {
-                var astexture = material as ITexture;
-                if (astexture != null)
-                {
-                    var level0 = astexture.GetSurface(0, 0);
-                    if (level0 == null) return null;
-                    var texture = device.CreateTexture((uint)level0.GetImageWidth(), (uint)level0.GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.Default, null);
-                    var texturescratch = device.CreateTexture((uint)level0.GetImageWidth(), (uint)level0.GetImageHeight(), (uint)astexture.GetTextureLevelCount(), 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory, null);
-                    for (int level = 0; level < astexture.GetTextureLevelCount(); ++level)
-                    {
-                        D3DLockedRect lockit = texturescratch.LockRect((uint)level);
-                        var thislevel = astexture.GetSurface(0, level);
-                        DirectXHelper.ConvertToBitmap(thislevel, lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
-                        texturescratch.UnlockRect((uint)level);
-                    }
-                    device.UpdateTexture(texturescratch, texture);
-                    return texture;
-                }
-                else
-                {
-                    var asimage = DirectXHelper.GetImageConverter(material, 512, 512);
-                    var texture = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Default, null);
-                    var texturescratch = device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory, null);
-                    D3DLockedRect lockit = texturescratch.LockRect(0);
-                    DirectXHelper.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
-                    texturescratch.UnlockRect(0);
-                    device.UpdateTexture(texturescratch, texture);
-                    return texture;
-                }
-            });
+            drawingContext.DrawImage(Target, new Rect(0, 0, ActualWidth, ActualHeight));
         }
-        protected struct VertexBufferInfo
+        protected override Size MeasureOverride(Size availableSize)
         {
-            public Direct3DVertexBuffer9 VertexBuffer;
-            public int PrimitiveCount;
+            return base.MeasureOverride(availableSize);
         }
-        static readonly string GeneratedVertexBufferToken = "DirectX9VertexBuffer";
-        protected VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
-        {
-            if (primitive == null) return new VertexBufferInfo { PrimitiveCount = 0, VertexBuffer = null };
-            return MementoServer.Default.Get(primitive, GeneratedVertexBufferToken, () =>
-            {
-                var data = DirectXHelper.ConvertToXYZNorDiffuseTex1(primitive);
-                var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * data.Length);
-                VertexBufferInfo buffer = new VertexBufferInfo();
-                if (data.Length > 0)
-                {
-                    buffer.VertexBuffer = device.CreateVertexBuffer(size, 0, 0U, D3DPool.Default, null);
-                    var locked = buffer.VertexBuffer.Lock(0U, size, 0U);
-                    unsafe
-                    {
-                        Buffer.MemoryCopy(Marshal.UnsafeAddrOfPinnedArrayElement(data, 0).ToPointer(), locked.ToPointer(), size, size);
-                    }
-                    buffer.VertexBuffer.Unlock();
-                }
-                buffer.PrimitiveCount = data.Length / 3;
-                return buffer;
-            });
-        }
-        #endregion
+        protected D3DImage Target = new D3DImage();
+    }
+    public abstract class ViewDirectX9Base : ViewD3DSource
+    {
         #region - Section : Overrides -
         protected abstract void RenderD3D();
         protected override void OnRender(DrawingContext drawingContext)
         {
             if (rendertarget == null || depthstencil == null) return;
-            if (d3dimage.TryLock(new Duration(TimeSpan.FromMilliseconds(500))))
+            if (Target.TryLock(new Duration(TimeSpan.FromMilliseconds(500))))
             {
-                device.SetRenderTarget(0, rendertarget);
-                device.SetDepthStencilSurface(depthstencil);
-                device.BeginScene();
-                device.Clear(D3DClear.Target | D3DClear.ZBuffer, 0x00000000, 1.0f, 0);
-                device.SetRenderState(D3DRenderState.ZEnable, 1U);
-                device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
-                device.SetRenderState(D3DRenderState.Lighting, 0);
+                Direct3D9Helper.device.SetRenderTarget(0, rendertarget);
+                Direct3D9Helper.device.SetDepthStencilSurface(depthstencil);
+                Direct3D9Helper.device.BeginScene();
+                Direct3D9Helper.device.Clear(D3DClear.Target | D3DClear.ZBuffer, 0x00000000, 1.0f, 0);
+                Direct3D9Helper.device.SetRenderState(D3DRenderState.ZEnable, 1U);
+                Direct3D9Helper.device.SetRenderState(D3DRenderState.CullMode, (uint)D3DCullMode.None);
+                Direct3D9Helper.device.SetRenderState(D3DRenderState.Lighting, 0);
                 for (int i = 0; i < 8; ++i)
                 {
-                    device.SetSamplerState((uint)i, D3DSamplerState.MagFilter, (uint)D3DTextureFilter.Anisotropic);
-                    device.SetSamplerState((uint)i, D3DSamplerState.MinFilter, (uint)D3DTextureFilter.Anisotropic);
-                    device.SetSamplerState((uint)i, D3DSamplerState.MipFilter, (uint)D3DTextureFilter.Linear);
-                    device.SetSamplerState((uint)i, D3DSamplerState.MaxAnisotropy, (uint)16);
+                    Direct3D9Helper.device.SetSamplerState((uint)i, D3DSamplerState.MagFilter, (uint)D3DTextureFilter.Anisotropic);
+                    Direct3D9Helper.device.SetSamplerState((uint)i, D3DSamplerState.MinFilter, (uint)D3DTextureFilter.Anisotropic);
+                    Direct3D9Helper.device.SetSamplerState((uint)i, D3DSamplerState.MipFilter, (uint)D3DTextureFilter.Linear);
+                    Direct3D9Helper.device.SetSamplerState((uint)i, D3DSamplerState.MaxAnisotropy, (uint)16);
                 }
-                var vertexdeclaration = device.CreateVertexDeclaration(new D3DVertexElement9[] {
+                var vertexdeclaration = Direct3D9Helper.device.CreateVertexDeclaration(new D3DVertexElement9[] {
                     new D3DVertexElement9 { Stream = 0, Offset = 0, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Position, UsageIndex = 0 },
                     new D3DVertexElement9 { Stream = 0, Offset = 12, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Normal, UsageIndex = 0 },
                     new D3DVertexElement9 { Stream = 0, Offset = 24, Type = D3DDeclType.D3DColor, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Color, UsageIndex = 0 },
@@ -119,29 +63,25 @@ namespace RenderToy.WPF
                     new D3DVertexElement9 { Stream = 0, Offset = 36, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Tangent, UsageIndex = 0 },
                     new D3DVertexElement9 { Stream = 0, Offset = 48, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Binormal, UsageIndex = 0 },
                 });
-                device.SetVertexDeclaration(vertexdeclaration);
+                Direct3D9Helper.device.SetVertexDeclaration(vertexdeclaration);
                 RenderD3D();
-                device.EndScene();
-                d3dimage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, rendertarget.ManagedPtr);
-                d3dimage.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
+                Direct3D9Helper.device.EndScene();
+                Target.SetBackBuffer(D3DResourceType.IDirect3DSurface9, rendertarget.ManagedPtr);
+                Target.AddDirtyRect(new Int32Rect(0, 0, render_width, render_height));
             }
-            d3dimage.Unlock();
-            drawingContext.DrawImage(d3dimage, new Rect(0, 0, ActualWidth, ActualHeight));
+            Target.Unlock();
+            drawingContext.DrawImage(Target, new Rect(0, 0, ActualWidth, ActualHeight));
         }
         protected override Size MeasureOverride(Size availableSize)
         {
             render_width = (int)availableSize.Width;
             render_height = (int)availableSize.Height;
-            rendertarget = device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 0, null);
-            depthstencil = device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 0, null);
+            rendertarget = Direct3D9Helper.device.CreateRenderTarget((uint)render_width, (uint)render_height, D3DFormat.A8R8G8B8, D3DMultisample.None, 0, 0, null);
+            depthstencil = Direct3D9Helper.device.CreateDepthStencilSurface((uint)render_width, (uint)render_height, D3DFormat.D24X8, D3DMultisample.None, 0, 0, null);
             return base.MeasureOverride(availableSize);
         }
         #endregion
         #region - Section : Private Fields -
-        static readonly Direct3D9Ex d3d = new Direct3D9Ex();
-        protected static readonly Form form = new Form();
-        protected static readonly Direct3DDevice9Ex device = d3d.CreateDevice(form.Handle);
-        D3DImage d3dimage = new D3DImage();
         Direct3DSurface9 rendertarget;
         Direct3DSurface9 depthstencil;
         int render_width;
@@ -155,12 +95,12 @@ namespace RenderToy.WPF
             var mvp = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             foreach (var transformedobject in AttachedView.GetScene(this))
             {
-                var createdvertexbuffer = CreateVertexBuffer(transformedobject.NodePrimitive);
+                var createdvertexbuffer = Direct3D9Helper.CreateVertexBuffer(transformedobject.NodePrimitive);
                 if (createdvertexbuffer.VertexBuffer == null) continue;
-                device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
-                device.SetTexture(0, CreateTexture(transformedobject.NodeMaterial, null));
-                device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * mvp), 0));
-                device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
+                Direct3D9Helper.device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
+                Direct3D9Helper.device.SetTexture(0, Direct3D9Helper.CreateTexture(transformedobject.NodeMaterial, null));
+                Direct3D9Helper.device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * mvp), 0));
+                Direct3D9Helper.device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
             }
         }
     }
@@ -181,10 +121,10 @@ namespace RenderToy.WPF
         protected override void RenderD3D()
         {
             if (VertexShader == null || PixelShader == null) return;
-            var vertexshader = device.CreateVertexShader(VertexShader);
-            var pixelshader = device.CreatePixelShader(PixelShader);
-            device.SetVertexShader(vertexshader);
-            device.SetPixelShader(pixelshader);
+            var vertexshader = Direct3D9Helper.device.CreateVertexShader(VertexShader);
+            var pixelshader = Direct3D9Helper.device.CreatePixelShader(PixelShader);
+            Direct3D9Helper.device.SetVertexShader(vertexshader);
+            Direct3D9Helper.device.SetPixelShader(pixelshader);
             var transformCamera = AttachedView.GetTransformCamera(this);
             var transformView = AttachedView.GetTransformView(this);
             var transformProjection = AttachedView.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
@@ -194,20 +134,20 @@ namespace RenderToy.WPF
                 if (transformedobject.NodePrimitive == null) continue;
                 var transformModel = transformedobject.Transform;
                 var transformModelViewProjection = transformModel * transformViewProjection;
-                var createdvertexbuffer = CreateVertexBuffer(transformedobject.NodePrimitive);
+                var createdvertexbuffer = Direct3D9Helper.CreateVertexBuffer(transformedobject.NodePrimitive);
                 if (createdvertexbuffer.VertexBuffer == null) continue;
-                device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
+                Direct3D9Helper.device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
                 var objmat = transformedobject.NodeMaterial as LoaderOBJ.OBJMaterial;
-                device.SetTexture(0, CreateTexture(objmat == null ? transformedobject.NodeMaterial : objmat.map_Kd, StockMaterials.PlasticWhite));
-                device.SetTexture(1, CreateTexture(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite));
-                device.SetTexture(2, CreateTexture(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue));
-                device.SetTexture(3, CreateTexture(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite));
-                device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformCamera), 0), 4);
-                device.SetVertexShaderConstantF(4, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformModel), 0), 4);
-                device.SetVertexShaderConstantF(8, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformView), 0), 4);
-                device.SetVertexShaderConstantF(12, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformProjection), 0), 4);
-                device.SetVertexShaderConstantF(16, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0), 4);
-                device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
+                Direct3D9Helper.device.SetTexture(0, Direct3D9Helper.CreateTexture(objmat == null ? transformedobject.NodeMaterial : objmat.map_Kd, StockMaterials.PlasticWhite));
+                Direct3D9Helper.device.SetTexture(1, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite));
+                Direct3D9Helper.device.SetTexture(2, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue));
+                Direct3D9Helper.device.SetTexture(3, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite));
+                Direct3D9Helper.device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformCamera), 0), 4);
+                Direct3D9Helper.device.SetVertexShaderConstantF(4, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformModel), 0), 4);
+                Direct3D9Helper.device.SetVertexShaderConstantF(8, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformView), 0), 4);
+                Direct3D9Helper.device.SetVertexShaderConstantF(12, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformProjection), 0), 4);
+                Direct3D9Helper.device.SetVertexShaderConstantF(16, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0), 4);
+                Direct3D9Helper.device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
             }
         }
     }
