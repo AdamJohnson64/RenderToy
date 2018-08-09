@@ -14,7 +14,7 @@ namespace RenderToy.QueryEngine
     {
         class QueryDeferred<TResult> : Query, IQuery<TResult>
         {
-            public static IQuery<TResult> Create(Func<TResult> generator)
+            internal static IQuery<TResult> CreateInner(Func<TResult> generator)
             {
                 var query = new QueryDeferred<TResult>();
                 query.Generator = generator;
@@ -25,9 +25,9 @@ namespace RenderToy.QueryEngine
                 });
                 return query;
             }
-            public static IQuery<TMyResult> Create<T1, TMyResult>(Func<T1, TMyResult> generator, IQuery<T1> arg1)
+            internal static IQuery<TResult> CreateInner<T1, TResult>(Func<T1, TResult> generator, IQuery<T1> arg1)
             {
-                var query = new QueryDeferred<TMyResult>();
+                var query = new QueryDeferred<TResult>();
                 query.Generator = () => generator(arg1.Result);
                 query.DependsOn.Add((Query)arg1);
                 ((Query)arg1).Subscribers.Add(new WeakReference<QueryChangedHandler>(query.HandleQueryChanged));

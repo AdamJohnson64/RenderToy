@@ -21,13 +21,13 @@ namespace RenderToy.Expressions
         public ExpressionFlatten(Expression<TDelegate> func)
         {
             Original = func;
-            Replaced = ExpressionReplaceCall<TDelegate>.Replace(func);
+            Replaced = ExpressionReplaceCall.Replace(func);
             Call = Replaced.Compile();
         }
         public readonly Expression<TDelegate> Original;
         public readonly Expression<TDelegate> Replaced;
         public readonly TDelegate Call;
-        class ExpressionReplaceCall<TDelegate> : ExpressionVisitor
+        class ExpressionReplaceCall : ExpressionVisitor
         {
             public static Expression<TDelegate> Replace(Expression<TDelegate> expression)
             {
@@ -50,7 +50,7 @@ namespace RenderToy.Expressions
             }
             static Expression Replace(Expression expression)
             {
-                return new ExpressionReplaceCall<TDelegate>().Visit(expression);
+                return new ExpressionReplaceCall().Visit(expression);
             }
             protected override Expression VisitMethodCall(MethodCallExpression node)
             {

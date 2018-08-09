@@ -46,7 +46,7 @@ namespace RenderToy.QueryEngine
         /// <returns>A new query object.</returns>
         public static IQuery<TResult> Create<TResult>(Func<TResult> func)
         {
-            return (IQuery<TResult>)GetExisting((Query)QueryDeferred<TResult>.Create(func));
+            return (IQuery<TResult>)GetExisting((Query)QueryDeferred<TResult>.CreateInner(func));
         }
         /// <summary>
         /// Create a deferred query which will be populated asynchronously with the result of a function (called with the result of another query).
@@ -58,7 +58,7 @@ namespace RenderToy.QueryEngine
         /// <returns>A new query object.</returns>
         public static IQuery<TResult> Create<T1, TResult>(Func<T1, TResult> func, IQuery<T1> arg1)
         {
-            var query = (IQuery<TResult>)GetExisting((Query)QueryDeferred<TResult>.Create<T1, TResult>(func, arg1));
+            var query = (IQuery<TResult>)GetExisting((Query)QueryDeferred<TResult>.CreateInner<T1, TResult>(func, arg1));
             arg1.AddListener(((Query)query).HandleQueryChanged);
             return query;
         }
