@@ -25,14 +25,17 @@ namespace RenderToy.DirectX
         {
             return (constants) =>
             {
-                var transformViewProjection = (Matrix3D)constants["transformViewProjection"];
+                var transformAspect = (Matrix3D)constants["transformAspect"];
+                var transformView = (Matrix3D)constants["transformView"];
+                var transformProjection = (Matrix3D)constants["transformProjection"];
+                var transformTail = transformView * transformProjection * transformAspect;
                 foreach (var transformedobject in scene)
                 {
                     var createdvertexbuffer = Direct3D9Helper.CreateVertexBuffer(transformedobject.NodePrimitive);
                     if (createdvertexbuffer.VertexBuffer == null) continue;
                     device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
                     device.SetTexture(0, Direct3D9Helper.CreateTexture(transformedobject.NodeMaterial, null));
-                    device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * transformViewProjection), 0));
+                    device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * transformTail), 0));
                     device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
                 }
             };
@@ -41,15 +44,16 @@ namespace RenderToy.DirectX
         {
             return (constants) =>
             {
+                var transformAspect = (Matrix3D)constants["transformAspect"];
                 var transformCamera = (Matrix3D)constants["transformCamera"];
                 var transformView = (Matrix3D)constants["transformView"];
                 var transformProjection = (Matrix3D)constants["transformProjection"];
-                var transformViewProjection = (Matrix3D)constants["transformViewProjection"];
+                var transformTail = transformView * transformProjection * transformAspect;
                 foreach (var transformedobject in scene)
                 {
                     if (transformedobject.NodePrimitive == null) continue;
                     var transformModel = transformedobject.Transform;
-                    var transformModelViewProjection = transformModel * transformViewProjection;
+                    var transformModelViewProjection = transformModel * transformTail;
                     var createdvertexbuffer = Direct3D9Helper.CreateVertexBuffer(transformedobject.NodePrimitive);
                     if (createdvertexbuffer.VertexBuffer == null) continue;
                     Direct3D9Helper.device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));

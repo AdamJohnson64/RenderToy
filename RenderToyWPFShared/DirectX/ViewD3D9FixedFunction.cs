@@ -13,15 +13,11 @@ namespace RenderToy.WPF
     {
         protected override void RenderD3D()
         {
-            var transformCamera = AttachedView.GetTransformCamera(this);
-            var transformView = AttachedView.GetTransformView(this);
-            var transformProjection = AttachedView.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
-            var transformViewProjection = transformView * transformProjection;
             var constants = new Dictionary<string, object>();
-            constants["transformCamera"] = transformCamera;
-            constants["transformView"] = transformView;
-            constants["transformProjection"] = transformProjection;
-            constants["transformViewProjection"] = transformViewProjection;
+            constants["transformAspect"] = Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            constants["transformCamera"] = AttachedView.GetTransformCamera(this);
+            constants["transformView"] = AttachedView.GetTransformView(this);
+            constants["transformProjection"] = AttachedView.GetTransformProjection(this);
             Direct3D9Helper.CreateSceneDrawFixedFunction(AttachedView.GetScene(this))(constants);
         }
     }

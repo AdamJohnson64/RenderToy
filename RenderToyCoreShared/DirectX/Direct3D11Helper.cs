@@ -42,15 +42,18 @@ namespace RenderToy.DirectX
             return (context, constants) =>
             {
                 var profilingName = (string)constants["profilingName"];
+                var transformAspect = (Matrix3D)constants["transformAspect"];
                 var transformCamera = (Matrix3D)constants["transformCamera"];
-                var transformViewProjection = (Matrix3D)constants["transformViewProjection"];
+                var transformView = (Matrix3D)constants["transformView"];
+                var transformProjection = (Matrix3D)constants["transformProjection"];
+                var transformTail = transformView * transformProjection * transformAspect;
                 string constantbufferblock = "Constant Buffer (" + profilingName + ")";
                 RenderToyEventSource.Default.MarkerBegin(constantbufferblock);
                 int COUNT_OBJECTS = scene.IndexToNodePrimitive.Count;
                 for (int i = 0; i < COUNT_OBJECTS; ++i)
                 {
                     Matrix3D transformModel = scene.TableTransform[i];
-                    var transformModelViewProjection = transformModel * transformViewProjection;
+                    var transformModelViewProjection = transformModel * transformTail;
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK, SIZEOF_MATRIX);
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformCamera), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 1 * SIZEOF_MATRIX, SIZEOF_MATRIX);
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
