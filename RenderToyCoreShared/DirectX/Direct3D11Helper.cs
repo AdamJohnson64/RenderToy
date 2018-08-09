@@ -23,10 +23,10 @@ namespace RenderToy.DirectX
     class Direct3D11Helper
     {
         public static ID3D11Device d3d11Device = Direct3D11.D3D11CreateDevice();
-        public static ID3D11InputLayout d3d11InputLayout;
-        public static ID3D11RasterizerState d3d11RasterizerState;
-        public static ID3D11SamplerState d3d11SamplerState;
-        public static Action<ID3D11DeviceContext4, Matrix3D, Matrix3D, string> CreateSceneDraw(SparseScene scene)
+        static ID3D11InputLayout d3d11InputLayout;
+        static ID3D11RasterizerState d3d11RasterizerState;
+        static ID3D11SamplerState d3d11SamplerState;
+        public static Action<ID3D11DeviceContext4, Dictionary<string, object>> CreateSceneDraw(SparseScene scene)
         {
             const int SIZEOF_CONSTANTBLOCK = 256;
             const int SIZEOF_MATRIX = 4 * 4 * 4;
@@ -39,9 +39,12 @@ namespace RenderToy.DirectX
             }
             // We're collecting constant buffers because DX11 hates to do actual work.
             var constantbufferlist = new[] { d3d11constantbufferGPU };
-            return (context, transformCamera, transformViewProjection, name) =>
+            return (context, constants) =>
             {
-                string constantbufferblock = "Constant Buffer (" + name + ")";
+                var profilingName = (string)constants["profilingName"];
+                var transformCamera = (Matrix3D)constants["transformCamera"];
+                var transformViewProjection = (Matrix3D)constants["transformViewProjection"];
+                string constantbufferblock = "Constant Buffer (" + profilingName + ")";
                 RenderToyEventSource.Default.MarkerBegin(constantbufferblock);
                 int COUNT_OBJECTS = scene.IndexToNodePrimitive.Count;
                 for (int i = 0; i < COUNT_OBJECTS; ++i)
@@ -53,7 +56,7 @@ namespace RenderToy.DirectX
                     Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
                 }
                 RenderToyEventSource.Default.MarkerEnd(constantbufferblock);
-                string commandbufferblock = "Command Buffer (" + name + ")";
+                string commandbufferblock = "Command Buffer (" + profilingName + ")";
                 RenderToyEventSource.Default.MarkerBegin(commandbufferblock);
                 var box = new D3D11_BOX { right = (uint)(SIZEOF_CONSTANTBLOCK * scene.TableTransform.Count), bottom = 1, back = 1};
                 context.UpdateSubresource1(d3d11constantbufferGPU, 0, box, UnmanagedCopy.Create(d3d11constantbufferCPU), 0, 0, (uint)D3D11_COPY_FLAGS.D3D11_COPY_DISCARD);

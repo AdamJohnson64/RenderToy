@@ -12,12 +12,11 @@ using RenderToy.Math;
 using RenderToy.Shaders;
 using RenderToy.Utility;
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Collections.Generic;
 
 namespace RenderToy.WPF
 {
@@ -55,7 +54,7 @@ namespace RenderToy.WPF
                 ((ViewDirectX11)s).RenderDX();
             }));
         }
-        Action<ID3D11DeviceContext4, Matrix3D, Matrix3D, string> Execute_DrawScene = null;
+        Action<ID3D11DeviceContext4, Dictionary<string, object>> Execute_DrawScene = null;
         void RenderDX()
         {
             if (d3d11VertexShader == null || d3d11PixelShader == null || d3d11DepthStencilView == null || d3d11RenderTargetView == null) return;
@@ -81,7 +80,17 @@ namespace RenderToy.WPF
             context.ClearRenderTargetView(d3d11RenderTargetView, new float[] { 0, 0, 0, 0 });
             if (Execute_DrawScene != null)
             {
-                Execute_DrawScene(context, AttachedView.GetTransformCamera(this), AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight), "Window");
+                var constants = new Dictionary<string, object>();
+                var transformCamera = AttachedView.GetTransformCamera(this);
+                var transformView = AttachedView.GetTransformView(this);
+                var transformProjection = AttachedView.GetTransformProjection(this);
+                var transformViewProjection = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+                constants["profilingName"] = "Window";
+                constants["transformCamera"] = transformCamera;
+                constants["transformView"] = transformView;
+                constants["transformProjection"] = transformProjection;
+                constants["transformViewProjection"] = transformViewProjection;
+                Execute_DrawScene(context, constants);
             }
             context.Flush();
             Target.Lock();

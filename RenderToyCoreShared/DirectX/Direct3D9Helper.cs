@@ -3,12 +3,16 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.DocumentModel;
 using RenderToy.Materials;
+using RenderToy.Math;
 using RenderToy.Meshes;
+using RenderToy.ModelFormat;
 using RenderToy.Primitives;
 using RenderToy.Textures;
 using RenderToy.Utility;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -16,6 +20,54 @@ namespace RenderToy.DirectX
 {
     public static class Direct3D9Helper
     {
+        #region - Section : Direct3D Render Helpers -
+        public static Action<Dictionary<string, object>> CreateSceneDrawFixedFunction(SparseScene scene)
+        {
+            return (constants) =>
+            {
+                var transformViewProjection = (Matrix3D)constants["transformViewProjection"];
+                foreach (var transformedobject in scene)
+                {
+                    var createdvertexbuffer = Direct3D9Helper.CreateVertexBuffer(transformedobject.NodePrimitive);
+                    if (createdvertexbuffer.VertexBuffer == null) continue;
+                    device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
+                    device.SetTexture(0, Direct3D9Helper.CreateTexture(transformedobject.NodeMaterial, null));
+                    device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * transformViewProjection), 0));
+                    device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
+                }
+            };
+        }
+        public static Action<Dictionary<string, object>> CreateSceneDraw(SparseScene scene)
+        {
+            return (constants) =>
+            {
+                var transformCamera = (Matrix3D)constants["transformCamera"];
+                var transformView = (Matrix3D)constants["transformView"];
+                var transformProjection = (Matrix3D)constants["transformProjection"];
+                var transformViewProjection = (Matrix3D)constants["transformViewProjection"];
+                foreach (var transformedobject in scene)
+                {
+                    if (transformedobject.NodePrimitive == null) continue;
+                    var transformModel = transformedobject.Transform;
+                    var transformModelViewProjection = transformModel * transformViewProjection;
+                    var createdvertexbuffer = Direct3D9Helper.CreateVertexBuffer(transformedobject.NodePrimitive);
+                    if (createdvertexbuffer.VertexBuffer == null) continue;
+                    Direct3D9Helper.device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
+                    var objmat = transformedobject.NodeMaterial as LoaderOBJ.OBJMaterial;
+                    Direct3D9Helper.device.SetTexture(0, Direct3D9Helper.CreateTexture(objmat == null ? transformedobject.NodeMaterial : objmat.map_Kd, StockMaterials.PlasticWhite));
+                    Direct3D9Helper.device.SetTexture(1, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite));
+                    Direct3D9Helper.device.SetTexture(2, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue));
+                    Direct3D9Helper.device.SetTexture(3, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite));
+                    Direct3D9Helper.device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformCamera), 0), 4);
+                    Direct3D9Helper.device.SetVertexShaderConstantF(4, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformModel), 0), 4);
+                    Direct3D9Helper.device.SetVertexShaderConstantF(8, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformView), 0), 4);
+                    Direct3D9Helper.device.SetVertexShaderConstantF(12, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformProjection), 0), 4);
+                    Direct3D9Helper.device.SetVertexShaderConstantF(16, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0), 4);
+                    Direct3D9Helper.device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
+                }
+            };
+        }
+        #endregion
         #region - Section : Direct3D Resource Factory -
         public static Direct3DTexture9 CreateTexture(IMaterial material, IMaterial missing)
         {
@@ -87,6 +139,14 @@ namespace RenderToy.DirectX
         static readonly Direct3D9Ex d3d = new Direct3D9Ex();
         static readonly Form form = new Form();
         public static readonly Direct3DDevice9Ex device = d3d.CreateDevice(form.Handle);
+        public static Direct3DVertexDeclaration9 vertexdeclaration = device.CreateVertexDeclaration(new D3DVertexElement9[] {
+            new D3DVertexElement9 { Stream = 0, Offset = 0, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Position, UsageIndex = 0 },
+            new D3DVertexElement9 { Stream = 0, Offset = 12, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Normal, UsageIndex = 0 },
+            new D3DVertexElement9 { Stream = 0, Offset = 24, Type = D3DDeclType.D3DColor, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Color, UsageIndex = 0 },
+            new D3DVertexElement9 { Stream = 0, Offset = 28, Type = D3DDeclType.Float2, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.TexCoord, UsageIndex = 0 },
+            new D3DVertexElement9 { Stream = 0, Offset = 36, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Tangent, UsageIndex = 0 },
+            new D3DVertexElement9 { Stream = 0, Offset = 48, Type = D3DDeclType.Float3, Method = D3DDeclMethod.Default, Usage = D3DDeclUsage.Binormal, UsageIndex = 0 },
+        });
         #endregion
     }
 }
