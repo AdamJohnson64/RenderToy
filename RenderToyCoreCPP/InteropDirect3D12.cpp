@@ -28,60 +28,26 @@ namespace RenderToy
 		}
 	};
 	#pragma region - Direct3D12 Structures -
-	public value struct D3D12ResourceTransitionBarrier
-	{
-		RenderToyCOM::ID3D12Resource^		pResource;
-		UINT								Subresource;
-		RenderToyCOM::D3D12_RESOURCE_STATES	StateBefore;
-		RenderToyCOM::D3D12_RESOURCE_STATES	StateAfter;
-	};
 	public value struct D3D12ResourceBarrier
 	{
 		RenderToyCOM::D3D12_RESOURCE_BARRIER_TYPE		Type;
 		RenderToyCOM::D3D12_RESOURCE_BARRIER_FLAGS		Flags;
-		D3D12ResourceTransitionBarrier					Transition;
-	};
-	public value struct D3D12CachedPipelineState
-	{
-		cli::array<byte>^	pCachedBlob;
+		RenderToyCOM::D3D12_RESOURCE_TRANSITION_BARRIER	Transition;
 	};
 	public value struct D3D12ClearValue
 	{
 		RenderToyCOM::DXGI_FORMAT Format;
 		float R, G, B, A;
 	};
-	public value struct D3D12CPUDescriptorHandle
-	{
-		System::IntPtr ptr;
-	};
-	public value struct D3D12InputElementDesc
-	{
-		System::String^								SemanticName;
-		UINT										SemanticIndex;
-		RenderToyCOM::DXGI_FORMAT					Format;
-		UINT										InputSlot;
-		UINT										AlignedByteOffset;
-		RenderToyCOM::D3D12_INPUT_CLASSIFICATION	InputSlotClass;
-		UINT										InstanceDataStepRate;
-	};
 	public value struct D3D12InputLayoutDesc
 	{
-		cli::array<D3D12InputElementDesc>^	pInputElementDescs;
-	};
-	public value struct D3D12SODeclarationEntry
-	{
-		UINT			Stream;
-		System::String^ SemanticName;
-		UINT			SemanticIndex;
-		BYTE			StartComponent;
-		BYTE			ComponentCount;
-		BYTE			OutputSlot;
+		cli::array<RenderToyCOM::D3D12_INPUT_ELEMENT_DESC>^	pInputElementDescs;
 	};
 	public value struct D3D12StreamOutputDesc
 	{
-		cli::array<D3D12SODeclarationEntry>^	pSODeclaration;
-		cli::array<UINT>^						pBufferStrides;
-		UINT									RasterizedStream;
+		cli::array<RenderToyCOM::D3D12_SO_DECLARATION_ENTRY>^	pSODeclaration;
+		cli::array<UINT>^										pBufferStrides;
+		UINT													RasterizedStream;
 	};
 	public value struct D3D12GraphicsPipelineStateDesc
 	{
@@ -113,104 +79,6 @@ namespace RenderToy
 		UINT												NodeMask;
 		RenderToyCOM::D3D12_CACHED_PIPELINE_STATE			CachedPSO;
 		RenderToyCOM::D3D12_PIPELINE_STATE_FLAGS			Flags;
-	};
-	#pragma endregion
-	#pragma region - D3D12GraphicsCommandList1 -
-	public ref class D3D12GraphicsCommandList1 : public COMWrapper<ID3D12GraphicsCommandList1>
-	{
-	public:
-		D3D12GraphicsCommandList1(ID3D12GraphicsCommandList1 *pObj) : COMWrapper(pObj)
-		{
-		}
-		void ClearRenderTargetView(D3D12CPUDescriptorHandle RenderTargetView, float R, float G, float B, float A)
-		{
-			float rgba[4] = { R, G, B, A };
-			D3D12_CPU_DESCRIPTOR_HANDLE desc;
-			desc.ptr = (SIZE_T)RenderTargetView.ptr.ToPointer();
-			WrappedInterface()->ClearRenderTargetView(desc, rgba, 0U, nullptr);
-		};
-		void Close()
-		{
-			TRY_D3D(WrappedInterface()->Close());
-		}
-		void CopyResource(RenderToyCOM::ID3D12Resource ^pDstResource, RenderToyCOM::ID3D12Resource ^pSrcResource)
-		{
-			WrappedInterface()->CopyResource((ID3D12Resource*)Marshal::GetComInterfaceForObject(pDstResource, RenderToyCOM::ID3D12Resource::typeid).ToPointer(), (ID3D12Resource*)Marshal::GetComInterfaceForObject(pSrcResource, RenderToyCOM::ID3D12Resource::typeid).ToPointer());
-		}
-		void DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount, UINT StartVertexLocation, UINT StartInstanceLocation)
-		{
-			WrappedInterface()->DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
-		}
-		void IASetPrimitiveTopology(RenderToyCOM::D3D_PRIMITIVE_TOPOLOGY PrimitiveTopology)
-		{
-			WrappedInterface()->IASetPrimitiveTopology((D3D12_PRIMITIVE_TOPOLOGY)PrimitiveTopology);
-		}
-		void IASetVertexBuffers(UINT StartSlot, cli::array<RenderToyCOM::D3D12_VERTEX_BUFFER_VIEW> ^pViews)
-		{
-			pin_ptr<RenderToyCOM::D3D12_VERTEX_BUFFER_VIEW> pViewsM = &pViews[0];
-			WrappedInterface()->IASetVertexBuffers(StartSlot, pViews->Length, (D3D12_VERTEX_BUFFER_VIEW*)&pViewsM[0]);
-		}
-		void OMSetRenderTargets(cli::array<D3D12CPUDescriptorHandle> ^pRenderTargetDescriptors, BOOL RTsSingleHandleToDescriptorRange, System::Nullable<D3D12CPUDescriptorHandle> pDepthStencilDescriptor)
-		{
-			std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> pRenderTargetDescriptorsM(new D3D12_CPU_DESCRIPTOR_HANDLE[pRenderTargetDescriptors->Length]);
-			for (int i = 0; i < pRenderTargetDescriptors->Length; ++i)
-			{
-				pRenderTargetDescriptorsM[i].ptr = (SIZE_T)pRenderTargetDescriptors[i].ptr.ToPointer();
-			}
-			D3D12_CPU_DESCRIPTOR_HANDLE pDepthStencilDescriptorM;
-			pDepthStencilDescriptorM.ptr = (SIZE_T)(pDepthStencilDescriptor.HasValue ? pDepthStencilDescriptor.Value.ptr.ToPointer() : nullptr);
-			WrappedInterface()->OMSetRenderTargets(pRenderTargetDescriptors->Length, pRenderTargetDescriptorsM.get(), RTsSingleHandleToDescriptorRange, pDepthStencilDescriptor.HasValue ? &pDepthStencilDescriptorM : nullptr);
-		}
-		void RSSetScissorRects(cli::array<RenderToyCOM::tagRECT> ^pRects)
-		{
-			pin_ptr<RenderToyCOM::tagRECT> pRectsM = &pRects[0];
-			WrappedInterface()->RSSetScissorRects(pRects->Length, reinterpret_cast<D3D12_RECT*>(&pRectsM[0]));
-		}
-		void RSSetViewports(cli::array<RenderToyCOM::D3D12_VIEWPORT> ^pViewports)
-		{
-			pin_ptr<RenderToyCOM::D3D12_VIEWPORT> pViewportsM = &pViewports[0];
-			WrappedInterface()->RSSetViewports(pViewports->Length, reinterpret_cast<D3D12_VIEWPORT*>(&pViewportsM[0]));
-		}
-		void SetDescriptorHeaps(cli::array<RenderToyCOM::ID3D12DescriptorHeap^> ^ppDescriptorHeaps)
-		{
-			std::unique_ptr<ID3D12DescriptorHeap*[]> ppDescriptorHeapsM(new ID3D12DescriptorHeap*[ppDescriptorHeaps->Length]);
-			for (int i = 0; i < ppDescriptorHeaps->Length; ++i)
-			{
-				ppDescriptorHeapsM[i] = (ID3D12DescriptorHeap*)Marshal::GetComInterfaceForObject(ppDescriptorHeaps[i], RenderToyCOM::ID3D12DescriptorHeap::typeid).ToPointer();
-			}
-			WrappedInterface()->SetDescriptorHeaps(ppDescriptorHeaps->Length, ppDescriptorHeapsM.get());
-		}
-		void SetGraphicsRoot32BitConstants(UINT RootParameterIndex, UINT Num32BitValuesToSet, cli::array<float> ^pSrcData, UINT DestOffsetIn32BitValues)
-		{
-			pin_ptr<float> pSrcDataM = &pSrcData[0];
-			WrappedInterface()->SetGraphicsRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, &pSrcDataM[0], DestOffsetIn32BitValues);
-		}
-		void SetGraphicsRootSignature(RenderToyCOM::ID3D12RootSignature ^pRootSignature)
-		{
-			WrappedInterface()->SetGraphicsRootSignature((ID3D12RootSignature*)Marshal::GetComInterfaceForObject(pRootSignature, RenderToyCOM::ID3D12RootSignature::typeid).ToPointer());
-		}
-		void SetPipelineState(RenderToyCOM::ID3D12PipelineState ^pPipelineState)
-		{
-			WrappedInterface()->SetPipelineState((ID3D12PipelineState*)Marshal::GetComInterfaceForObject(pPipelineState, RenderToyCOM::ID3D12PipelineState::typeid).ToPointer());
-		}
-		void Reset(RenderToyCOM::ID3D12CommandAllocator ^pAllocator, RenderToyCOM::ID3D12PipelineState ^pInitialState)
-		{
-			TRY_D3D(WrappedInterface()->Reset((ID3D12CommandAllocator*)Marshal::GetComInterfaceForObject(pAllocator, RenderToyCOM::ID3D12CommandAllocator::typeid).ToPointer(), (ID3D12PipelineState*)Marshal::GetComInterfaceForObject(pInitialState, RenderToyCOM::ID3D12PipelineState::typeid).ToPointer()));
-		}
-		void ResourceBarrier(cli::array<D3D12ResourceBarrier> ^pBarriers)
-		{
-			std::unique_ptr<D3D12_RESOURCE_BARRIER[]> pBarriersM(new D3D12_RESOURCE_BARRIER[pBarriers->Length]);
-			for (int i = 0; i < pBarriers->Length; ++i)
-			{
-				pBarriersM[i].Type = (D3D12_RESOURCE_BARRIER_TYPE)pBarriers[i].Type;
-				pBarriersM[i].Flags = (D3D12_RESOURCE_BARRIER_FLAGS)pBarriers[i].Flags;
-				pBarriersM[i].Transition.pResource = (ID3D12Resource*)Marshal::GetComInterfaceForObject(pBarriers[i].Transition.pResource, RenderToyCOM::ID3D12Resource::typeid).ToPointer();
-				pBarriersM[i].Transition.Subresource = pBarriers[i].Transition.Subresource;
-				pBarriersM[i].Transition.StateBefore = (D3D12_RESOURCE_STATES)pBarriers[i].Transition.StateBefore;
-				pBarriersM[i].Transition.StateAfter = (D3D12_RESOURCE_STATES)pBarriers[i].Transition.StateAfter;
-			}
-			WrappedInterface()->ResourceBarrier(pBarriers->Length, pBarriersM.get());
-		}
 	};
 	#pragma endregion
 	#pragma region - D3D12Device -
@@ -327,28 +195,15 @@ namespace RenderToy
 		}
 	};
 	#pragma endregion
-	#pragma region - D3D12Debug -
-	public ref class D3D12Debug : public COMWrapper<ID3D12Debug>
-	{
-	public:
-		D3D12Debug(ID3D12Debug *obj) : COMWrapper(obj)
-		{
-		}
-		void EnableDebugLayer()
-		{
-			WrappedInterface()->EnableDebugLayer();
-		}
-	};
-	#pragma endregion
 	#pragma region - Direct3D12 Global Functions -
 	public ref class Direct3D12
 	{
 	public:
-		static D3D12Debug^ D3D12GetDebugInterface()
+		static RenderToyCOM::ID3D12Debug^ D3D12GetDebugInterface()
 		{
 			void *ppvDebug = nullptr;
 			TRY_D3D(::D3D12GetDebugInterface(__uuidof(ID3D12Debug), &ppvDebug));
-			return gcnew D3D12Debug(reinterpret_cast<ID3D12Debug*>(ppvDebug));
+			return (RenderToyCOM::ID3D12Debug^)Marshal::GetTypedObjectForIUnknown(System::IntPtr(ppvDebug), RenderToyCOM::ID3D12Debug::typeid);
 		}
 		static D3D12Device^ D3D12CreateDevice()
 		{
