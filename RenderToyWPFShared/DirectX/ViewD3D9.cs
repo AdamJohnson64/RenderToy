@@ -11,15 +11,15 @@ using System.Windows;
 
 namespace RenderToy.WPF
 {
-    public class ViewDirectX9 : ViewD3DImageDirect
+    public class ViewD3D9 : ViewD3DImageDirect
     {
-        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX9), new FrameworkPropertyMetadata(HLSL.D3D9VS, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewD3D9), new FrameworkPropertyMetadata(HLSL.D3D9VS, FrameworkPropertyMetadataOptions.AffectsRender));
         public byte[] VertexShader
         {
             get { return (byte[])GetValue(VertexShaderProperty); }
             set { SetValue(VertexShaderProperty, value); }
         }
-        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX9), new FrameworkPropertyMetadata(HLSL.D3D9PS, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewD3D9), new FrameworkPropertyMetadata(HLSL.D3D9PS, FrameworkPropertyMetadataOptions.AffectsRender));
         public byte[] PixelShader
         {
             get { return (byte[])GetValue(PixelShaderProperty); }

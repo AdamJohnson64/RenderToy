@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace RenderToy.WPF
 {
-    public class ViewDirectX9FixedFunction : ViewD3DImageDirect
+    public class ViewD3D9FixedFunction : ViewD3DImageDirect
     {
         protected override void RenderD3D()
         {

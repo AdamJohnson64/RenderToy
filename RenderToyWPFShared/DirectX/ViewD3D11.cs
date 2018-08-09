@@ -18,9 +18,9 @@ using System.Collections.Generic;
 
 namespace RenderToy.WPF
 {
-    class ViewDirectX11 : ViewD3DImageBuffered
+    class ViewD3D11 : ViewD3DImageBuffered
     {
-        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11VS, OnVertexShaderChanged));
+        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewD3D11), new FrameworkPropertyMetadata(HLSL.D3D11VS, OnVertexShaderChanged));
         public byte[] VertexShader
         {
             get { return (byte[])GetValue(VertexShaderProperty); }
@@ -28,9 +28,9 @@ namespace RenderToy.WPF
         }
         private static void OnVertexShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            ((ViewDirectX11)sender).SetVertexShader((byte[])e.NewValue);
+            ((ViewD3D11)sender).SetVertexShader((byte[])e.NewValue);
         }
-        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11PS, OnPixelShaderChanged));
+        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewD3D11), new FrameworkPropertyMetadata(HLSL.D3D11PS, OnPixelShaderChanged));
         public byte[] PixelShader
         {
             get { return (byte[])GetValue(PixelShaderProperty); }
@@ -38,18 +38,18 @@ namespace RenderToy.WPF
         }
         private static void OnPixelShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            ((ViewDirectX11)sender).SetPixelShader((byte[])e.NewValue);
+            ((ViewD3D11)sender).SetPixelShader((byte[])e.NewValue);
         }
-        static ViewDirectX11()
+        static ViewD3D11()
         {
-            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewDirectX11), new FrameworkPropertyMetadata(null, (s, e) =>
+            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewD3D11), new FrameworkPropertyMetadata(null, (s, e) =>
             {
-                ((ViewDirectX11)s).Execute_DrawScene = Direct3D11Helper.CreateSceneDraw((SparseScene)e.NewValue);
-                ((ViewDirectX11)s).RenderDX();
+                ((ViewD3D11)s).Execute_DrawScene = Direct3D11Helper.CreateSceneDraw((SparseScene)e.NewValue);
+                ((ViewD3D11)s).RenderDX();
             }));
-            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewDirectX11), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>
+            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewD3D11), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>
             {
-                ((ViewDirectX11)s).RenderDX();
+                ((ViewD3D11)s).RenderDX();
             }));
         }
         Action<ID3D11DeviceContext4, Dictionary<string, object>> Execute_DrawScene = null;

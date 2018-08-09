@@ -17,20 +17,20 @@ using System.Windows.Media.Imaging;
 
 namespace RenderToy.WPF
 {
-    class ViewDirectX12 : FrameworkElement
+    class ViewD3D12 : FrameworkElement
     {
-        static ViewDirectX12()
+        static ViewD3D12()
         {
-            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewDirectX12), new FrameworkPropertyMetadata(null, (s, e) =>
+            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewD3D12), new FrameworkPropertyMetadata(null, (s, e) =>
             {
-                ((ViewDirectX12)s).RenderDX();
+                ((ViewD3D12)s).RenderDX();
             }));
-            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewDirectX12), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>
+            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewD3D12), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>
             {
-                ((ViewDirectX12)s).RenderDX();
+                ((ViewD3D12)s).RenderDX();
             }));
         }
-        public ViewDirectX12()
+        public ViewD3D12()
         {
             Direct3D12.D3D12GetDebugInterface().EnableDebugLayer();
             d3d12Device = Direct3D12.D3D12CreateDevice();
