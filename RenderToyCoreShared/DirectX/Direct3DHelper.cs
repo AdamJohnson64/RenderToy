@@ -3,14 +3,10 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.Expressions;
-using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
-using RenderToy.Textures;
-using System;
 using System.Linq;
 
 namespace RenderToy.DirectX

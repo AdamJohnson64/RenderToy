@@ -7,7 +7,6 @@
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Transforms;
-using System;
 using System.Linq;
 using Valve.VR;
 
