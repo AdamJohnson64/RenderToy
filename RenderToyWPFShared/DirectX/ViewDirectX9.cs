@@ -14,9 +14,7 @@ using System.Windows.Media;
 
 namespace RenderToy.WPF
 {
-    // Use a D3DImage to push the buffer directly to WDDM.
-    // No copy is made; Fast but not always viable.
-    public class ViewD3DSource : FrameworkElement
+    public class ViewD3DImage : FrameworkElement
     {
         protected override void OnRender(DrawingContext drawingContext)
         {
@@ -28,7 +26,23 @@ namespace RenderToy.WPF
         }
         protected D3DImage Target = new D3DImage();
     }
-    public abstract class ViewDirectX9Base : ViewD3DSource
+    public class ViewD3DImageBuffered : ViewD3DImage
+    {
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            NullablePtr<IntPtr> handle = new NullablePtr<IntPtr>(IntPtr.Zero);
+            d3d9backbuffer = Direct3D9Helper.device.CreateRenderTarget((uint)availableSize.Width, (uint)availableSize.Height, D3DFormat.A8R8G8B8, D3DMultisample.None, 1, 0, handle);
+            d3d9backbufferhandle = handle.Value;
+            Target.Lock();
+            Target.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3d9backbuffer.ManagedPtr);
+            Target.Unlock();
+            return base.MeasureOverride(availableSize);
+        }
+        // Direct3D9 Handling for D3DImage
+        protected Direct3DSurface9 d3d9backbuffer;
+        protected IntPtr d3d9backbufferhandle;
+    }
+    public abstract class ViewD3DImageDirect : ViewD3DImage
     {
         #region - Section : Overrides -
         protected abstract void RenderD3D();
@@ -76,7 +90,7 @@ namespace RenderToy.WPF
         int render_height;
         #endregion
     }
-    public class ViewDirectX9FixedFunction : ViewDirectX9Base
+    public class ViewDirectX9FixedFunction : ViewD3DImageDirect
     {
         protected override void RenderD3D()
         {
@@ -92,7 +106,7 @@ namespace RenderToy.WPF
             Direct3D9Helper.CreateSceneDrawFixedFunction(AttachedView.GetScene(this))(constants);
         }
     }
-    public class ViewDirectX9 : ViewDirectX9Base
+    public class ViewDirectX9 : ViewD3DImageDirect
     {
         public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX9), new FrameworkPropertyMetadata(HLSL.D3D9VS, FrameworkPropertyMetadataOptions.AffectsRender));
         public byte[] VertexShader

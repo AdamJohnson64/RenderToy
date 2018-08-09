@@ -14,13 +14,11 @@ using RenderToy.Utility;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
 using System.Collections.Generic;
 
 namespace RenderToy.WPF
 {
-    class ViewDirectX11 : ViewD3DSource
+    class ViewDirectX11 : ViewD3DImageBuffered
     {
         public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewDirectX11), new FrameworkPropertyMetadata(HLSL.D3D11VS, OnVertexShaderChanged));
         public byte[] VertexShader
@@ -116,10 +114,9 @@ namespace RenderToy.WPF
         }
         protected override Size MeasureOverride(Size availableSize)
         {
-            NullablePtr<IntPtr> handle = new NullablePtr<IntPtr>(IntPtr.Zero);
-            d3d9backbuffer = Direct3D9Helper.device.CreateRenderTarget((uint)availableSize.Width, (uint)availableSize.Height, D3DFormat.A8R8G8B8, D3DMultisample.None, 1, 0, handle);
+            var size = base.MeasureOverride(availableSize);
             var texptr = new IntPtr();
-            Direct3D11Helper.d3d11Device.OpenSharedResource(handle.Value, Marshal.GenerateGuidForType(typeof(ID3D11Texture2D)), ref texptr);
+            Direct3D11Helper.d3d11Device.OpenSharedResource(d3d9backbufferhandle, Marshal.GenerateGuidForType(typeof(ID3D11Texture2D)), ref texptr);
             d3d11Texture2D_RT = (ID3D11Texture2D)Marshal.GetTypedObjectForIUnknown(texptr, typeof(ID3D11Texture2D));
             var rtvd = new D3D11_RENDER_TARGET_VIEW_DESC { Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, ViewDimension = D3D11_RTV_DIMENSION.D3D11_RTV_DIMENSION_TEXTURE2D };
             rtvd.__MIDL____MIDL_itf_RenderToy_0005_00650002.Texture2D = new D3D11_TEX2D_RTV { MipSlice = 0 };
@@ -133,18 +130,9 @@ namespace RenderToy.WPF
             var dsv = new D3D11_DEPTH_STENCIL_VIEW_DESC { Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT, ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2D };
             dsv.__MIDL____MIDL_itf_RenderToy_0005_00660000.Texture2D = new D3D11_TEX2D_DSV { MipSlice = 0 };
             Direct3D11Helper.d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS, dsv, ref d3d11DepthStencilView);
-            Target.Lock();
-            Target.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3d9backbuffer.ManagedPtr);
-            Target.Unlock();
             RenderDX();
-            return base.MeasureOverride(availableSize);
+            return size;
         }
-        protected override void OnRender(DrawingContext drawingContext)
-        {
-            drawingContext.DrawImage(Target, new Rect(0, 0, ActualWidth, ActualHeight));
-        }
-        // Direct3D9 Handling for D3DImage
-        Direct3DSurface9 d3d9backbuffer;
         // Direct3D11 Handling
         ID3D11VertexShader d3d11VertexShader;
         ID3D11PixelShader d3d11PixelShader;
