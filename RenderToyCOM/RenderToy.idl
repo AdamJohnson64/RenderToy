@@ -16,7 +16,9 @@ library RenderToyCOM
 	enum D3D11_CPU_ACCESS_FLAG;
 	enum D3D11_MAP_FLAG;
 	// Direct3D 12
+	interface ID3D12CommandQueue;
 	interface ID3D12Device3;
+	interface ID3D12GraphicsCommandList1;
 	enum D3D12_RESOURCE_BARRIER_FLAGS;
 	enum D3D12_RESOURCE_BARRIER_TYPE;
 	enum D3D12_RESOURCE_TRANSITION_BARRIER;

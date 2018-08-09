@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using Microsoft.Win32;
+using RenderToy.DirectX;
 using RenderToy.DocumentModel;
 using RenderToy.Materials;
 using RenderToy.Math;
@@ -21,6 +22,7 @@ using System.IO;
 using System.IO.Packaging;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -69,6 +71,13 @@ namespace RenderToy.WPF
         public static ICommand CommandStartOpenVR = new RoutedUICommand("Start OpenVR.", "CommandStartOpenVR", typeof(MainWindow));
         public MainWindow()
         {
+            var createD3DMTA = Task.Factory.StartNew(() =>
+            {
+                var dx9 = Direct3D9Helper.device;
+                var dx11 = Direct3D11Helper.d3d11Device;
+                var dx12 = ViewD3D12.d3d12Device;
+            });
+            createD3DMTA.Wait();
             InitializeComponent();
             CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => {
                 DataContext = Document.Default;
