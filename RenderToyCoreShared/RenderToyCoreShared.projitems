@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\BrickNoise.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\BumpGenerate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\Checkerboard.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\MaterialExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\Perlin2D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\Spike.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Meshes\VertexFormat.cs" />
@@ -95,7 +96,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\MementoServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\Performance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\WorkQueue.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DirectX\DirectXHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\Direct3DHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OpenVR\OpenVRHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)OpenVR\OpenVRPump.cs" />
     <Compile Include="$(SolutionDir)ThirdParty\OpenVR\headers\openvr_api.cs" />

@@ -3,7 +3,6 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.DirectX;
 using RenderToy.Expressions;
 using RenderToy.Materials;
 using System.Globalization;
@@ -23,13 +22,13 @@ namespace RenderToy.WPF
             get { return (IMaterial)GetValue(MaterialSourceProperty); }
             set { SetValue(MaterialSourceProperty, value); }
         }
-        public static DependencyProperty MaterialWidthProperty = DependencyProperty.Register("MaterialWidth", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(DirectXHelper.ThumbnailSize, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
+        public static DependencyProperty MaterialWidthProperty = DependencyProperty.Register("MaterialWidth", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(MaterialExtensions.ThumbnailSize, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
         public int MaterialWidth
         {
             get { return (int)GetValue(MaterialWidthProperty); }
             set { SetValue(MaterialWidthProperty, value); }
         }
-        public static DependencyProperty MaterialHeightProperty = DependencyProperty.Register("MaterialHeight", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(DirectXHelper.ThumbnailSize, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
+        public static DependencyProperty MaterialHeightProperty = DependencyProperty.Register("MaterialHeight", typeof(int), typeof(ViewMaterial), new FrameworkPropertyMetadata(MaterialExtensions.ThumbnailSize, FrameworkPropertyMetadataOptions.AffectsMeasure, InvalidateBitmap));
         public int MaterialHeight
         {
             get { return (int)GetValue(MaterialHeightProperty); }
@@ -45,7 +44,7 @@ namespace RenderToy.WPF
         {
             bitmap = null;
             InvalidateVisual();
-            var imageconverter = DirectXHelper.GetImageConverter(MaterialSource, MaterialWidth, MaterialHeight);
+            var imageconverter = MaterialSource.GetImageConverter(MaterialWidth, MaterialHeight);
             var newbitmap = new WriteableBitmap(imageconverter.GetImageWidth(), imageconverter.GetImageHeight(), 0, 0, PixelFormats.Bgra32, null);
             newbitmap.Lock();
             var material = MaterialSource;
@@ -53,7 +52,7 @@ namespace RenderToy.WPF
             var bitmapwidth = newbitmap.PixelWidth;
             var bitmapheight = newbitmap.PixelHeight;
             var bitmapstride = newbitmap.BackBufferStride;
-            await Task.Factory.StartNew(() => DirectXHelper.ConvertToBitmap(imageconverter, bitmapptr, bitmapwidth, bitmapheight, bitmapstride));
+            await Task.Factory.StartNew(() => imageconverter.ConvertToBitmap(bitmapptr, bitmapwidth, bitmapheight, bitmapstride));
             newbitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapwidth, bitmapheight));
             newbitmap.Unlock();
             bitmap = newbitmap;

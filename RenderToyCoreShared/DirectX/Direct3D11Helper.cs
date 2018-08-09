@@ -54,9 +54,9 @@ namespace RenderToy.DirectX
                 {
                     Matrix3D transformModel = scene.TableTransform[i];
                     var transformModelViewProjection = transformModel * transformTail;
-                    Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK, SIZEOF_MATRIX);
-                    Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformCamera), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 1 * SIZEOF_MATRIX, SIZEOF_MATRIX);
-                    Buffer.BlockCopy(DirectXHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
+                    Buffer.BlockCopy(Direct3DHelper.ConvertToD3DMatrix(transformModelViewProjection), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK, SIZEOF_MATRIX);
+                    Buffer.BlockCopy(Direct3DHelper.ConvertToD3DMatrix(transformCamera), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 1 * SIZEOF_MATRIX, SIZEOF_MATRIX);
+                    Buffer.BlockCopy(Direct3DHelper.ConvertToD3DMatrix(transformModel), 0, d3d11constantbufferCPU, i * SIZEOF_CONSTANTBLOCK + 2 * SIZEOF_MATRIX, SIZEOF_MATRIX);
                 }
                 RenderToyEventSource.Default.MarkerEnd(constantbufferblock);
                 string commandbufferblock = "Command Buffer (" + profilingName + ")";
@@ -128,7 +128,7 @@ namespace RenderToy.DirectX
                         if (level == null) return null;
                         MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
                         byte[] texturedata = new byte[4 * level.GetImageWidth() * level.GetImageHeight()];
-                        DirectXHelper.ConvertToBitmap(level, Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
+                        level.ConvertToBitmap(Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
                         var access = UnmanagedCopy.Create(texturedata);
                         retainMips.Add(access);
                         FillpInitialData.pSysMem = access;
@@ -160,7 +160,7 @@ namespace RenderToy.DirectX
                 }
                 else
                 {
-                    var asimage = DirectXHelper.GetImageConverter(material, 512, 512);
+                    var asimage = material.GetImageConverter(512, 512);
                     var desc = new D3D11_TEXTURE2D_DESC();
                     desc.Width = (uint)asimage.GetImageWidth();
                     desc.Height = (uint)asimage.GetImageHeight();
@@ -172,7 +172,7 @@ namespace RenderToy.DirectX
                     desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
                     var pInitialData = new D3D11_SUBRESOURCE_DATA();
                     byte[] texturedata = new byte[4 * asimage.GetImageWidth() * asimage.GetImageHeight()];
-                    DirectXHelper.ConvertToBitmap(asimage, Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), asimage.GetImageWidth(), asimage.GetImageHeight(), 4 * asimage.GetImageWidth());
+                    asimage.ConvertToBitmap(Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), asimage.GetImageWidth(), asimage.GetImageHeight(), 4 * asimage.GetImageWidth());
                     pInitialData.pSysMem = UnmanagedCopy.Create(texturedata);
                     pInitialData.SysMemPitch = (uint)(4 * asimage.GetImageWidth());
                     pInitialData.SysMemSlicePitch = (uint)(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
@@ -194,7 +194,7 @@ namespace RenderToy.DirectX
             if (primitive == null) return null;
             return MementoServer.Default.Get(primitive, DX11VertexBuffer, () =>
             {
-                var verticesout = DirectXHelper.ConvertToXYZNorDiffuseTex1(primitive);
+                var verticesout = Direct3DHelper.ConvertToXYZNorDiffuseTex1(primitive);
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * verticesout.Length);
                 ID3D11Buffer d3d11Buffer = null;

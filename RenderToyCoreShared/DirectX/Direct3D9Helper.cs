@@ -35,7 +35,7 @@ namespace RenderToy.DirectX
                     if (createdvertexbuffer.VertexBuffer == null) continue;
                     device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
                     device.SetTexture(0, Direct3D9Helper.CreateTexture(transformedobject.NodeMaterial, null));
-                    device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformedobject.Transform * transformTail), 0));
+                    device.SetTransform(D3DTransformState.Projection, Marshal.UnsafeAddrOfPinnedArrayElement(Direct3DHelper.ConvertToD3DMatrix(transformedobject.Transform * transformTail), 0));
                     device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
                 }
             };
@@ -62,11 +62,11 @@ namespace RenderToy.DirectX
                     Direct3D9Helper.device.SetTexture(1, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite));
                     Direct3D9Helper.device.SetTexture(2, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue));
                     Direct3D9Helper.device.SetTexture(3, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite));
-                    Direct3D9Helper.device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformCamera), 0), 4);
-                    Direct3D9Helper.device.SetVertexShaderConstantF(4, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformModel), 0), 4);
-                    Direct3D9Helper.device.SetVertexShaderConstantF(8, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformView), 0), 4);
-                    Direct3D9Helper.device.SetVertexShaderConstantF(12, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformProjection), 0), 4);
-                    Direct3D9Helper.device.SetVertexShaderConstantF(16, Marshal.UnsafeAddrOfPinnedArrayElement(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection), 0), 4);
+                    Direct3D9Helper.device.SetVertexShaderConstantF(0, Marshal.UnsafeAddrOfPinnedArrayElement(Direct3DHelper.ConvertToD3DMatrix(transformCamera), 0), 4);
+                    Direct3D9Helper.device.SetVertexShaderConstantF(4, Marshal.UnsafeAddrOfPinnedArrayElement(Direct3DHelper.ConvertToD3DMatrix(transformModel), 0), 4);
+                    Direct3D9Helper.device.SetVertexShaderConstantF(8, Marshal.UnsafeAddrOfPinnedArrayElement(Direct3DHelper.ConvertToD3DMatrix(transformView), 0), 4);
+                    Direct3D9Helper.device.SetVertexShaderConstantF(12, Marshal.UnsafeAddrOfPinnedArrayElement(Direct3DHelper.ConvertToD3DMatrix(transformProjection), 0), 4);
+                    Direct3D9Helper.device.SetVertexShaderConstantF(16, Marshal.UnsafeAddrOfPinnedArrayElement(Direct3DHelper.ConvertToD3DMatrix(transformModelViewProjection), 0), 4);
                     Direct3D9Helper.device.DrawPrimitive(D3DPrimitiveType.TriangleList, 0U, (uint)createdvertexbuffer.PrimitiveCount);
                 }
             };
@@ -90,7 +90,7 @@ namespace RenderToy.DirectX
                     {
                         D3DLockedRect lockit = texturescratch.LockRect((uint)level);
                         var thislevel = astexture.GetSurface(0, level);
-                        DirectXHelper.ConvertToBitmap(thislevel, lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
+                        thislevel.ConvertToBitmap(lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
                         texturescratch.UnlockRect((uint)level);
                     }
                     Direct3D9Helper.device.UpdateTexture(texturescratch, texture);
@@ -98,11 +98,11 @@ namespace RenderToy.DirectX
                 }
                 else
                 {
-                    var asimage = DirectXHelper.GetImageConverter(material, 512, 512);
+                    var asimage = material.GetImageConverter(512, 512);
                     var texture = Direct3D9Helper.device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Default, null);
                     var texturescratch = Direct3D9Helper.device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory, null);
                     D3DLockedRect lockit = texturescratch.LockRect(0);
-                    DirectXHelper.ConvertToBitmap(asimage, lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
+                    asimage.ConvertToBitmap(lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
                     texturescratch.UnlockRect(0);
                     Direct3D9Helper.device.UpdateTexture(texturescratch, texture);
                     return texture;
@@ -114,7 +114,7 @@ namespace RenderToy.DirectX
             if (primitive == null) return new VertexBufferInfo { PrimitiveCount = 0, VertexBuffer = null };
             return MementoServer.Default.Get(primitive, GeneratedVertexBufferToken, () =>
             {
-                var data = DirectXHelper.ConvertToXYZNorDiffuseTex1(primitive);
+                var data = Direct3DHelper.ConvertToXYZNorDiffuseTex1(primitive);
                 var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * data.Length);
                 VertexBufferInfo buffer = new VertexBufferInfo();
                 if (data.Length > 0)

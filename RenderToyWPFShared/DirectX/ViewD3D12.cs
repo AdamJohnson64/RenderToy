@@ -128,7 +128,7 @@ namespace RenderToy.WPF
                 var transformModelViewProjection = transformModel * transformViewProjection;
                 var vertexbuffer = CreateVertexBuffer(transformedobject.NodePrimitive);
                 if (vertexbuffer == null) continue;
-                d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, UnmanagedCopy.Create(DirectXHelper.ConvertToD3DMatrix(transformModelViewProjection)), 0);
+                d3d12CommandList.SetGraphicsRoot32BitConstants(0, 16, UnmanagedCopy.Create(Direct3DHelper.ConvertToD3DMatrix(transformModelViewProjection)), 0);
                 var view = new D3D12_VERTEX_BUFFER_VIEW { BufferLocation = vertexbuffer.d3d12Resource_Buffer.GetGPUVirtualAddress(), SizeInBytes = vertexbuffer.size, StrideInBytes = (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) };
                 d3d12CommandList.IASetVertexBuffers(0, 1, view);
                 d3d12CommandList.DrawInstanced((uint)vertexbuffer.length, 1, 0, 0);
@@ -172,7 +172,7 @@ namespace RenderToy.WPF
             if (primitive == null) return null;
             return MementoServer.Default.Get(primitive, Token, () =>
             {
-                var verticesout = DirectXHelper.ConvertToXYZNorDiffuseTex1(primitive);
+                var verticesout = Direct3DHelper.ConvertToXYZNorDiffuseTex1(primitive);
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * verticesout.Length);
                 var d3d12ResourceDesc_Buffer = new D3D12_RESOURCE_DESC();
