@@ -34,7 +34,7 @@ namespace RenderToy.WPF
         {
             ClipToBounds = true;
             WeakEventManager<RenderToyEventListener, EventWrittenEventArgs>.AddHandler(listener, "HACKEventWritten", HandleEvent);
-            var timer = new DispatcherTimer(TimeSpan.FromSeconds(5), DispatcherPriority.ApplicationIdle, (s, e) => { capturecurrent = capturelatest; InvalidateVisual(); }, Dispatcher);
+            var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.ApplicationIdle, (s, e) => { capturecurrent = capturelatest; InvalidateVisual(); }, Dispatcher);
             timer.Start();
         }
         void HandleEvent(object sender, EventWrittenEventArgs eventData)
