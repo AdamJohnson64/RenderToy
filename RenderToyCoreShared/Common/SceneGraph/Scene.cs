@@ -70,11 +70,14 @@ namespace RenderToy.SceneGraph
 #if OPENVR_INSTALLED
             try
             {
-                var openvr = new OpenVRHelper();
-                var controller = LoaderOBJ.LoadFromPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj").First();
-                scene.children.Add(new Node("OpenVR HMD", new TransformHMD(openvr), controller.Primitive, StockMaterials.White, controller.Material));
-                scene.children.Add(new Node("OpenVR Left Controller", new TransformLeftHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
-                scene.children.Add(new Node("OpenVR Right Controller", new TransformRightHand(openvr), controller.Primitive, StockMaterials.White, controller.Material));
+                //var controllerModel = LoaderOBJ.LoadFromPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj").First();
+                //IPrimitive controllerMaterial = controllerModel.Primitive;
+                //IMaterial controllerMaterial = controllerModel.Material;
+                IPrimitive controllerPrimitive = null;
+                IMaterial controllerMaterial = StockMaterials.PlasticWhite;
+                scene.children.Add(new Node("OpenVR HMD", new TransformHMD(), controllerPrimitive, StockMaterials.White, controllerMaterial));
+                scene.children.Add(new Node("OpenVR Left Controller", new TransformLeftHand(), controllerPrimitive, StockMaterials.White, controllerMaterial));
+                scene.children.Add(new Node("OpenVR Right Controller", new TransformRightHand(), controllerPrimitive, StockMaterials.White, controllerMaterial));
                 /*
                 Matrix3D transform = new Matrix3D(
                     1, 0, 0, 0,

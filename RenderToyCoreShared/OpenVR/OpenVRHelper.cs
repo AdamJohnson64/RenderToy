@@ -32,23 +32,23 @@ namespace RenderToy
             m.M14 = matrix.m12; m.M24 = matrix.m13; m.M34 = matrix.m14; m.M44 = matrix.m15;
             return m;
         }
-        public Matrix3D GetEyeToHeadTransform(EVREye eEye)
+        public static Matrix3D GetEyeToHeadTransform(EVREye eEye)
         {
             return ConvertMatrix43(System.GetEyeToHeadTransform(eEye));
         }
-        public Matrix3D GetProjectionMatrix(EVREye eEye, float fNear, float fFar)
+        public static Matrix3D GetProjectionMatrix(EVREye eEye, float fNear, float fFar)
         {
             return ConvertMatrix44(System.GetProjectionMatrix(eEye, fNear, fFar));
         }
-        public void SubmitLeftHand(Matrix3D hand)
+        public static void SubmitLeftHand(Matrix3D hand)
         {
             _lefthand = hand;   
         }
-        public void SubmitRightHand(Matrix3D hand)
+        public static void SubmitRightHand(Matrix3D hand)
         {
             _righthand = hand;
         }
-        public void Update()
+        public static void Update()
         {
             TrackedDevicePose_t[] renderPose = new TrackedDevicePose_t[16];
             TrackedDevicePose_t[] gamePose = new TrackedDevicePose_t[16];
@@ -96,9 +96,9 @@ namespace RenderToy
                 }
             }
         }
-        public Matrix3D _head;
-        public Matrix3D _lefthand;
-        public Matrix3D _righthand;
+        public static Matrix3D _head;
+        public static Matrix3D _lefthand;
+        public static Matrix3D _righthand;
         public static EVRInitError error;
         public static CVRSystem System = OpenVR.Init(ref error);
         public static CVRCompositor Compositor = OpenVR.Compositor;
@@ -108,60 +108,41 @@ namespace RenderToy
             0, 0, -1, 0,
             0, 0, 0, 1);
     }
-    public interface IVRHost
+    public class TransformHMD : ITransform
     {
-        OpenVRHelper VRHost { get; }
-    }
-    public class TransformHMD : ITransform, IVRHost
-    {
-        public TransformHMD(OpenVRHelper vrhost)
-        {
-            VRHost = vrhost;
-        }
         public Matrix3D Transform
         {
             get
             {
-                return VRHost._head;
+                return OpenVRHelper._head;
             }
         }
         public OpenVRHelper VRHost { get; protected set; }
     };
-    public class TransformLeftHand : ITransform, IVRHost
+    public class TransformLeftHand : ITransform
     {
-        public TransformLeftHand(OpenVRHelper vrhost)
-        {
-            VRHost = vrhost;
-        }
         public Matrix3D Transform
         {
             get
             {
-                return VRHost._lefthand;
+                return OpenVRHelper._lefthand;
             }
         }
-        public OpenVRHelper VRHost { get; protected set; }
     };
-    public class TransformRightHand : ITransform, IVRHost
+    public class TransformRightHand : ITransform
     {
-        public TransformRightHand(OpenVRHelper vrhost)
-        {
-            VRHost = vrhost;
-        }
         public Matrix3D Transform
         {
             get
             {
-                return VRHost._righthand;
+                return OpenVRHelper._righthand;
             }
         }
-        public OpenVRHelper VRHost { get; protected set; }
     };
-    public class MaterialOpenVRCameraDistorted : IMaterial, IVRHost
+    public class MaterialOpenVRCameraDistorted : IMaterial
     {
         public MaterialOpenVRCameraDistorted(OpenVRHelper vrhost, CVRTrackedCamera camera)
         {
-            VRHost = vrhost;
             TrackedCamera = camera;
             ulong handle = 0;
             TrackedCamera.AcquireVideoStreamingService(0, ref handle);
@@ -171,7 +152,6 @@ namespace RenderToy
         {
             return false;
         }
-        public OpenVRHelper VRHost { get; protected set; }
         public CVRTrackedCamera TrackedCamera { get; protected set; }
         public ulong TrackedCameraHandle { get; protected set; }
     };

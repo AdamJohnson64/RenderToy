@@ -8,7 +8,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <amp.h>
+#include <amp_graphics.h>
 #include <amp_math.h>
+#include <d3d11.h>
 #include "Raytrace.h"
 
 namespace RaytraceCX {
@@ -30,6 +32,19 @@ struct SetPixelAMP {
 		data[index] = Vector4ToA8R8G8B8(color);
 	}
 	const Concurrency::array_view<int, 2> data;
+	const concurrency::index<2> index;
+};
+
+struct SetPixelAMPD3D {
+	SetPixelAMPD3D(const Concurrency::graphics::writeonly_texture_view<Concurrency::graphics::unorm_4, 2>& data, Concurrency::index<2>& index) restrict(amp) : data(data), index(index) {}
+	int GetX() const restrict(amp) { return index[1]; }
+	int GetY() const restrict(amp) { return index[0]; }
+	int GetWidth() const restrict(amp) { return data.extent[1]; }
+	int GetHeight() const restrict(amp) { return data.extent[0]; }
+	void PutPixel(const Vector4<FLOAT>& color) const restrict(amp) {
+		data.set(index, Concurrency::graphics::unorm_4(color.x, color.y, color.z, color.w));
+	}
+	const Concurrency::graphics::writeonly_texture_view<Concurrency::graphics::unorm_4, 2> data;
 	const Concurrency::index<2> index;
 };
 
@@ -59,6 +74,19 @@ void AMPExecutor(const void* scene, const void* inverse_mvp, void* bitmap_ptr, i
 	view_bitmap.discard_data();
 	exec(view_scene, view_imvp, view_bitmap, render_width, render_height, bitmap_stride);
 	view_bitmap.synchronize();
+}
+
+extern "C" void TEST_RaycastNormalsAMPF32D3D(const void* scene, const void* inverse_mvp, void* d3ddevice, void *d3dtexture)
+{
+	Concurrency::array_view<int, 1> view_scene(((Scene<FLOAT>*)scene)->FileSize / sizeof(int), (int*)scene);
+	Concurrency::array_view<FLOAT, 1> view_imvp(4 * 4 * sizeof(FLOAT), (FLOAT*)inverse_mvp);
+	auto acv = concurrency::direct3d::create_accelerator_view((ID3D11Device*)d3ddevice);
+	auto tex = concurrency::graphics::direct3d::make_texture<concurrency::graphics::unorm_4, 2>(acv, (IUnknown*)d3dtexture, DXGI_FORMAT_B8G8R8A8_UNORM);
+	Concurrency::graphics::writeonly_texture_view<Concurrency::graphics::unorm_4, 2> texv(tex);
+	parallel_for_each(texv.extent, [=](Concurrency::index<2> idx) restrict(amp)
+	{
+		RaytraceCX::ComputePixel<float, RaytraceCX::RenderModeRaytrace<float, 0>>(*(Scene<float>*)&view_scene[0], *(Matrix44<float>*)&view_imvp[0], RaytraceCX::SetPixelAMPD3D(texv, idx));
+	});
 }
 
 #ifndef RENDERTOY_NO_AMP
