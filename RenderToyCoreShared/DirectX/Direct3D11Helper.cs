@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 
 namespace RenderToy.DirectX
 {
-    class Direct3D11Helper
+    public class Direct3D11Helper
     {
         public static ID3D11Device d3d11Device = Direct3D11.D3D11CreateDevice();
         static ID3D11InputLayout d3d11InputLayout;
