@@ -114,7 +114,7 @@ namespace RenderToy
 		static RenderToyCOM::ID3D11Device^ D3D11CreateDevice()
 		{
 			ID3D11Device *ppDevice = nullptr;
-			D3D_FEATURE_LEVEL featurelevel = D3D_FEATURE_LEVEL_12_1;
+			D3D_FEATURE_LEVEL featurelevel = D3D_FEATURE_LEVEL_11_1;
 			D3D11_CREATE_DEVICE_FLAG flags;
 #ifdef _DEBUG
 			flags = D3D11_CREATE_DEVICE_DEBUG;
