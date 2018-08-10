@@ -688,7 +688,10 @@ public:
 		FLOAT scale_specular = Dot(vector_light_normal, vector_reflect);
 		scale_specular = scale_specular > 0 ? scale_specular : 0;
 		scale_specular = Power(scale_specular, 100);
-		if (RayShadowBounded(pScene, vector_point + FLOAT(0.0001) * vector_normal, vector_light)) scale_diffuse *= FLOAT(0.5);
+		if (RayShadowBounded(pScene, vector_point + FLOAT(0.0001) * vector_normal, vector_light)) {
+			scale_diffuse *= 0.5;
+			scale_specular = 0;
+		}
 		Vector4<FLOAT> color = color_diffuse * scale_diffuse + color_specular * scale_specular;
 		if (scale_refract > 0) {
 			//Schlick's Approximation for reflectance.
