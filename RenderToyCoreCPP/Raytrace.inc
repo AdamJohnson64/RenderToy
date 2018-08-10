@@ -329,50 +329,56 @@ DEVICE_PREFIX bool IntersectTriangle(RAYQUERY& result, const Vector3<FLOAT>& ori
 	return true;
 }
 
-template <typename FLOAT, typename RAYQUERY, int RECURSION>
-struct IntersectMeshBVHRecurse {
-	static DEVICE_PREFIX bool Traverse(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVH<FLOAT>& node) DEVICE_SUFFIX {
-		// Keep tally of any hits.
-		bool foundhit = false;
-		// TODO: C++AMP doesn't like this code at all and CUDA has a hard time compiling it.
-		//       We're only going to build this for CPU and CUDA.
-		#ifndef _WINRT_DLL
-		// Make sure we're hitting this node first.
+template <typename FLOAT, typename RAYQUERY>
+DEVICE_PREFIX bool IntersectMeshBVH(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVH<FLOAT>& node) DEVICE_SUFFIX {
+	// Keep tally of any hits.
+	bool foundhit = false;
+	// TODO: C++AMP doesn't like this code at all and CUDA has a hard time compiling it.
+	//       We're only going to build this for CPU and CUDA.
+	#ifndef _WINRT_DLL
+	// Make sure we're hitting this node first.
+	const MeshBVH<FLOAT> *walk = &node;
+	while (walk != nullptr)
+	{
 		SetCountBoxTest(result, GetCountBoxTest(result) + 1);
-		if (!IntersectBound(origin, direction, node.Min, node.Max)) return foundhit;
-		// Descend into child nodes if we have them.
-		if (node.ChildrenOffset != 0) {
-			const MeshBVHList<FLOAT>& children = *(const MeshBVHList<FLOAT>*)FollowPointer(pScene, node.ChildrenOffset);
-			for (int i = 0; i < children.Count; ++i) {
-				const MeshBVH<FLOAT>& child = children.Nodes[i];
-				foundhit |= IntersectMeshBVHRecurse<FLOAT, RAYQUERY, RECURSION - 1>::Traverse(result, origin, direction, pScene, child);
+		if (IntersectBound(origin, direction, walk->Min, walk->Max))
+		{
+			// Check the triangles if we have them.
+			if (walk->TriangleOffset != 0) {
+				const Triangle3DList<FLOAT>& triangles = *(const Triangle3DList<FLOAT>*)FollowPointer(pScene, walk->TriangleOffset);
+				for (int i = 0; i < triangles.Count; ++i) {
+					const Vector3<FLOAT> p0 = triangles.Triangles[i].P[0];
+					const Vector3<FLOAT> p1 = triangles.Triangles[i].P[1];
+					const Vector3<FLOAT> p2 = triangles.Triangles[i].P[2];
+					foundhit |= IntersectTriangle<FLOAT, RAYQUERY>(result, origin, direction, p0, p1, p2);
+				}
 			}
-		}
-		// Check the triangles if we have them.
-		if (node.TriangleOffset != 0) {
-			const Triangle3DList<FLOAT>& triangles = *(const Triangle3DList<FLOAT>*)FollowPointer(pScene, node.TriangleOffset);
-			for (int i = 0; i < triangles.Count; ++i) {
-				const Vector3<FLOAT> p0 = triangles.Triangles[i].P[0];
-				const Vector3<FLOAT> p1 = triangles.Triangles[i].P[1];
-				const Vector3<FLOAT> p2 = triangles.Triangles[i].P[2];
-				foundhit |= IntersectTriangle<FLOAT, RAYQUERY>(result, origin, direction, p0, p1, p2);
+			// Descend into child nodes if we have them.
+			if (walk->ChildOffset != 0) {
+				walk = (const MeshBVH<FLOAT>*)FollowPointer(pScene, walk->ChildOffset);
+				continue;
 			}
+			// Move to the next chained node if we have one.
+			if (walk->NextOffset != 0)
+			{
+				walk = (const MeshBVH<FLOAT>*)FollowPointer(pScene, walk->NextOffset);
+				continue;
+			}
+			walk = nullptr;
 		}
-		#endif  //_WINRT_DLL
-		return foundhit;
+		else
+		{
+			// Move to the next chained node if we have one.
+			if (walk->NextOffset != 0)
+			{
+				walk = (const MeshBVH<FLOAT>*)FollowPointer(pScene, walk->NextOffset);
+				continue;
+			}
+			walk = nullptr;
+		}
 	}
-};
-
-template <typename FLOAT, typename RAYQUERY>
-struct IntersectMeshBVHRecurse<FLOAT, RAYQUERY, -1> {
-	static DEVICE_PREFIX bool Traverse(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVH<FLOAT>& node) DEVICE_SUFFIX {
-		return false;
-	}
-};
-
-template <typename FLOAT, typename RAYQUERY>
-DEVICE_PREFIX bool IntersectMeshBVH(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVH<FLOAT>& mesh) DEVICE_SUFFIX {
-	return IntersectMeshBVHRecurse<FLOAT, RAYQUERY, 8>::Traverse(result, origin, direction, pScene, mesh);
+	#endif  //_WINRT_DLL
+	return foundhit;
 }
 
 template <typename FLOAT, typename RAYQUERY>

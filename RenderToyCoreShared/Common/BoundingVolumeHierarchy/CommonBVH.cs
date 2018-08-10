@@ -115,12 +115,7 @@ namespace RenderToy.BoundingVolumeHierarchy
             return new Bound1D(vertices.Select(x => MathHelp.Dot(x, project)).Min(), vertices.Select(x => MathHelp.Dot(x, project)).Max());
         }
         #endregion
-        /// <summary>
-        /// Unfortunately we have to clamp the BVH depth quite aggressively.
-        /// In CUDA this is quite conservative.
-        /// In C++AMP setting this too high kills the compiler.
-        /// </summary>
-        public const int MAXIMUM_BVH_DEPTH = 8;
+        public const int MAXIMUM_BVH_DEPTH = 16;
     }
 }
 

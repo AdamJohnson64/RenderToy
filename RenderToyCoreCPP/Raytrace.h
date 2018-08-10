@@ -46,19 +46,11 @@ template <typename FLOAT>
 struct MeshBVH {
 	Vector3<FLOAT> Min;
 	Vector3<FLOAT> Max;
-	int ChildrenOffset;
 	int TriangleOffset;
-};
-
-#pragma warning(push)
-#pragma warning(disable:4200)
-template <typename FLOAT>
-struct MeshBVHList {
-	int Count;
+	int ChildOffset;
+	int NextOffset;
 	int Padding0;
-	MeshBVH<FLOAT> Nodes[];
 };
-#pragma warning(pop)
 
 template <typename FLOAT>
 struct Triangle3D {

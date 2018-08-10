@@ -157,6 +157,49 @@ namespace RenderToy
         }
     }
     [TestClass]
+    public class BVHChainTests
+    {
+        [TestMethod]
+        public void BVHChainCompleteness()
+        {
+            var root = new MeshBVH(new Bound3D(new Vector3D(0,0,0), new Vector3D(4,4,0)), null, new[] {
+                new MeshBVH(new Bound3D(new Vector3D(0,0,0), new Vector3D(2,2,0)), null, new[] {
+                    new MeshBVH(new Bound3D(new Vector3D(0,0,0), new Vector3D(1,1,0)), null, null),
+                    new MeshBVH(new Bound3D(new Vector3D(1,0,0), new Vector3D(2,1,0)), null, null),
+                    new MeshBVH(new Bound3D(new Vector3D(0,1,0), new Vector3D(1,2,0)), null, null),
+                    new MeshBVH(new Bound3D(new Vector3D(1,1,0), new Vector3D(2,2,0)), null, null),
+                }),
+                new MeshBVH(new Bound3D(new Vector3D(2,0,0), new Vector3D(2,2,0)), null, null),
+                new MeshBVH(new Bound3D(new Vector3D(0,2,0), new Vector3D(2,2,0)), null, null),
+                new MeshBVH(new Bound3D(new Vector3D(2,2,0), new Vector3D(2,2,0)), null, null)
+            });
+            var chain = MeshBVHChain.Create(root);
+            var discovered = new HashSet<MeshBVHChain>();
+            var walk = chain;
+            while (walk != null)
+            {
+                Console.WriteLine("[" + walk.Bound.Min.X + "," + walk.Bound.Min.Y + "],[" + walk.Bound.Max.X + "," + walk.Bound.Max.Y + "]");
+                if (discovered.Contains(walk))
+                {
+                    throw new Exception("Loop in BVH node chain.");
+                }
+                discovered.Add(walk);
+                if (walk.Child != null)
+                {
+                    walk = walk.Child;
+                }
+                else
+                {
+                    walk = walk.Sibling;
+                }
+            }
+            if (discovered.Count != 9)
+            {
+                throw new Exception("Expected to find 9 total nodes in the BVH node chain.");
+            }
+        }
+    }
+    [TestClass]
     public class ClipHelpTests
     {
         [TestMethod]

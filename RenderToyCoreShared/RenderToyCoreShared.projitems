@@ -29,6 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\MaterialExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\Perlin2D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\Spike.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Meshes\MeshBVHChain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Meshes\VertexFormat.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderBPT.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderModel.cs" />

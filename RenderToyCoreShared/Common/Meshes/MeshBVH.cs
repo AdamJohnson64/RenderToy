@@ -49,8 +49,8 @@ namespace RenderToy.Meshes
                 }
             }
         }
-        public readonly Bound3D Bound;
-        public readonly Triangle3D[] Triangles;
-        public readonly MeshBVH[] Children;
+        public Bound3D Bound { get; protected set; }
+        public Triangle3D[] Triangles { get; protected set; }
+        public MeshBVH[] Children { get; protected set; }
     }
 }

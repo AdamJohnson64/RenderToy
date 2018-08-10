@@ -81,13 +81,9 @@ namespace RenderToy.RenderMode
                     }
                     // Record our location and write this object.
                     writeremaining.Offset = (int)m.Position;
-                    if (writeremaining.Target is MeshBVH)
+                    if (writeremaining.Target is MeshBVHChain)
                     {
-                        Serialize((MeshBVH)writeremaining.Target);
-                    }
-                    else if (writeremaining.Target is IReadOnlyList<MeshBVH>)
-                    {
-                        Serialize((IReadOnlyList<MeshBVH>)writeremaining.Target);
+                        Serialize((MeshBVHChain)writeremaining.Target);
                     }
                     else if (writeremaining.Target is IReadOnlyList<Triangle3D>)
                     {
@@ -168,12 +164,12 @@ namespace RenderToy.RenderMode
                 var meshbvh = MementoServer.Default.Get(primitive, MeshBVHToken, () =>
                 {
                     var mesh = (Mesh)primitive;
-                    return MeshBVH.Create(mesh);
+                    return MeshBVHChain.Create(MeshBVH.Create(mesh));
                 });
                 binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
                 EmitAndQueue(meshbvh);
             }
-            else if (primitive is MeshBVH)
+            else if (primitive is MeshBVHChain)
             {
                 binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
                 EmitAndQueue(primitive);
@@ -184,7 +180,7 @@ namespace RenderToy.RenderMode
                 {
                     var mesh = (IParametricUV)primitive;
                     var triangles = Split(PrimitiveAssembly.CreateTriangles(mesh), 3).Select(i => new Triangle3D(i[0], i[1], i[2]));
-                    return MeshBVH.Create(triangles.ToArray());
+                    return MeshBVHChain.Create(MeshBVH.Create(triangles.ToArray()));
                 });
                 binarywriter.Write((int)Geometry.GEOMETRY_MESHBVH);
                 EmitAndQueue(meshbvh);
@@ -221,21 +217,14 @@ namespace RenderToy.RenderMode
             Serialize(obj.Refract, Serialize);
             Serialize((double)obj.Ior);
         }
-        void Serialize(MeshBVH obj)
+        void Serialize(MeshBVHChain obj)
         {
             Serialize(obj.Bound.Min, Serialize);
             Serialize(obj.Bound.Max, Serialize);
-            EmitAndQueue(obj.Children);
             EmitAndQueue(obj.Triangles);
-        }
-        void Serialize(IReadOnlyList<MeshBVH> obj)
-        {
-            binarywriter.Write((int)obj.Count);
-            binarywriter.Write((int)0);
-            foreach (var item in obj)
-            {
-                Serialize(item);
-            }
+            EmitAndQueue(obj.Child);
+            EmitAndQueue(obj.Sibling);
+            Serialize((int)0);
         }
         void Serialize(IReadOnlyList<Vector3D> obj)
         {
