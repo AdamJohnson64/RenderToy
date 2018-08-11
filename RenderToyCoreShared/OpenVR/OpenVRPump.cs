@@ -29,6 +29,11 @@ namespace RenderToy
             OpenVRHelper.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
             ID3D11VertexShader d3d11VertexShader = null;
             ID3D11PixelShader d3d11PixelShader = null;
+            {
+                ID3D11ClassLinkage linkage = null;
+                Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, linkage, ref d3d11VertexShader);
+                Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, linkage, ref d3d11PixelShader);
+            }
             ID3D11Texture2D d3d11Texture2D_RT_EyeLeft = null;
             ID3D11RenderTargetView d3d11RenderTargetView_EyeLeft = null;
             ID3D11Texture2D d3d11Texture2D_DS_EyeLeft = null;
@@ -38,9 +43,6 @@ namespace RenderToy
             ID3D11Texture2D d3d11Texture2D_DS_EyeRight = null;
             ID3D11DepthStencilView d3d11DepthStencilView_EyeRight = null;
             {
-                ID3D11ClassLinkage linkage = null;
-                Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, linkage, ref d3d11VertexShader);
-                Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, linkage, ref d3d11PixelShader);
                 var d3d11Texture2DDesc_RT = new D3D11_TEXTURE2D_DESC { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, SampleDesc = new DXGI_SAMPLE_DESC { Count = 1, Quality = 0 }, Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET | (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE, CPUAccessFlags = 0 };
                 var d3d11Texture2DDesc_DS = new D3D11_TEXTURE2D_DESC { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT, SampleDesc = new DXGI_SAMPLE_DESC { Count = 1, Quality = 0 }, Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL, CPUAccessFlags = 0 };
                 var d3d11RenderTargetView_RT = new D3D11_RENDER_TARGET_VIEW_DESC { Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, ViewDimension = D3D11_RTV_DIMENSION.D3D11_RTV_DIMENSION_TEXTURE2D };
@@ -74,12 +76,9 @@ namespace RenderToy
                     scene.TableTransform[i] = scene.TableNodeTransform[scene.IndexToNodeTransform[i]].Transform;
                 }
                 RenderToyEventSource.Default.MarkerEnd("Update");
-                RenderToyEventSource.Default.MarkerBegin("Build & Execute Command Buffers");
-                ID3D11DeviceContext context_old = null;
-                Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
-                var context = (ID3D11DeviceContext4)context_old;
                 Task<ID3D11CommandList> do_left = Task.Factory.StartNew(() =>
                 {
+                    RenderToyEventSource.Default.MarkerBegin("Command Buffer (Left Eye)");
                     ID3D11DeviceContext deferred_left_old = null;
                     Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
                     ID3D11DeviceContext4 deferred_left = (ID3D11DeviceContext4)deferred_left_old;
@@ -104,10 +103,12 @@ namespace RenderToy
                     Execute_RenderSceneLeft(deferred_left, constants);
                     ID3D11CommandList commandList = null;
                     deferred_left.FinishCommandList(0, ref commandList);
+                    RenderToyEventSource.Default.MarkerEnd("Command Buffer (Left Eye)");
                     return commandList;
                 });
                 Task<ID3D11CommandList> do_right = Task.Factory.StartNew(() =>
                 {
+                    RenderToyEventSource.Default.MarkerBegin("Command Buffer (Right Eye)");
                     ID3D11DeviceContext deferred_right_old = null;
                     Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_right_old);
                     ID3D11DeviceContext4 deferred_right = (ID3D11DeviceContext4)deferred_right_old;
@@ -132,26 +133,37 @@ namespace RenderToy
                     Execute_RenderSceneRight(deferred_right, constants);
                     ID3D11CommandList commandList = null;
                     deferred_right.FinishCommandList(0, ref commandList);
+                    RenderToyEventSource.Default.MarkerEnd("Command Buffer (Right Eye)");
                     return commandList;
                 });
-                do_left.Wait();
-                do_right.Wait();
-                RenderToyEventSource.Default.MarkerEnd("Build & Execute Command Buffers");
-                RenderToyEventSource.Default.MarkerBegin("Execute All RTs");
-                context.ExecuteCommandList(do_left.Result, 1);
-                context.ExecuteCommandList(do_right.Result, 1);
-                RenderToyEventSource.Default.MarkerEnd("Execute All RTs");
-                RenderToyEventSource.Default.MarkerBegin("Submit To OpenVR");
-                unsafe
                 {
-                    VRTextureBounds_t *pBounds = null;
-                    var textureLeft = new Texture_t { handle = Marshal.GetComInterfaceForObject<ID3D11Texture2D, ID3D11Texture2D>(d3d11Texture2D_RT_EyeLeft), eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto };
-                    OpenVRHelper.Compositor.Submit(EVREye.Eye_Left, ref textureLeft, ref *pBounds, EVRSubmitFlags.Submit_Default);
-                    var textureRight = new Texture_t { handle = Marshal.GetComInterfaceForObject<ID3D11Texture2D, ID3D11Texture2D>(d3d11Texture2D_RT_EyeRight), eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto };
-                    OpenVRHelper.Compositor.Submit(EVREye.Eye_Right, ref textureRight, ref *pBounds, EVRSubmitFlags.Submit_Default);
+                    RenderToyEventSource.Default.MarkerBegin("Wait Render Completion");
+                    do_left.Wait();
+                    do_right.Wait();
+                    RenderToyEventSource.Default.MarkerEnd("Wait Render Completion");
                 }
-                RenderToyEventSource.Default.MarkerEnd("Submit To OpenVR");
-                RenderToyEventSource.Default.RenderEnd();
+                {
+                    RenderToyEventSource.Default.MarkerBegin("Execute All RTs");
+                    ID3D11DeviceContext context_old = null;
+                    Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
+                    var context = (ID3D11DeviceContext4)context_old;
+                    context.ExecuteCommandList(do_left.Result, 1);
+                    context.ExecuteCommandList(do_right.Result, 1);
+                    RenderToyEventSource.Default.MarkerEnd("Execute All RTs");
+                }
+                {
+                    RenderToyEventSource.Default.MarkerBegin("Submit To OpenVR");
+                    unsafe
+                    {
+                        VRTextureBounds_t* pBounds = null;
+                        var textureLeft = new Texture_t { handle = Marshal.GetComInterfaceForObject<ID3D11Texture2D, ID3D11Texture2D>(d3d11Texture2D_RT_EyeLeft), eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto };
+                        OpenVRHelper.Compositor.Submit(EVREye.Eye_Left, ref textureLeft, ref *pBounds, EVRSubmitFlags.Submit_Default);
+                        var textureRight = new Texture_t { handle = Marshal.GetComInterfaceForObject<ID3D11Texture2D, ID3D11Texture2D>(d3d11Texture2D_RT_EyeRight), eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto };
+                        OpenVRHelper.Compositor.Submit(EVREye.Eye_Right, ref textureRight, ref *pBounds, EVRSubmitFlags.Submit_Default);
+                    }
+                    RenderToyEventSource.Default.MarkerEnd("Submit To OpenVR");
+                    RenderToyEventSource.Default.RenderEnd();
+                }
             };
         }
         public static Action CreateRendererRaytraced(SparseScene scene)
