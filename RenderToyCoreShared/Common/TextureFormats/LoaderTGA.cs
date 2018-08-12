@@ -33,19 +33,39 @@ namespace RenderToy.TextureFormats
                 ushort width = binaryreader.ReadUInt16();
                 ushort height = binaryreader.ReadUInt16();
                 byte bitdepth = binaryreader.ReadByte();
-                if (bitdepth != 24) throw new FileLoadException("Expected 24bpp.");
                 byte imagedescriptor = binaryreader.ReadByte();
-                if (imagedescriptor != 0) throw new FileLoadException("Expected Zero Image Descriptor.");
-                var data = new byte[4 * width * height];
-                for (int y = height - 1; y >= 0; --y)
+                byte[] data = data = new byte[4 * width * height];
+                if (bitdepth == 24)
                 {
-                    for (int x = 0; x < width; ++x)
+                    if (imagedescriptor != 0) throw new FileLoadException("Expected Zero Image Descriptor.");
+                    for (int y = height - 1; y >= 0; --y)
                     {
-                        data[0 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
-                        data[1 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
-                        data[2 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
-                        data[3 + 4 * x + 4 * width * y] = (byte)255;
+                        for (int x = 0; x < width; ++x)
+                        {
+                            data[0 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                            data[1 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                            data[2 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                            data[3 + 4 * x + 4 * width * y] = (byte)255;
+                        }
                     }
+                }
+                else if (bitdepth == 32)
+                {
+                    if (imagedescriptor != 8) throw new FileLoadException("Expected Zero Image Descriptor.");
+                    for (int y = height - 1; y >= 0; --y)
+                    {
+                        for (int x = 0; x < width; ++x)
+                        {
+                            data[0 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                            data[1 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                            data[2 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                            data[3 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
+                        }
+                    }
+                }
+                else
+                {
+                    throw new FileLoadException("Expected 24 or 32bpp.");
                 }
                 return new ImageBgra32(Path.GetFileName(path), width, height, data);
             }
