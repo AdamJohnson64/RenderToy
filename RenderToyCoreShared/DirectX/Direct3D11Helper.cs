@@ -22,7 +22,7 @@ namespace RenderToy.DirectX
 {
     public class Direct3D11Helper
     {
-        public static ID3D11Device d3d11Device = DoOnUI.Call(Direct3D11.D3D11CreateDevice);
+        public static ID3D11Device d3d11Device;
         static ID3D11InputLayout d3d11InputLayout;
         static ID3D11RasterizerState d3d11RasterizerState;
         static ID3D11SamplerState d3d11SamplerState;
@@ -216,6 +216,10 @@ namespace RenderToy.DirectX
         }
         static Direct3D11Helper()
         {
+            DoOnUI.Call(() =>
+            {
+                d3d11Device = Direct3D11.D3D11CreateDevice();
+            });
             var inputelements = new[]
             {
                 new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Position").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
