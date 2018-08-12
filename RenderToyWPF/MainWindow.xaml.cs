@@ -14,6 +14,7 @@ using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using RenderToy.Textures;
 using RenderToy.Transforms;
+using RenderToy.Utility;
 using RenderToy.WPF.Xps;
 using System;
 using System.Collections.ObjectModel;
@@ -68,14 +69,16 @@ namespace RenderToy.WPF
         public static ICommand CommandWindowDirect3D12 = new RoutedUICommand("Open a DirectX 12 View Window.", "CommandWindowDirect3D12", typeof(MainWindow));
         public static ICommand CommandWindowTextureLab = new RoutedUICommand("Open a Texture Lab Window.", "CommandWindowTextureLab", typeof(MainWindow));
         public static ICommand CommandStartOpenVR = new RoutedUICommand("Start OpenVR.", "CommandStartOpenVR", typeof(MainWindow));
+        public static ICommand CommandStartOpenVRRaytraced = new RoutedUICommand("Start OpenVR (Raytracing).", "CommandStartOpenVRRaytraced", typeof(MainWindow));
         public MainWindow()
         {
-            var createD3DMTA = Task.Factory.StartNew(() =>
+            DoOnUI.Call(() =>
             {
                 var dx9 = Direct3D9Helper.device;
+                var dx11 = Direct3D11Helper.d3d11Device;
                 var dx12 = ViewD3D12.d3d12Device;
             });
-            createD3DMTA.Wait();
+            //Thread.Sleep(1000);
             InitializeComponent();
             CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => {
                 DataContext = Document.Default;
@@ -254,6 +257,15 @@ namespace RenderToy.WPF
                     OpenVRPump.CreateThread(doc.Scene);
                 }
                 #endif // OPENVR_INSTALLED
+            }));
+            CommandBindings.Add(new CommandBinding(CommandStartOpenVRRaytraced, (s, e) =>
+            {
+#if OPENVR_INSTALLED
+                if (DataContext is Document doc)
+                {
+                    OpenVRPump.CreateThreadRaytraced(doc.Scene);
+                }
+#endif // OPENVR_INSTALLED
             }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
