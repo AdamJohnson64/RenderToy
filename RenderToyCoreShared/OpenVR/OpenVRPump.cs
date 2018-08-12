@@ -186,8 +186,8 @@ namespace RenderToy
         {
             uint vrwidth = 0, vrheight = 0;
             OpenVRHelper.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
-            vrwidth /= 2;
-            vrheight /= 2;
+            vrwidth /= 4;
+            vrheight /= 4;
             ID3D11VertexShader d3d11VertexShader = null;
             ID3D11PixelShader d3d11PixelShader = null;
             ID3D11Texture2D d3d11Texture2D_RT_EyeLeft = null;
@@ -220,7 +220,7 @@ namespace RenderToy
             }
             var Execute_RenderSceneLeft = Direct3D11Helper.CreateSceneDraw(scene);
             var Execute_RenderSceneRight = Direct3D11Helper.CreateSceneDraw(scene);
-            var sceneData = SceneSerializer.CreateFlatMemoryF32(TransformedObject.Enumerate(TestScenes.DefaultScene));
+            var sceneData = SceneSerializer.CreateFlatMemoryF32(scene);
             return () =>
             {
                 OpenVRHelper.Update();
