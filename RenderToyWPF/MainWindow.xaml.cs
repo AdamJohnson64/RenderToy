@@ -73,7 +73,6 @@ namespace RenderToy.WPF
             var createD3DMTA = Task.Factory.StartNew(() =>
             {
                 var dx9 = Direct3D9Helper.device;
-                var dx11 = Direct3D11Helper.d3d11Device;
                 var dx12 = ViewD3D12.d3d12Device;
             });
             createD3DMTA.Wait();

@@ -7,6 +7,7 @@
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Transforms;
+using RenderToy.Utility;
 using System.Linq;
 using Valve.VR;
 
@@ -52,8 +53,11 @@ namespace RenderToy
         {
             TrackedDevicePose_t[] renderPose = new TrackedDevicePose_t[16];
             TrackedDevicePose_t[] gamePose = new TrackedDevicePose_t[16];
-        AGAIN:
-            Compositor.WaitGetPoses(renderPose, gamePose);
+            AGAIN:
+            DoOnUI.Call(() =>
+            {
+                Compositor.WaitGetPoses(renderPose, gamePose);
+            });
             float SecondsFromVsyncToPhotons = 0;
             {
                 float fSecondsSinceLastVsync = 0;

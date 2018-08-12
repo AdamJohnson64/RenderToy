@@ -22,7 +22,7 @@ namespace RenderToy.DirectX
 {
     public class Direct3D11Helper
     {
-        public static ID3D11Device d3d11Device = Direct3D11.D3D11CreateDevice();
+        public static ID3D11Device d3d11Device = DoOnUI.Call(Direct3D11.D3D11CreateDevice);
         static ID3D11InputLayout d3d11InputLayout;
         static ID3D11RasterizerState d3d11RasterizerState;
         static ID3D11SamplerState d3d11SamplerState;
@@ -32,13 +32,17 @@ namespace RenderToy.DirectX
             const int SIZEOF_MATRIX = 4 * 4 * 4;
             var d3d11constantbufferCPU = new byte[256 * 1024];
             ID3D11Buffer d3d11constantbufferGPU = null;
-            unsafe
-            {
-                D3D11_SUBRESOURCE_DATA *subresource = null;
-                Direct3D11Helper.d3d11Device.CreateBuffer(new D3D11_BUFFER_DESC { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, ref *subresource, ref d3d11constantbufferGPU);
-            }
             // We're collecting constant buffers because DX11 hates to do actual work.
-            var constantbufferlist = new[] { d3d11constantbufferGPU };
+            ID3D11Buffer[] constantbufferlist = null;
+            DoOnUI.Call(() =>
+            {
+                unsafe
+                {
+                    D3D11_SUBRESOURCE_DATA* subresource = null;
+                    Direct3D11Helper.d3d11Device.CreateBuffer(new D3D11_BUFFER_DESC { ByteWidth = (uint)d3d11constantbufferCPU.Length, Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = 4 * 16 }, ref *subresource, ref d3d11constantbufferGPU);
+                }
+                constantbufferlist = new[] { d3d11constantbufferGPU };
+            });
             return (context, constants) =>
             {
                 var profilingName = (string)constants["profilingName"];
@@ -221,8 +225,8 @@ namespace RenderToy.DirectX
                 new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Tangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
                 new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Bitangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
             };
-            D3D11Shim.Device_CreateInputLayout(d3d11Device, ref inputelements, UnmanagedCopy.Create(HLSL.D3D11VS), HLSL.D3D11VS.Length, ref d3d11InputLayout);
-            d3d11Device.CreateRasterizerState(new D3D11_RASTERIZER_DESC { FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID, CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE }, ref d3d11RasterizerState);
+            DoOnUI.Call(() => { D3D11Shim.Device_CreateInputLayout(d3d11Device, ref inputelements, UnmanagedCopy.Create(HLSL.D3D11VS), HLSL.D3D11VS.Length, ref d3d11InputLayout); });
+            DoOnUI.Call(() => { d3d11Device.CreateRasterizerState(new D3D11_RASTERIZER_DESC { FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID, CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE }, ref d3d11RasterizerState); });
             {
                 var pSamplerDesc = new D3D11_SAMPLER_DESC();
                 pSamplerDesc.Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -239,7 +243,7 @@ namespace RenderToy.DirectX
                 pSamplerDesc.BorderColor[3] = 0;
                 pSamplerDesc.MinLOD = 0;
                 pSamplerDesc.MaxLOD = float.MaxValue;
-                d3d11Device.CreateSamplerState(pSamplerDesc, ref d3d11SamplerState);
+                DoOnUI.Call(() => { d3d11Device.CreateSamplerState(pSamplerDesc, ref d3d11SamplerState); });
             }
         }
         readonly static string DX11TextureView = "DX11TextureView";

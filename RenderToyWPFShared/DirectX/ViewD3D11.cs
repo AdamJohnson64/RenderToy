@@ -15,30 +15,35 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace RenderToy.WPF
 {
     class ViewD3D11 : ViewD3DImageBuffered
     {
+        DispatcherTimer timer = null;
+        public ViewD3D11()
+        {
+            timer = new DispatcherTimer(TimeSpan.FromMilliseconds(1000 / 60), DispatcherPriority.ApplicationIdle, (s, e) => { RenderDX(); }, Application.Current.Dispatcher);
+            timer.Start();
+        }
         public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewD3D11), new FrameworkPropertyMetadata(HLSL.D3D11VS, OnVertexShaderChanged));
         public byte[] VertexShader
         {
             get { return (byte[])GetValue(VertexShaderProperty); }
             set { SetValue(VertexShaderProperty, value); }
         }
-        private async static void OnVertexShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        private static void OnVertexShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue is byte[] bytecode)
             {
-                var task = Task.Factory.StartNew(() =>
+                ((ViewD3D11)sender).d3d11VertexShader = DoOnUI.Call(() =>
                 {
                     ID3D11ClassLinkage linkage = null;
                     ID3D11VertexShader newshader = null;
                     Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, linkage, ref newshader);
                     return newshader;
                 });
-                ((ViewD3D11)sender).d3d11VertexShader = await task;
             }
         }
         public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewD3D11), new FrameworkPropertyMetadata(HLSL.D3D11PS, OnPixelShaderChanged));
@@ -47,29 +52,24 @@ namespace RenderToy.WPF
             get { return (byte[])GetValue(PixelShaderProperty); }
             set { SetValue(PixelShaderProperty, value); }
         }
-        private async static void OnPixelShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        private static void OnPixelShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue is byte[] bytecode)
             {
-                var task = Task.Factory.StartNew(() =>
+                ((ViewD3D11)sender).d3d11PixelShader = DoOnUI.Call(() =>
                 {
                     ID3D11ClassLinkage linkage = null;
                     ID3D11PixelShader newshader = null;
                     Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, linkage, ref newshader);
                     return newshader;
                 });
-                ((ViewD3D11)sender).d3d11PixelShader = await task;
             }
         }
         static ViewD3D11()
         {
-            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewD3D11), new FrameworkPropertyMetadata(null, async (s, e) =>
+            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewD3D11), new FrameworkPropertyMetadata(null, (s, e) =>
             {
-                var task = Task.Factory.StartNew(() =>
-                {
-                     return Direct3D11Helper.CreateSceneDraw((SparseScene)e.NewValue);
-                });
-                ((ViewD3D11)s).Execute_DrawScene = await task;
+                ((ViewD3D11)s).Execute_DrawScene = Direct3D11Helper.CreateSceneDraw((SparseScene)e.NewValue);
                 ((ViewD3D11)s).RenderDX();
             }));
             AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewD3D11), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>
@@ -88,7 +88,7 @@ namespace RenderToy.WPF
             constants["transformView"] = AttachedView.GetTransformView(this);
             constants["transformProjection"] = AttachedView.GetTransformProjection(this); ;
             var desc = new D3D11_TEXTURE2D_DESC();
-            var task = Task.Factory.StartNew(() =>
+            DoOnUI.Call(() =>
             {
                 RenderToyEventSource.Default.RenderBegin();
                 ID3D11DeviceContext context_old = null;
@@ -114,7 +114,6 @@ namespace RenderToy.WPF
                 context.Flush();
                 RenderToyEventSource.Default.RenderEnd();
             });
-            task.Wait();
             Target.Lock();
             Target.AddDirtyRect(new Int32Rect(0, 0, (int)desc.Width, (int)desc.Height));
             Target.Unlock();
@@ -122,7 +121,7 @@ namespace RenderToy.WPF
         protected override Size MeasureOverride(Size availableSize)
         {
             var size = base.MeasureOverride(availableSize);
-            var task = Task.Factory.StartNew(() =>
+            DoOnUI.Call(() =>
             {
                 var texptr = new IntPtr();
                 Direct3D11Helper.d3d11Device.OpenSharedResource(d3d9backbufferhandle, Marshal.GenerateGuidForType(typeof(ID3D11Texture2D)), ref texptr);
@@ -140,7 +139,6 @@ namespace RenderToy.WPF
                 dsv.__MIDL____MIDL_itf_RenderToy_0005_00660000.Texture2D = new D3D11_TEX2D_DSV { MipSlice = 0 };
                 Direct3D11Helper.d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS, dsv, ref d3d11DepthStencilView);
             });
-            task.Wait();
             RenderDX();
             return size;
         }
