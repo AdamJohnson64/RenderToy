@@ -9,6 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <memory>
+#include "InteropAMP.h"
 #include "RaytraceExportAMP.h"
 #include "RaytraceExportCPU.h"
 #include "RaytraceExportCUDA.h"
@@ -99,11 +100,10 @@ namespace RenderToy
 			::AmbientOcclusionCUDAF64(pin_scene, pin_inverse_mvp, (void*)bitmap_ptr, render_width, render_height, bitmap_stride, sample_offset, sample_count);
 		}
 		*/
-		static void TEST_RaycastNormalsAMPF32D3D(array<unsigned char>^ scene, array<unsigned char>^ inverse_mvp, System::IntPtr d3d11device, System::IntPtr d3d11texture)
+		static void TEST_RaycastNormalsAMPF32D3D(AMPArrayView^ scene, array<unsigned char>^ inverse_mvp, System::IntPtr d3d11device, System::IntPtr d3d11texture)
 		{
-			pin_ptr<unsigned char> pin_scene = &scene[0];
 			pin_ptr<unsigned char> pin_inverse_mvp = &inverse_mvp[0];
-			::TEST_RaycastNormalsAMPF32D3D(pin_scene, pin_inverse_mvp, d3d11device.ToPointer(), d3d11texture.ToPointer());
+			::TEST_RaycastNormalsAMPF32D3D(scene->GetView(), pin_inverse_mvp, d3d11device.ToPointer(), d3d11texture.ToPointer());
 		}
 	};
 }

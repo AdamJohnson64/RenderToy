@@ -13,31 +13,36 @@ namespace RenderToy.Utility
         public static UnmanagedCopy Create<TYPE>(TYPE[] data)
         {
             var result = new UnmanagedCopy();
-            result.Pinned = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var hsrc = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
-            var size = Marshal.SizeOf(typeof(TYPE)) * data.Length;
-            result.Marshaled = Marshal.AllocCoTaskMem(size);
-            unsafe
+            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            try
             {
-                byte* src = (byte*)hsrc.ToPointer();
-                byte* dst = (byte*)result.Marshaled.ToPointer();
-                for (int i = 0; i < size; ++i)
+                var hsrc = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
+                var size = Marshal.SizeOf(typeof(TYPE)) * data.Length;
+                result.Marshaled = Marshal.AllocHGlobal(size);
+                unsafe
                 {
-                    dst[i] = src[i];
+                    byte* src = (byte*)hsrc.ToPointer();
+                    byte* dst = (byte*)result.Marshaled.ToPointer();
+                    for (int i = 0; i < size; ++i)
+                    {
+                        dst[i] = src[i];
+                    }
                 }
+                return result;
             }
-            return result;
+            finally
+            {
+                handle.Free();
+            }
         }
         ~UnmanagedCopy()
         {
-            Pinned.Free();
-            Marshal.FreeCoTaskMem(Marshaled);
+            Marshal.FreeHGlobal(Marshaled);
         }
         public static implicit operator IntPtr(UnmanagedCopy marshal)
         {
             return marshal.Marshaled;
         }
-        GCHandle Pinned;
         IntPtr Marshaled { get; set; }
     }
 }

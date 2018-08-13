@@ -9,7 +9,6 @@
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCPU.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCUDA.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RenderToyCLI.cpp" />
-    <ClCompile Include="InteropLibPNG.cpp" />
     <ClCompile Include="..\ThirdParty\zlib\adler32.c">
       <Filter>zlib</Filter>
     </ClCompile>
@@ -103,6 +102,9 @@
     <ClCompile Include="..\ThirdParty\zlib\zutil.c">
       <Filter>zlib</Filter>
     </ClCompile>
+    <ClCompile Include="..\RenderToyCoreCPP\InteropLibPNG.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\AMPArrayViewWrap.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\AMPArrayView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\RenderToyCoreCPP\InteropCommon.h" />
@@ -164,6 +166,8 @@
     <ClInclude Include="..\ThirdParty\zlib\zutil.h">
       <Filter>zlib</Filter>
     </ClInclude>
+    <ClInclude Include="..\RenderToyCoreCPP\AMPArrayViewWrap.h" />
+    <ClInclude Include="..\RenderToyCoreCPP\AMPArrayView.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\RenderToyCoreCPP\Raytrace.inc" />

@@ -11,6 +11,7 @@
 #include <amp_graphics.h>
 #include <amp_math.h>
 #include <d3d11.h>
+#include "AMPArrayViewWrap.h"
 #include "Raytrace.h"
 
 namespace RaytraceCX {
@@ -76,9 +77,9 @@ void AMPExecutor(const void* scene, const void* inverse_mvp, void* bitmap_ptr, i
 	view_bitmap.synchronize();
 }
 
-extern "C" void TEST_RaycastNormalsAMPF32D3D(const void* scene, const void* inverse_mvp, void* d3ddevice, void *d3dtexture)
+extern "C" void TEST_RaycastNormalsAMPF32D3D(const RenderToy::IAMPMemory* scene, const void* inverse_mvp, void* d3ddevice, void *d3dtexture)
 {
-	Concurrency::array_view<int, 1> view_scene(((Scene<FLOAT>*)scene)->FileSize / sizeof(int), (int*)scene);
+	Concurrency::array_view<int, 1> &view_scene = *(Concurrency::array_view<int, 1>*)scene->GetBlob(); // ((Scene<FLOAT>*)scene)->FileSize / sizeof(int), (int*)scene);
 	Concurrency::array_view<FLOAT, 1> view_imvp(4 * 4 * sizeof(FLOAT), (FLOAT*)inverse_mvp);
 	auto acv = concurrency::direct3d::create_accelerator_view((ID3D11Device*)d3ddevice);
 	auto tex = concurrency::graphics::direct3d::make_texture<concurrency::graphics::unorm_4, 2>(acv, (IUnknown*)d3dtexture, DXGI_FORMAT_B8G8R8A8_UNORM);

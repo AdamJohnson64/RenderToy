@@ -221,8 +221,12 @@ namespace RenderToy
             var Execute_RenderSceneLeft = Direct3D11Helper.CreateSceneDraw(scene);
             var Execute_RenderSceneRight = Direct3D11Helper.CreateSceneDraw(scene);
             var sceneData = SceneSerializer.CreateFlatMemoryF32(scene);
+            var sceneUnmanaged = UnmanagedCopy.Create(sceneData);
+            var sceneView = new AMPArrayView(sceneUnmanaged, sceneData.Length);
             return () =>
             {
+                // Force a capture of the scene unmanaged memory or it will be destroyed!!
+                var captureScene = sceneUnmanaged;
                 OpenVRHelper.Update();
                 RenderToyEventSource.Default.RenderBegin();
                 RenderToyEventSource.Default.MarkerBegin("Update");
@@ -242,7 +246,7 @@ namespace RenderToy
                         var transformProjection = OpenVRHelper.GetProjectionMatrix(EVREye.Eye_Left, 0.1f, 2000.0f);
                         var matrixData = SceneSerializer.CreateFlatMemoryF32(MathHelp.Invert(transformView * transformProjection));
                         var texturePtr = Marshal.GetComInterfaceForObject(d3d11Texture2D_RT_EyeLeft, typeof(ID3D11Texture2D));
-                        RenderToyCLI.TEST_RaycastNormalsAMPF32D3D(sceneData, matrixData, devicePtr, texturePtr);
+                        RenderToyCLI.TEST_RaycastNormalsAMPF32D3D(sceneView, matrixData, devicePtr, texturePtr);
                     }
                     {
                         var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Right));
@@ -250,7 +254,7 @@ namespace RenderToy
                         var transformProjection = OpenVRHelper.GetProjectionMatrix(EVREye.Eye_Right, 0.1f, 2000.0f);
                         var matrixData = SceneSerializer.CreateFlatMemoryF32(MathHelp.Invert(transformView * transformProjection));
                         var texturePtr = Marshal.GetComInterfaceForObject(d3d11Texture2D_RT_EyeRight, typeof(ID3D11Texture2D));
-                        RenderToyCLI.TEST_RaycastNormalsAMPF32D3D(sceneData, matrixData, devicePtr, texturePtr);
+                        RenderToyCLI.TEST_RaycastNormalsAMPF32D3D(sceneView, matrixData, devicePtr, texturePtr);
                     }
                 });
                 RenderToyEventSource.Default.MarkerEnd("Execute Compute");

@@ -44,10 +44,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\RenderToyCoreCPP\AMPArrayView.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\AMPArrayViewWrap.cpp">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
+    </ClCompile>
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D11.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D12.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D9.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3DCompiler.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\InteropLibPNG.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportAMP.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
@@ -179,12 +185,13 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
-    <ClCompile Include="InteropLibPNG.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\RenderToyCoreCPP\Raytrace.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\RenderToyCoreCPP\AMPArrayView.h" />
+    <ClInclude Include="..\RenderToyCoreCPP\AMPArrayViewWrap.h" />
     <ClInclude Include="..\RenderToyCoreCPP\InteropCommon.h" />
     <ClInclude Include="..\RenderToyCoreCPP\Raytrace.h" />
     <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportAMP.h" />
