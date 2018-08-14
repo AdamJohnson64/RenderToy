@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <memory>
-#include "InteropAMP.h"
+#include "AMPArrayView.h"
 #include "RaytraceExportAMP.h"
 #include "RaytraceExportCPU.h"
 #include "RaytraceExportCUDA.h"
