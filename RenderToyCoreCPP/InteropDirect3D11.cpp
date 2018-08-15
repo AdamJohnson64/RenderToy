@@ -96,16 +96,26 @@ namespace RenderToy
 		}
 		static void Device_CreateTexture2D(RenderToyCOM::ID3D11Device ^device, RenderToyCOM::D3D11_TEXTURE2D_DESC desc, cli::array<MIDL_D3D11_SUBRESOURCE_DATA> ^src, RenderToyCOM::ID3D11Texture2D ^%ppTexture2D)
 		{
-			msclr::interop::marshal_context ctx;
-			D3D11_TEXTURE2D_DESC descM;
-			Marshal(descM, desc, %ctx);
-			auto dst = std::unique_ptr<D3D11_SUBRESOURCE_DATA[]>(new D3D11_SUBRESOURCE_DATA[src->Length]);
-			MarshalArray<MIDL_D3D11_SUBRESOURCE_DATA>(dst.get(), src, %ctx);
-			ID3D11Texture2D *ppOutTexture2D = nullptr;
-			auto unmanagedDevice = Marshal::GetComInterfaceForObject(device, RenderToyCOM::ID3D11Device::typeid);
-			Marshal::AddRef(unmanagedDevice);
-			TRY_D3D(((ID3D11Device*)unmanagedDevice.ToPointer())->CreateTexture2D(&descM, dst.get(), &ppOutTexture2D));
-			ppTexture2D = (RenderToyCOM::ID3D11Texture2D^)Marshal::GetTypedObjectForIUnknown(System::IntPtr(ppOutTexture2D), RenderToyCOM::ID3D11Texture2D::typeid);
+			auto lockimages = gcnew System::Collections::Generic::List<GCHandle>();
+			for each (auto i in src) lockimages->Add(GCHandle::Alloc(i.pSysMem, GCHandleType::Pinned));
+			try
+			{
+				msclr::interop::marshal_context ctx;
+				D3D11_TEXTURE2D_DESC descM;
+				Marshal(descM, desc, %ctx);
+				auto dst = std::unique_ptr<D3D11_SUBRESOURCE_DATA[]>(new D3D11_SUBRESOURCE_DATA[src->Length]);
+				MarshalArray<MIDL_D3D11_SUBRESOURCE_DATA>(dst.get(), src, %ctx);
+				ID3D11Texture2D *ppOutTexture2D = nullptr;
+				auto unmanagedDevice = Marshal::GetComInterfaceForObject(device, RenderToyCOM::ID3D11Device::typeid);
+				Marshal::AddRef(unmanagedDevice);
+				TRY_D3D(((ID3D11Device*)unmanagedDevice.ToPointer())->CreateTexture2D(&descM, dst.get(), &ppOutTexture2D));
+				ppTexture2D = (RenderToyCOM::ID3D11Texture2D^)Marshal::GetTypedObjectForIUnknown(System::IntPtr(ppOutTexture2D), RenderToyCOM::ID3D11Texture2D::typeid);
+			}
+			finally
+			{
+				for each (auto i in lockimages) i.Free();
+				lockimages->Clear();
+			}
 		}
 	};
 	public ref class Direct3D11
