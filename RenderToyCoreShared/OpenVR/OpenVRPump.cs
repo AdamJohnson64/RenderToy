@@ -31,9 +31,8 @@ namespace RenderToy
             ID3D11PixelShader d3d11PixelShader = null;
             DoOnUI.Call(() =>
             {
-                ID3D11ClassLinkage linkage = null;
-                Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, linkage, ref d3d11VertexShader);
-                Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, linkage, ref d3d11PixelShader);
+                Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, null, ref d3d11VertexShader);
+                Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, null, ref d3d11PixelShader);
             });
             ID3D11Texture2D d3d11Texture2D_RT_EyeLeft = null;
             ID3D11RenderTargetView d3d11RenderTargetView_EyeLeft = null;
@@ -80,7 +79,7 @@ namespace RenderToy
                     scene.TableTransform[i] = scene.TableNodeTransform[scene.IndexToNodeTransform[i]].Transform;
                 }
                 RenderToyEventSource.Default.MarkerEnd("Update");
-                Task<ID3D11CommandList> do_left = Task.Factory.StartNew(() =>
+                Task<ID3D11CommandList> do_left = Task.Run(() =>
                 {
                     RenderToyEventSource.Default.MarkerBegin("Command Buffer (Left Eye)");
                     ID3D11CommandList commandList = null;
@@ -99,9 +98,8 @@ namespace RenderToy
                         ID3D11DeviceContext deferred_left_old = null;
                         Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
                         ID3D11DeviceContext4 deferred_left = (ID3D11DeviceContext4)deferred_left_old;
-                        ID3D11ClassInstance classInstance = null;
-                        deferred_left.VSSetShader(d3d11VertexShader, classInstance, 0);
-                        deferred_left.PSSetShader(d3d11PixelShader, classInstance, 0);
+                        deferred_left.VSSetShader(d3d11VertexShader, null, 0);
+                        deferred_left.PSSetShader(d3d11PixelShader, null, 0);
                         deferred_left.RSSetScissorRects(1, scissorRect);
                         deferred_left.RSSetViewports(1, viewportRect);
                         deferred_left.OMSetRenderTargets(1, d3d11RenderTargetView_EyeLeft, d3d11DepthStencilView_EyeLeft);
@@ -113,7 +111,7 @@ namespace RenderToy
                     RenderToyEventSource.Default.MarkerEnd("Command Buffer (Left Eye)");
                     return commandList;
                 });
-                Task<ID3D11CommandList> do_right = Task.Factory.StartNew(() =>
+                Task<ID3D11CommandList> do_right = Task.Run(() =>
                 {
                     RenderToyEventSource.Default.MarkerBegin("Command Buffer (Right Eye)");
                     var scissorRect = new tagRECT { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight };
@@ -197,9 +195,8 @@ namespace RenderToy
             {
                 DoOnUI.Call(() =>
                 {
-                    ID3D11ClassLinkage linkage = null;
-                    Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, linkage, ref d3d11VertexShader);
-                    Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, linkage, ref d3d11PixelShader);
+                    Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, null, ref d3d11VertexShader);
+                    Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, null, ref d3d11PixelShader);
                 });
                 var d3d11Texture2DDesc_RT_Eye = new D3D11_TEXTURE2D_DESC { Width = (uint)vrwidth, Height = (uint)vrheight, MipLevels = 1, ArraySize = 1, Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, SampleDesc = new DXGI_SAMPLE_DESC { Count = 1, Quality = 0 }, Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET | (uint)D3D11_BIND_FLAG.D3D11_BIND_UNORDERED_ACCESS, CPUAccessFlags = 0 };
                 var d3d11RenderTargetView_RT_Eye = new D3D11_RENDER_TARGET_VIEW_DESC { Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, ViewDimension = D3D11_RTV_DIMENSION.D3D11_RTV_DIMENSION_TEXTURE2D };
