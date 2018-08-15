@@ -11,7 +11,6 @@ using RenderToy.Primitives;
 using RenderToy.Transforms;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace RenderToy.SceneGraph
 {

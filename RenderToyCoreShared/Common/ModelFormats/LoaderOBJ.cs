@@ -16,8 +16,6 @@ using System.Linq;
 using RenderToy.Math;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Diagnostics;
 
 namespace RenderToy.ModelFormat
 {
