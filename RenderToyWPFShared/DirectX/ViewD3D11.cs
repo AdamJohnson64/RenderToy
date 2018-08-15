@@ -39,9 +39,8 @@ namespace RenderToy.WPF
             {
                 ((ViewD3D11)sender).d3d11VertexShader = DoOnUI.Call(() =>
                 {
-                    ID3D11ClassLinkage linkage = null;
                     ID3D11VertexShader newshader = null;
-                    Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, linkage, ref newshader);
+                    Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref newshader);
                     return newshader;
                 });
             }
@@ -58,9 +57,8 @@ namespace RenderToy.WPF
             {
                 ((ViewD3D11)sender).d3d11PixelShader = DoOnUI.Call(() =>
                 {
-                    ID3D11ClassLinkage linkage = null;
                     ID3D11PixelShader newshader = null;
-                    Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, linkage, ref newshader);
+                    Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref newshader);
                     return newshader;
                 });
             }
