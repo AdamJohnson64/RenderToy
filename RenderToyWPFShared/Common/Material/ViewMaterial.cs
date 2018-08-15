@@ -43,20 +43,22 @@ namespace RenderToy.WPF
         async void InvalidateBitmap()
         {
             bitmap = null;
-            InvalidateVisual();
             var imageconverter = MaterialSource.GetImageConverter(MaterialWidth, MaterialHeight);
             var newbitmap = new WriteableBitmap(imageconverter.GetImageWidth(), imageconverter.GetImageHeight(), 0, 0, PixelFormats.Bgra32, null);
-            newbitmap.Lock();
+            Dispatcher.Invoke(() => newbitmap.Lock());
             var material = MaterialSource;
             var bitmapptr = newbitmap.BackBuffer;
             var bitmapwidth = newbitmap.PixelWidth;
             var bitmapheight = newbitmap.PixelHeight;
             var bitmapstride = newbitmap.BackBufferStride;
-            await Task.Factory.StartNew(() => imageconverter.ConvertToBitmap(bitmapptr, bitmapwidth, bitmapheight, bitmapstride));
-            newbitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapwidth, bitmapheight));
-            newbitmap.Unlock();
-            bitmap = newbitmap;
-            InvalidateVisual();
+            await Task.Run(() => imageconverter.ConvertToBitmap(bitmapptr, bitmapwidth, bitmapheight, bitmapstride)).ConfigureAwait(false);
+            Dispatcher.Invoke(() =>
+            {
+                newbitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapwidth, bitmapheight));
+                newbitmap.Unlock();
+                bitmap = newbitmap;
+                InvalidateVisual();
+            });
         }
         WriteableBitmap bitmap = null;
         #endregion

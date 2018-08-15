@@ -4,6 +4,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.TextureFormats;
+using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RenderToy.Textures
 {
@@ -11,22 +16,27 @@ namespace RenderToy.Textures
     {
         public static ImageBgra32 LoadFromPath(string path)
         {
+            ImageBgra32 result = null;
             if (path.ToUpperInvariant().EndsWith(".HDR"))
             {
-                return LoaderHDR.LoadFromPath(path);
+                result = LoaderHDR.LoadFromPath(path);
             }
             else if (path.ToUpperInvariant().EndsWith(".PNG"))
             {
-                return LoaderPNG.LoadFromPath(path);
+                result = LoaderPNG.LoadFromPath(path);
             }
             else if (path.ToUpperInvariant().EndsWith(".TGA"))
             {
-                return LoaderTGA.LoadFromPath(path);
+                result = LoaderTGA.LoadFromPath(path);
             }
-            else
+            return result;
+        }
+        public static ConfiguredTaskAwaitable<ImageBgra32> LoadFromPathAsync(string path)
+        {
+            return Task.Run(() =>
             {
-                return null;
-            }
+                return LoadFromPath(path);
+            }).ConfigureAwait(false);
         }
     }
 }

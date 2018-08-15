@@ -17,22 +17,9 @@ namespace RenderToy.Textures
     }
     class Texture : ITexture, INamed
     {
-        public Texture(string name, ImageBgra32 level0, bool generateMips)
+        public static Texture Create(string name, ImageBgra32 level0, bool generateMips)
         {
-            this.name = name;
-            var levels = new List<ImageBgra32>();
-            levels.Add(level0);
-            if (generateMips)
-            {
-                while (true)
-                {
-                    var lastlevel = levels[levels.Count - 1];
-                    var newlevel = lastlevel.BoxFilter();
-                    if (newlevel == null) break;
-                    levels.Add(newlevel);
-                }
-            }
-            Levels = levels.ToArray();
+            return level0 == null ? null : new Texture(name, level0, generateMips);
         }
         public string Name
         {
@@ -56,6 +43,23 @@ namespace RenderToy.Textures
         public IImageBgra32 GetSurface(int array, int level)
         {
             return Levels[level];
+        }
+        private Texture(string name, ImageBgra32 level0, bool generateMips)
+        {
+            this.name = name;
+            var levels = new List<ImageBgra32>();
+            levels.Add(level0);
+            if (generateMips)
+            {
+                while (true)
+                {
+                    var lastlevel = levels[levels.Count - 1];
+                    var newlevel = lastlevel.BoxFilter();
+                    if (newlevel == null) break;
+                    levels.Add(newlevel);
+                }
+            }
+            Levels = levels.ToArray();
         }
         string name;
         ImageBgra32[] Levels;

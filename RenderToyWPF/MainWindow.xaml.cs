@@ -84,37 +84,15 @@ namespace RenderToy.WPF
                 DataContext = Document.Default;
                 e.Handled = true;
             }));
-            CommandBindings.Add(new CommandBinding(CommandSceneOpen, (s, e) => {
+            CommandBindings.Add(new CommandBinding(CommandSceneOpen, async (s, e) => {
                 OpenFileDialog ofd = new OpenFileDialog();
                 ofd.Title = "Choose Model File";
                 if (ofd.ShowDialog() == true)
                 {
-                    Task.Factory.StartNew(() =>
-                    {
-                        var scene = new Scene();
-                        if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".BPT")
-                        {
-                            var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
-                            root.children.AddRange(LoaderBPT.LoadFromPath(ofd.FileName));
-                            scene.children.Add(root);
-                        }
-                        else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".OBJ")
-                        {
-                            var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
-                            root.children.AddRange(LoaderOBJ.LoadFromPath(ofd.FileName));
-                            scene.children.Add(root);
-                        }
-                        else if (Path.GetExtension(ofd.FileName).ToUpperInvariant() == ".PLY")
-                        {
-                            var root = new Node(Path.GetFileName(ofd.FileName), new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
-                            root.children.AddRange(LoaderPLY.LoadFromPath(ofd.FileName));
-                            scene.children.Add(root);
-                        }
-                        TestScenes.AddOpenVR(scene);
-                        Dispatcher.Invoke(() => { DataContext = new Document(scene); });
-                        return scene;
-                    });
-                    ;
+                    var scene = new Scene();
+                    scene.children.Add(await LoaderModel.LoadFromPathAsync(ofd.FileName));
+                    TestScenes.AddOpenVR(scene);
+                    Dispatcher.Invoke(() => { DataContext = new Document(scene); });
                 }
                 e.Handled = true;
             }));
@@ -269,11 +247,11 @@ namespace RenderToy.WPF
             }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
-            Task.Factory.StartNew(() =>
+            Task.Run(() =>
             {
                 var initialscene = Document.Default;
                 Dispatcher.Invoke(() => { DataContext = Document.Default; });
-            });
+            }).ConfigureAwait(false);
         }
         void CreatePanelDefault(FrameworkElement control, string title)
         {

@@ -380,17 +380,17 @@ namespace RenderToy
         [TestMethod]
         public void LoadAllBPTFilesTest()
         {
-            TestUtil.AllAssets("*.bpt", (pathname) => LoaderBPT.LoadFromPath(pathname));
+            TestUtil.AllAssets("*.bpt", async (pathname) => await LoaderBPT.LoadFromPathAsync(pathname));
         }
         [TestMethod]
         public void LoadAllOBJFilesTest()
         {
-            TestUtil.AllAssets("*.obj", (pathname) => LoaderOBJ.LoadFromPath(pathname));
+            TestUtil.AllAssets("*.obj", async (pathname) => await LoaderOBJ.LoadFromPathAsync(pathname));
         }
         [TestMethod]
         public void LoadAllPLYFilesTest()
         {
-            TestUtil.AllAssets("*.ply", (pathname) => LoaderPLY.LoadFromPath(pathname));
+            TestUtil.AllAssets("*.ply", async (pathname) => await LoaderPLY.LoadFromPathAsync(pathname));
         }
     }
     [TestClass]

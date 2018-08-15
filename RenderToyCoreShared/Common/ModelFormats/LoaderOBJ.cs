@@ -14,13 +14,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using RenderToy.Math;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Diagnostics;
 
 namespace RenderToy.ModelFormat
 {
     public static class LoaderOBJ
     {
-        public static IEnumerable<INode> LoadFromPath(string path)
+        public static async Task<INode> LoadFromPathAsync(string path)
         {
+            var loadednodes = new List<INode>();
             var vertices = new List<Vector3D>();
             var normals = new List<Vector3D>();
             var texcoords = new List<Vector2D>();
@@ -32,7 +37,7 @@ namespace RenderToy.ModelFormat
             string groupname = null;
             string materialname = null;
             int smoothinggroup = -1;
-            var materials = new Dictionary<string, IMaterial>();
+            IDictionary<string, Task<IMaterial>> materials = new ConcurrentDictionary<string, Task<IMaterial>>();
             Func<Mesh> FlushMesh = () =>
             {
                 // Flush this mesh to the caller.
@@ -59,7 +64,7 @@ namespace RenderToy.ModelFormat
                     {
                         int splitat = line.IndexOf(' ');
                         string materialfile = line.Substring(splitat + 1);
-                        materials = LoadMaterialLibrary(path, materialfile);
+                        materials = await LoadMaterialLibrary(path, materialfile);
                         continue;
                     }
                     if (line.StartsWith("v "))
@@ -120,7 +125,7 @@ namespace RenderToy.ModelFormat
                     {
                         if (materialname != null)
                         {
-                            yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, materials[materialname]);
+                            loadednodes.Add(new Node(materialname, new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, await materials[materialname]));
                             materialname = null;
                         }
                         var parts = line.Split(new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
@@ -161,51 +166,60 @@ namespace RenderToy.ModelFormat
             }
             if (materialname != null)
             {
-                yield return new Node(materialname, new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, materials[materialname]);
+                loadednodes.Add(new Node(materialname, new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, await materials[materialname]));
                 materialname = null;
             }
             else
             {
-                yield return new Node("NoMaterial", new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, StockMaterials.PlasticWhite);
+                loadednodes.Add(new Node("NoMaterial", new TransformMatrix(Matrix3D.Identity), FlushMesh(), StockMaterials.White, StockMaterials.PlasticWhite));
                 materialname = null;
             }
+            var root = new Node(path, new TransformMatrix(Matrix3D.Identity), null, StockMaterials.Black, null);
+            root.children.AddRange(loadednodes);
+            return root;
         }
-        static Dictionary<string, IMaterial> LoadMaterialLibrary(string objpath, string mtlrelative)
+        class TextureLoader
         {
-            var materialbyname = new Dictionary<string, IMaterial>();
-            var texturebyname = new Dictionary<string, IMaterial>();
+            public TextureLoader(string root)
+            {
+                Root = root;
+            }
+            public async Task<IMaterial> LoadTexture(string name)
+            {
+                Task<IMaterial> found = null;
+                if (texturebyname.TryGetValue(name, out found)) return await found;
+                var loadit = LoadImage(Path.Combine(Root, name));
+                texturebyname[name] = loadit;
+                return await loadit;
+            }
+            public async Task<IMaterial> LoadImage(string name)
+            {
+                return Texture.Create(name, await LoaderImage.LoadFromPathAsync(name), true);
+            }
+            string Root;
+            Dictionary<string, Task<IMaterial>> texturebyname = new Dictionary<string, Task<IMaterial>>();
+        }
+        class MaterialLoader
+        {
+            public string materialname = "None";
+            public Task<IMaterial> map_Ka = nullreturn;
+            public Task<IMaterial> map_Kd = nullreturn;
+            public Task<IMaterial> map_Ks = nullreturn;
+            public Task<IMaterial> map_d = nullreturn;
+            public Task<IMaterial> map_bump = nullreturn;
+            public Task<IMaterial> bump = nullreturn;
+            static Task<IMaterial> nullreturn = Task.FromResult<IMaterial>(null);
+        }
+        static async Task<IDictionary<string, Task<IMaterial>>> LoadMaterialLibrary(string objpath, string mtlrelative)
+        {
+            var materialbyname = new ConcurrentDictionary<string, Task<IMaterial>>();
             var objdir = Path.GetDirectoryName(objpath);
             var mtlfile = Path.Combine(objdir, mtlrelative);
-            IMaterial map_Ka = null;
-            IMaterial map_Kd = null;
-            IMaterial map_Ks = null;
-            IMaterial map_d = null;
-            IMaterial map_bump = null;
-            IMaterial bump = null;
-            Func<string, IMaterial> LoadUniqueTexture = (string name) =>
-            {
-                IMaterial found = null;
-                if (texturebyname.TryGetValue(name, out found)) return found;
-                var texfile = Path.Combine(objdir, name);
-                var image = LoaderImage.LoadFromPath(texfile);
-                return texturebyname[name] = image == null ? null : new Texture(name, image, true);
-            };
+            var textureloader = new TextureLoader(Path.GetDirectoryName(objpath));
+            MaterialLoader buildmaterial = null;
             using (var streamreader = File.OpenText(mtlfile))
             {
                 string line;
-                string materialname = null;
-                Action FLUSHMATERIAL = () =>
-                {
-                    if (materialname == null) return;
-                    materialbyname.Add(materialname, new OBJMaterial { Name = materialname, map_Ka = map_Ka, map_Kd = map_Kd, map_d = map_d, map_bump = map_bump, bump = bump });
-                    materialname = null;
-                    map_Ka = null;
-                    map_Kd = null;
-                    map_Ks = null;
-                    map_d = null;
-                    map_bump = null;
-                    bump = null;
-                };
                 while ((line = streamreader.ReadLine()) != null)
                 {
                     line = line.Trim();
@@ -213,9 +227,15 @@ namespace RenderToy.ModelFormat
                     if (line.Length == 0) continue;
                     if (line.StartsWith("newmtl "))
                     {
-                        FLUSHMATERIAL();
+                        if (buildmaterial != null)
+                        {
+                            var buildthis = buildmaterial;
+                            var material = Task.Run(async () => (IMaterial)new OBJMaterial { Name = buildthis.materialname, map_Ka = await buildthis.map_Ka, map_Kd = await buildthis.map_Kd, map_d = await buildthis.map_d, map_bump = await buildthis.map_bump, bump = await buildthis.bump });
+                            materialbyname.TryAdd(buildmaterial.materialname, material);
+                        }
+                        buildmaterial = new MaterialLoader();
                         int find = line.IndexOf(' ');
-                        materialname = line.Substring(find + 1);
+                        buildmaterial.materialname = line.Substring(find + 1);
                         continue;
                     }
                     if (line.StartsWith("Ns "))
@@ -264,43 +284,55 @@ namespace RenderToy.ModelFormat
                     }
                     if (line.StartsWith("map_Ka "))
                     {
+                        if (buildmaterial == null) throw new InvalidDataException();
                         int find = line.IndexOf(' ');
-                        map_Ka = LoadUniqueTexture(line.Substring(find + 1));
+                        buildmaterial.map_Ka = textureloader.LoadTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_Kd "))
                     {
+                        if (buildmaterial == null) throw new InvalidDataException();
                         int find = line.IndexOf(' ');
-                        map_Kd = LoadUniqueTexture(line.Substring(find + 1));
+                        buildmaterial.map_Kd = textureloader.LoadTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_Ks "))
                     {
+                        if (buildmaterial == null) throw new InvalidDataException();
                         int find = line.IndexOf(' ');
-                        map_Ks = LoadUniqueTexture(line.Substring(find + 1));
+                        buildmaterial.map_Ks = textureloader.LoadTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_d "))
                     {
+                        if (buildmaterial == null) throw new InvalidDataException();
                         int find = line.IndexOf(' ');
-                        map_d = LoadUniqueTexture(line.Substring(find + 1));
+                        buildmaterial.map_d = textureloader.LoadTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("map_bump "))
                     {
+                        if (buildmaterial == null) throw new InvalidDataException();
                         int find = line.IndexOf(' ');
-                        map_bump = LoadUniqueTexture(line.Substring(find + 1));
+                        buildmaterial.map_bump = textureloader.LoadTexture(line.Substring(find + 1));
                         continue;
                     }
                     if (line.StartsWith("bump "))
                     {
+                        if (buildmaterial == null) throw new InvalidDataException();
                         int find = line.IndexOf(' ');
-                        bump = LoadUniqueTexture(line.Substring(find + 1));
+                        buildmaterial.bump = textureloader.LoadTexture(line.Substring(find + 1));
                         continue;
                     }
                     throw new FileLoadException("Unknown tag '" + line + "'.");
                 }
-                FLUSHMATERIAL();
+                if (buildmaterial != null)
+                {
+                    var buildthis = buildmaterial;
+                    var material = Task.Run(async () => (IMaterial)new OBJMaterial { Name = buildthis.materialname, map_Ka = await buildthis.map_Ka, map_Kd = await buildthis.map_Kd, map_d = await buildthis.map_d, map_bump = await buildthis.map_bump, bump = await buildthis.bump });
+                    materialbyname.TryAdd(buildmaterial.materialname, material);
+                    buildmaterial = null;
+                }
             }
             return materialbyname;
         }

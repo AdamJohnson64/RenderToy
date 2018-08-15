@@ -5,24 +5,25 @@
 
 using RenderToy.SceneGraph;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RenderToy.ModelFormat
 {
     public static class LoaderModel
     {
-        public static IEnumerable<INode> LoadFromPath(string path)
+        public static async Task<INode> LoadFromPathAsync(string path)
         {
             if (path.ToUpperInvariant().EndsWith(".BPT"))
             {
-                return LoaderBPT.LoadFromPath(path);
+                return await LoaderBPT.LoadFromPathAsync(path);
             }
             else if (path.ToUpperInvariant().EndsWith(".OBJ"))
             {
-                return LoaderOBJ.LoadFromPath(path);
+                return await LoaderOBJ.LoadFromPathAsync(path);
             }
             else if (path.ToUpperInvariant().EndsWith(".PLY"))
             {
-                return LoaderPLY.LoadFromPath(path);
+                return await LoaderPLY.LoadFromPathAsync(path);
             }
             else
             {
