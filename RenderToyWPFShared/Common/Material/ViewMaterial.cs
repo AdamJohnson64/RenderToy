@@ -6,7 +6,6 @@
 using RenderToy.Expressions;
 using RenderToy.Materials;
 using System.Globalization;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -51,7 +50,7 @@ namespace RenderToy.WPF
             var bitmapwidth = newbitmap.PixelWidth;
             var bitmapheight = newbitmap.PixelHeight;
             var bitmapstride = newbitmap.BackBufferStride;
-            await Task.Run(() => imageconverter.ConvertToBitmap(bitmapptr, bitmapwidth, bitmapheight, bitmapstride)).ConfigureAwait(false);
+            await imageconverter.ConvertToBitmapAsync(bitmapptr, bitmapwidth, bitmapheight, bitmapstride);
             Dispatcher.Invoke(() =>
             {
                 newbitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapwidth, bitmapheight));

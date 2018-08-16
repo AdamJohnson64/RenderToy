@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Windows;
 using System.Windows.Threading;
 
 namespace RenderToy.Utility
@@ -13,6 +12,6 @@ namespace RenderToy.Utility
     {
         public static void Call(Action func) { Dispatcher.Invoke(func); }
         public static T Call<T>(Func<T> func) { return Dispatcher.Invoke(func); }
-        static Dispatcher Dispatcher = Application.Current.Dispatcher;
+        public static readonly Dispatcher Dispatcher = Dispatcher.CurrentDispatcher;
     }
 }

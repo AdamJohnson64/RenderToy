@@ -33,8 +33,12 @@
                 <MenuItem Header="Export RenderToy Document" Command="{x:Static rendertoy:MainWindow.CommandDocumentExport}"/>
             </MenuItem>
         </Menu>
+        <!--
         <rendertoy:PerformanceView DockPanel.Dock="Top" Height="64"/>
+        -->
         <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
+            <!-- ==================== Landing Page ==================== -->
+            <TabItem Header="Landing Page"/>
             <!-- ==================== Software Render ==================== -->
             <TabItem Header="Software Render">
                 <rendertoy:ViewSoftwareCustomizable rendertoy:AttachedView.Scene="{Binding Path=Scene}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}"/>

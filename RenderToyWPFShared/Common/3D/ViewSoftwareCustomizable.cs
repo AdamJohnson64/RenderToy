@@ -27,6 +27,11 @@ namespace RenderToy.WPF
         static RoutedUICommand CommandResolution50 = new RoutedUICommand("50% Resolution", "CommandResolution50", typeof(ViewSoftwareCustomizable));
         static RoutedUICommand CommandResolution25 = new RoutedUICommand("25% Resolution", "CommandResolution25", typeof(ViewSoftwareCustomizable));
         static RoutedUICommand CommandResolution10 = new RoutedUICommand("10% Resolution", "CommandResolution10", typeof(ViewSoftwareCustomizable));
+        static ViewSoftwareCustomizable()
+        {
+            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewSoftwareCustomizable), new FrameworkPropertyMetadata(null, (s, e) => ((ViewSoftwareCustomizable)s).InvalidateVisual()));
+            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewSoftwareCustomizable), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewSoftwareCustomizable)s).InvalidateVisual()));
+        }
         public ViewSoftwareCustomizable()
         {
             RenderCall = RenderCallCommands.Calls[0];

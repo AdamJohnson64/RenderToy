@@ -5,6 +5,7 @@
 
 using RenderToy.Cameras;
 using RenderToy.DirectX;
+using RenderToy.Math;
 using RenderToy.Shaders;
 using System.Collections.Generic;
 using System.Windows;
@@ -13,17 +14,22 @@ namespace RenderToy.WPF
 {
     public class ViewD3D9 : ViewD3DImageDirect
     {
-        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewD3D9), new FrameworkPropertyMetadata(HLSL.D3D9VS, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewD3D9), new FrameworkPropertyMetadata(HLSL.D3D9VS));
         public byte[] VertexShader
         {
             get { return (byte[])GetValue(VertexShaderProperty); }
             set { SetValue(VertexShaderProperty, value); }
         }
-        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewD3D9), new FrameworkPropertyMetadata(HLSL.D3D9PS, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewD3D9), new FrameworkPropertyMetadata(HLSL.D3D9PS));
         public byte[] PixelShader
         {
             get { return (byte[])GetValue(PixelShaderProperty); }
             set { SetValue(PixelShaderProperty, value); }
+        }
+        static ViewD3D9()
+        {
+            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewD3D9), new FrameworkPropertyMetadata(null, (s, e) => ((ViewD3D9)s).InvalidateVisual()));
+            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewD3D9), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewD3D9)s).InvalidateVisual()));
         }
         protected override void RenderD3D()
         {

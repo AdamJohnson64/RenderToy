@@ -23,7 +23,7 @@ namespace RenderToy
 #if OPENVR_INSTALLED
     public static class OpenVRPump
     {
-        public static Action CreateRenderer(SparseScene scene)
+        static Action CreateRenderer(SparseScene scene)
         {
             uint vrwidth = 0, vrheight = 0;
             OpenVRHelper.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
@@ -67,7 +67,84 @@ namespace RenderToy
             }
             var Execute_RenderSceneLeft = Direct3D11Helper.CreateSceneDraw(scene);
             var Execute_RenderSceneRight = Direct3D11Helper.CreateSceneDraw(scene);
-            var sceneData = SceneSerializer.CreateFlatMemoryF32(TransformedObject.Enumerate(TestScenes.DefaultScene));
+            ////////////////////////////////////////////////////////////////////////////////
+            // Standard viewport constants.
+            var scissorRect = new tagRECT { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight };
+            var viewportRect = new D3D11_VIEWPORT { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 };
+            ////////////////////////////////////////////////////////////////////////////////
+            // Rendering constants for the left eye.
+            var constants_left = new Dictionary<string, object>();
+            constants_left["profilingName"] = "Left Eye";
+            constants_left["transformAspect"] = Matrix3D.Identity;
+            constants_left["transformCamera"] = Matrix3D.Identity;
+            constants_left["transformView"] = Matrix3D.Identity;
+            constants_left["transformProjection"] = OpenVRHelper.GetProjectionMatrix(EVREye.Eye_Left, 0.1f, 2000.0f);
+            ////////////////////////////////////////////////////////////////////////////////
+            // Command buffer builder for the left eye.
+            Func<ID3D11CommandList> action_left = () =>
+            {
+                RenderToyEventSource.Default.MarkerBegin("Command Buffer (Left Eye)");
+                ID3D11CommandList commandList = null;
+                var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Left));
+                var transformCamera = MathHelp.Invert(transformView);
+                DoOnUI.Call(() =>
+                {
+                    ID3D11DeviceContext deferred_left_old = null;
+                    Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
+                    ID3D11DeviceContext4 deferred_left = (ID3D11DeviceContext4)deferred_left_old;
+                    deferred_left.VSSetShader(d3d11VertexShader, null, 0);
+                    deferred_left.PSSetShader(d3d11PixelShader, null, 0);
+                    deferred_left.RSSetScissorRects(1, scissorRect);
+                    deferred_left.RSSetViewports(1, viewportRect);
+                    deferred_left.OMSetRenderTargets(1, d3d11RenderTargetView_EyeLeft, d3d11DepthStencilView_EyeLeft);
+                    deferred_left.ClearDepthStencilView(d3d11DepthStencilView_EyeLeft, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
+                    deferred_left.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, new float[] { 0, 0, 0, 0 });
+                    constants_left["transformCamera"] = transformCamera;
+                    constants_left["transformView"] = transformView;
+                    Execute_RenderSceneLeft(deferred_left, constants_left);
+                    deferred_left.FinishCommandList(0, ref commandList);
+                });
+                RenderToyEventSource.Default.MarkerEnd("Command Buffer (Left Eye)");
+                return commandList;
+            };
+            ////////////////////////////////////////////////////////////////////////////////
+            // Rendering constants for the right eye.
+            var constants_right = new Dictionary<string, object>();
+            constants_right["profilingName"] = "Right Eye";
+            constants_right["transformAspect"] = Matrix3D.Identity;
+            constants_right["transformCamera"] = Matrix3D.Identity;
+            constants_right["transformView"] = Matrix3D.Identity;
+            constants_right["transformProjection"] = OpenVRHelper.GetProjectionMatrix(EVREye.Eye_Right, 0.1f, 2000.0f);
+            ////////////////////////////////////////////////////////////////////////////////
+            // Command buffer builder for the right eye.
+            Func<ID3D11CommandList> action_right = () =>
+            {
+                RenderToyEventSource.Default.MarkerBegin("Command Buffer (Right Eye)");
+                var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Right));
+                var transformCamera = MathHelp.Invert(transformView);
+                ID3D11CommandList commandList = null;
+                DoOnUI.Call(() =>
+                {
+                    ID3D11DeviceContext deferred_right_old = null;
+                    Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_right_old);
+                    ID3D11DeviceContext4 deferred_right = (ID3D11DeviceContext4)deferred_right_old;
+                    deferred_right.VSSetShader(d3d11VertexShader, null, 0);
+                    deferred_right.PSSetShader(d3d11PixelShader, null, 0);
+                    deferred_right.RSSetScissorRects(1, ref scissorRect);
+                    deferred_right.RSSetViewports(1, ref viewportRect);
+                    deferred_right.OMSetRenderTargets(1, ref d3d11RenderTargetView_EyeRight, d3d11DepthStencilView_EyeRight);
+                    deferred_right.ClearDepthStencilView(d3d11DepthStencilView_EyeRight, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
+                    deferred_right.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, new float[] { 0, 0, 0, 0 });
+                    constants_right["transformCamera"] = transformCamera;
+                    constants_right["transformView"] = transformView;
+                    Execute_RenderSceneRight(deferred_right, constants_right);
+                    deferred_right.FinishCommandList(0, ref commandList);
+                });
+                RenderToyEventSource.Default.MarkerEnd("Command Buffer (Right Eye)");
+                return commandList;
+            };
+            ////////////////////////////////////////////////////////////////////////////////
+            // Single frame renderer function (renders both eyes and submits to OpenVR).
             return () =>
             {
                 OpenVRHelper.Update();
@@ -79,71 +156,8 @@ namespace RenderToy
                     scene.TableTransform[i] = scene.TableNodeTransform[scene.IndexToNodeTransform[i]].Transform;
                 }
                 RenderToyEventSource.Default.MarkerEnd("Update");
-                Task<ID3D11CommandList> do_left = Task.Run(() =>
-                {
-                    RenderToyEventSource.Default.MarkerBegin("Command Buffer (Left Eye)");
-                    ID3D11CommandList commandList = null;
-                    var scissorRect = new tagRECT { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight };
-                    var viewportRect = new D3D11_VIEWPORT { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 };
-                    var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Left));
-                    var transformCamera = MathHelp.Invert(transformView);
-                    var constants = new Dictionary<string, object>();
-                    constants["profilingName"] = "Left Eye";
-                    constants["transformAspect"] = Matrix3D.Identity;
-                    constants["transformCamera"] = transformCamera;
-                    constants["transformView"] = transformView;
-                    constants["transformProjection"] = OpenVRHelper.GetProjectionMatrix(EVREye.Eye_Left, 0.1f, 2000.0f);
-                    DoOnUI.Call(() =>
-                    {
-                        ID3D11DeviceContext deferred_left_old = null;
-                        Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
-                        ID3D11DeviceContext4 deferred_left = (ID3D11DeviceContext4)deferred_left_old;
-                        deferred_left.VSSetShader(d3d11VertexShader, null, 0);
-                        deferred_left.PSSetShader(d3d11PixelShader, null, 0);
-                        deferred_left.RSSetScissorRects(1, scissorRect);
-                        deferred_left.RSSetViewports(1, viewportRect);
-                        deferred_left.OMSetRenderTargets(1, d3d11RenderTargetView_EyeLeft, d3d11DepthStencilView_EyeLeft);
-                        deferred_left.ClearDepthStencilView(d3d11DepthStencilView_EyeLeft, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
-                        deferred_left.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, new float[] { 0, 0, 0, 0 });
-                        Execute_RenderSceneLeft(deferred_left, constants);
-                        deferred_left.FinishCommandList(0, ref commandList);
-                    });
-                    RenderToyEventSource.Default.MarkerEnd("Command Buffer (Left Eye)");
-                    return commandList;
-                });
-                Task<ID3D11CommandList> do_right = Task.Run(() =>
-                {
-                    RenderToyEventSource.Default.MarkerBegin("Command Buffer (Right Eye)");
-                    var scissorRect = new tagRECT { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight };
-                    var viewportRect = new D3D11_VIEWPORT { TopLeftX = 0, TopLeftY = 0, Width = vrwidth, Height = vrheight, MinDepth = 0, MaxDepth = 1 };
-                    var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Right));
-                    var transformCamera = MathHelp.Invert(transformView);
-                    var constants = new Dictionary<string, object>();
-                    constants["profilingName"] = "Right Eye";
-                    constants["transformAspect"] = Matrix3D.Identity;
-                    constants["transformCamera"] = transformCamera;
-                    constants["transformView"] = transformView;
-                    constants["transformProjection"] = OpenVRHelper.GetProjectionMatrix(EVREye.Eye_Right, 0.1f, 2000.0f);
-                    ID3D11CommandList commandList = null;
-                    DoOnUI.Call(() =>
-                    {
-                        ID3D11DeviceContext deferred_right_old = null;
-                        Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_right_old);
-                        ID3D11DeviceContext4 deferred_right = (ID3D11DeviceContext4)deferred_right_old;
-                        ID3D11ClassInstance classInstance = null;
-                        deferred_right.VSSetShader(d3d11VertexShader, ref classInstance, 0);
-                        deferred_right.PSSetShader(d3d11PixelShader, ref classInstance, 0);
-                        deferred_right.RSSetScissorRects(1, ref scissorRect);
-                        deferred_right.RSSetViewports(1, ref viewportRect);
-                        deferred_right.OMSetRenderTargets(1, ref d3d11RenderTargetView_EyeRight, d3d11DepthStencilView_EyeRight);
-                        deferred_right.ClearDepthStencilView(d3d11DepthStencilView_EyeRight, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
-                        deferred_right.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, new float[] { 0, 0, 0, 0 });
-                        Execute_RenderSceneRight(deferred_right, constants);
-                        deferred_right.FinishCommandList(0, ref commandList);
-                    });
-                    RenderToyEventSource.Default.MarkerEnd("Command Buffer (Right Eye)");
-                    return commandList;
-                });
+                var do_left = Task.Run(action_left);
+                var do_right = Task.Run(action_right);
                 {
                     RenderToyEventSource.Default.MarkerBegin("Wait Render Completion");
                     do_left.Wait();
@@ -180,7 +194,7 @@ namespace RenderToy
                 }
             };
         }
-        public static Action CreateRendererRaytraced(SparseScene scene)
+        static Action CreateRendererRaytraced(SparseScene scene)
         {
             uint vrwidth = 0, vrheight = 0;
             OpenVRHelper.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);

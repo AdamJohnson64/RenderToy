@@ -7,6 +7,7 @@ using RenderToy.Materials;
 using RenderToy.Textures;
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
@@ -20,7 +21,7 @@ namespace RenderToy.WPF
         {
             if (value is IMaterial)
             {
-                return ConvertToBitmap(((IMaterial)value).GetImageConverter(256, 256));
+                return ConvertToBitmapAsync(((IMaterial)value).GetImageConverter(256, 256)).Result;
             }
             return null;
         }
@@ -30,14 +31,22 @@ namespace RenderToy.WPF
         }
         public static WriteableBitmap ConvertToBitmap(IMaterial node, int suggestedWidth, int suggestedHeight)
         {
-            return ConvertToBitmap(node.GetImageConverter(suggestedWidth, suggestedHeight));
+            return ConvertToBitmapAsync(node, suggestedWidth, suggestedHeight).Result;
+        }
+        public static async Task<WriteableBitmap> ConvertToBitmapAsync(IMaterial node, int suggestedWidth, int suggestedHeight)
+        {
+            return await ConvertToBitmapAsync(node.GetImageConverter(suggestedWidth, suggestedHeight));
         }
         public static WriteableBitmap ConvertToBitmap(IImageBgra32 node)
+        {
+            return ConvertToBitmapAsync(node).Result;
+        }
+        public static async Task<WriteableBitmap> ConvertToBitmapAsync(IImageBgra32 node)
         {
             if (node == null) return null;
             var bitmap = new WriteableBitmap(node.GetImageWidth(), node.GetImageHeight(), 0, 0, PixelFormats.Bgra32, null);
             bitmap.Lock();
-            node.ConvertToBitmap(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
+            await node.ConvertToBitmapAsync(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
             bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
             bitmap.Unlock();
             return bitmap;

@@ -8,6 +8,8 @@ using RenderToy.Math;
 using RenderToy.PipelineModel;
 using RenderToy.Textures;
 using System;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace RenderToy.Materials
 {
@@ -28,6 +30,10 @@ namespace RenderToy.Materials
                     }
                 }
             }
+        }
+        public static ConfiguredTaskAwaitable ConvertToBitmapAsync(this IImageBgra32 node, IntPtr bitmapptr, int bitmapWidth, int bitmapHeight, int bitmapstride)
+        {
+            return Task.Run(() => ConvertToBitmap(node, bitmapptr, bitmapWidth, bitmapHeight, bitmapstride)).ConfigureAwait(false);
         }
         public static IImageBgra32 GetImageConverter(this IMaterial node, int suggestedWidth, int suggestedHeight)
         {

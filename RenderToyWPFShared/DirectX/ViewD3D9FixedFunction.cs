@@ -5,12 +5,19 @@
 
 using RenderToy.Cameras;
 using RenderToy.DirectX;
+using RenderToy.Math;
 using System.Collections.Generic;
+using System.Windows;
 
 namespace RenderToy.WPF
 {
     public class ViewD3D9FixedFunction : ViewD3DImageDirect
     {
+        static ViewD3D9FixedFunction()
+        {
+            AttachedView.SceneProperty.OverrideMetadata(typeof(ViewD3D9FixedFunction), new FrameworkPropertyMetadata(null, (s, e) => ((ViewD3D9FixedFunction)s).InvalidateVisual()));
+            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewD3D9FixedFunction), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewD3D9FixedFunction)s).InvalidateVisual()));
+        }
         protected override void RenderD3D()
         {
             var constants = new Dictionary<string, object>();

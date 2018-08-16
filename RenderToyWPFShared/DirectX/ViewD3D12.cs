@@ -192,14 +192,15 @@ namespace RenderToy.WPF
                 {
                     D3D12_RANGE* range = null;
                     d3d12Resource_Buffer.Map(0, ref *range, ref fillvertex);
-                }
-                unsafe
-                {
-                    Buffer.MemoryCopy(Marshal.UnsafeAddrOfPinnedArrayElement(verticesout, 0).ToPointer(), fillvertex.ToPointer(), size, size);
-                }
-                unsafe
-                {
-                    D3D12_RANGE* range = null;
+                    var pin = GCHandle.Alloc(verticesout, GCHandleType.Pinned);
+                    try
+                    {
+                        Buffer.MemoryCopy(Marshal.UnsafeAddrOfPinnedArrayElement(verticesout, 0).ToPointer(), fillvertex.ToPointer(), size, size);
+                    }
+                    finally
+                    {
+                        pin.Free();
+                    }
                     d3d12Resource_Buffer.Unmap(0, ref *range);
                 }
                 return new VertexBufferInfo { d3d12Resource_Buffer = d3d12Resource_Buffer, length = verticesout.Length, size = size };

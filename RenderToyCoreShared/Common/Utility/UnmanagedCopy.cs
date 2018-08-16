@@ -13,7 +13,7 @@ namespace RenderToy.Utility
         public static UnmanagedCopy Create<TYPE>(TYPE[] data)
         {
             var result = new UnmanagedCopy();
-            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            var pin = GCHandle.Alloc(data, GCHandleType.Pinned);
             try
             {
                 var hsrc = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
@@ -32,7 +32,7 @@ namespace RenderToy.Utility
             }
             finally
             {
-                handle.Free();
+                pin.Free();
             }
         }
         ~UnmanagedCopy()

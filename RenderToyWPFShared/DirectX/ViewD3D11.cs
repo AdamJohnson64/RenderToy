@@ -94,9 +94,8 @@ namespace RenderToy.WPF
                 var context = (ID3D11DeviceContext4)context_old;
                 d3d11Texture2D_DS.GetDesc(ref desc);
                 // Setup common global render state.
-                ID3D11ClassInstance classInstance = null;
-                context.VSSetShader(d3d11VertexShader, classInstance, 0);
-                context.PSSetShader(d3d11PixelShader, classInstance, 0);
+                context.VSSetShader(d3d11VertexShader, null, 0);
+                context.PSSetShader(d3d11PixelShader, null, 0);
                 // Draw the window view using the current camera.
                 var scissorRect = new tagRECT { left = 0, top = 0, right = (int)desc.Width, bottom = (int)desc.Height };
                 context.RSSetScissorRects(1, scissorRect);

@@ -4,7 +4,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 using RenderToy.SceneGraph;
+using RenderToy.Utility;
 using System;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace RenderToy.OpenVR
 {
@@ -16,12 +19,13 @@ namespace RenderToy.OpenVR
             {
                 Console.WriteLine("Initializing renderer...");
 #if OPENVR_INSTALLED
-                var renderer = OpenVRPump.CreateRendererRaytraced(TransformedObject.ConvertToSparseScene(TestScenes.DefaultScene));
-                Console.WriteLine("Render pump starting...");
-                while (true)
-                {
-                    renderer();
-                }
+                SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+                // Force the dispatcher onto this thread (we are a surrogate UI thread).
+                var dispatcher = DoOnUI.Dispatcher;
+                OpenVRPump.CreateThread(TransformedObject.ConvertToSparseScene(TestScenes.DefaultScene));
+                Dispatcher.Run();
+#else
+                Console.WriteLine("OpenVR is not available.");
 #endif
                 return 0;
             }

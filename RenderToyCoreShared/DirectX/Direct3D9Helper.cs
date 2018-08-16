@@ -23,6 +23,7 @@ namespace RenderToy.DirectX
         #region - Section : Direct3D Render Helpers -
         public static Action<Dictionary<string, object>> CreateSceneDrawFixedFunction(SparseScene scene)
         {
+            if (scene == null) return (constants) => { };
             return (constants) =>
             {
                 var transformAspect = (Matrix3D)constants["transformAspect"];
@@ -42,6 +43,7 @@ namespace RenderToy.DirectX
         }
         public static Action<Dictionary<string, object>> CreateSceneDraw(SparseScene scene)
         {
+            if (scene == null) return (constants) => { };
             return (constants) =>
             {
                 var transformAspect = (Matrix3D)constants["transformAspect"];

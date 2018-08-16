@@ -82,10 +82,10 @@ namespace RenderToy.DirectX
                     var objmat = thismaterial as LoaderOBJ.OBJMaterial;
                     var collecttextures = new[]
                     {
-                        CreateTextureView(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
-                        CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
-                        CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
-                        CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
+                        await CreateTextureView(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
+                        await CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
+                        await CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
+                        await CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
                     };
                     {
                         var strides = (uint)(thistransformindex * SIZEOF_CONSTANTBLOCK / 16U);
@@ -106,7 +106,7 @@ namespace RenderToy.DirectX
                 RenderToyEventSource.Default.MarkerEnd(commandbufferblock);
             };
         }
-        public static ID3D11ShaderResourceView CreateTextureView(IMaterial material, IMaterial missing)
+        public static async Task<ID3D11ShaderResourceView> CreateTextureView(IMaterial material, IMaterial missing)
         {
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
@@ -120,7 +120,7 @@ namespace RenderToy.DirectX
                 return (ID3D11ShaderResourceView)Marshal.GetTypedObjectForIUnknown(srv, typeof(ID3D11Texture2D));
             }
 #endif // OPENVR_INSTALLED
-            return MementoServer.Default.Get(material, DX11TextureView, () =>
+            return await MementoServer.Default.Get(material, DX11TextureView, async () =>
             {
                 var astexture = material as ITexture;
                 if (astexture != null)
@@ -133,7 +133,15 @@ namespace RenderToy.DirectX
                         if (level == null) return null;
                         MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
                         byte[] texturedata = new byte[4 * level.GetImageWidth() * level.GetImageHeight()];
-                        level.ConvertToBitmap(Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
+                        var pin = GCHandle.Alloc(texturedata, GCHandleType.Pinned);
+                        try
+                        {
+                            await level.ConvertToBitmapAsync(Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
+                        }
+                        finally
+                        {
+                            pin.Free();
+                        }
                         var access = UnmanagedCopy.Create(texturedata);
                         retainMips.Add(access);
                         FillpInitialData.pSysMem = access;
@@ -153,12 +161,12 @@ namespace RenderToy.DirectX
                     desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
                     ID3D11Texture2D texture = null;
                     var pInitialDataArray = pInitialData.ToArray();
-                    ID3D11ShaderResourceView srview = null;
                     var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
                     vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
                     vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
+                    ID3D11ShaderResourceView srview = null;
                     DoOnUI.Call(() =>
                     {
                         D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref texture);
@@ -180,19 +188,30 @@ namespace RenderToy.DirectX
                     desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
                     var pInitialData = new D3D11_SUBRESOURCE_DATA();
                     byte[] texturedata = new byte[4 * asimage.GetImageWidth() * asimage.GetImageHeight()];
-                    asimage.ConvertToBitmap(Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), asimage.GetImageWidth(), asimage.GetImageHeight(), 4 * asimage.GetImageWidth());
+                    var pin = GCHandle.Alloc(texturedata, GCHandleType.Pinned);
+                    try
+                    {
+                        await asimage.ConvertToBitmapAsync(Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), asimage.GetImageWidth(), asimage.GetImageHeight(), 4 * asimage.GetImageWidth());
+                    }
+                    finally
+                    {
+                        pin.Free();
+                    }
                     pInitialData.pSysMem = UnmanagedCopy.Create(texturedata);
                     pInitialData.SysMemPitch = (uint)(4 * asimage.GetImageWidth());
                     pInitialData.SysMemSlicePitch = (uint)(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
                     ID3D11Texture2D texture = null;
-                    Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref texture);
                     var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
                     vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
                     vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D10_SRV_DIMENSION_TEXTURE2D;
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = 1;
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
                     ID3D11ShaderResourceView srview = null;
-                    Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
+                    DoOnUI.Call(() =>
+                    {
+                        Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref texture);
+                        Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
+                    });
                     return srview;
                 }
             });

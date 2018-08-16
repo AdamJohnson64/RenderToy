@@ -6,17 +6,21 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace RenderToy.WPF
 {
     class AdornerTextBoxErrors : Adorner
     {
+        DispatcherTimer updateerrors;
         public AdornerTextBoxErrors(TextBox host) : base(host)
         {
             IsHitTestVisible = false;
-            CompositionTarget.Rendering += (s, e) =>
+            updateerrors = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.ApplicationIdle, (s, e) => { updateerrors.Stop(); InvalidateVisual(); }, Dispatcher);
+            host.KeyUp += (s, e) =>
             {
-                InvalidateVisual();
+                updateerrors.Stop();
+                updateerrors.Start();
             };
         }
         protected override void OnRender(DrawingContext drawingContext)
