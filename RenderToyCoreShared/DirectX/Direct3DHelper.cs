@@ -8,6 +8,8 @@ using RenderToy.Meshes;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace RenderToy.DirectX
 {
@@ -45,6 +47,10 @@ namespace RenderToy.DirectX
                 Bitangent = new Vector3F((float)i.Bitangent.X, (float)i.Bitangent.Y, (float)i.Bitangent.Z),
             });
             return verticesout.ToArray();
+        }
+        public static ConfiguredTaskAwaitable<XYZNorDiffuseTex1[]> ConvertToXYZNorDiffuseTex1Async(IPrimitive primitive)
+        {
+            return Task.Run(() => ConvertToXYZNorDiffuseTex1(primitive)).ConfigureAwait(false);
         }
     }
 }

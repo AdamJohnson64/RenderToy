@@ -17,6 +17,7 @@ using RenderToy.Utility;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace RenderToy.DirectX
 {
@@ -43,7 +44,7 @@ namespace RenderToy.DirectX
                 }
                 constantbufferlist = new[] { d3d11constantbufferGPU };
             });
-            return (context, constants) =>
+            return async (context, constants) =>
             {
                 var profilingName = (string)constants["profilingName"];
                 var transformAspect = (Matrix3D)constants["transformAspect"];
@@ -76,7 +77,7 @@ namespace RenderToy.DirectX
                     var thistransformindex = scene.IndexToTransform[i];
                     var thisprimitive = scene.TableNodePrimitive[scene.IndexToNodePrimitive[i]];
                     var thismaterial = scene.TableNodeMaterial[scene.IndexToNodeMaterial[i]];
-                    var vertexbuffer = Direct3D11Helper.CreateVertexBuffer(thisprimitive);
+                    var vertexbuffer = await Direct3D11Helper.CreateVertexBuffer(thisprimitive);
                     if (vertexbuffer == null) continue;
                     var objmat = thismaterial as LoaderOBJ.OBJMaterial;
                     var collecttextures = new[]
@@ -152,14 +153,17 @@ namespace RenderToy.DirectX
                     desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
                     ID3D11Texture2D texture = null;
                     var pInitialDataArray = pInitialData.ToArray();
-                    D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref texture);
+                    ID3D11ShaderResourceView srview = null;
                     var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
                     vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
                     vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
                     vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
-                    ID3D11ShaderResourceView srview = null;
-                    Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
+                    DoOnUI.Call(() =>
+                    {
+                        D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref texture);
+                        Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
+                    });
                     return srview;
                 }
                 else
@@ -193,19 +197,22 @@ namespace RenderToy.DirectX
                 }
             });
         }
-        public static VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
+        public static async Task<VertexBufferInfo> CreateVertexBuffer(IPrimitive primitive)
         {
             if (primitive == null) return null;
-            return MementoServer.Default.Get(primitive, DX11VertexBuffer, () =>
+            return await MementoServer.Default.Get(primitive, DX11VertexBuffer, async () =>
             {
-                var verticesout = Direct3DHelper.ConvertToXYZNorDiffuseTex1(primitive);
+                var verticesout = await Direct3DHelper.ConvertToXYZNorDiffuseTex1Async(primitive);
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * verticesout.Length);
                 ID3D11Buffer d3d11Buffer = null;
-                Direct3D11Helper.d3d11Device.CreateBuffer(
-                    new D3D11_BUFFER_DESC { ByteWidth = size, Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = (uint)Marshal.SizeOf(typeof(XYZ)) },
-                    new D3D11_SUBRESOURCE_DATA { pSysMem = UnmanagedCopy.Create(verticesout), SysMemPitch = 0, SysMemSlicePitch = 0 },
-                    ref d3d11Buffer);
+                DoOnUI.Call(() =>
+                {
+                    Direct3D11Helper.d3d11Device.CreateBuffer(
+                        new D3D11_BUFFER_DESC { ByteWidth = size, Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = (uint)Marshal.SizeOf(typeof(XYZ)) },
+                        new D3D11_SUBRESOURCE_DATA { pSysMem = UnmanagedCopy.Create(verticesout), SysMemPitch = 0, SysMemSlicePitch = 0 },
+                        ref d3d11Buffer);
+                });
                 return new VertexBufferInfo { d3d11Buffer = d3d11Buffer, vertexCount = (uint)verticesout.Length };
             });
         }
