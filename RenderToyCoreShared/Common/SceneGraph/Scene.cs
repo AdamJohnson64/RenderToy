@@ -64,16 +64,17 @@ namespace RenderToy.SceneGraph
                 DefaultScene2 = scene;
             }
         }
-        public static void AddOpenVR(Scene scene)
+        public static async void AddOpenVR(Scene scene)
         {
 #if OPENVR_INSTALLED
             try
             {
-                //var controllerModel = LoaderOBJ.LoadFromPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj").First();
-                //IPrimitive controllerMaterial = controllerModel.Primitive;
-                //IMaterial controllerMaterial = controllerModel.Material;
-                IPrimitive controllerPrimitive = null;
-                IMaterial controllerMaterial = StockMaterials.PlasticWhite;
+                var controllerModelLoaded = await LoaderModel.LoadFromPathAsync("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj");
+                var controllerModel = controllerModelLoaded.Children[0];
+                IPrimitive controllerPrimitive = controllerModel.Primitive;
+                IMaterial controllerMaterial = controllerModel.Material;
+                //IPrimitive controllerPrimitive = null;
+                //IMaterial controllerMaterial = StockMaterials.PlasticWhite;
                 scene.children.Add(new Node("OpenVR HMD", new TransformHMD(), controllerPrimitive, StockMaterials.White, controllerMaterial));
                 scene.children.Add(new Node("OpenVR Left Controller", new TransformLeftHand(), controllerPrimitive, StockMaterials.White, controllerMaterial));
                 scene.children.Add(new Node("OpenVR Right Controller", new TransformRightHand(), controllerPrimitive, StockMaterials.White, controllerMaterial));
