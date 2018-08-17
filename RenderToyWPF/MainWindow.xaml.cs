@@ -93,6 +93,7 @@ namespace RenderToy.WPF
                     scene.children.Add(await LoaderModel.LoadFromPathAsync(ofd.FileName));
                     TestScenes.AddOpenVR(scene);
                     Dispatcher.Invoke(() => { DataContext = new Document(scene); });
+                    OpenVRPump.Scene = TransformedObject.ConvertToSparseScene(scene);
                 }
                 e.Handled = true;
             }));

@@ -23,7 +23,16 @@ namespace RenderToy
 #if OPENVR_INSTALLED
     public static class OpenVRPump
     {
-        static Action CreateRenderer(SparseScene scene)
+        public static SparseScene Scene
+        {
+            set
+            {
+                _Scene = value;
+                Execute_RenderSceneLeft = Direct3D11Helper.CreateSceneDraw(_Scene);
+                Execute_RenderSceneRight = Direct3D11Helper.CreateSceneDraw(_Scene);
+            }
+        }
+        static Action CreateRenderer()
         {
             uint vrwidth = 0, vrheight = 0;
             OpenVRHelper.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
@@ -65,8 +74,6 @@ namespace RenderToy
                     Direct3D11Helper.d3d11Device.CreateDepthStencilView(d3d11Texture2D_DS_EyeRight, d3d11DepthStencilView_DS, ref d3d11DepthStencilView_EyeRight);
                 });
             }
-            var Execute_RenderSceneLeft = Direct3D11Helper.CreateSceneDraw(scene);
-            var Execute_RenderSceneRight = Direct3D11Helper.CreateSceneDraw(scene);
             ////////////////////////////////////////////////////////////////////////////////
             // Standard viewport constants.
             var scissorRect = new tagRECT { left = 0, top = 0, right = (int)vrwidth, bottom = (int)vrheight };
@@ -149,32 +156,36 @@ namespace RenderToy
             {
                 OpenVRHelper.Update();
                 RenderToyEventSource.Default.RenderBegin();
-                RenderToyEventSource.Default.MarkerBegin("Update");
-                int COUNT_OBJECT = scene.IndexToNodePrimitive.Count;
-                for (int i = 0; i < COUNT_OBJECT; ++i)
+                // If there's nothing to draw then just exit now.
+                if (!(_Scene == null || Execute_RenderSceneLeft == null || Execute_RenderSceneRight == null))
                 {
-                    scene.TableTransform[i] = scene.TableNodeTransform[scene.IndexToNodeTransform[i]].Transform;
-                }
-                RenderToyEventSource.Default.MarkerEnd("Update");
-                var do_left = Task.Run(action_left);
-                var do_right = Task.Run(action_right);
-                {
-                    RenderToyEventSource.Default.MarkerBegin("Wait Render Completion");
-                    do_left.Wait();
-                    do_right.Wait();
-                    RenderToyEventSource.Default.MarkerEnd("Wait Render Completion");
-                }
-                {
-                    RenderToyEventSource.Default.MarkerBegin("Execute All RTs");
-                    ID3D11DeviceContext context_old = null;
-                    DoOnUI.Call(() =>
+                    RenderToyEventSource.Default.MarkerBegin("Update");
+                    int COUNT_OBJECT = _Scene.IndexToNodePrimitive.Count;
+                    for (int i = 0; i < COUNT_OBJECT; ++i)
                     {
-                        Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
-                        var context = (ID3D11DeviceContext4)context_old;
-                        context.ExecuteCommandList(do_left.Result, 1);
-                        context.ExecuteCommandList(do_right.Result, 1);
-                    });
-                    RenderToyEventSource.Default.MarkerEnd("Execute All RTs");
+                        _Scene.TableTransform[i] = _Scene.TableNodeTransform[_Scene.IndexToNodeTransform[i]].Transform;
+                    }
+                    RenderToyEventSource.Default.MarkerEnd("Update");
+                    var do_left = Task.Run(action_left);
+                    var do_right = Task.Run(action_right);
+                    {
+                        RenderToyEventSource.Default.MarkerBegin("Wait Render Completion");
+                        do_left.Wait();
+                        do_right.Wait();
+                        RenderToyEventSource.Default.MarkerEnd("Wait Render Completion");
+                    }
+                    {
+                        RenderToyEventSource.Default.MarkerBegin("Execute All RTs");
+                        ID3D11DeviceContext context_old = null;
+                        DoOnUI.Call(() =>
+                        {
+                            Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
+                            var context = (ID3D11DeviceContext4)context_old;
+                            context.ExecuteCommandList(do_left.Result, 1);
+                            context.ExecuteCommandList(do_right.Result, 1);
+                        });
+                        RenderToyEventSource.Default.MarkerEnd("Execute All RTs");
+                    }
                 }
                 {
                     RenderToyEventSource.Default.MarkerBegin("Submit To OpenVR");
@@ -289,7 +300,8 @@ namespace RenderToy
         {
             Task.Factory.StartNew(() =>
             {
-                var renderer = CreateRenderer(scene);
+                var renderer = CreateRenderer();
+                Scene = scene;
                 while (true)
                 {
                     renderer();
@@ -301,12 +313,16 @@ namespace RenderToy
             Task.Factory.StartNew(() =>
             {
                 var renderer = CreateRendererRaytraced(scene);
+                Scene = scene;
                 while (true)
                 {
                     renderer();
                 }
             }, TaskCreationOptions.LongRunning);
         }
+        static SparseScene _Scene = null;
+        static Action<ID3D11DeviceContext4, Dictionary<string, object>> Execute_RenderSceneLeft = null;
+        static Action<ID3D11DeviceContext4, Dictionary<string, object>> Execute_RenderSceneRight = null;
     }
 #endif // OPENVR_INSTALLED
 }
