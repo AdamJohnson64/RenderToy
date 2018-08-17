@@ -11,7 +11,9 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace RenderToy.Expressions
 {
@@ -25,6 +27,7 @@ namespace RenderToy.Expressions
         }
         public static byte[] CompileHLSL(string code, string entrypoint, string target)
         {
+            if (target == null) throw new Exception("Shader compilation error:\n\nNo target selected.");
             var ppCode = new D3DBlob();
             var ppErrorMsgs = new D3DBlob();
             Direct3DCompiler.D3DCompile(code, "temp", entrypoint, target, 0, 0, ppCode, ppErrorMsgs);
@@ -42,6 +45,10 @@ namespace RenderToy.Expressions
                 throw new Exception("Shader compilation error:\n\n" + errors);
             }
             throw new Exception("Shader compilation error.");
+        }
+        public static ConfiguredTaskAwaitable<byte[]> CompileHLSLAsync(string code, string entrypoint, string target)
+        {
+            return Task.Run(() => CompileHLSL(code, entrypoint, target)).ConfigureAwait(false);
         }
         public static byte[] CompileHLSL(this IMNNode<Vector4D> material, string entrypoint, string target)
         {

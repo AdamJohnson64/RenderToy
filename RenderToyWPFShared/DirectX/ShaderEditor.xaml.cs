@@ -1,16 +1,18 @@
 ﻿using RenderToy.Expressions;
 using RenderToy.Shaders;
+using RenderToy.Utility;
 using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Threading;
 
 namespace RenderToy.WPF
 {
     public sealed partial class ShaderEditor : UserControl
     {
-        public static readonly DependencyProperty ProfileVSProperty = DependencyProperty.Register("ProfileVS", typeof(string), typeof(ShaderEditor), new FrameworkPropertyMetadata("vs_3_0", FrameworkPropertyMetadataOptions.AffectsRender));
+        public static readonly DependencyProperty ProfileVSProperty = DependencyProperty.Register("ProfileVS", typeof(string), typeof(ShaderEditor));
         public string ProfileVS
         {
             get { return (string)GetValue(ProfileVSProperty); }
@@ -21,7 +23,7 @@ namespace RenderToy.WPF
         {
             get { return (byte[])GetValue(BytecodeVSProperty); }
         }
-        public static readonly DependencyProperty ProfilePSProperty = DependencyProperty.Register("ProfilePS", typeof(string), typeof(ShaderEditor), new FrameworkPropertyMetadata("ps_3_0", FrameworkPropertyMetadataOptions.AffectsRender));
+        public static readonly DependencyProperty ProfilePSProperty = DependencyProperty.Register("ProfilePS", typeof(string), typeof(ShaderEditor));
         public string ProfilePS
         {
             get { return (string)GetValue(ProfilePSProperty); }
@@ -44,35 +46,43 @@ namespace RenderToy.WPF
             var adornertextboxfloaters = new AdornerTextBoxErrors(CodeEditor);
             adornerlayer.Add(adornertextboxfloaters);
             CodeEditor.Text = HLSL.D3D9Standard;
-            Action Compile = () =>
+            Action Compile = async () =>
             {
+                var code = CodeEditor.Text;
+                var profilevs = ProfileVS;
+                var profileps = ProfilePS;
                 string errors = "";
                 try
                 {
-                    SetValue(BytecodeVSProperty, HLSLExtensions.CompileHLSL(CodeEditor.Text, "vs", ProfileVS));
+                    var bytecode = await HLSLExtensions.CompileHLSLAsync(code, "vs", profilevs);
+                    DoOnUI.Call(() => SetValue(BytecodeVSProperty, bytecode));
                 }
                 catch (Exception exception)
                 {
-                    SetValue(BytecodeVSProperty, null);
+                    DoOnUI.Call(() => SetValue(BytecodeVSProperty, null));
                     errors = errors + exception.Message;
                 }
                 try
                 {
-                    SetValue(BytecodePSProperty, HLSLExtensions.CompileHLSL(CodeEditor.Text, "ps", ProfilePS));
+                    var bytecode = await HLSLExtensions.CompileHLSLAsync(code, "ps", profileps);
+                    DoOnUI.Call(() => SetValue(BytecodePSProperty, bytecode));
                 }
                 catch (Exception exception)
                 {
-                    SetValue(BytecodePSProperty, null);
+                    DoOnUI.Call(() => SetValue(BytecodePSProperty, null));
                     errors = errors + exception.Message;
                 }
                 var errordefinitions = ErrorDefinition.GetErrors(errors).Distinct().ToArray();
-                adornertextboxfloaters.SetErrors(errordefinitions);
+                DoOnUI.Call(() => adornertextboxfloaters.SetErrors(errordefinitions));
             };
             CodeEditor.TextChanged += (s, e) =>
             {
-                Compile();
+                recompiletimer.Stop();
+                recompiletimer.Start();
             };
             Compile();
+            recompiletimer = new DispatcherTimer(TimeSpan.FromMilliseconds(250), DispatcherPriority.ApplicationIdle, (s, e) => { recompiletimer.Stop(); Compile(); }, Dispatcher);
         }
+        DispatcherTimer recompiletimer;
     }
 }
