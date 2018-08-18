@@ -6,6 +6,7 @@
 using RenderToyCOM;
 using RenderToy.Diagnostics;
 using RenderToy.DocumentModel;
+using RenderToy.Expressions;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
@@ -67,6 +68,11 @@ namespace RenderToy.DirectX
                 pSamplerDesc.MaxLOD = float.MaxValue;
                 Dispatcher.Invoke(() => { d3d11Device.CreateSamplerState(pSamplerDesc, ref d3d11SamplerState); });
             }
+            Dispatcher.Invoke(() =>
+            {
+                d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, null, ref d3d11VertexShader);
+                d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, null, ref d3d11PixelShader);
+            });
         }
         /// <summary>
         /// Create a draw command for a scene.
@@ -125,11 +131,14 @@ namespace RenderToy.DirectX
                 context.PSSetSamplers(0, 1, d3d11SamplerState);
                 for (int i = 0; i < COUNT_OBJECTS; ++i)
                 {
-                    var thistransformindex = scene.IndexToTransform[i];
                     var thisprimitive = scene.TableNodePrimitive[scene.IndexToNodePrimitive[i]];
-                    var thismaterial = scene.TableNodeMaterial[scene.IndexToNodeMaterial[i]];
-                    var vertexbuffer = Direct3D11Helper.CreateVertexBufferAsync(thisprimitive);
+                    var vertexbuffer = CreateVertexBufferAsync(thisprimitive);
                     if (vertexbuffer == null) continue;
+                    var thismaterial = scene.TableNodeMaterial[scene.IndexToNodeMaterial[i]];
+                    {
+                        context.VSSetShader(CreateVertexShaderAsync(thismaterial), null, 0);
+                        context.PSSetShader(CreatePixelShaderAsync(thismaterial), null, 0);
+                    }
                     var objmat = thismaterial as LoaderOBJ.OBJMaterial;
                     var collecttextures = new[]
                     {
@@ -139,6 +148,7 @@ namespace RenderToy.DirectX
                         CreateShaderResourceViewAsync(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
                     };
                     {
+                        var thistransformindex = scene.IndexToTransform[i];
                         var strides = (uint)(thistransformindex * SIZEOF_CONSTANTBLOCK / 16U);
                         var sizes = 5U * SIZEOF_MATRIX;
                         context.VSSetConstantBuffers1(0, 1, constantbufferlist[0], strides, sizes);
@@ -184,6 +194,8 @@ namespace RenderToy.DirectX
         /// Common sampler state defining a linear min-mag-mip sampling.
         /// </summary>
         static ID3D11SamplerState d3d11SamplerState;
+        static ID3D11VertexShader d3d11VertexShader;
+        static ID3D11PixelShader d3d11PixelShader;
         #endregion
         #region - Section : Texture Factory -
         /// <summary>
@@ -336,12 +348,12 @@ namespace RenderToy.DirectX
             return srview;
         }
         /// <summary>
-        /// A concurrent dictionary of all currently available material textures.
+        /// A concurrent dictionary of all currently available shader resource views.
         /// Changing this structure will immediately affect the render.
         /// </summary>
         static ConcurrentDictionary<IMaterial, ID3D11ShaderResourceView> generatedTextures = new ConcurrentDictionary<IMaterial, ID3D11ShaderResourceView>();
         /// <summary>
-        /// A key used to look up created textures in the global store.
+        /// A key used to look up created shader resource views in the global store.
         /// </summary>
         readonly static string DX11TextureView = "DX11TextureView";
         #endregion
@@ -373,8 +385,8 @@ namespace RenderToy.DirectX
         /// <summary>
         /// Create a vertex buffer for a primitive.
         /// </summary>
-        /// <param name="primitive"></param>
-        /// <returns></returns>
+        /// <param name="primitive">The primitive to create the vertex buffer from.</param>
+        /// <returns>A vertex buffer descriptor.</returns>
         static VertexBufferInfo CreateVertexBufferSyncCached(IPrimitive primitive)
         {
             if (primitive == null) return null;
@@ -399,8 +411,102 @@ namespace RenderToy.DirectX
             internal ID3D11Buffer d3d11Buffer;
             internal uint vertexCount;
         }
-        static ConcurrentDictionary<IPrimitive, VertexBufferInfo> generatedVertexBuffers = new ConcurrentDictionary<IPrimitive, VertexBufferInfo>();
+        readonly static ConcurrentDictionary<IPrimitive, VertexBufferInfo> generatedVertexBuffers = new ConcurrentDictionary<IPrimitive, VertexBufferInfo>();
         readonly static string DX11VertexBuffer = "DX11VertexBuffer";
+        #endregion
+        #region - Section : Shader Factory -
+        /// <summary>
+        /// This method is asynchronous by design.
+        /// Create a vertex shader for a given material.
+        /// </summary>
+        /// <param name="material">The material to generate the vertex shader from.</param>
+        /// <returns>A vertex shader object.</returns>
+        static ID3D11VertexShader CreateVertexShaderAsync(IMaterial material)
+        {
+            if (material == null) return null;
+            ID3D11VertexShader find = null;
+            if (!generatedVertexShaders.TryGetValue(material, out find))
+            {
+                Task.Run(() =>
+                {
+                    var createit = CreateVertexShaderSyncUncached(material);
+                    generatedVertexShaders.AddOrUpdate(material, createit, (m, srv) => createit);
+                });
+                find = d3d11VertexShader;
+                generatedVertexShaders.AddOrUpdate(material, find, (m, srv) => find);
+            }
+            return find;
+        }
+        /// <summary>
+        /// Create a vertex shader from a given material.
+        /// </summary>
+        /// <param name="material">The material to create the vertex shader from.</param>
+        /// <returns>A vertex shader object.</returns>
+        static ID3D11VertexShader CreateVertexShaderSyncUncached(IMaterial material)
+        {
+            if (material is LoaderOBJ.OBJMaterial)
+            {
+                return d3d11VertexShader;
+            }
+            // TODO: For now we're just going to return the default always.
+            return d3d11VertexShader;
+        }
+        /// <summary>
+        /// A concurrent dictionary of all currently available vertex shaders.
+        /// Changing this structure will immediately affect the render.
+        /// </summary>
+        readonly static ConcurrentDictionary<IMaterial, ID3D11VertexShader> generatedVertexShaders = new ConcurrentDictionary<IMaterial, ID3D11VertexShader>();
+        /// <summary>
+        /// A key used to look up created vertex shaders in the global store.
+        /// </summary>
+        readonly static string D3D11VertexShader = "D3D11VertexShader";
+        #endregion
+        #region - Section : Pixel Shader Factory -
+        /// <summary>
+        /// This method is asynchronous by design.
+        /// Create a pixel shader for a given material.
+        /// </summary>
+        /// <param name="material">The material to generate the pixel shader from.</param>
+        /// <returns>A pixel shader object.</returns>
+        static ID3D11PixelShader CreatePixelShaderAsync(IMaterial material)
+        {
+            if (material == null) return null;
+            ID3D11PixelShader find = null;
+            if (!generatedPixelShaders.TryGetValue(material, out find))
+            {
+                Task.Run(() =>
+                {
+                    var createit = CreatePixelShaderSyncUncached(material);
+                    generatedPixelShaders.AddOrUpdate(material, createit, (m, srv) => createit);
+                });
+                find = d3d11PixelShader;
+                generatedPixelShaders.AddOrUpdate(material, find, (m, srv) => find);
+            }
+            return find;
+        }
+        /// <summary>
+        /// Create a pixel shader from a given material.
+        /// </summary>
+        /// <param name="material">The material to create the pixel shader from.</param>
+        /// <returns>A pixel shader object.</returns>
+        static ID3D11PixelShader CreatePixelShaderSyncUncached(IMaterial material)
+        {
+            if (material is LoaderOBJ.OBJMaterial)
+            {
+                return d3d11PixelShader;
+            }
+            // TODO: For now we're just going to return the default always.
+            return d3d11PixelShader;
+        }
+        /// <summary>
+        /// A concurrent dictionary of all currently available pixel shaders.
+        /// Changing this structure will immediately affect the render.
+        /// </summary>
+        readonly static ConcurrentDictionary<IMaterial, ID3D11PixelShader> generatedPixelShaders = new ConcurrentDictionary<IMaterial, ID3D11PixelShader>();
+        /// <summary>
+        /// A key used to look up created pixel shaders in the global store.
+        /// </summary>
+        readonly static string D3D11PixelShader = "D3D11PixelShader";
         #endregion
     }
 }

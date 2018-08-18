@@ -155,9 +155,7 @@ namespace RenderToy.WPF
                 render.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
                 render.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 render.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
-                render.SetBinding(ViewD3D11.VertexShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodeVSProperty) });
-                render.SetBinding(ViewD3D11.PixelShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodePSProperty) });
-                CreatePanelNavigation("Direct3D11", render, "Direct3D11 Render", shader, "Direct3D11 Shader");
+                CreatePanelDefault(render, "Direct3D11");
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D12, (s, e) =>
             {

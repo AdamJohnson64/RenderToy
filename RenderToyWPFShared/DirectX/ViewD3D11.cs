@@ -27,38 +27,6 @@ namespace RenderToy.WPF
             timer = new DispatcherTimer(TimeSpan.FromMilliseconds(1000 / 60), DispatcherPriority.ApplicationIdle, (s, e) => { RenderDX(); }, Application.Current.Dispatcher);
             timer.Start();
         }
-        public static DependencyProperty VertexShaderProperty = DependencyProperty.Register("VertexShader", typeof(byte[]), typeof(ViewD3D11), new FrameworkPropertyMetadata(HLSL.D3D11VS, OnVertexShaderChanged));
-        public byte[] VertexShader
-        {
-            get { return (byte[])GetValue(VertexShaderProperty); }
-            set { SetValue(VertexShaderProperty, value); }
-        }
-        private static void OnVertexShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (e.NewValue is byte[] bytecode)
-            {
-                Direct3D11Helper.Dispatcher.Invoke(() =>
-                {
-                    Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref ((ViewD3D11)sender).d3d11VertexShader);
-                });
-            }
-        }
-        public static DependencyProperty PixelShaderProperty = DependencyProperty.Register("PixelShader", typeof(byte[]), typeof(ViewD3D11), new FrameworkPropertyMetadata(HLSL.D3D11PS, OnPixelShaderChanged));
-        public byte[] PixelShader
-        {
-            get { return (byte[])GetValue(PixelShaderProperty); }
-            set { SetValue(PixelShaderProperty, value); }
-        }
-        private static void OnPixelShaderChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (e.NewValue is byte[] bytecode)
-            {
-                Direct3D11Helper.Dispatcher.Invoke(() =>
-                {
-                    Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref ((ViewD3D11)sender).d3d11PixelShader);
-                });
-            }
-        }
         static ViewD3D11()
         {
             AttachedView.SceneProperty.OverrideMetadata(typeof(ViewD3D11), new FrameworkPropertyMetadata(null, (s, e) =>
@@ -74,7 +42,7 @@ namespace RenderToy.WPF
         Action<ID3D11DeviceContext4, Dictionary<string, object>> Execute_DrawScene = null;
         void RenderDX()
         {
-            if (d3d11VertexShader == null || d3d11PixelShader == null || d3d11DepthStencilView == null || d3d11RenderTargetView == null) return;
+            if (d3d11RenderTargetView == null || d3d11DepthStencilView == null) return;
             var constants = new Dictionary<string, object>();
             constants["profilingName"] = "Window";
             constants["transformAspect"] = Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
@@ -89,9 +57,6 @@ namespace RenderToy.WPF
                 Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
                 var context = (ID3D11DeviceContext4)context_old;
                 d3d11Texture2D_DS.GetDesc(ref desc);
-                // Setup common global render state.
-                context.VSSetShader(d3d11VertexShader, null, 0);
-                context.PSSetShader(d3d11PixelShader, null, 0);
                 // Draw the window view using the current camera.
                 var scissorRect = new tagRECT { left = 0, top = 0, right = (int)desc.Width, bottom = (int)desc.Height };
                 context.RSSetScissorRects(1, scissorRect);
@@ -136,8 +101,6 @@ namespace RenderToy.WPF
             return size;
         }
         // Direct3D11 Handling
-        ID3D11VertexShader d3d11VertexShader;
-        ID3D11PixelShader d3d11PixelShader;
         ID3D11Texture2D d3d11Texture2D_RT;
         ID3D11Texture2D d3d11Texture2D_DS;
         ID3D11RenderTargetView d3d11RenderTargetView;
