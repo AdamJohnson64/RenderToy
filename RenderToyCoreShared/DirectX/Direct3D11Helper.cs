@@ -77,7 +77,7 @@ namespace RenderToy.DirectX
                     var thistransformindex = scene.IndexToTransform[i];
                     var thisprimitive = scene.TableNodePrimitive[scene.IndexToNodePrimitive[i]];
                     var thismaterial = scene.TableNodeMaterial[scene.IndexToNodeMaterial[i]];
-                    var vertexbuffer = await Direct3D11Helper.CreateVertexBuffer(thisprimitive);
+                    var vertexbuffer = Direct3D11Helper.CreateVertexBuffer(thisprimitive);
                     if (vertexbuffer == null) continue;
                     var objmat = thismaterial as LoaderOBJ.OBJMaterial;
                     var collecttextures = new[]
@@ -163,7 +163,6 @@ namespace RenderToy.DirectX
                 });
                 find = CreateTextureViewNoFail(missing);
                 generatedTextures.AddOrUpdate(material, find, (m, srv) => find);
-                return find;
             }
             return find;
         }
@@ -273,12 +272,28 @@ namespace RenderToy.DirectX
         readonly static string DX11TextureView = "DX11TextureView";
         #endregion
         #region - Vertex Buffer Factory -
-        public static async Task<VertexBufferInfo> CreateVertexBuffer(IPrimitive primitive)
+        public static VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
         {
             if (primitive == null) return null;
-            return await MementoServer.Default.Get(primitive, DX11VertexBuffer, async () =>
+            VertexBufferInfo find;
+            if (!generatedVertexBuffers.TryGetValue(primitive, out find))
             {
-                var verticesout = await Direct3DHelper.ConvertToXYZNorDiffuseTex1Async(primitive);
+                Task.Run(() =>
+                {
+                    var createit = CreateVertexBufferNoFail(primitive);
+                    generatedVertexBuffers.AddOrUpdate(primitive, createit, (m, srv) => createit);
+                });
+                find = null;
+                generatedVertexBuffers.AddOrUpdate(primitive, find, (m, srv) => find);
+            }
+            return find;
+        }
+        public static VertexBufferInfo CreateVertexBufferNoFail(IPrimitive primitive)
+        {
+            if (primitive == null) return null;
+            return MementoServer.Default.Get(primitive, DX11VertexBuffer, () =>
+            {
+                var verticesout = Direct3DHelper.ConvertToXYZNorDiffuseTex1(primitive);
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * verticesout.Length);
                 ID3D11Buffer d3d11Buffer = null;
@@ -297,6 +312,7 @@ namespace RenderToy.DirectX
             public ID3D11Buffer d3d11Buffer;
             public uint vertexCount;
         }
+        static ConcurrentDictionary<IPrimitive, VertexBufferInfo> generatedVertexBuffers = new ConcurrentDictionary<IPrimitive, VertexBufferInfo>();
         readonly static string DX11VertexBuffer = "DX11VertexBuffer";
         #endregion
     }
