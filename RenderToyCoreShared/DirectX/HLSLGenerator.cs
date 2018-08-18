@@ -5,6 +5,7 @@
 
 using RenderToy.Materials;
 using RenderToy.Math;
+using RenderToy.Shaders;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -66,17 +67,10 @@ namespace RenderToy.Expressions
             var writer = new StringWriter();
             var codewriter = new CodeWriter(writer);
             // Emit the interpolator definition.
-            writer.WriteLine(
-@"
-struct VS_INPUT
-{
-    float4 Position : POSITION;
-    float3 Normal : NORMAL;
-    float2 TexCoord : TEXCOORD0;
-    float4 Color : COLOR;
-    float3 Tangent : TANGENT;
-    float3 Bitangent : BINORMAL;
-};");
+            writer.WriteLine(HLSL.D3D11Constants);
+            writer.WriteLine(HLSL.D3DVertexInputStruct);
+            writer.WriteLine(HLSL.D3DVertexOutputStruct);
+            writer.WriteLine(HLSL.D3DVertexShaderCode);
             writer.WriteLine();
             // Find all the lambdas.
             var flatten = new ExpressionCounter();

@@ -263,7 +263,12 @@ namespace RenderToy
             Console.WriteLine(StockMaterials.Brick.GenerateHLSL());
         }
         [TestMethod]
-        public void CompileBrickHLSL()
+        public void CompileBrickHLSLVS50()
+        {
+            StockMaterials.Brick.CompileHLSL("vs", "vs_5_0");
+        }
+        [TestMethod]
+        public void CompileBrickHLSLPS50()
         {
             StockMaterials.Brick.CompileHLSL("ps", "ps_5_0");
         }
@@ -278,7 +283,12 @@ namespace RenderToy
             Console.WriteLine(StockMaterials.MarbleTile.GenerateHLSL());
         }
         [TestMethod]
-        public void CompileMarbleTileHLSL()
+        public void CompileMarbleTileHLSLVS50()
+        {
+            StockMaterials.MarbleTile.CompileHLSL("vs", "vs_5_0");
+        }
+        [TestMethod]
+        public void CompileMarbleTileHLSLPS50()
         {
             StockMaterials.MarbleTile.CompileHLSL("ps", "ps_5_0");
         }
