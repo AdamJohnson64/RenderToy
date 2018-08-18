@@ -55,25 +55,25 @@ namespace RenderToy.WPF
                 try
                 {
                     var bytecode = await HLSLExtensions.CompileHLSLAsync(code, "vs", profilevs);
-                    DoOnUI.Call(() => SetValue(BytecodeVSProperty, bytecode));
+                    Dispatcher.Invoke(() => SetValue(BytecodeVSProperty, bytecode));
                 }
                 catch (Exception exception)
                 {
-                    DoOnUI.Call(() => SetValue(BytecodeVSProperty, null));
+                    Dispatcher.Invoke(() => SetValue(BytecodeVSProperty, null));
                     errors = errors + exception.Message;
                 }
                 try
                 {
                     var bytecode = await HLSLExtensions.CompileHLSLAsync(code, "ps", profileps);
-                    DoOnUI.Call(() => SetValue(BytecodePSProperty, bytecode));
+                    Dispatcher.Invoke(() => SetValue(BytecodePSProperty, bytecode));
                 }
                 catch (Exception exception)
                 {
-                    DoOnUI.Call(() => SetValue(BytecodePSProperty, null));
+                    Dispatcher.Invoke(() => SetValue(BytecodePSProperty, null));
                     errors = errors + exception.Message;
                 }
                 var errordefinitions = ErrorDefinition.GetErrors(errors).Distinct().ToArray();
-                DoOnUI.Call(() => adornertextboxfloaters.SetErrors(errordefinitions));
+                Dispatcher.Invoke(() => adornertextboxfloaters.SetErrors(errordefinitions));
             };
             CodeEditor.TextChanged += (s, e) =>
             {

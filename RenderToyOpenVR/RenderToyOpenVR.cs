@@ -19,7 +19,6 @@ namespace RenderToy.OpenVR
             {
                 Console.WriteLine("Initializing renderer...");
 #if OPENVR_INSTALLED
-                SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
                 // Force the dispatcher onto this thread (we are a surrogate UI thread).
                 var dispatcher = DoOnUI.Dispatcher;
                 OpenVRPump.CreateThread(TransformedObject.ConvertToSparseScene(TestScenes.DefaultScene));

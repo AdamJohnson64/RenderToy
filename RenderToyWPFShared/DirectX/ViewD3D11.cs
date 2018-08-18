@@ -37,11 +37,9 @@ namespace RenderToy.WPF
         {
             if (e.NewValue is byte[] bytecode)
             {
-                ((ViewD3D11)sender).d3d11VertexShader = DoOnUI.Call(() =>
+                DoOnUI.Call(() =>
                 {
-                    ID3D11VertexShader newshader = null;
-                    Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref newshader);
-                    return newshader;
+                    Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref ((ViewD3D11)sender).d3d11VertexShader);
                 });
             }
         }
@@ -55,11 +53,9 @@ namespace RenderToy.WPF
         {
             if (e.NewValue is byte[] bytecode)
             {
-                ((ViewD3D11)sender).d3d11PixelShader = DoOnUI.Call(() =>
+                DoOnUI.Call(() =>
                 {
-                    ID3D11PixelShader newshader = null;
-                    Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref newshader);
-                    return newshader;
+                    Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref ((ViewD3D11)sender).d3d11PixelShader);
                 });
             }
         }
