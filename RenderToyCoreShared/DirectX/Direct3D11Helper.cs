@@ -15,6 +15,7 @@ using RenderToy.Shaders;
 using RenderToy.Textures;
 using RenderToy.Utility;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -22,13 +23,10 @@ using System.Windows.Threading;
 
 namespace RenderToy.DirectX
 {
-    public class Direct3D11Helper
+    public static class Direct3D11Helper
     {
         public static Dispatcher Dispatcher;
         public static ID3D11Device d3d11Device;
-        static ID3D11InputLayout d3d11InputLayout;
-        static ID3D11RasterizerState d3d11RasterizerState;
-        static ID3D11SamplerState d3d11SamplerState;
         public static Action<ID3D11DeviceContext4, Dictionary<string, object>> CreateSceneDraw(SparseScene scene)
         {
             const int SIZEOF_CONSTANTBLOCK = 256;
@@ -84,10 +82,10 @@ namespace RenderToy.DirectX
                     var objmat = thismaterial as LoaderOBJ.OBJMaterial;
                     var collecttextures = new[]
                     {
-                        await CreateTextureView(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
-                        await CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
-                        await CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
-                        await CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
+                        CreateTextureView(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
+                        CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
+                        CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
+                        CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
                     };
                     {
                         var strides = (uint)(thistransformindex * SIZEOF_CONSTANTBLOCK / 16U);
@@ -108,10 +106,69 @@ namespace RenderToy.DirectX
                 RenderToyEventSource.Default.MarkerEnd(commandbufferblock);
             };
         }
-        public static async Task<ID3D11ShaderResourceView> CreateTextureView(IMaterial material, IMaterial missing)
+        #region - Initialization (Common Resources) -
+        public static void Initialize()
+        {
+            Dispatcher = DispatcherHelper.CreateDispatcher();
+            Dispatcher.Invoke(() =>
+            {
+                d3d11Device = Direct3D11.D3D11CreateDevice();
+            });
+            var inputelements = new[]
+            {
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Position").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "NORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Normal").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Diffuse").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("TexCoord").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Tangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Bitangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+            };
+            Dispatcher.Invoke(() => { D3D11Shim.Device_CreateInputLayout(d3d11Device, ref inputelements, UnmanagedCopy.Create(HLSL.D3D11VS), HLSL.D3D11VS.Length, ref d3d11InputLayout); });
+            Dispatcher.Invoke(() => { d3d11Device.CreateRasterizerState(new D3D11_RASTERIZER_DESC { FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID, CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE }, ref d3d11RasterizerState); });
+            {
+                var pSamplerDesc = new D3D11_SAMPLER_DESC();
+                pSamplerDesc.Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+                pSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
+                pSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
+                pSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
+                pSamplerDesc.MipLODBias = 0;
+                pSamplerDesc.MaxAnisotropy = 0;
+                pSamplerDesc.ComparisonFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_ALWAYS;
+                pSamplerDesc.BorderColor = new float[4];
+                pSamplerDesc.BorderColor[0] = 0;
+                pSamplerDesc.BorderColor[1] = 0;
+                pSamplerDesc.BorderColor[2] = 0;
+                pSamplerDesc.BorderColor[3] = 0;
+                pSamplerDesc.MinLOD = 0;
+                pSamplerDesc.MaxLOD = float.MaxValue;
+                Dispatcher.Invoke(() => { d3d11Device.CreateSamplerState(pSamplerDesc, ref d3d11SamplerState); });
+            }
+        }
+        static ID3D11InputLayout d3d11InputLayout;
+        static ID3D11RasterizerState d3d11RasterizerState;
+        static ID3D11SamplerState d3d11SamplerState;
+        #endregion
+        #region - Texture Factory -
+        public static ID3D11ShaderResourceView CreateTextureView(IMaterial material, IMaterial missing)
         {
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
+            ID3D11ShaderResourceView find;
+            if (!generatedTextures.TryGetValue(material, out find))
+            {
+                Task.Run(() =>
+                {
+                    var createit = CreateTextureViewNoFail(material);
+                    generatedTextures.AddOrUpdate(material, createit, (m, srv) => createit);
+                });
+                find = CreateTextureViewNoFail(missing);
+                generatedTextures.AddOrUpdate(material, find, (m, srv) => find);
+                return find;
+            }
+            return find;
+        }
+        public static ID3D11ShaderResourceView CreateTextureViewNoFail(IMaterial material)
+        {
 #if OPENVR_INSTALLED
             if (material is MaterialOpenVRCameraDistorted vr)
             {
@@ -122,7 +179,7 @@ namespace RenderToy.DirectX
                 return (ID3D11ShaderResourceView)Marshal.GetTypedObjectForIUnknown(srv, typeof(ID3D11Texture2D));
             }
 #endif // OPENVR_INSTALLED
-            return await MementoServer.Default.Get(material, DX11TextureView, async () =>
+            return MementoServer.Default.Get(material, DX11TextureView, () =>
             {
                 var retainMips = new List<IntPtr>();
                 try
@@ -138,7 +195,7 @@ namespace RenderToy.DirectX
                             MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
                             var ptr = Marshal.AllocHGlobal(4 * level.GetImageWidth() * level.GetImageHeight());
                             retainMips.Add(ptr);
-                            await level.ConvertToBitmapAsync(ptr, level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
+                            level.ConvertToBitmap(ptr, level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
                             FillpInitialData.pSysMem = ptr;
                             FillpInitialData.SysMemPitch = (uint)(4 * level.GetImageWidth());
                             FillpInitialData.SysMemSlicePitch = (uint)(4 * level.GetImageWidth() * level.GetImageHeight());
@@ -184,7 +241,7 @@ namespace RenderToy.DirectX
                         var pInitialData = new D3D11_SUBRESOURCE_DATA();
                         var ptr = Marshal.AllocHGlobal(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
                         retainMips.Add(ptr);
-                        await asimage.ConvertToBitmapAsync(ptr, asimage.GetImageWidth(), asimage.GetImageHeight(), 4 * asimage.GetImageWidth());
+                        asimage.ConvertToBitmap(ptr, asimage.GetImageWidth(), asimage.GetImageHeight(), 4 * asimage.GetImageWidth());
                         pInitialData.pSysMem = ptr;
                         pInitialData.SysMemPitch = (uint)(4 * asimage.GetImageWidth());
                         pInitialData.SysMemSlicePitch = (uint)(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
@@ -212,6 +269,10 @@ namespace RenderToy.DirectX
                 }
             });
         }
+        static ConcurrentDictionary<IMaterial, ID3D11ShaderResourceView> generatedTextures = new ConcurrentDictionary<IMaterial, ID3D11ShaderResourceView>();
+        readonly static string DX11TextureView = "DX11TextureView";
+        #endregion
+        #region - Vertex Buffer Factory -
         public static async Task<VertexBufferInfo> CreateVertexBuffer(IPrimitive primitive)
         {
             if (primitive == null) return null;
@@ -236,45 +297,7 @@ namespace RenderToy.DirectX
             public ID3D11Buffer d3d11Buffer;
             public uint vertexCount;
         }
-        public static void Initialize()
-        {
-            Dispatcher = DispatcherHelper.CreateDispatcher();
-            //Dispatcher = new Dispatcher2();
-            Dispatcher.Invoke(() =>
-            {
-                d3d11Device = Direct3D11.D3D11CreateDevice();
-            });
-            var inputelements = new[]
-            {
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Position").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "NORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Normal").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Diffuse").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("TexCoord").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Tangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Bitangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-            };
-            Dispatcher.Invoke(() => { D3D11Shim.Device_CreateInputLayout(d3d11Device, ref inputelements, UnmanagedCopy.Create(HLSL.D3D11VS), HLSL.D3D11VS.Length, ref d3d11InputLayout); });
-            Dispatcher.Invoke(() => { d3d11Device.CreateRasterizerState(new D3D11_RASTERIZER_DESC { FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID, CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE }, ref d3d11RasterizerState); });
-            {
-                var pSamplerDesc = new D3D11_SAMPLER_DESC();
-                pSamplerDesc.Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-                pSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
-                pSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
-                pSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
-                pSamplerDesc.MipLODBias = 0;
-                pSamplerDesc.MaxAnisotropy = 0;
-                pSamplerDesc.ComparisonFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_ALWAYS;
-                pSamplerDesc.BorderColor = new float[4];
-                pSamplerDesc.BorderColor[0] = 0;
-                pSamplerDesc.BorderColor[1] = 0;
-                pSamplerDesc.BorderColor[2] = 0;
-                pSamplerDesc.BorderColor[3] = 0;
-                pSamplerDesc.MinLOD = 0;
-                pSamplerDesc.MaxLOD = float.MaxValue;
-                Dispatcher.Invoke(() => { d3d11Device.CreateSamplerState(pSamplerDesc, ref d3d11SamplerState); });
-            }
-        }
-        readonly static string DX11TextureView = "DX11TextureView";
         readonly static string DX11VertexBuffer = "DX11VertexBuffer";
+        #endregion
     }
 }
