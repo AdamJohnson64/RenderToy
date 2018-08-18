@@ -25,8 +25,59 @@ namespace RenderToy.DirectX
 {
     public static class Direct3D11Helper
     {
-        public static Dispatcher Dispatcher;
-        public static ID3D11Device d3d11Device;
+        #region - Section : Public Fields & Methods -
+        /// <summary>
+        /// Initialize D3D11 and all common resources.
+        /// IMPORTANT: Call this BEFORE using this class.
+        /// DO NOT CALL THIS FROM A STATIC INITIALIZER.
+        /// </summary>
+        public static void Initialize()
+        {
+            Dispatcher = DispatcherHelper.CreateDispatcher();
+            Dispatcher.Invoke(() =>
+            {
+                d3d11Device = Direct3D11.D3D11CreateDevice();
+            });
+            var inputelements = new[]
+            {
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Position").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "NORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Normal").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Diffuse").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("TexCoord").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Tangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Bitangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
+            };
+            Dispatcher.Invoke(() => { D3D11Shim.Device_CreateInputLayout(d3d11Device, ref inputelements, UnmanagedCopy.Create(HLSL.D3D11VS), HLSL.D3D11VS.Length, ref d3d11InputLayout); });
+            Dispatcher.Invoke(() => { d3d11Device.CreateRasterizerState(new D3D11_RASTERIZER_DESC { FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID, CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE }, ref d3d11RasterizerState); });
+            {
+                var pSamplerDesc = new D3D11_SAMPLER_DESC();
+                pSamplerDesc.Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+                pSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
+                pSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
+                pSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
+                pSamplerDesc.MipLODBias = 0;
+                pSamplerDesc.MaxAnisotropy = 0;
+                pSamplerDesc.ComparisonFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_ALWAYS;
+                pSamplerDesc.BorderColor = new float[4];
+                pSamplerDesc.BorderColor[0] = 0;
+                pSamplerDesc.BorderColor[1] = 0;
+                pSamplerDesc.BorderColor[2] = 0;
+                pSamplerDesc.BorderColor[3] = 0;
+                pSamplerDesc.MinLOD = 0;
+                pSamplerDesc.MaxLOD = float.MaxValue;
+                Dispatcher.Invoke(() => { d3d11Device.CreateSamplerState(pSamplerDesc, ref d3d11SamplerState); });
+            }
+        }
+        /// <summary>
+        /// Create a draw command for a scene.
+        /// This will create a closure containing all the rendering resources
+        /// required to draw the supplied scene. This closure is intended to
+        /// be called from within the render loop after obtaining a command
+        /// context.
+        /// </summary>
+        /// <param name="scene">The scene to be rendered.</param>
+        /// <returns>A continuation which draws the scene in the given context
+        /// with supplied constants.</returns>
         public static Action<ID3D11DeviceContext4, Dictionary<string, object>> CreateSceneDraw(SparseScene scene)
         {
             const int SIZEOF_CONSTANTBLOCK = 256;
@@ -77,15 +128,15 @@ namespace RenderToy.DirectX
                     var thistransformindex = scene.IndexToTransform[i];
                     var thisprimitive = scene.TableNodePrimitive[scene.IndexToNodePrimitive[i]];
                     var thismaterial = scene.TableNodeMaterial[scene.IndexToNodeMaterial[i]];
-                    var vertexbuffer = Direct3D11Helper.CreateVertexBuffer(thisprimitive);
+                    var vertexbuffer = Direct3D11Helper.CreateVertexBufferAsync(thisprimitive);
                     if (vertexbuffer == null) continue;
                     var objmat = thismaterial as LoaderOBJ.OBJMaterial;
                     var collecttextures = new[]
                     {
-                        CreateTextureView(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
-                        CreateTextureView(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
-                        CreateTextureView(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
-                        CreateTextureView(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
+                        CreateShaderResourceViewAsync(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
+                        CreateShaderResourceViewAsync(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
+                        CreateShaderResourceViewAsync(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
+                        CreateShaderResourceViewAsync(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
                     };
                     {
                         var strides = (uint)(thistransformindex * SIZEOF_CONSTANTBLOCK / 16U);
@@ -106,50 +157,45 @@ namespace RenderToy.DirectX
                 RenderToyEventSource.Default.MarkerEnd(commandbufferblock);
             };
         }
-        #region - Initialization (Common Resources) -
-        public static void Initialize()
-        {
-            Dispatcher = DispatcherHelper.CreateDispatcher();
-            Dispatcher.Invoke(() =>
-            {
-                d3d11Device = Direct3D11.D3D11CreateDevice();
-            });
-            var inputelements = new[]
-            {
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "POSITION", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Position").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "NORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Normal").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "COLOR", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Diffuse").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TEXCOORD", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("TexCoord").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Tangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-                new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Bitangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
-            };
-            Dispatcher.Invoke(() => { D3D11Shim.Device_CreateInputLayout(d3d11Device, ref inputelements, UnmanagedCopy.Create(HLSL.D3D11VS), HLSL.D3D11VS.Length, ref d3d11InputLayout); });
-            Dispatcher.Invoke(() => { d3d11Device.CreateRasterizerState(new D3D11_RASTERIZER_DESC { FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID, CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE }, ref d3d11RasterizerState); });
-            {
-                var pSamplerDesc = new D3D11_SAMPLER_DESC();
-                pSamplerDesc.Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-                pSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
-                pSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
-                pSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP;
-                pSamplerDesc.MipLODBias = 0;
-                pSamplerDesc.MaxAnisotropy = 0;
-                pSamplerDesc.ComparisonFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_ALWAYS;
-                pSamplerDesc.BorderColor = new float[4];
-                pSamplerDesc.BorderColor[0] = 0;
-                pSamplerDesc.BorderColor[1] = 0;
-                pSamplerDesc.BorderColor[2] = 0;
-                pSamplerDesc.BorderColor[3] = 0;
-                pSamplerDesc.MinLOD = 0;
-                pSamplerDesc.MaxLOD = float.MaxValue;
-                Dispatcher.Invoke(() => { d3d11Device.CreateSamplerState(pSamplerDesc, ref d3d11SamplerState); });
-            }
-        }
+        /// <summary>
+        /// Bound threaded dispatcher for the D3D11 device.
+        /// This is the only dispatcher which is guaranteed to be safe for any
+        /// D3D11 call at any time.
+        /// </summary>
+        public static Dispatcher Dispatcher;
+        /// <summary>
+        /// The D3D11 device.
+        /// Calls to this object should be marshaled through the D3D11 dispatcher.
+        /// (Unless you REALLY know what you're doing).
+        /// </summary>
+        public static ID3D11Device d3d11Device;
+        #endregion
+        #region - Section : Common Resources -
+        /// <summary>
+        /// Common vertex layout defining position, normal, texture coordinate
+        /// and tangent basis.
+        /// </summary>
         static ID3D11InputLayout d3d11InputLayout;
+        /// <summary>
+        /// Common rasterizer state defining solid triangles.
+        /// </summary>
         static ID3D11RasterizerState d3d11RasterizerState;
+        /// <summary>
+        /// Common sampler state defining a linear min-mag-mip sampling.
+        /// </summary>
         static ID3D11SamplerState d3d11SamplerState;
         #endregion
-        #region - Texture Factory -
-        public static ID3D11ShaderResourceView CreateTextureView(IMaterial material, IMaterial missing)
+        #region - Section : Texture Factory -
+        /// <summary>
+        /// This method is asynchronous by design.
+        /// Create a shader resource view from a material definition.
+        /// This will attempt to create the specified material or supply the
+        /// missing material until it becomes available (if ever).
+        /// </summary>
+        /// <param name="material">The texture material to recreate.</param>
+        /// <param name="missing">An alternative material to emit if the defintion is not ready.</param>
+        /// <returns>A shader resource view.</returns>
+        static ID3D11ShaderResourceView CreateShaderResourceViewAsync(IMaterial material, IMaterial missing)
         {
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
@@ -158,15 +204,21 @@ namespace RenderToy.DirectX
             {
                 Task.Run(() =>
                 {
-                    var createit = CreateTextureViewNoFail(material);
+                    var createit = CreateTextureViewSyncCached(material);
                     generatedTextures.AddOrUpdate(material, createit, (m, srv) => createit);
                 });
-                find = CreateTextureViewNoFail(missing);
+                find = CreateTextureViewSyncCached(missing);
                 generatedTextures.AddOrUpdate(material, find, (m, srv) => find);
             }
             return find;
         }
-        public static ID3D11ShaderResourceView CreateTextureViewNoFail(IMaterial material)
+        /// <summary>
+        /// Create a shader resource view from a specific material.
+        /// This function can fail if the material cannot be converted.
+        /// </summary>
+        /// <param name="material">The texture material to recreate.</param>
+        /// <returns>A shader resource view representing this texture.</returns>
+        static ID3D11ShaderResourceView CreateTextureViewSyncCached(IMaterial material)
         {
 #if OPENVR_INSTALLED
             if (material is MaterialOpenVRCameraDistorted vr)
@@ -180,99 +232,129 @@ namespace RenderToy.DirectX
 #endif // OPENVR_INSTALLED
             return MementoServer.Default.Get(material, DX11TextureView, () =>
             {
-                var retainMips = new List<IntPtr>();
-                try
+                if (material is ITexture texture)
                 {
-                    var astexture = material as ITexture;
-                    if (astexture != null)
-                    {
-                        var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
-                        for (int miplevel = 0; miplevel < astexture.GetTextureLevelCount(); ++miplevel)
-                        {
-                            var level = astexture.GetSurface(0, miplevel);
-                            if (level == null) return null;
-                            MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
-                            var ptr = Marshal.AllocHGlobal(4 * level.GetImageWidth() * level.GetImageHeight());
-                            retainMips.Add(ptr);
-                            level.ConvertToBitmap(ptr, level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
-                            FillpInitialData.pSysMem = ptr;
-                            FillpInitialData.SysMemPitch = (uint)(4 * level.GetImageWidth());
-                            FillpInitialData.SysMemSlicePitch = (uint)(4 * level.GetImageWidth() * level.GetImageHeight());
-                            pInitialData.Add(FillpInitialData);
-                        }
-                        var level0 = astexture.GetSurface(0, 0);
-                        var desc = new D3D11_TEXTURE2D_DESC();
-                        desc.Width = (uint)level0.GetImageWidth();
-                        desc.Height = (uint)level0.GetImageHeight();
-                        desc.MipLevels = (uint)pInitialData.Count;
-                        desc.ArraySize = 1;
-                        desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
-                        desc.SampleDesc.Count = 1;
-                        desc.Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE;
-                        desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
-                        ID3D11Texture2D texture = null;
-                        var pInitialDataArray = pInitialData.ToArray();
-                        var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
-                        vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
-                        vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
-                        vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
-                        vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
-                        ID3D11ShaderResourceView srview = null;
-                        Dispatcher.Invoke(() =>
-                        {
-                            D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref texture);
-                            Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
-                        });
-                        return srview;
-                    }
-                    else
-                    {
-                        var asimage = material.GetImageConverter(512, 512);
-                        var desc = new D3D11_TEXTURE2D_DESC();
-                        desc.Width = (uint)asimage.GetImageWidth();
-                        desc.Height = (uint)asimage.GetImageHeight();
-                        desc.MipLevels = 1;
-                        desc.ArraySize = 1;
-                        desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
-                        desc.SampleDesc.Count = 1;
-                        desc.Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT;
-                        desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
-                        var pInitialData = new D3D11_SUBRESOURCE_DATA();
-                        var ptr = Marshal.AllocHGlobal(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
-                        retainMips.Add(ptr);
-                        asimage.ConvertToBitmap(ptr, asimage.GetImageWidth(), asimage.GetImageHeight(), 4 * asimage.GetImageWidth());
-                        pInitialData.pSysMem = ptr;
-                        pInitialData.SysMemPitch = (uint)(4 * asimage.GetImageWidth());
-                        pInitialData.SysMemSlicePitch = (uint)(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
-                        ID3D11Texture2D texture = null;
-                        var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
-                        vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
-                        vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D10_SRV_DIMENSION_TEXTURE2D;
-                        vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = 1;
-                        vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
-                        ID3D11ShaderResourceView srview = null;
-                        Dispatcher.Invoke(() =>
-                        {
-                            Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref texture);
-                            Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
-                        });
-                        return srview;
-                    }
+                    return CreateShaderResourceViewSyncUncachedFromTexture(texture);
                 }
-                finally
+                else
                 {
-                    foreach (var allocation in retainMips)
-                    {
-                        Marshal.FreeHGlobal(allocation);
-                    }
+                    return CreateShaderResourceViewSyncUncachedFromImageBgra32(material.GetImageConverter(512, 512));
                 }
             });
         }
+        /// <summary>
+        /// Create an uncached shader resource view from a texture.
+        /// </summary>
+        /// <param name="texture">The texture to construct the shader resource view from.</param>
+        /// <returns>A shader resource view corresponding to this texture.</returns>
+        static ID3D11ShaderResourceView CreateShaderResourceViewSyncUncachedFromTexture(ITexture texture)
+        {
+            var retainMips = new List<IntPtr>();
+            try
+            {
+                var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
+                for (int miplevel = 0; miplevel < texture.GetTextureLevelCount(); ++miplevel)
+                {
+                    var level = texture.GetSurface(0, miplevel);
+                    if (level == null) return null;
+                    MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
+                    var ptr = Marshal.AllocHGlobal(4 * level.GetImageWidth() * level.GetImageHeight());
+                    retainMips.Add(ptr);
+                    level.ConvertToBitmap(ptr, level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
+                    FillpInitialData.pSysMem = ptr;
+                    FillpInitialData.SysMemPitch = (uint)(4 * level.GetImageWidth());
+                    FillpInitialData.SysMemSlicePitch = (uint)(4 * level.GetImageWidth() * level.GetImageHeight());
+                    pInitialData.Add(FillpInitialData);
+                }
+                var level0 = texture.GetSurface(0, 0);
+                var desc = new D3D11_TEXTURE2D_DESC();
+                desc.Width = (uint)level0.GetImageWidth();
+                desc.Height = (uint)level0.GetImageHeight();
+                desc.MipLevels = (uint)pInitialData.Count;
+                desc.ArraySize = 1;
+                desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+                desc.SampleDesc.Count = 1;
+                desc.Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE;
+                desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
+                ID3D11Texture2D d3d11texture = null;
+                var pInitialDataArray = pInitialData.ToArray();
+                var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+                vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+                vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
+                vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
+                vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
+                ID3D11ShaderResourceView srview = null;
+                Dispatcher.Invoke(() =>
+                {
+                    D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref d3d11texture);
+                    Direct3D11Helper.d3d11Device.CreateShaderResourceView(d3d11texture, vdesc, ref srview);
+                });
+                return srview;
+            }
+            finally
+            {
+                foreach (var allocation in retainMips)
+                {
+                    Marshal.FreeHGlobal(allocation);
+                }
+            }
+        }
+        /// <summary>
+        /// Create an uncached shader resource view from a flat image.
+        /// </summary>
+        /// <param name="image">The image to construct.</param>
+        /// <returns>A shader resource view for the given image.</returns>
+        static ID3D11ShaderResourceView CreateShaderResourceViewSyncUncachedFromImageBgra32(IImageBgra32 image)
+        {
+            var desc = new D3D11_TEXTURE2D_DESC();
+            desc.Width = (uint)image.GetImageWidth();
+            desc.Height = (uint)image.GetImageHeight();
+            desc.MipLevels = 1;
+            desc.ArraySize = 1;
+            desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+            desc.SampleDesc.Count = 1;
+            desc.Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT;
+            desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
+            var pInitialData = new D3D11_SUBRESOURCE_DATA();
+            var ptr = Marshal.AllocHGlobal(4 * image.GetImageWidth() * image.GetImageHeight());
+            image.ConvertToBitmap(ptr, image.GetImageWidth(), image.GetImageHeight(), 4 * image.GetImageWidth());
+            pInitialData.pSysMem = ptr;
+            pInitialData.SysMemPitch = (uint)(4 * image.GetImageWidth());
+            pInitialData.SysMemSlicePitch = (uint)(4 * image.GetImageWidth() * image.GetImageHeight());
+            ID3D11Texture2D d3d11texture = null;
+            var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+            vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+            vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D10_SRV_DIMENSION_TEXTURE2D;
+            vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = 1;
+            vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
+            ID3D11ShaderResourceView srview = null;
+            Dispatcher.Invoke(() =>
+            {
+                Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref d3d11texture);
+                Direct3D11Helper.d3d11Device.CreateShaderResourceView(d3d11texture, vdesc, ref srview);
+            });
+            return srview;
+        }
+        /// <summary>
+        /// A concurrent dictionary of all currently available material textures.
+        /// Changing this structure will immediately affect the render.
+        /// </summary>
         static ConcurrentDictionary<IMaterial, ID3D11ShaderResourceView> generatedTextures = new ConcurrentDictionary<IMaterial, ID3D11ShaderResourceView>();
+        /// <summary>
+        /// A key used to look up created textures in the global store.
+        /// </summary>
         readonly static string DX11TextureView = "DX11TextureView";
         #endregion
-        #region - Vertex Buffer Factory -
-        public static VertexBufferInfo CreateVertexBuffer(IPrimitive primitive)
+        #region - Section : Vertex Buffer Factory -
+        /// <summary>
+        /// This method is asynchronous by design.
+        /// Create a vertex buffer for a primitive. This will create the
+        /// common vertex format for the primitive which includes
+        /// positions, normals, texture coordinates and tangent basis.
+        /// </summary>
+        /// <param name="primitive">The primitive to construct.</param>
+        /// <returns>A vertex buffer along with description of contents.</returns>
+        static VertexBufferInfo CreateVertexBufferAsync(IPrimitive primitive)
         {
             if (primitive == null) return null;
             VertexBufferInfo find;
@@ -280,7 +362,7 @@ namespace RenderToy.DirectX
             {
                 Task.Run(() =>
                 {
-                    var createit = CreateVertexBufferNoFail(primitive);
+                    var createit = CreateVertexBufferSyncCached(primitive);
                     generatedVertexBuffers.AddOrUpdate(primitive, createit, (m, srv) => createit);
                 });
                 find = null;
@@ -288,7 +370,12 @@ namespace RenderToy.DirectX
             }
             return find;
         }
-        public static VertexBufferInfo CreateVertexBufferNoFail(IPrimitive primitive)
+        /// <summary>
+        /// Create a vertex buffer for a primitive.
+        /// </summary>
+        /// <param name="primitive"></param>
+        /// <returns></returns>
+        static VertexBufferInfo CreateVertexBufferSyncCached(IPrimitive primitive)
         {
             if (primitive == null) return null;
             return MementoServer.Default.Get(primitive, DX11VertexBuffer, () =>
@@ -307,10 +394,10 @@ namespace RenderToy.DirectX
                 return new VertexBufferInfo { d3d11Buffer = d3d11Buffer, vertexCount = (uint)verticesout.Length };
             });
         }
-        public class VertexBufferInfo
+        class VertexBufferInfo
         {
-            public ID3D11Buffer d3d11Buffer;
-            public uint vertexCount;
+            internal ID3D11Buffer d3d11Buffer;
+            internal uint vertexCount;
         }
         static ConcurrentDictionary<IPrimitive, VertexBufferInfo> generatedVertexBuffers = new ConcurrentDictionary<IPrimitive, VertexBufferInfo>();
         readonly static string DX11VertexBuffer = "DX11VertexBuffer";
