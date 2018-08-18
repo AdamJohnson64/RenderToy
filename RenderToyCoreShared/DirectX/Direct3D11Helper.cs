@@ -122,97 +122,91 @@ namespace RenderToy.DirectX
 #endif // OPENVR_INSTALLED
             return await MementoServer.Default.Get(material, DX11TextureView, async () =>
             {
-                var astexture = material as ITexture;
-                if (astexture != null)
+                var retainMips = new List<IntPtr>();
+                try
                 {
-                    var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
-                    var retainMips = new List<UnmanagedCopy>();
-                    for (int miplevel = 0; miplevel < astexture.GetTextureLevelCount(); ++miplevel)
+                    var astexture = material as ITexture;
+                    if (astexture != null)
                     {
-                        var level = astexture.GetSurface(0, miplevel);
-                        if (level == null) return null;
-                        MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
-                        byte[] texturedata = new byte[4 * level.GetImageWidth() * level.GetImageHeight()];
-                        var pin = GCHandle.Alloc(texturedata, GCHandleType.Pinned);
-                        try
+                        var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
+                        for (int miplevel = 0; miplevel < astexture.GetTextureLevelCount(); ++miplevel)
                         {
-                            await level.ConvertToBitmapAsync(Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
+                            var level = astexture.GetSurface(0, miplevel);
+                            if (level == null) return null;
+                            MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
+                            var ptr = Marshal.AllocHGlobal(4 * level.GetImageWidth() * level.GetImageHeight());
+                            retainMips.Add(ptr);
+                            await level.ConvertToBitmapAsync(ptr, level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
+                            FillpInitialData.pSysMem = ptr;
+                            FillpInitialData.SysMemPitch = (uint)(4 * level.GetImageWidth());
+                            FillpInitialData.SysMemSlicePitch = (uint)(4 * level.GetImageWidth() * level.GetImageHeight());
+                            pInitialData.Add(FillpInitialData);
                         }
-                        finally
+                        var level0 = astexture.GetSurface(0, 0);
+                        var desc = new D3D11_TEXTURE2D_DESC();
+                        desc.Width = (uint)level0.GetImageWidth();
+                        desc.Height = (uint)level0.GetImageHeight();
+                        desc.MipLevels = (uint)pInitialData.Count;
+                        desc.ArraySize = 1;
+                        desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+                        desc.SampleDesc.Count = 1;
+                        desc.Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE;
+                        desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
+                        ID3D11Texture2D texture = null;
+                        var pInitialDataArray = pInitialData.ToArray();
+                        var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+                        vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+                        vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
+                        vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
+                        vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
+                        ID3D11ShaderResourceView srview = null;
+                        DoOnUI.Call(() =>
                         {
-                            pin.Free();
-                        }
-                        var access = UnmanagedCopy.Create(texturedata);
-                        retainMips.Add(access);
-                        FillpInitialData.pSysMem = access;
-                        FillpInitialData.SysMemPitch = (uint)(4 * level.GetImageWidth());
-                        FillpInitialData.SysMemSlicePitch = (uint)(4 * level.GetImageWidth() * level.GetImageHeight());
-                        pInitialData.Add(FillpInitialData);
+                            D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref texture);
+                            Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
+                        });
+                        return srview;
                     }
-                    var level0 = astexture.GetSurface(0, 0);
-                    var desc = new D3D11_TEXTURE2D_DESC();
-                    desc.Width = (uint)level0.GetImageWidth();
-                    desc.Height = (uint)level0.GetImageHeight();
-                    desc.MipLevels = (uint)pInitialData.Count;
-                    desc.ArraySize = 1;
-                    desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
-                    desc.SampleDesc.Count = 1;
-                    desc.Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE;
-                    desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
-                    ID3D11Texture2D texture = null;
-                    var pInitialDataArray = pInitialData.ToArray();
-                    var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
-                    vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
-                    vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
-                    vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
-                    vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
-                    ID3D11ShaderResourceView srview = null;
-                    DoOnUI.Call(() =>
+                    else
                     {
-                        D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref texture);
-                        Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
-                    });
-                    return srview;
+                        var asimage = material.GetImageConverter(512, 512);
+                        var desc = new D3D11_TEXTURE2D_DESC();
+                        desc.Width = (uint)asimage.GetImageWidth();
+                        desc.Height = (uint)asimage.GetImageHeight();
+                        desc.MipLevels = 1;
+                        desc.ArraySize = 1;
+                        desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+                        desc.SampleDesc.Count = 1;
+                        desc.Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT;
+                        desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
+                        var pInitialData = new D3D11_SUBRESOURCE_DATA();
+                        var ptr = Marshal.AllocHGlobal(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
+                        retainMips.Add(ptr);
+                        await asimage.ConvertToBitmapAsync(ptr, asimage.GetImageWidth(), asimage.GetImageHeight(), 4 * asimage.GetImageWidth());
+                        pInitialData.pSysMem = ptr;
+                        pInitialData.SysMemPitch = (uint)(4 * asimage.GetImageWidth());
+                        pInitialData.SysMemSlicePitch = (uint)(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
+                        ID3D11Texture2D texture = null;
+                        var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+                        vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+                        vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D10_SRV_DIMENSION_TEXTURE2D;
+                        vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = 1;
+                        vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
+                        ID3D11ShaderResourceView srview = null;
+                        DoOnUI.Call(() =>
+                        {
+                            Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref texture);
+                            Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
+                        });
+                        return srview;
+                    }
                 }
-                else
+                finally
                 {
-                    var asimage = material.GetImageConverter(512, 512);
-                    var desc = new D3D11_TEXTURE2D_DESC();
-                    desc.Width = (uint)asimage.GetImageWidth();
-                    desc.Height = (uint)asimage.GetImageHeight();
-                    desc.MipLevels = 1;
-                    desc.ArraySize = 1;
-                    desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
-                    desc.SampleDesc.Count = 1;
-                    desc.Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT;
-                    desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
-                    var pInitialData = new D3D11_SUBRESOURCE_DATA();
-                    byte[] texturedata = new byte[4 * asimage.GetImageWidth() * asimage.GetImageHeight()];
-                    var pin = GCHandle.Alloc(texturedata, GCHandleType.Pinned);
-                    try
+                    foreach (var allocation in retainMips)
                     {
-                        await asimage.ConvertToBitmapAsync(Marshal.UnsafeAddrOfPinnedArrayElement(texturedata, 0), asimage.GetImageWidth(), asimage.GetImageHeight(), 4 * asimage.GetImageWidth());
+                        Marshal.FreeHGlobal(allocation);
                     }
-                    finally
-                    {
-                        pin.Free();
-                    }
-                    pInitialData.pSysMem = UnmanagedCopy.Create(texturedata);
-                    pInitialData.SysMemPitch = (uint)(4 * asimage.GetImageWidth());
-                    pInitialData.SysMemSlicePitch = (uint)(4 * asimage.GetImageWidth() * asimage.GetImageHeight());
-                    ID3D11Texture2D texture = null;
-                    var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
-                    vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
-                    vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D10_SRV_DIMENSION_TEXTURE2D;
-                    vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = 1;
-                    vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
-                    ID3D11ShaderResourceView srview = null;
-                    DoOnUI.Call(() =>
-                    {
-                        Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref texture);
-                        Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
-                    });
-                    return srview;
                 }
             });
         }
