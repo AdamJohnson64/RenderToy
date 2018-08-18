@@ -3,10 +3,9 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.DirectX;
 using RenderToy.SceneGraph;
-using RenderToy.Utility;
 using System;
-using System.Threading;
 using System.Windows.Threading;
 
 namespace RenderToy.OpenVR
@@ -19,8 +18,7 @@ namespace RenderToy.OpenVR
             {
                 Console.WriteLine("Initializing renderer...");
 #if OPENVR_INSTALLED
-                // Force the dispatcher onto this thread (we are a surrogate UI thread).
-                var dispatcher = DoOnUI.Dispatcher;
+                Direct3D11Helper.Initialize();
                 OpenVRPump.CreateThread(TransformedObject.ConvertToSparseScene(TestScenes.DefaultScene));
                 Dispatcher.Run();
 #else

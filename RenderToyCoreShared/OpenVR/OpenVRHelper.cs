@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #if OPENVR_INSTALLED
+using RenderToy.DirectX;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Transforms;
-using RenderToy.Utility;
 using System.Linq;
 using Valve.VR;
 
@@ -54,7 +54,7 @@ namespace RenderToy
             TrackedDevicePose_t[] renderPose = new TrackedDevicePose_t[16];
             TrackedDevicePose_t[] gamePose = new TrackedDevicePose_t[16];
             AGAIN:
-            DoOnUI.Call(() =>
+            Direct3D11Helper.Dispatcher.Invoke(() =>
             {
                 Compositor.WaitGetPoses(renderPose, gamePose);
             });

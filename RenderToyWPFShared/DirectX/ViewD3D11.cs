@@ -37,7 +37,7 @@ namespace RenderToy.WPF
         {
             if (e.NewValue is byte[] bytecode)
             {
-                DoOnUI.Call(() =>
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
                     Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref ((ViewD3D11)sender).d3d11VertexShader);
                 });
@@ -53,7 +53,7 @@ namespace RenderToy.WPF
         {
             if (e.NewValue is byte[] bytecode)
             {
-                DoOnUI.Call(() =>
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
                     Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref ((ViewD3D11)sender).d3d11PixelShader);
                 });
@@ -82,7 +82,7 @@ namespace RenderToy.WPF
             constants["transformView"] = AttachedView.GetTransformView(this);
             constants["transformProjection"] = AttachedView.GetTransformProjection(this); ;
             var desc = new D3D11_TEXTURE2D_DESC();
-            DoOnUI.Call(() =>
+            Direct3D11Helper.Dispatcher.Invoke(() =>
             {
                 RenderToyEventSource.Default.RenderBegin();
                 ID3D11DeviceContext context_old = null;
@@ -114,7 +114,7 @@ namespace RenderToy.WPF
         protected override Size MeasureOverride(Size availableSize)
         {
             var size = base.MeasureOverride(availableSize);
-            DoOnUI.Call(() =>
+            Direct3D11Helper.Dispatcher.Invoke(() =>
             {
                 var texptr = new IntPtr();
                 Direct3D11Helper.d3d11Device.OpenSharedResource(d3d9backbufferhandle, Marshal.GenerateGuidForType(typeof(ID3D11Texture2D)), ref texptr);

@@ -9,7 +9,6 @@ using RenderToy.DirectX;
 using RenderToy.DocumentModel;
 using RenderToy.Math;
 using RenderToy.RenderMode;
-using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using RenderToy.Utility;
 using System;
@@ -38,7 +37,7 @@ namespace RenderToy
             OpenVRHelper.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
             ID3D11VertexShader d3d11VertexShader = null;
             ID3D11PixelShader d3d11PixelShader = null;
-            DoOnUI.Call(() =>
+            Direct3D11Helper.Dispatcher.Invoke(() =>
             {
                 Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, null, ref d3d11VertexShader);
                 Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, null, ref d3d11PixelShader);
@@ -58,7 +57,7 @@ namespace RenderToy
                 d3d11RenderTargetView_RT.__MIDL____MIDL_itf_RenderToy_0005_00650002.Texture2D = new D3D11_TEX2D_RTV { MipSlice = 0 };
                 var d3d11DepthStencilView_DS = new D3D11_DEPTH_STENCIL_VIEW_DESC { Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT, ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2D };
                 d3d11DepthStencilView_DS.__MIDL____MIDL_itf_RenderToy_0005_00660000.Texture2D = new D3D11_TEX2D_DSV { MipSlice = 0 };
-                DoOnUI.Call(() =>
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
                     unsafe
                     {
@@ -94,7 +93,7 @@ namespace RenderToy
                 ID3D11CommandList commandList = null;
                 var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Left));
                 var transformCamera = MathHelp.Invert(transformView);
-                DoOnUI.Call(() =>
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
                     ID3D11DeviceContext deferred_left_old = null;
                     Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
@@ -130,7 +129,7 @@ namespace RenderToy
                 var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Right));
                 var transformCamera = MathHelp.Invert(transformView);
                 ID3D11CommandList commandList = null;
-                DoOnUI.Call(() =>
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
                     ID3D11DeviceContext deferred_right_old = null;
                     Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_right_old);
@@ -177,7 +176,7 @@ namespace RenderToy
                     {
                         RenderToyEventSource.Default.MarkerBegin("Execute All RTs");
                         ID3D11DeviceContext context_old = null;
-                        DoOnUI.Call(() =>
+                        Direct3D11Helper.Dispatcher.Invoke(() =>
                         {
                             Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
                             var context = (ID3D11DeviceContext4)context_old;
@@ -189,7 +188,7 @@ namespace RenderToy
                 }
                 {
                     RenderToyEventSource.Default.MarkerBegin("Submit To OpenVR");
-                    DoOnUI.Call(() =>
+                    Direct3D11Helper.Dispatcher.Invoke(() =>
                     {
                         unsafe
                         {
@@ -218,7 +217,7 @@ namespace RenderToy
             ID3D11Texture2D d3d11Texture2D_RT_EyeRight = null;
             ID3D11RenderTargetView d3d11RenderTargetView_EyeRight = null;
             {
-                DoOnUI.Call(() =>
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
                     Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, null, ref d3d11VertexShader);
                     Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, null, ref d3d11PixelShader);
@@ -228,7 +227,7 @@ namespace RenderToy
                 d3d11RenderTargetView_RT_Eye.__MIDL____MIDL_itf_RenderToy_0005_00650002.Texture2D = new D3D11_TEX2D_RTV { MipSlice = 0 };
                 var d3d11DepthStencilView_DS_Eye = new D3D11_DEPTH_STENCIL_VIEW_DESC { Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT, ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2D };
                 d3d11DepthStencilView_DS_Eye.__MIDL____MIDL_itf_RenderToy_0005_00660000.Texture2D = new D3D11_TEX2D_DSV { MipSlice = 0 };
-                DoOnUI.Call(() =>
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
                     unsafe
                     {
@@ -259,7 +258,7 @@ namespace RenderToy
                 }
                 RenderToyEventSource.Default.MarkerEnd("Update");
                 RenderToyEventSource.Default.MarkerBegin("Execute Compute");
-                DoOnUI.Call(() =>
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
                     var devicePtr = Marshal.GetComInterfaceForObjectInContext(Direct3D11Helper.d3d11Device, typeof(ID3D11Device));
                     {
@@ -281,7 +280,7 @@ namespace RenderToy
                 });
                 RenderToyEventSource.Default.MarkerEnd("Execute Compute");
                 RenderToyEventSource.Default.MarkerBegin("Submit To OpenVR");
-                DoOnUI.Call(() =>
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
                     unsafe
                     {

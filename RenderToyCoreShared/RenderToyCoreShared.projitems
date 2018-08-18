@@ -77,7 +77,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\TextureFormats\LoaderHDR.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\TextureFormats\LoaderImage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\TextureFormats\LoaderPNG.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\DoOnUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\DispatcherHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\UnmanagedCopy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\Direct3D11Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\Direct3D9Helper.cs" />

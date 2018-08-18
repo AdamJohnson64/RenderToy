@@ -14,7 +14,6 @@ using RenderToy.SceneGraph;
 using RenderToy.Shaders;
 using RenderToy.Textures;
 using RenderToy.Transforms;
-using RenderToy.Utility;
 using RenderToy.WPF.Xps;
 using System;
 using System.Collections.ObjectModel;
@@ -72,13 +71,7 @@ namespace RenderToy.WPF
         public static ICommand CommandStartOpenVRRaytraced = new RoutedUICommand("Start OpenVR (Raytracing).", "CommandStartOpenVRRaytraced", typeof(MainWindow));
         public MainWindow()
         {
-            DoOnUI.Call(() =>
-            {
-                var dx9 = Direct3D9Helper.device;
-                var dx11 = Direct3D11Helper.d3d11Device;
-                var dx12 = ViewD3D12.d3d12Device;
-            });
-            //Thread.Sleep(1000);
+            Direct3D11Helper.Initialize();
             InitializeComponent();
             CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => {
                 DataContext = Document.Default;

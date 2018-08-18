@@ -18,11 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace RenderToy.DirectX
 {
     public class Direct3D11Helper
     {
+        public static Dispatcher Dispatcher;
         public static ID3D11Device d3d11Device;
         static ID3D11InputLayout d3d11InputLayout;
         static ID3D11RasterizerState d3d11RasterizerState;
@@ -35,7 +37,7 @@ namespace RenderToy.DirectX
             ID3D11Buffer d3d11constantbufferGPU = null;
             // We're collecting constant buffers because DX11 hates to do actual work.
             ID3D11Buffer[] constantbufferlist = null;
-            DoOnUI.Call(() =>
+            Dispatcher.Invoke(() =>
             {
                 unsafe
                 {
@@ -160,7 +162,7 @@ namespace RenderToy.DirectX
                         vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
                         vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
                         ID3D11ShaderResourceView srview = null;
-                        DoOnUI.Call(() =>
+                        Dispatcher.Invoke(() =>
                         {
                             D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref texture);
                             Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
@@ -193,7 +195,7 @@ namespace RenderToy.DirectX
                         vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = 1;
                         vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
                         ID3D11ShaderResourceView srview = null;
-                        DoOnUI.Call(() =>
+                        Dispatcher.Invoke(() =>
                         {
                             Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref texture);
                             Direct3D11Helper.d3d11Device.CreateShaderResourceView(texture, vdesc, ref srview);
@@ -219,7 +221,7 @@ namespace RenderToy.DirectX
                 if (verticesout.Length == 0) return null;
                 var size = (uint)(Marshal.SizeOf(typeof(XYZNorDiffuseTex1)) * verticesout.Length);
                 ID3D11Buffer d3d11Buffer = null;
-                DoOnUI.Call(() =>
+                Dispatcher.Invoke(() =>
                 {
                     Direct3D11Helper.d3d11Device.CreateBuffer(
                         new D3D11_BUFFER_DESC { ByteWidth = size, Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE, BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER, CPUAccessFlags = 0, MiscFlags = 0, StructureByteStride = (uint)Marshal.SizeOf(typeof(XYZ)) },
@@ -234,9 +236,11 @@ namespace RenderToy.DirectX
             public ID3D11Buffer d3d11Buffer;
             public uint vertexCount;
         }
-        static Direct3D11Helper()
+        public static void Initialize()
         {
-            DoOnUI.Call(() =>
+            Dispatcher = DispatcherHelper.CreateDispatcher();
+            //Dispatcher = new Dispatcher2();
+            Dispatcher.Invoke(() =>
             {
                 d3d11Device = Direct3D11.D3D11CreateDevice();
             });
@@ -249,8 +253,8 @@ namespace RenderToy.DirectX
                 new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "TANGENT", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Tangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
                 new MIDL_D3D11_INPUT_ELEMENT_DESC { SemanticName = "BINORMAL", SemanticIndex = 0, Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, InputSlot = 0, AlignedByteOffset = (uint)Marshal.OffsetOf<XYZNorDiffuseTex1>("Bitangent").ToInt32(), InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA, InstanceDataStepRate = 0 },
             };
-            DoOnUI.Call(() => { D3D11Shim.Device_CreateInputLayout(d3d11Device, ref inputelements, UnmanagedCopy.Create(HLSL.D3D11VS), HLSL.D3D11VS.Length, ref d3d11InputLayout); });
-            DoOnUI.Call(() => { d3d11Device.CreateRasterizerState(new D3D11_RASTERIZER_DESC { FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID, CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE }, ref d3d11RasterizerState); });
+            Dispatcher.Invoke(() => { D3D11Shim.Device_CreateInputLayout(d3d11Device, ref inputelements, UnmanagedCopy.Create(HLSL.D3D11VS), HLSL.D3D11VS.Length, ref d3d11InputLayout); });
+            Dispatcher.Invoke(() => { d3d11Device.CreateRasterizerState(new D3D11_RASTERIZER_DESC { FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID, CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE }, ref d3d11RasterizerState); });
             {
                 var pSamplerDesc = new D3D11_SAMPLER_DESC();
                 pSamplerDesc.Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -267,7 +271,7 @@ namespace RenderToy.DirectX
                 pSamplerDesc.BorderColor[3] = 0;
                 pSamplerDesc.MinLOD = 0;
                 pSamplerDesc.MaxLOD = float.MaxValue;
-                DoOnUI.Call(() => { d3d11Device.CreateSamplerState(pSamplerDesc, ref d3d11SamplerState); });
+                Dispatcher.Invoke(() => { d3d11Device.CreateSamplerState(pSamplerDesc, ref d3d11SamplerState); });
             }
         }
         readonly static string DX11TextureView = "DX11TextureView";
