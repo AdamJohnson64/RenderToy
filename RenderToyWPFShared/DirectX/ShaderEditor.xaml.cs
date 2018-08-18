@@ -1,6 +1,5 @@
 ﻿using RenderToy.Expressions;
 using RenderToy.Shaders;
-using RenderToy.Utility;
 using System;
 using System.Linq;
 using System.Windows;
