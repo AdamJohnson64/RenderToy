@@ -258,6 +258,16 @@ namespace RenderToy
     public class ExpressionTests
     {
         [TestMethod]
+        public void CompileGenericHLSLVS50()
+        {
+            StockMaterials.PlasticWhite.CompileHLSL("vs", "vs_5_0");
+        }
+        [TestMethod]
+        public void CompileGenericHLSLPS50()
+        {
+            StockMaterials.PlasticWhite.CompileHLSL("ps", "ps_5_0");
+        }
+        [TestMethod]
         public void GenerateBrickHLSL()
         {
             Console.WriteLine(StockMaterials.Brick.GenerateHLSL());

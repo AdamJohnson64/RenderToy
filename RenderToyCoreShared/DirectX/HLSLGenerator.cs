@@ -213,7 +213,17 @@ namespace RenderToy.Expressions
                 case ExpressionType.Constant:
                     {
                         var cast = (ConstantExpression)expr;
-                        codewriter.Write(cast.Value.ToString());
+                        if (cast.Value is Vector4D vec4)
+                        {
+                            codewriter.Write("float4(" + vec4.X + ", " + vec4.Y + ", " + vec4.Z + ", " + vec4.W + ")");
+                            return;
+                        }
+                        else
+                        {
+                            codewriter.Write(cast.Value.ToString());
+                            return;
+                        }
+                        throw new NotSupportedException("Cannot convert this node.");
                     }
                     break;
                 case ExpressionType.Convert:
