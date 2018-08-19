@@ -93,15 +93,7 @@ namespace RenderToy.WPF
             CommandBindings.Add(new CommandBinding(CommandScenePlane, (s, e) =>
             {
                 var scene = new Scene();
-                var material = new LoaderOBJ.OBJMaterial();
-                material.map_Kd = StockMaterials.Brick;
-                var displace = new MNSubtract {
-                    Lhs = new BrickMask { U = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 4 } }, V = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 4 } } },
-                    Rhs = new MNMultiply { Lhs = new Perlin2D { U = new MNMultiply { Lhs = new MNTexCoordU(), Rhs = new MNConstant { Value = 512 } }, V = new MNMultiply { Lhs = new MNTexCoordV(), Rhs = new MNConstant { Value = 512 } } }, Rhs = new MNConstant { Value = 0.001 } }
-                };
-                material.map_bump = new BumpGenerate { U = new MNTexCoordU(), V = new MNTexCoordV(), Displacement = displace };
-                material.displacement = new MNVector4D { R = displace, G = displace, B = displace, A = new MNConstant { Value = 1 } };
-                scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), Plane.Default, StockMaterials.White, material));
+                scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), Plane.Default, StockMaterials.White, StockMaterials.Brick));
                 DataContext = new Document(scene);
             }));
             CommandBindings.Add(new CommandBinding(CommandDebugToolPerformanceTrace, (s, e) => {

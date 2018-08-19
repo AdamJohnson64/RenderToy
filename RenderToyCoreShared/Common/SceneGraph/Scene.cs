@@ -32,19 +32,19 @@ namespace RenderToy.SceneGraph
             {
                 Scene scene = new Scene();
                 scene.children.Add(new Node("Plane Ground", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), Plane.Default, StockMaterials.LightGray, StockMaterials.Brick));
-                scene.children.Add(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-5, 1, 0)), Sphere.Default, StockMaterials.Red, StockMaterials.PlasticRed));
-                scene.children.Add(new Node("Sphere (Green)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-3, 1, 0)), Mesh.CreateMesh(Sphere.Default, 18, 9), StockMaterials.Green, StockMaterials.PlasticGreen));
-                scene.children.Add(new Node("Sphere (Blue)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-1, 1, 0)), Sphere.Default, StockMaterials.Blue, StockMaterials.PlasticBlue));
-                scene.children.Add(new Node("Sphere (Yellow)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+1, 1, 0)), Sphere.Default, StockMaterials.Yellow, StockMaterials.PlasticYellow));
+                scene.children.Add(new Node("Sphere (Red)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-5, 1, 0)), Sphere.Default, StockMaterials.Red, CreateColoredMaterial(StockMaterials.Red)));
+                scene.children.Add(new Node("Sphere (Green)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-3, 1, 0)), Mesh.CreateMesh(Sphere.Default, 18, 9), StockMaterials.Green, CreateColoredMaterial(StockMaterials.Green)));
+                scene.children.Add(new Node("Sphere (Blue)", new TransformMatrix(MathHelp.CreateMatrixTranslate(-1, 1, 0)), Sphere.Default, StockMaterials.Blue, CreateColoredMaterial(StockMaterials.Blue)));
+                scene.children.Add(new Node("Sphere (Yellow)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+1, 1, 0)), Sphere.Default, StockMaterials.Yellow, CreateColoredMaterial(StockMaterials.Yellow)));
                 scene.children.Add(new Node("Cube (Magenta)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+3, 1, 0)), Cube.Default, StockMaterials.Magenta, StockMaterials.Brick));
-                scene.children.Add(new Node("Sphere (Cyan)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+5, 1, 0)), Sphere.Default, StockMaterials.Cyan, StockMaterials.PlasticCyan));
+                scene.children.Add(new Node("Sphere (Cyan)", new TransformMatrix(MathHelp.CreateMatrixTranslate(+5, 1, 0)), Sphere.Default, StockMaterials.Cyan, CreateColoredMaterial(StockMaterials.Cyan)));
                 scene.children.Add(new Node("Sphere (Glass)", new TransformMatrix(MathHelp.CreateMatrixTranslate(0, 3, 0)), Sphere.Default, StockMaterials.Black, StockMaterials.Glass));
                 AddOpenVR(scene);
                 DefaultScene = scene;
             }
             {
                 Scene scene = new Scene();
-                var materialBrick = new LoaderOBJ.OBJMaterial();
+                var materialBrick = new OBJMaterial();
                 {
                     materialBrick.map_Kd = StockMaterials.Brick;
                     var displace = new MNSubtract
@@ -63,6 +63,19 @@ namespace RenderToy.SceneGraph
                 AddOpenVR(scene);
                 DefaultScene2 = scene;
             }
+        }
+        static IMaterial CreateColoredMaterial(Vector4D rgba)
+        {
+            return new OBJMaterial
+            {
+                map_Kd = new MNVector4D
+                {
+                    R = new MNConstant { Value = rgba.X },
+                    G = new MNConstant { Value = rgba.Y },
+                    B = new MNConstant { Value = rgba.Z },
+                    A = new MNConstant { Value = rgba.W }
+                }
+            };
         }
         public static async void AddOpenVR(Scene scene)
         {

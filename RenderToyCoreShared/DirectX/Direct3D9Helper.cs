@@ -59,7 +59,7 @@ namespace RenderToy.DirectX
                     var createdvertexbuffer = Direct3D9Helper.CreateVertexBuffer(transformedobject.NodePrimitive);
                     if (createdvertexbuffer.VertexBuffer == null) continue;
                     Direct3D9Helper.device.SetStreamSource(0, createdvertexbuffer.VertexBuffer, 0U, (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1)));
-                    var objmat = transformedobject.NodeMaterial as LoaderOBJ.OBJMaterial;
+                    var objmat = transformedobject.NodeMaterial as OBJMaterial;
                     Direct3D9Helper.device.SetTexture(0, Direct3D9Helper.CreateTexture(objmat == null ? transformedobject.NodeMaterial : objmat.map_Kd, StockMaterials.PlasticWhite));
                     Direct3D9Helper.device.SetTexture(1, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite));
                     Direct3D9Helper.device.SetTexture(2, Direct3D9Helper.CreateTexture(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue));

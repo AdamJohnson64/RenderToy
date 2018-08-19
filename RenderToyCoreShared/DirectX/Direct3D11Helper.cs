@@ -139,7 +139,7 @@ namespace RenderToy.DirectX
                         context.VSSetShader(CreateVertexShaderAsync(thismaterial), null, 0);
                         context.PSSetShader(CreatePixelShaderAsync(thismaterial), null, 0);
                     }
-                    var objmat = thismaterial as LoaderOBJ.OBJMaterial;
+                    var objmat = thismaterial as OBJMaterial;
                     var collecttextures = new[]
                     {
                         CreateShaderResourceViewAsync(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
@@ -444,9 +444,20 @@ namespace RenderToy.DirectX
         /// <returns>A vertex shader object.</returns>
         static ID3D11VertexShader CreateVertexShaderSyncUncached(IMaterial material)
         {
-            if (material is LoaderOBJ.OBJMaterial)
+            if (material is OBJMaterial)
             {
                 return d3d11VertexShader;
+            }
+            if (material is IMNNode node)
+            {
+                var hlsl = node.GenerateHLSL();
+                var bytecode = HLSLExtensions.CompileHLSL(hlsl, "vs", "vs_5_0");
+                ID3D11VertexShader shader = null;
+                Dispatcher.Invoke(() =>
+                {
+                    d3d11Device.CreateVertexShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref shader);
+                });
+                return shader;
             }
             // TODO: For now we're just going to return the default always.
             return d3d11VertexShader;
@@ -491,9 +502,20 @@ namespace RenderToy.DirectX
         /// <returns>A pixel shader object.</returns>
         static ID3D11PixelShader CreatePixelShaderSyncUncached(IMaterial material)
         {
-            if (material is LoaderOBJ.OBJMaterial)
+            if (material is OBJMaterial)
             {
                 return d3d11PixelShader;
+            }
+            if (material is IMNNode node)
+            {
+                var hlsl = node.GenerateHLSL();
+                var bytecode = HLSLExtensions.CompileHLSL(hlsl, "ps", "ps_5_0");
+                ID3D11PixelShader shader = null;
+                Dispatcher.Invoke(() =>
+                {
+                    d3d11Device.CreatePixelShader(UnmanagedCopy.Create(bytecode), (ulong)bytecode.Length, null, ref shader);
+                });
+                return shader;
             }
             // TODO: For now we're just going to return the default always.
             return d3d11PixelShader;

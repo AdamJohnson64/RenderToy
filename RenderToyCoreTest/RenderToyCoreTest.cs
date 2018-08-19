@@ -270,22 +270,22 @@ namespace RenderToy
         [TestMethod]
         public void GenerateBrickHLSL()
         {
-            Console.WriteLine(StockMaterials.Brick.GenerateHLSL());
+            Console.WriteLine(StockMaterials.BrickAlbedo.GenerateHLSL());
         }
         [TestMethod]
         public void CompileBrickHLSLVS50()
         {
-            StockMaterials.Brick.CompileHLSL("vs", "vs_5_0");
+            StockMaterials.BrickAlbedo.CompileHLSL("vs", "vs_5_0");
         }
         [TestMethod]
         public void CompileBrickHLSLPS50()
         {
-            StockMaterials.Brick.CompileHLSL("ps", "ps_5_0");
+            StockMaterials.BrickAlbedo.CompileHLSL("ps", "ps_5_0");
         }
         [TestMethod]
         public void CompileBrickMSIL()
         {
-            StockMaterials.Brick.CompileMSIL();
+            StockMaterials.BrickAlbedo.CompileMSIL();
         }
         [TestMethod]
         public void GenerateMarbleTileHLSL()
