@@ -90,26 +90,22 @@ namespace RenderToy
             Func<ID3D11CommandList> action_left = () =>
             {
                 RenderToyEventSource.Default.MarkerBegin("Command Buffer (Left Eye)");
-                ID3D11CommandList commandList = null;
+                ID3D11DeviceContext deferred_left_old = null;
+                Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
+                var deferred_left = (ID3D11DeviceContext4)deferred_left_old;
+                deferred_left.VSSetShader(d3d11VertexShader, null, 0);
+                deferred_left.PSSetShader(d3d11PixelShader, null, 0);
+                deferred_left.RSSetScissorRects(1, scissorRect);
+                deferred_left.RSSetViewports(1, viewportRect);
+                deferred_left.OMSetRenderTargets(1, d3d11RenderTargetView_EyeLeft, d3d11DepthStencilView_EyeLeft);
+                deferred_left.ClearDepthStencilView(d3d11DepthStencilView_EyeLeft, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
+                deferred_left.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, new float[] { 0, 0, 0, 0 });
                 var transformView = OpenVRHelper.TransformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Left));
-                var transformCamera = MathHelp.Invert(transformView);
-                Direct3D11Helper.Dispatcher.Invoke(() =>
-                {
-                    ID3D11DeviceContext deferred_left_old = null;
-                    Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
-                    ID3D11DeviceContext4 deferred_left = (ID3D11DeviceContext4)deferred_left_old;
-                    deferred_left.VSSetShader(d3d11VertexShader, null, 0);
-                    deferred_left.PSSetShader(d3d11PixelShader, null, 0);
-                    deferred_left.RSSetScissorRects(1, scissorRect);
-                    deferred_left.RSSetViewports(1, viewportRect);
-                    deferred_left.OMSetRenderTargets(1, d3d11RenderTargetView_EyeLeft, d3d11DepthStencilView_EyeLeft);
-                    deferred_left.ClearDepthStencilView(d3d11DepthStencilView_EyeLeft, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
-                    deferred_left.ClearRenderTargetView(d3d11RenderTargetView_EyeLeft, new float[] { 0, 0, 0, 0 });
-                    constants_left["transformCamera"] = transformCamera;
-                    constants_left["transformView"] = transformView;
-                    Execute_RenderSceneLeft(deferred_left, constants_left);
-                    deferred_left.FinishCommandList(0, ref commandList);
-                });
+                constants_left["transformCamera"] = MathHelp.Invert(transformView);
+                constants_left["transformView"] = transformView;
+                Execute_RenderSceneLeft(deferred_left, constants_left);
+                ID3D11CommandList commandList = null;
+                deferred_left.FinishCommandList(0, ref commandList);
                 RenderToyEventSource.Default.MarkerEnd("Command Buffer (Left Eye)");
                 return commandList;
             };
@@ -126,26 +122,22 @@ namespace RenderToy
             Func<ID3D11CommandList> action_right = () =>
             {
                 RenderToyEventSource.Default.MarkerBegin("Command Buffer (Right Eye)");
+                ID3D11DeviceContext deferred_right_old = null;
+                Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_right_old);
+                var deferred_right = (ID3D11DeviceContext4)deferred_right_old;
+                deferred_right.VSSetShader(d3d11VertexShader, null, 0);
+                deferred_right.PSSetShader(d3d11PixelShader, null, 0);
+                deferred_right.RSSetScissorRects(1, ref scissorRect);
+                deferred_right.RSSetViewports(1, ref viewportRect);
+                deferred_right.OMSetRenderTargets(1, ref d3d11RenderTargetView_EyeRight, d3d11DepthStencilView_EyeRight);
+                deferred_right.ClearDepthStencilView(d3d11DepthStencilView_EyeRight, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
+                deferred_right.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, new float[] { 0, 0, 0, 0 });
                 var transformView = OpenVRHelper.TransformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Right));
-                var transformCamera = MathHelp.Invert(transformView);
+                constants_right["transformCamera"] = MathHelp.Invert(transformView);
+                constants_right["transformView"] = transformView;
+                Execute_RenderSceneRight(deferred_right, constants_right);
                 ID3D11CommandList commandList = null;
-                Direct3D11Helper.Dispatcher.Invoke(() =>
-                {
-                    ID3D11DeviceContext deferred_right_old = null;
-                    Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_right_old);
-                    ID3D11DeviceContext4 deferred_right = (ID3D11DeviceContext4)deferred_right_old;
-                    deferred_right.VSSetShader(d3d11VertexShader, null, 0);
-                    deferred_right.PSSetShader(d3d11PixelShader, null, 0);
-                    deferred_right.RSSetScissorRects(1, ref scissorRect);
-                    deferred_right.RSSetViewports(1, ref viewportRect);
-                    deferred_right.OMSetRenderTargets(1, ref d3d11RenderTargetView_EyeRight, d3d11DepthStencilView_EyeRight);
-                    deferred_right.ClearDepthStencilView(d3d11DepthStencilView_EyeRight, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
-                    deferred_right.ClearRenderTargetView(d3d11RenderTargetView_EyeRight, new float[] { 0, 0, 0, 0 });
-                    constants_right["transformCamera"] = transformCamera;
-                    constants_right["transformView"] = transformView;
-                    Execute_RenderSceneRight(deferred_right, constants_right);
-                    deferred_right.FinishCommandList(0, ref commandList);
-                });
+                deferred_right.FinishCommandList(0, ref commandList);
                 RenderToyEventSource.Default.MarkerEnd("Command Buffer (Right Eye)");
                 return commandList;
             };
@@ -167,22 +159,17 @@ namespace RenderToy
                     RenderToyEventSource.Default.MarkerEnd("Update");
                     var do_left = Task.Run(action_left);
                     var do_right = Task.Run(action_right);
-                    {
-                        RenderToyEventSource.Default.MarkerBegin("Wait Render Completion");
-                        do_left.Wait();
-                        do_right.Wait();
-                        RenderToyEventSource.Default.MarkerEnd("Wait Render Completion");
-                    }
+                    RenderToyEventSource.Default.MarkerBegin("Wait Render Completion");
+                    var cmd_left = do_left.Result;
+                    var cmd_right = do_right.Result;
+                    RenderToyEventSource.Default.MarkerEnd("Wait Render Completion");
                     {
                         RenderToyEventSource.Default.MarkerBegin("Execute All RTs");
                         ID3D11DeviceContext context_old = null;
-                        Direct3D11Helper.Dispatcher.Invoke(() =>
-                        {
-                            Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
-                            var context = (ID3D11DeviceContext4)context_old;
-                            context.ExecuteCommandList(do_left.Result, 1);
-                            context.ExecuteCommandList(do_right.Result, 1);
-                        });
+                        Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
+                        var context = (ID3D11DeviceContext4)context_old;
+                        context.ExecuteCommandList(cmd_left, 1);
+                        context.ExecuteCommandList(cmd_right, 1);
                         RenderToyEventSource.Default.MarkerEnd("Execute All RTs");
                     }
                 }

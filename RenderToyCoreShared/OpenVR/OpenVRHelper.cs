@@ -58,62 +58,68 @@ namespace RenderToy
             if (System == null || Compositor == null) throw new Exception("OpenVR is not initialized.");
             TrackedDevicePose_t[] renderPose = new TrackedDevicePose_t[16];
             TrackedDevicePose_t[] gamePose = new TrackedDevicePose_t[16];
-            AGAIN:
-            Direct3D11Helper.Dispatcher.Invoke(() =>
+            Compositor.WaitGetPoses(renderPose, gamePose);
+        }
+        public static Matrix3D TransformLeftHand
+        {
+            get
             {
-                Compositor.WaitGetPoses(renderPose, gamePose);
-            });
-            float SecondsFromVsyncToPhotons = 0;
-            {
-                float fSecondsSinceLastVsync = 0;
-                ulong pullFrameCounter = 0;
-                // TODO: Figure out why this value is sometimes 3E+12 (37642607.2 years)
-                // This value is outside my lifetime so I can't really confirm it.
-                if (!System.GetTimeSinceLastVsync(ref fSecondsSinceLastVsync, ref pullFrameCounter) || fSecondsSinceLastVsync > 1)
-                {
-                    goto AGAIN;
-                }
-                ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_UnknownProperty;
-                float fDisplayFrequency = System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_DisplayFrequency_Float, ref error);
-                float fFrameDuration = 1.0f / fDisplayFrequency;
-                float fVsyncToPhotons = System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_SecondsFromVsyncToPhotons_Float, ref error);
-                // TODO: Figure out why the suggested solution from Valve is incorrect? (see https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetDeviceToAbsoluteTrackingPose)
-                // Scan out requires 2 frames to deliver photons to the eyes so we need double the duration.
-                SecondsFromVsyncToPhotons = fFrameDuration * 2 - fSecondsSinceLastVsync + fVsyncToPhotons;
-            }
-            TrackedDevicePose_t[] trackedPoses = new TrackedDevicePose_t[16];
-            System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, SecondsFromVsyncToPhotons, trackedPoses);
-            {
-                TransformHead = transformGLtoDX * MathHelp.Invert(OpenVRHelper.ConvertMatrix43(trackedPoses[0].mDeviceToAbsoluteTracking));
-            }
-            var hands = trackedPoses
-                .Select((pose, index) => new { Pose = pose, Index = index })
-                .Where((x) => x.Pose.bDeviceIsConnected && x.Pose.bPoseIsValid && (System.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == ETrackedControllerRole.RightHand || System.GetControllerRoleForTrackedDeviceIndex((uint)x.Index) == ETrackedControllerRole.LeftHand))
-                .ToArray();
-            {
-                var lefthand = hands.Where(i => System.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == ETrackedControllerRole.LeftHand).FirstOrDefault();
-                if (lefthand != null)
-                {
-                    TransformLeftHand = OpenVRHelper.ConvertMatrix43(lefthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX;
-                }
-            }
-            {
-                var righthand = hands.Where(i => System.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == ETrackedControllerRole.RightHand).FirstOrDefault();
-                if (righthand != null)
-                {
-                    TransformRightHand = OpenVRHelper.ConvertMatrix43(righthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX;
-                }
+                if (System == null) return Matrix3D.Identity;
+                TrackedDevicePose_t[] trackedPoses = new TrackedDevicePose_t[16];
+                System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, TimeToPhotons(), trackedPoses);
+                var hand = trackedPoses
+                    .Where((pose, index) => pose.bDeviceIsConnected && pose.bPoseIsValid && System.GetControllerRoleForTrackedDeviceIndex((uint)index) == ETrackedControllerRole.LeftHand);
+                if (hand.Count() == 0) return Matrix3D.Identity;
+                return OpenVRHelper.ConvertMatrix43(hand.First().mDeviceToAbsoluteTracking) * transformGLtoDX;
             }
         }
-        public static Matrix3D TransformLeftHand { get; protected set; }
-        public static Matrix3D TransformRightHand { get; protected set; }
-        public static Matrix3D TransformHead { get; protected set; }
+        public static Matrix3D TransformRightHand
+        {
+            get
+            {
+                if (System == null) return Matrix3D.Identity;
+                TrackedDevicePose_t[] trackedPoses = new TrackedDevicePose_t[16];
+                System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, TimeToPhotons(), trackedPoses);
+                var hand = trackedPoses
+                    .Where((pose, index) => pose.bDeviceIsConnected && pose.bPoseIsValid && System.GetControllerRoleForTrackedDeviceIndex((uint)index) == ETrackedControllerRole.LeftHand);
+                if (hand.Count() == 0) return Matrix3D.Identity;
+                return OpenVRHelper.ConvertMatrix43(hand.First().mDeviceToAbsoluteTracking) * transformGLtoDX;
+            }
+        }
+        public static Matrix3D TransformHead
+        {
+            get
+            {
+                if (System == null) return Matrix3D.Identity;
+                TrackedDevicePose_t[] trackedPoses = new TrackedDevicePose_t[16];
+                System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, TimeToPhotons(), trackedPoses);
+                return transformGLtoDX * MathHelp.Invert(OpenVRHelper.ConvertMatrix43(trackedPoses[0].mDeviceToAbsoluteTracking));
+            }
+        }
         public static CVRSystem System;
         public static CVRCompositor Compositor;
         public static CVRTrackedCamera TrackedCamera;
         public static ulong TrackedCameraHandle = 0;
         #endregion
         #region - Section : Private -
+        static float TimeToPhotons()
+        {
+            float fSecondsSinceLastVsync = 0;
+            ulong pulFrameCounter = 0;
+            // TODO: Figure out why this value is sometimes 3E+12 (37642607.2 years)
+            // This value is outside my lifetime so I can't really confirm it.
+            if (!System.GetTimeSinceLastVsync(ref fSecondsSinceLastVsync, ref pulFrameCounter) || fSecondsSinceLastVsync > 1)
+            {
+                throw new Exception("What just happened??");
+            }
+            ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_UnknownProperty;
+            float fDisplayFrequency = System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_DisplayFrequency_Float, ref error);
+            float fFrameDuration = 1.0f / fDisplayFrequency;
+            float fVsyncToPhotons = System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_SecondsFromVsyncToPhotons_Float, ref error);
+            // TODO: Figure out why the suggested solution from Valve is incorrect? (see https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetDeviceToAbsoluteTrackingPose)
+            // Scan out requires 2 frames to deliver photons to the eyes so we need double the duration.
+            return fFrameDuration * 2 - fSecondsSinceLastVsync + fVsyncToPhotons;
+        }
         static Matrix3D transformGLtoDX = new Matrix3D(
             1, 0, 0, 0,
             0, 1, 0, 0,
