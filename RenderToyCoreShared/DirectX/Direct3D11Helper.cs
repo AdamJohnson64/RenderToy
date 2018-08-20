@@ -34,7 +34,7 @@ namespace RenderToy.DirectX
         /// </summary>
         public static void Initialize()
         {
-            Dispatcher = DispatcherHelper.CreateDispatcher();
+            Dispatcher = DispatcherHelper.CreateDispatcher("Direct3D11 Synchronized Dispatcher");
             Dispatcher.Invoke(() =>
             {
                 d3d11Device = Direct3D11.D3D11CreateDevice();
@@ -256,7 +256,7 @@ namespace RenderToy.DirectX
                 }
                 else
                 {
-                    return CreateShaderResourceViewSyncUncachedFromImageBgra32(material.GetImageConverter(512, 512));
+                    return CreateShaderResourceViewSyncUncachedFromSurface(material.GetImageConverter(512, 512));
                 }
             });
         }
@@ -290,7 +290,7 @@ namespace RenderToy.DirectX
                 desc.Height = (uint)level0.GetImageHeight();
                 desc.MipLevels = (uint)pInitialData.Count;
                 desc.ArraySize = 1;
-                desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+                desc.Format = texture.GetSurface(0, 0).GetFormat();
                 desc.SampleDesc.Count = 1;
                 desc.Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE;
                 desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
@@ -322,7 +322,7 @@ namespace RenderToy.DirectX
         /// </summary>
         /// <param name="image">The image to construct.</param>
         /// <returns>A shader resource view for the given image.</returns>
-        static ID3D11ShaderResourceView CreateShaderResourceViewSyncUncachedFromImageBgra32(IImageBgra32 image)
+        static ID3D11ShaderResourceView CreateShaderResourceViewSyncUncachedFromSurface(ISurface image)
         {
             var desc = new D3D11_TEXTURE2D_DESC();
             desc.Width = (uint)image.GetImageWidth();
