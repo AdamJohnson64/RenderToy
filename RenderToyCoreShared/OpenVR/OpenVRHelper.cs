@@ -81,7 +81,7 @@ namespace RenderToy
                 TrackedDevicePose_t[] trackedPoses = new TrackedDevicePose_t[16];
                 System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, Compositor.GetFrameTimeRemaining(), trackedPoses);
                 var hand = trackedPoses
-                    .Where((pose, index) => pose.bDeviceIsConnected && pose.bPoseIsValid && System.GetControllerRoleForTrackedDeviceIndex((uint)index) == ETrackedControllerRole.LeftHand);
+                    .Where((pose, index) => pose.bDeviceIsConnected && pose.bPoseIsValid && System.GetControllerRoleForTrackedDeviceIndex((uint)index) == ETrackedControllerRole.RightHand);
                 if (hand.Count() == 0) return Matrix3D.Identity;
                 return OpenVRHelper.ConvertMatrix43(hand.First().mDeviceToAbsoluteTracking) * transformGLtoDX;
             }
