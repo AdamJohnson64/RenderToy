@@ -212,6 +212,7 @@ namespace RenderToy.DirectX
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
 #if OPENVR_INSTALLED
+            /*
             if (material is MaterialOpenVRCameraDistorted vr)
             {
                 var dev = Marshal.GetComInterfaceForObject(d3d11Device, typeof(ID3D11Device));
@@ -224,6 +225,7 @@ namespace RenderToy.DirectX
                 }
                 return (ID3D11ShaderResourceView)Marshal.GetTypedObjectForIUnknown(srv, typeof(ID3D11Texture2D));
             }
+            */
 #endif // OPENVR_INSTALLED
             ID3D11ShaderResourceView find;
             if (!generatedTextures.TryGetValue(material, out find))
