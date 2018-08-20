@@ -211,15 +211,29 @@ namespace RenderToy.DirectX
         {
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
+#if OPENVR_INSTALLED
+            if (material is MaterialOpenVRCameraDistorted vr)
+            {
+                var dev = Marshal.GetComInterfaceForObject(d3d11Device, typeof(ID3D11Device));
+                var srv = IntPtr.Zero;
+                var header = new Valve.VR.CameraVideoStreamFrameHeader_t();
+                OpenVRHelper.TrackedCamera.GetVideoStreamTextureD3D11(OpenVRHelper.TrackedCameraHandle, Valve.VR.EVRTrackedCameraFrameType.Distorted, dev, ref srv, ref header, (uint)Marshal.SizeOf(header));
+                if (srv == IntPtr.Zero)
+                {
+                    return CreateShaderResourceViewSyncCached(missing);
+                }
+                return (ID3D11ShaderResourceView)Marshal.GetTypedObjectForIUnknown(srv, typeof(ID3D11Texture2D));
+            }
+#endif // OPENVR_INSTALLED
             ID3D11ShaderResourceView find;
             if (!generatedTextures.TryGetValue(material, out find))
             {
                 Task.Run(() =>
                 {
-                    var createit = CreateTextureViewSyncCached(material);
+                    var createit = CreateShaderResourceViewSyncCached(material);
                     generatedTextures.AddOrUpdate(material, createit, (m, srv) => createit);
                 });
-                find = CreateTextureViewSyncCached(missing);
+                find = CreateShaderResourceViewSyncCached(missing);
                 generatedTextures.AddOrUpdate(material, find, (m, srv) => find);
             }
             return find;
@@ -230,18 +244,8 @@ namespace RenderToy.DirectX
         /// </summary>
         /// <param name="material">The texture material to recreate.</param>
         /// <returns>A shader resource view representing this texture.</returns>
-        static ID3D11ShaderResourceView CreateTextureViewSyncCached(IMaterial material)
+        static ID3D11ShaderResourceView CreateShaderResourceViewSyncCached(IMaterial material)
         {
-#if OPENVR_INSTALLED
-            if (material is MaterialOpenVRCameraDistorted vr)
-            {
-                var dev = Marshal.GetComInterfaceForObject(d3d11Device, typeof(ID3D11Device));
-                var srv = IntPtr.Zero;
-                var header = new Valve.VR.CameraVideoStreamFrameHeader_t();
-                vr.TrackedCamera.GetVideoStreamTextureD3D11(vr.TrackedCameraHandle, Valve.VR.EVRTrackedCameraFrameType.Distorted, dev, ref srv, ref header, (uint)Marshal.SizeOf(header));
-                return (ID3D11ShaderResourceView)Marshal.GetTypedObjectForIUnknown(srv, typeof(ID3D11Texture2D));
-            }
-#endif // OPENVR_INSTALLED
             return MementoServer.Default.Get(material, DX11TextureView, () =>
             {
                 if (material is ITexture texture)

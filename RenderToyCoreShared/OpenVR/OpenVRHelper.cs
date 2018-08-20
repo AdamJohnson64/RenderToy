@@ -8,6 +8,7 @@ using RenderToy.DirectX;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Transforms;
+using System;
 using System.Linq;
 using Valve.VR;
 
@@ -15,6 +16,17 @@ namespace RenderToy
 {
     public class OpenVRHelper
     {
+        #region - Section : Initialization -
+        public static void Initialize()
+        {
+            EVRInitError error = EVRInitError.None;
+            System = OpenVR.Init(ref error);
+            Compositor = OpenVR.Compositor;
+            TrackedCamera = OpenVR.TrackedCamera;
+            TrackedCamera.AcquireVideoStreamingService(0, ref TrackedCameraHandle);
+        }
+        #endregion
+        #region - Section : Public Interface -
         public static Matrix3D ConvertMatrix43(HmdMatrix34_t matrix)
         {
             Matrix3D m = new Matrix3D();
@@ -41,16 +53,9 @@ namespace RenderToy
         {
             return ConvertMatrix44(System.GetProjectionMatrix(eEye, fNear, fFar));
         }
-        public static void SubmitLeftHand(Matrix3D hand)
-        {
-            _lefthand = hand;   
-        }
-        public static void SubmitRightHand(Matrix3D hand)
-        {
-            _righthand = hand;
-        }
         public static void Update()
         {
+            if (System == null || Compositor == null) throw new Exception("OpenVR is not initialized.");
             TrackedDevicePose_t[] renderPose = new TrackedDevicePose_t[16];
             TrackedDevicePose_t[] gamePose = new TrackedDevicePose_t[16];
             AGAIN:
@@ -79,7 +84,7 @@ namespace RenderToy
             TrackedDevicePose_t[] trackedPoses = new TrackedDevicePose_t[16];
             System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, SecondsFromVsyncToPhotons, trackedPoses);
             {
-                _head = transformGLtoDX * MathHelp.Invert(OpenVRHelper.ConvertMatrix43(trackedPoses[0].mDeviceToAbsoluteTracking));
+                TransformHead = transformGLtoDX * MathHelp.Invert(OpenVRHelper.ConvertMatrix43(trackedPoses[0].mDeviceToAbsoluteTracking));
             }
             var hands = trackedPoses
                 .Select((pose, index) => new { Pose = pose, Index = index })
@@ -89,28 +94,32 @@ namespace RenderToy
                 var lefthand = hands.Where(i => System.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == ETrackedControllerRole.LeftHand).FirstOrDefault();
                 if (lefthand != null)
                 {
-                    _lefthand = OpenVRHelper.ConvertMatrix43(lefthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX;
+                    TransformLeftHand = OpenVRHelper.ConvertMatrix43(lefthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX;
                 }
             }
             {
                 var righthand = hands.Where(i => System.GetControllerRoleForTrackedDeviceIndex((uint)i.Index) == ETrackedControllerRole.RightHand).FirstOrDefault();
                 if (righthand != null)
                 {
-                    _righthand = OpenVRHelper.ConvertMatrix43(righthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX;
+                    TransformRightHand = OpenVRHelper.ConvertMatrix43(righthand.Pose.mDeviceToAbsoluteTracking) * transformGLtoDX;
                 }
             }
         }
-        public static Matrix3D _head;
-        public static Matrix3D _lefthand;
-        public static Matrix3D _righthand;
-        public static EVRInitError error;
-        public static CVRSystem System = OpenVR.Init(ref error);
-        public static CVRCompositor Compositor = OpenVR.Compositor;
+        public static Matrix3D TransformLeftHand { get; protected set; }
+        public static Matrix3D TransformRightHand { get; protected set; }
+        public static Matrix3D TransformHead { get; protected set; }
+        public static CVRSystem System;
+        public static CVRCompositor Compositor;
+        public static CVRTrackedCamera TrackedCamera;
+        public static ulong TrackedCameraHandle = 0;
+        #endregion
+        #region - Section : Private -
         static Matrix3D transformGLtoDX = new Matrix3D(
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, -1, 0,
             0, 0, 0, 1);
+        #endregion
     }
     public class TransformHMD : ITransform
     {
@@ -118,7 +127,7 @@ namespace RenderToy
         {
             get
             {
-                return OpenVRHelper._head;
+                return OpenVRHelper.TransformHead;
             }
         }
         public OpenVRHelper VRHost { get; protected set; }
@@ -129,7 +138,7 @@ namespace RenderToy
         {
             get
             {
-                return OpenVRHelper._lefthand;
+                return OpenVRHelper.TransformLeftHand;
             }
         }
     };
@@ -139,25 +148,16 @@ namespace RenderToy
         {
             get
             {
-                return OpenVRHelper._righthand;
+                return OpenVRHelper.TransformRightHand;
             }
         }
     };
     public class MaterialOpenVRCameraDistorted : IMaterial
     {
-        public MaterialOpenVRCameraDistorted(OpenVRHelper vrhost, CVRTrackedCamera camera)
-        {
-            TrackedCamera = camera;
-            ulong handle = 0;
-            TrackedCamera.AcquireVideoStreamingService(0, ref handle);
-            TrackedCameraHandle = handle;
-        }
         public bool IsConstant()
         {
             return false;
         }
-        public CVRTrackedCamera TrackedCamera { get; protected set; }
-        public ulong TrackedCameraHandle { get; protected set; }
     };
 }
 #endif // OPENVR_INSTALLED

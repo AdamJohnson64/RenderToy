@@ -216,6 +216,7 @@ namespace RenderToy.WPF
                 #if OPENVR_INSTALLED
                 if (DataContext is Document doc)
                 {
+                    OpenVRHelper.Initialize();
                     OpenVRPump.CreateThread(doc.Scene);
                 }
                 #endif // OPENVR_INSTALLED
@@ -225,6 +226,7 @@ namespace RenderToy.WPF
 #if OPENVR_INSTALLED
                 if (DataContext is Document doc)
                 {
+                    OpenVRHelper.Initialize();
                     OpenVRPump.CreateThreadRaytraced(doc.Scene);
                 }
 #endif // OPENVR_INSTALLED

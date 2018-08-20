@@ -91,7 +91,7 @@ namespace RenderToy
             {
                 RenderToyEventSource.Default.MarkerBegin("Command Buffer (Left Eye)");
                 ID3D11CommandList commandList = null;
-                var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Left));
+                var transformView = OpenVRHelper.TransformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Left));
                 var transformCamera = MathHelp.Invert(transformView);
                 Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
@@ -126,7 +126,7 @@ namespace RenderToy
             Func<ID3D11CommandList> action_right = () =>
             {
                 RenderToyEventSource.Default.MarkerBegin("Command Buffer (Right Eye)");
-                var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Right));
+                var transformView = OpenVRHelper.TransformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Right));
                 var transformCamera = MathHelp.Invert(transformView);
                 ID3D11CommandList commandList = null;
                 Direct3D11Helper.Dispatcher.Invoke(() =>
@@ -262,7 +262,7 @@ namespace RenderToy
                 {
                     var devicePtr = Marshal.GetComInterfaceForObjectInContext(Direct3D11Helper.d3d11Device, typeof(ID3D11Device));
                     {
-                        var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Left));
+                        var transformView = OpenVRHelper.TransformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Left));
                         var transformCamera = MathHelp.Invert(transformView);
                         var transformProjection = OpenVRHelper.GetProjectionMatrix(EVREye.Eye_Left, 0.1f, 2000.0f);
                         var matrixData = SceneSerializer.CreateFlatMemoryF32(MathHelp.Invert(transformView * transformProjection));
@@ -270,7 +270,7 @@ namespace RenderToy
                         RenderToyCLI.TEST_RaycastNormalsAMPF32D3D(sceneView, matrixData, devicePtr, texturePtr);
                     }
                     {
-                        var transformView = OpenVRHelper._head * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Right));
+                        var transformView = OpenVRHelper.TransformHead * MathHelp.Invert(OpenVRHelper.GetEyeToHeadTransform(EVREye.Eye_Right));
                         var transformCamera = MathHelp.Invert(transformView);
                         var transformProjection = OpenVRHelper.GetProjectionMatrix(EVREye.Eye_Right, 0.1f, 2000.0f);
                         var matrixData = SceneSerializer.CreateFlatMemoryF32(MathHelp.Invert(transformView * transformProjection));
