@@ -92,7 +92,7 @@ namespace RenderToy.DirectX
                     {
                         D3DLockedRect lockit = texturescratch.LockRect((uint)level);
                         var thislevel = astexture.GetSurface(0, level);
-                        thislevel.ConvertToBitmap(lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
+                        thislevel.ConvertToBgra32(lockit.Bits, thislevel.GetImageWidth(), thislevel.GetImageHeight(), lockit.Pitch);
                         texturescratch.UnlockRect((uint)level);
                     }
                     Direct3D9Helper.device.UpdateTexture(texturescratch, texture);
@@ -104,7 +104,7 @@ namespace RenderToy.DirectX
                     var texture = Direct3D9Helper.device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.Default, null);
                     var texturescratch = Direct3D9Helper.device.CreateTexture((uint)asimage.GetImageWidth(), (uint)asimage.GetImageHeight(), 1, 0U, D3DFormat.A8R8G8B8, D3DPool.SystemMemory, null);
                     D3DLockedRect lockit = texturescratch.LockRect(0);
-                    asimage.ConvertToBitmap(lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
+                    asimage.ConvertToBgra32(lockit.Bits, asimage.GetImageWidth(), asimage.GetImageHeight(), lockit.Pitch);
                     texturescratch.UnlockRect(0);
                     Direct3D9Helper.device.UpdateTexture(texturescratch, texture);
                     return texture;

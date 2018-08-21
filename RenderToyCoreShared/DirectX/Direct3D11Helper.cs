@@ -267,21 +267,24 @@ namespace RenderToy.DirectX
         /// <returns>A shader resource view corresponding to this texture.</returns>
         static ID3D11ShaderResourceView CreateShaderResourceViewSyncUncachedFromTexture(ITexture texture)
         {
-            var retainMips = new List<IntPtr>();
+            var retainMips = new List<GCHandle>();
             try
             {
+                var format = texture.GetSurface(0, 0).GetFormat();
+                var pixelsize = Direct3DHelper.GetPixelSize(format);
                 var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
                 for (int miplevel = 0; miplevel < texture.GetTextureLevelCount(); ++miplevel)
                 {
                     var level = texture.GetSurface(0, miplevel);
                     if (level == null) return null;
                     MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
-                    var ptr = Marshal.AllocHGlobal(4 * level.GetImageWidth() * level.GetImageHeight());
-                    retainMips.Add(ptr);
-                    level.ConvertToBitmap(ptr, level.GetImageWidth(), level.GetImageHeight(), 4 * level.GetImageWidth());
-                    FillpInitialData.pSysMem = ptr;
-                    FillpInitialData.SysMemPitch = (uint)(4 * level.GetImageWidth());
-                    FillpInitialData.SysMemSlicePitch = (uint)(4 * level.GetImageWidth() * level.GetImageHeight());
+                    var copy = level.Copy();
+                    var pin = GCHandle.Alloc(copy, GCHandleType.Pinned);
+                    retainMips.Add(pin);
+                    level.ConvertToBgra32(Marshal.UnsafeAddrOfPinnedArrayElement(copy, 0), level.GetImageWidth(), level.GetImageHeight(), pixelsize * level.GetImageWidth());
+                    FillpInitialData.pSysMem = Marshal.UnsafeAddrOfPinnedArrayElement(copy, 0);
+                    FillpInitialData.SysMemPitch = (uint)(pixelsize * level.GetImageWidth());
+                    FillpInitialData.SysMemSlicePitch = (uint)(pixelsize * level.GetImageWidth() * level.GetImageHeight());
                     pInitialData.Add(FillpInitialData);
                 }
                 var level0 = texture.GetSurface(0, 0);
@@ -311,47 +314,57 @@ namespace RenderToy.DirectX
             }
             finally
             {
-                foreach (var allocation in retainMips)
+                foreach (var pin in retainMips)
                 {
-                    Marshal.FreeHGlobal(allocation);
+                    pin.Free();
                 }
             }
         }
         /// <summary>
-        /// Create an uncached shader resource view from a flat image.
+        /// Create an uncached shader resource view from a flat image surface.
         /// </summary>
-        /// <param name="image">The image to construct.</param>
+        /// <param name="surface">The image to construct.</param>
         /// <returns>A shader resource view for the given image.</returns>
-        static ID3D11ShaderResourceView CreateShaderResourceViewSyncUncachedFromSurface(ISurface image)
+        static ID3D11ShaderResourceView CreateShaderResourceViewSyncUncachedFromSurface(ISurface surface)
         {
+            var format = surface.GetFormat();
+            var pixelsize = Direct3DHelper.GetPixelSize(format);
             var desc = new D3D11_TEXTURE2D_DESC();
-            desc.Width = (uint)image.GetImageWidth();
-            desc.Height = (uint)image.GetImageHeight();
+            desc.Width = (uint)surface.GetImageWidth();
+            desc.Height = (uint)surface.GetImageHeight();
             desc.MipLevels = 1;
             desc.ArraySize = 1;
-            desc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+            desc.Format = format;
             desc.SampleDesc.Count = 1;
             desc.Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT;
             desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
             var pInitialData = new D3D11_SUBRESOURCE_DATA();
-            var ptr = Marshal.AllocHGlobal(4 * image.GetImageWidth() * image.GetImageHeight());
-            image.ConvertToBitmap(ptr, image.GetImageWidth(), image.GetImageHeight(), 4 * image.GetImageWidth());
-            pInitialData.pSysMem = ptr;
-            pInitialData.SysMemPitch = (uint)(4 * image.GetImageWidth());
-            pInitialData.SysMemSlicePitch = (uint)(4 * image.GetImageWidth() * image.GetImageHeight());
-            ID3D11Texture2D d3d11texture = null;
-            var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
-            vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
-            vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D10_SRV_DIMENSION_TEXTURE2D;
-            vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = 1;
-            vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
-            ID3D11ShaderResourceView srview = null;
-            Dispatcher.Invoke(() =>
+            var data = surface.Copy();
+            var pin = GCHandle.Alloc(data, GCHandleType.Pinned);
+            try
             {
-                Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref d3d11texture);
-                Direct3D11Helper.d3d11Device.CreateShaderResourceView(d3d11texture, vdesc, ref srview);
-            });
-            return srview;
+                var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
+                pInitialData.pSysMem = ptr;
+                pInitialData.SysMemPitch = (uint)(pixelsize * surface.GetImageWidth());
+                pInitialData.SysMemSlicePitch = (uint)(pixelsize * surface.GetImageWidth() * surface.GetImageHeight());
+                ID3D11Texture2D d3d11texture = null;
+                var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+                vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+                vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D10_SRV_DIMENSION_TEXTURE2D;
+                vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = 1;
+                vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
+                ID3D11ShaderResourceView srview = null;
+                Dispatcher.Invoke(() =>
+                {
+                    Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref d3d11texture);
+                    Direct3D11Helper.d3d11Device.CreateShaderResourceView(d3d11texture, vdesc, ref srview);
+                });
+                return srview;
+            }
+            finally
+            {
+                pin.Free();
+            }
         }
         /// <summary>
         /// A concurrent dictionary of all currently available shader resource views.

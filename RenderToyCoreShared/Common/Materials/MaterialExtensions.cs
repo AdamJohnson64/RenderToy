@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToyCOM;
 using RenderToy.Expressions;
 using RenderToy.Math;
 using RenderToy.PipelineModel;
@@ -16,9 +17,10 @@ namespace RenderToy.Materials
     public static class MaterialExtensions
     {
         public const int ThumbnailSize = 32;
-        public static void ConvertToBitmap(this IImageBgra32 node, IntPtr bitmapptr, int bitmapWidth, int bitmapHeight, int bitmapstride)
+        public static void ConvertToBgra32(this ISurface node, IntPtr bitmapptr, int bitmapWidth, int bitmapHeight, int bitmapstride)
         {
             if (node == null || bitmapptr == IntPtr.Zero) return;
+            var reader = node.GetImageReader();
             unsafe
             {
                 for (int y = 0; y < bitmapHeight; ++y)
@@ -26,16 +28,16 @@ namespace RenderToy.Materials
                     void* raster = (byte*)bitmapptr.ToPointer() + bitmapstride * y;
                     for (int x = 0; x < bitmapWidth; ++x)
                     {
-                        ((uint*)raster)[x] = node.GetImagePixel(x, y);
+                        ((uint*)raster)[x] = Rasterization.ColorToUInt32(reader(x, y));
                     }
                 }
             }
         }
-        public static ConfiguredTaskAwaitable ConvertToBitmapAsync(this IImageBgra32 node, IntPtr bitmapptr, int bitmapWidth, int bitmapHeight, int bitmapstride)
+        public static ConfiguredTaskAwaitable ConvertToBitmapAsync(this ISurface node, IntPtr bitmapptr, int bitmapWidth, int bitmapHeight, int bitmapstride)
         {
-            return Task.Run(() => ConvertToBitmap(node, bitmapptr, bitmapWidth, bitmapHeight, bitmapstride)).ConfigureAwait(false);
+            return Task.Run(() => ConvertToBgra32(node, bitmapptr, bitmapWidth, bitmapHeight, bitmapstride)).ConfigureAwait(false);
         }
-        public static IImageBgra32 GetImageConverter(this IMaterial node, int suggestedWidth, int suggestedHeight)
+        public static ISurface GetImageConverter(this IMaterial node, int suggestedWidth, int suggestedHeight)
         {
             if (node == null) return GetImageConverter(StockMaterials.Missing, ThumbnailSize, ThumbnailSize);
             System.Type type = node.GetType();
@@ -43,9 +45,9 @@ namespace RenderToy.Materials
             {
                 return GetImageConverter(((ITexture)node).GetSurface(0, 0), suggestedWidth, suggestedHeight);
             }
-            else if (node is IImageBgra32)
+            else if (node is ISurface)
             {
-                return (IImageBgra32)node;
+                return (ISurface)node;
             }
             else if (node is IMNNode<double>)
             {
@@ -56,7 +58,7 @@ namespace RenderToy.Materials
                     context.U = (x + 0.5) / suggestedWidth;
                     context.V = (y + 0.5) / suggestedHeight;
                     double v = lambda(context);
-                    return Rasterization.ColorToUInt32(new Vector4D(v, v, v, 1));
+                    return new Vector4D(v, v, v, 1);
                 });
             }
             else if (node is IMNNode<Vector4D>)
@@ -67,7 +69,7 @@ namespace RenderToy.Materials
                 {
                     context.U = (x + 0.5) / suggestedWidth;
                     context.V = (y + 0.5) / suggestedHeight;
-                    return Rasterization.ColorToUInt32(lambda(context));
+                    return lambda(context);
                 });
             }
             else
@@ -75,20 +77,50 @@ namespace RenderToy.Materials
                 return GetImageConverter(StockMaterials.Missing, ThumbnailSize, ThumbnailSize);
             }
         }
-        class ImageConverterAdaptor : IImageBgra32
+        class ImageConverterAdaptor : ISurface
         {
-            public ImageConverterAdaptor(int width, int height, Func<int, int, uint> sampler)
+            public ImageConverterAdaptor(int width, int height, Func<int, int, Vector4D> sampler)
             {
                 Width = width;
                 Height = height;
                 Sampler = sampler;
             }
             public bool IsConstant() { return false; }
+            public DXGI_FORMAT GetFormat() { return DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM; }
             public int GetImageWidth() { return Width; }
             public int GetImageHeight() { return Height; }
-            public uint GetImagePixel(int x, int y) { return Sampler(x, y); }
+            public Func<int, int, Vector4D> GetImageReader()
+            {
+                return (x, y) =>
+                {
+                    return Sampler(x, y);
+                };
+            }
+            public Action<int, int, Vector4D> GetImageWriter()
+            {
+                throw new NotSupportedException();
+            }
+            public byte[] Copy()
+            {
+                var copy = new byte[4 * Width * Height];
+                var reader = GetImageReader();
+                for (int y = 0; y < Height; ++y)
+                {
+                    for (int x = 0; x < Width; ++x)
+                    {
+                        unsafe
+                        {
+                            fixed (byte* pixel = &copy[4 * x + 4 * Width * y])
+                            {
+                                *(uint*)pixel = Rasterization.ColorToUInt32(reader(x,y));
+                            }
+                        }
+                    }
+                }
+                return copy;
+            }
             int Width, Height;
-            Func<int, int, uint> Sampler;
+            Func<int, int, Vector4D> Sampler;
         }
     }
 }

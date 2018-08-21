@@ -11,9 +11,9 @@ namespace RenderToy.Textures
 {
     class LoaderImage
     {
-        public static ImageBgra32 LoadFromPath(string path)
+        public static Surface LoadFromPath(string path)
         {
-            ImageBgra32 result = null;
+            Surface result = null;
             if (path.ToUpperInvariant().EndsWith(".HDR"))
             {
                 result = LoaderHDR.LoadFromPath(path);
@@ -28,7 +28,7 @@ namespace RenderToy.Textures
             }
             return result;
         }
-        public static ConfiguredTaskAwaitable<ImageBgra32> LoadFromPathAsync(string path)
+        public static ConfiguredTaskAwaitable<Surface> LoadFromPathAsync(string path)
         {
             return Task.Run(() =>
             {

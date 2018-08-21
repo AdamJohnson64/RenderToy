@@ -37,11 +37,11 @@ namespace RenderToy.WPF
         {
             return await ConvertToBitmapAsync(node.GetImageConverter(suggestedWidth, suggestedHeight));
         }
-        public static WriteableBitmap ConvertToBitmap(IImageBgra32 node)
+        public static WriteableBitmap ConvertToBitmap(ISurface node)
         {
             return ConvertToBitmapAsync(node).Result;
         }
-        public static async Task<WriteableBitmap> ConvertToBitmapAsync(IImageBgra32 node)
+        public static async Task<WriteableBitmap> ConvertToBitmapAsync(ISurface node)
         {
             if (node == null) return null;
             var bitmap = new WriteableBitmap(node.GetImageWidth(), node.GetImageHeight(), 0, 0, PixelFormats.Bgra32, null);

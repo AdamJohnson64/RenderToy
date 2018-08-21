@@ -67,7 +67,7 @@ namespace RenderToy.Materials
             var kd = _map_Kd as ITexture;
             return kd == null ? 0 : kd.GetTextureLevelCount();
         }
-        public IImageBgra32 GetSurface(int array, int level)
+        public ISurface GetSurface(int array, int level)
         {
             var kd = _map_Kd as ITexture;
             return kd == null ? null : kd.GetSurface(array, level);

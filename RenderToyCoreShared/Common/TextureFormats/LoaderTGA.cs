@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToyCOM;
 using RenderToy.Textures;
 using System.IO;
 
@@ -10,7 +11,7 @@ namespace RenderToy.TextureFormats
 {
     public static class LoaderTGA
     {
-        public static ImageBgra32 LoadFromPath(string path)
+        public static Surface LoadFromPath(string path)
         {
             if (!File.Exists(path)) return null;
             using (var streamreader = File.OpenRead(path))
@@ -34,10 +35,11 @@ namespace RenderToy.TextureFormats
                 ushort height = binaryreader.ReadUInt16();
                 byte bitdepth = binaryreader.ReadByte();
                 byte imagedescriptor = binaryreader.ReadByte();
-                byte[] data = data = new byte[4 * width * height];
+                byte[] data;
                 if (bitdepth == 24)
                 {
                     if (imagedescriptor != 0) throw new FileLoadException("Expected Zero Image Descriptor.");
+                    data = new byte[4 * width * height];
                     for (int y = height - 1; y >= 0; --y)
                     {
                         for (int x = 0; x < width; ++x)
@@ -45,13 +47,15 @@ namespace RenderToy.TextureFormats
                             data[0 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
                             data[1 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
                             data[2 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
-                            data[3 + 4 * x + 4 * width * y] = (byte)255;
+                            data[3 + 4 * x + 4 * width * y] = 255;
                         }
                     }
+                    return new Surface(Path.GetFileName(path), DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM, width, height, data);
                 }
                 else if (bitdepth == 32)
                 {
                     if (imagedescriptor != 8) throw new FileLoadException("Expected Zero Image Descriptor.");
+                    data = new byte[4 * width * height];
                     for (int y = height - 1; y >= 0; --y)
                     {
                         for (int x = 0; x < width; ++x)
@@ -62,12 +66,12 @@ namespace RenderToy.TextureFormats
                             data[3 + 4 * x + 4 * width * y] = (byte)streamreader.ReadByte();
                         }
                     }
+                    return new Surface(Path.GetFileName(path), DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, width, height, data);
                 }
                 else
                 {
                     throw new FileLoadException("Expected 24 or 32bpp.");
                 }
-                return new ImageBgra32(Path.GetFileName(path), width, height, data);
             }
         }
     }

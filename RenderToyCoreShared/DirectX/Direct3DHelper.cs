@@ -3,10 +3,12 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToyCOM;
 using RenderToy.Math;
 using RenderToy.Meshes;
 using RenderToy.PipelineModel;
 using RenderToy.Primitives;
+using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -51,6 +53,16 @@ namespace RenderToy.DirectX
         public static ConfiguredTaskAwaitable<XYZNorDiffuseTex1[]> ConvertToXYZNorDiffuseTex1Async(IPrimitive primitive)
         {
             return Task.Run(() => ConvertToXYZNorDiffuseTex1(primitive)).ConfigureAwait(false);
+        }
+        public static int GetPixelSize(DXGI_FORMAT format)
+        {
+            switch (format)
+            {
+                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: return 4;
+                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: return 4;
+                case DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT: return 12;
+                default: throw new NotSupportedException("Cannot operate on " + format + " format images.");
+            }
         }
     }
 }

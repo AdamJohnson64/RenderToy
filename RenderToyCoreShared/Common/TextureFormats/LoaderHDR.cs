@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToyCOM;
 using RenderToy.Textures;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace RenderToy.TextureFormats
 {
     public static class LoaderHDR
     {
-        public static ImageBgra32 LoadFromPath(string path)
+        public static Surface LoadFromPath(string path)
         {
             if (!File.Exists(path)) return null;
             string imageFormat = null;
@@ -63,7 +64,7 @@ namespace RenderToy.TextureFormats
                     imageWidth = int.Parse(match.Groups["width"].Value);
                     imageHeight = int.Parse(match.Groups["height"].Value);
                 }
-                byte[] imageData = new byte[4 * imageWidth * imageHeight];
+                byte[] imageData = new byte[12 * imageWidth * imageHeight];
                 for (int y = 0; y < imageHeight; ++y)
                 {
                     byte[] rasterBuffer = new byte[4 * imageWidth];
@@ -116,24 +117,26 @@ namespace RenderToy.TextureFormats
                         }
                     }
                     // Unpack the RGBE encoded pixels into RGBA32 format.
-                    for (int x = 0; x < imageWidth; ++x)
+                    unsafe
                     {
-                        byte unpackR = rasterBuffer[x * 4 + 0];
-                        byte unpackG = rasterBuffer[x * 4 + 1];
-                        byte unpackB = rasterBuffer[x * 4 + 2];
-                        byte unpackE = rasterBuffer[x * 4 + 3];
-                        imageData[4 * (x + imageWidth * y) + 2] = (byte)(Clamp(RGBEComponentToFloat(unpackR, unpackE) * 255, 0, 255));
-                        imageData[4 * (x + imageWidth * y) + 1] = (byte)(Clamp(RGBEComponentToFloat(unpackG, unpackE) * 255, 0, 255));
-                        imageData[4 * (x + imageWidth * y) + 0] = (byte)(Clamp(RGBEComponentToFloat(unpackB, unpackE) * 255, 0, 255));
-                        imageData[4 * (x + imageWidth * y) + 3] = 0xFF;
+                        fixed (byte* rasterByte = &imageData[12 * imageWidth * y])
+                        {
+                            float* rasterFloat = (float*)rasterByte;
+                            for (int x = 0; x < imageWidth; ++x)
+                            {
+                                byte unpackR = rasterBuffer[x * 4 + 0];
+                                byte unpackG = rasterBuffer[x * 4 + 1];
+                                byte unpackB = rasterBuffer[x * 4 + 2];
+                                byte unpackE = rasterBuffer[x * 4 + 3];
+                                rasterFloat[3 * x + 0] = RGBEComponentToFloat(unpackR, unpackE);
+                                rasterFloat[3 * x + 1] = RGBEComponentToFloat(unpackG, unpackE);
+                                rasterFloat[3 * x + 2] = RGBEComponentToFloat(unpackB, unpackE);
+                            }
+                        }
                     }
                 }
-                return new ImageBgra32(path, imageWidth, imageHeight, imageData);
+                return new Surface(path, DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT, imageWidth, imageHeight, imageData);
             }
-        }
-        static float Clamp(float value, float min, float max)
-        {
-            return value < min ? min : (value < max ? value : max);
         }
         static float RGBEComponentToFloat(int mantissa, int exponent)
         {

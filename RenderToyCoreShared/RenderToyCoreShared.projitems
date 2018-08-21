@@ -105,7 +105,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\HLSLGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\MSILGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\TextureFormats\LoaderTGA.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Common\Textures\ImageBgra32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Textures\Surface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Textures\Texture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Transforms\ITransform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Transforms\TransformMatrix.cs" />
