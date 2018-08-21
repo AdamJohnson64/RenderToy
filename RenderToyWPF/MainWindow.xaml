@@ -20,7 +20,10 @@
                 <MenuItem Header="Plane" Command="{x:Static rendertoy:MainWindow.CommandScenePlane}"/>
             </MenuItem>
             <MenuItem Header="Debug">
-                <MenuItem Header="Performance Trace" Command="{x:Static rendertoy:MainWindow.CommandDebugToolPerformanceTrace}"/>
+                <!--
+                <MenuItem Header="Performance Trace" Command="{x:Static rendertoy:MainWindow.CommandDebugPerformanceTrace}"/>
+                -->
+                <MenuItem Header="Performance View" Command="{x:Static rendertoy:MainWindow.CommandDebugPerformanceView}"/>
                 <MenuItem Header="Start OpenVR" Command="{x:Static rendertoy:MainWindow.CommandStartOpenVR}"/>
                 <MenuItem Header="Start OpenVR (Raytracing)" Command="{x:Static rendertoy:MainWindow.CommandStartOpenVRRaytraced}"/>
             </MenuItem>
@@ -37,7 +40,6 @@
                 <MenuItem Header="Export RenderToy Document" Command="{x:Static rendertoy:MainWindow.CommandDocumentExport}"/>
             </MenuItem>
         </Menu>
-        <rendertoy:PerformanceView DockPanel.Dock="Top" Height="64"/>
         <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
             <!-- ==================== Landing Page ==================== -->
             <TabItem Header="Landing Page"/>

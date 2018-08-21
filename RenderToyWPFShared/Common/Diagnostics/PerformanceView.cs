@@ -18,13 +18,13 @@ namespace RenderToy.WPF
 {
     class PerformanceView : FrameworkElement
     {
-        DependencyProperty TimeBaseProperty = DependencyProperty.Register("TimeBase", typeof(double), typeof(PerformanceView), new FrameworkPropertyMetadata(0.0));
+        static DependencyProperty TimeBaseProperty = DependencyProperty.Register("TimeBase", typeof(double), typeof(PerformanceView), new FrameworkPropertyMetadata(0.0));
         public double TimeBase
         {
             get { return (double)GetValue(TimeBaseProperty); }
             set { SetValue(TimeBaseProperty, value); }
         }
-        DependencyProperty TimeLengthProperty = DependencyProperty.Register("TimeLength", typeof(double), typeof(PerformanceView), new FrameworkPropertyMetadata(1.0 / 60.0));
+        static DependencyProperty TimeLengthProperty = DependencyProperty.Register("TimeLength", typeof(double), typeof(PerformanceView), new FrameworkPropertyMetadata(1.0 / 60.0));
         public double TimeLength
         {
             get { return (double)GetValue(TimeLengthProperty); }

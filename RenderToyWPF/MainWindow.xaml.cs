@@ -61,7 +61,8 @@ namespace RenderToy.WPF
         public static ICommand CommandSceneNew3 = new RoutedUICommand("New Default Scene 3", "CommandSceneNew3", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandSceneOpen = new RoutedUICommand("Open Scene", "CommandSceneLoad", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandScenePlane = new RoutedUICommand("Open Plane", "CommandScenePlane", typeof(ViewSoftwareCustomizable));
-        public static ICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(ViewSoftwareCustomizable));
+        public static ICommand CommandDebugPerformanceTrace = new RoutedUICommand("Performance Trace", "CommandDebugPerformanceTrace", typeof(ViewSoftwareCustomizable));
+        public static ICommand CommandDebugPerformanceView = new RoutedUICommand("Performance View", "CommandDebugPerformanceView", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandDocumentOpen = new RoutedUICommand("Open the RenderToy document.", "CommandDocumentOpen", typeof(MainWindow));
         public static ICommand CommandDocumentExport = new RoutedUICommand("Export the RenderToy document to XPS.", "CommandDocumentExport", typeof(MainWindow));
         public static ICommand CommandWindowSoftware = new RoutedUICommand("Open a Software View Window.", "CommandWindowDirectX3DFF", typeof(MainWindow));
@@ -122,9 +123,13 @@ namespace RenderToy.WPF
                 OpenVRPump.Scene = TransformedObject.ConvertToSparseScene(scene);
                 e.Handled = true;
             }));
-            CommandBindings.Add(new CommandBinding(CommandDebugToolPerformanceTrace, (s, e) => {
-                var window = new Window { Title = "Performance Trace Tool", Content = new PerformanceTrace() };
-                window.ShowDialog();
+            CommandBindings.Add(new CommandBinding(CommandDebugPerformanceTrace, (s, e) => {
+                CreatePanelDefault(new PerformanceTrace(), "Performance Trace");
+                e.Handled = true;
+            }));
+            CommandBindings.Add(new CommandBinding(CommandDebugPerformanceView, (s, e) =>
+            {
+                CreatePanelDefault(new PerformanceView(), "Performance View");
                 e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9FF, (s, e) =>
