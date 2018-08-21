@@ -18,7 +18,6 @@ namespace RenderToy.TextureFormats
         public static Surface LoadFromPath(string path)
         {
             const int BYTESPERPIXEL = 12;
-            if (!File.Exists(path)) return null;
             string imageFormat = null;
             float imageExposure = 1;
             int imageWidth = 0;
