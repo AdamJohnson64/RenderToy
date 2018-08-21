@@ -33,7 +33,7 @@ namespace RenderToy.Materials
                 }
             }
         }
-        public static ConfiguredTaskAwaitable ConvertToBitmapAsync(this ISurface node, IntPtr bitmapptr, int bitmapWidth, int bitmapHeight, int bitmapstride)
+        public static ConfiguredTaskAwaitable ConvertToBgra32Async(this ISurface node, IntPtr bitmapptr, int bitmapWidth, int bitmapHeight, int bitmapstride)
         {
             return Task.Run(() => ConvertToBgra32(node, bitmapptr, bitmapWidth, bitmapHeight, bitmapstride)).ConfigureAwait(false);
         }

@@ -50,7 +50,7 @@ namespace RenderToy.WPF
             var bitmapwidth = newbitmap.PixelWidth;
             var bitmapheight = newbitmap.PixelHeight;
             var bitmapstride = newbitmap.BackBufferStride;
-            await imageconverter.ConvertToBitmapAsync(bitmapptr, bitmapwidth, bitmapheight, bitmapstride);
+            await imageconverter.ConvertToBgra32Async(bitmapptr, bitmapwidth, bitmapheight, bitmapstride);
             Dispatcher.Invoke(() =>
             {
                 newbitmap.AddDirtyRect(new Int32Rect(0, 0, bitmapwidth, bitmapheight));
