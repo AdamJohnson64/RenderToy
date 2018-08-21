@@ -140,15 +140,8 @@ namespace RenderToy.DirectX
                         context.VSSetShader(CreateVertexShaderAsync(thismaterial), null, 0);
                         context.PSSetShader(CreatePixelShaderAsync(thismaterial), null, 0);
                     }
-                    var objmat = thismaterial as OBJMaterial;
-                    var collecttextures = new[]
-                    {
-                        CreateShaderResourceViewAsync(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
-                        CreateShaderResourceViewAsync(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
-                        CreateShaderResourceViewAsync(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
-                        CreateShaderResourceViewAsync(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite),
-                        d3d11TextureEnvironment
-                    };
+                    ID3D11ShaderResourceView[] collecttextures = CreateShaderResourceViews(thismaterial);
+                    if (collecttextures == null) continue;
                     {
                         var thistransformindex = scene.IndexToTransform[i];
                         var strides = (uint)(thistransformindex * SIZEOF_CONSTANTBLOCK / 16U);
@@ -607,6 +600,56 @@ namespace RenderToy.DirectX
         /// A key used to look up created pixel shaders in the global store.
         /// </summary>
         readonly static string D3D11PixelShader = "D3D11PixelShader";
+        #endregion
+        #region - Section : Texture Sets -
+        static ID3D11ShaderResourceView[] CreateShaderResourceViews(IMaterial thismaterial)
+        {
+            if (thismaterial is SurfaceCrossToCube)
+            {
+                return new[]
+                {
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticLightBlue),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(thismaterial, null),
+                };
+            }
+            else if (thismaterial is ISurface)
+            {
+                return new[]
+                {
+                    CreateShaderResourceViewAsync(thismaterial, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticLightBlue),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    d3d11TextureEnvironment,
+                };
+            }
+            else if (thismaterial is ITexture)
+            {
+                return new[]
+                {
+                    CreateShaderResourceViewAsync(thismaterial, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticLightBlue),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    d3d11TextureEnvironment,
+                };
+            }
+            else if (thismaterial is OBJMaterial objmat)
+            {
+                return new[]
+                {
+                    CreateShaderResourceViewAsync(objmat.map_Kd, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(objmat.map_d, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(objmat.map_bump, StockMaterials.PlasticLightBlue),
+                    CreateShaderResourceViewAsync(objmat.displacement, StockMaterials.PlasticWhite),
+                    d3d11TextureEnvironment,
+                };
+            }
+            throw new NotSupportedException("Can't build a texture list for this material.");
+        }
         #endregion
     }
 }

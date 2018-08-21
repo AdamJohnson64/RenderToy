@@ -21,7 +21,7 @@ namespace RenderToy.Primitives
         }
         public Vector3D GetPointUV(double u, double v)
         {
-            return new Vector3D(-1 + u * 2, 0, -1 + v * 2);
+            return new Vector3D(-1 + u * 2, 0, 1 - v * 2);
         }
         public Vector3D GetNormalUV(double u, double v)
         {

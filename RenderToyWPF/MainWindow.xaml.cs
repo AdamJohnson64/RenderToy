@@ -73,12 +73,24 @@ namespace RenderToy.WPF
         public static ICommand CommandWindowTextureLab = new RoutedUICommand("Open a Texture Lab Window.", "CommandWindowTextureLab", typeof(MainWindow));
         public static ICommand CommandStartOpenVR = new RoutedUICommand("Start OpenVR.", "CommandStartOpenVR", typeof(MainWindow));
         public static ICommand CommandStartOpenVRRaytraced = new RoutedUICommand("Start OpenVR (Raytracing).", "CommandStartOpenVRRaytraced", typeof(MainWindow));
+        void CommandNew()
+        {
+            var scene = new Scene();
+            var transformControls =
+                MathHelp.CreateMatrixScale(1920.0 / 1080.0, 1, 1) *
+                MathHelp.CreateMatrixScale(0.1, 0.1, 0.1) *
+                MathHelp.CreateMatrixRotation(MathHelp.CreateQuaternionRotation(new Vector3D(1, 0, 0), -45)) *
+                MathHelp.CreateMatrixRotation(MathHelp.CreateQuaternionRotation(new Vector3D(0, 1, 0), 60)) *
+                MathHelp.CreateMatrixTranslate(0.5, 1.25, 0.5);
+            scene.children.Add(new Node("Hosting Application", new TransformMatrix(transformControls), Plane.Default, StockMaterials.LightGray, new RenderTargetBitmapMaterial(Application.Current.MainWindow)));
+            DataContext = new Document(scene);
+        }
         public MainWindow()
         {
             Direct3D11Helper.Initialize();
             InitializeComponent();
             CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => {
-                DataContext = new Document(null);
+                CommandNew();
                 e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandSceneNew1, (s, e) =>
@@ -98,6 +110,15 @@ namespace RenderToy.WPF
             CommandBindings.Add(new CommandBinding(CommandSceneNew3, (s, e) =>
             {
                 var scene = TestScenes.DefaultScene3;
+                {
+                    var transformControls =
+                        MathHelp.CreateMatrixScale(1920.0 / 1080.0, 1, 1) *
+                        MathHelp.CreateMatrixScale(0.1, 0.1, 0.1) *
+                        MathHelp.CreateMatrixRotation(MathHelp.CreateQuaternionRotation(new Vector3D(1, 0, 0), -45)) *
+                        MathHelp.CreateMatrixRotation(MathHelp.CreateQuaternionRotation(new Vector3D(0, 1, 0), 60)) *
+                        MathHelp.CreateMatrixTranslate(0.5, 1.25, 0.5);
+                    ((Scene)scene).children.Add(new Node("Hosting Application", new TransformMatrix(transformControls), Plane.Default, StockMaterials.LightGray, new RenderTargetBitmapMaterial(Application.Current.MainWindow)));
+                }
                 DataContext = new Document(scene);
                 OpenVRPump.Scene = TransformedObject.ConvertToSparseScene(scene);
                 e.Handled = true;
@@ -269,6 +290,7 @@ namespace RenderToy.WPF
             }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
+            CommandNew();
         }
         void CreatePanelDefault(FrameworkElement control, string title)
         {

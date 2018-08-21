@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Diagnostics\PerformanceView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Material\MaterialToHLSLConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Material\MaterialToMSILConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Material\RenderTargetBitmapMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\AdornerTextBoxErrors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\Docking.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\DragDock.cs" />
