@@ -17,6 +17,7 @@ library RenderToyCOM
 	enum D3D11_COPY_FLAGS;
 	enum D3D11_CPU_ACCESS_FLAG;
 	enum D3D11_MAP_FLAG;
+	enum D3D11_RESOURCE_MISC_FLAG;
 	// Direct3D 12
 	interface ID3D12CommandQueue;
 	interface ID3D12Debug;

@@ -56,6 +56,9 @@ namespace RenderToy.WPF
     public partial class MainWindow : Window, IToolWindowCreator
     {
         public static ICommand CommandSceneNew = new RoutedUICommand("New Scene", "CommandSceneNew", typeof(ViewSoftwareCustomizable));
+        public static ICommand CommandSceneNew1 = new RoutedUICommand("New Default Scene 1", "CommandSceneNew1", typeof(ViewSoftwareCustomizable));
+        public static ICommand CommandSceneNew2 = new RoutedUICommand("New Default Scene 2", "CommandSceneNew2", typeof(ViewSoftwareCustomizable));
+        public static ICommand CommandSceneNew3 = new RoutedUICommand("New Default Scene 3", "CommandSceneNew3", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandSceneOpen = new RoutedUICommand("Open Scene", "CommandSceneLoad", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandScenePlane = new RoutedUICommand("Open Plane", "CommandScenePlane", typeof(ViewSoftwareCustomizable));
         public static ICommand CommandDebugToolPerformanceTrace = new RoutedUICommand("Performance Trace Tool (Debug)", "CommandDebugToolPerformanceTrace", typeof(ViewSoftwareCustomizable));
@@ -74,7 +77,28 @@ namespace RenderToy.WPF
             Direct3D11Helper.Initialize();
             InitializeComponent();
             CommandBindings.Add(new CommandBinding(CommandSceneNew, (s, e) => {
-                DataContext = Document.Default;
+                DataContext = new Document(null);
+                e.Handled = true;
+            }));
+            CommandBindings.Add(new CommandBinding(CommandSceneNew1, (s, e) =>
+            {
+                var scene = TestScenes.DefaultScene1;
+                DataContext = new Document(scene);
+                OpenVRPump.Scene = TransformedObject.ConvertToSparseScene(scene);
+                e.Handled = true;
+            }));
+            CommandBindings.Add(new CommandBinding(CommandSceneNew2, (s, e) =>
+            {
+                var scene = TestScenes.DefaultScene2;
+                DataContext = new Document(scene);
+                OpenVRPump.Scene = TransformedObject.ConvertToSparseScene(scene);
+                e.Handled = true;
+            }));
+            CommandBindings.Add(new CommandBinding(CommandSceneNew3, (s, e) =>
+            {
+                var scene = TestScenes.DefaultScene3;
+                DataContext = new Document(scene);
+                OpenVRPump.Scene = TransformedObject.ConvertToSparseScene(scene);
                 e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandSceneOpen, async (s, e) => {
@@ -85,7 +109,7 @@ namespace RenderToy.WPF
                     var scene = new Scene();
                     scene.children.Add(await LoaderModel.LoadFromPathAsync(ofd.FileName));
                     TestScenes.AddOpenVR(scene);
-                    Dispatcher.Invoke(() => { DataContext = new Document(scene); });
+                    DataContext = new Document(scene);
                     OpenVRPump.Scene = TransformedObject.ConvertToSparseScene(scene);
                 }
                 e.Handled = true;
@@ -95,6 +119,8 @@ namespace RenderToy.WPF
                 var scene = new Scene();
                 scene.children.Add(new Node("Plane", new TransformMatrix(Matrix3D.Identity), Plane.Default, StockMaterials.White, StockMaterials.Brick));
                 DataContext = new Document(scene);
+                OpenVRPump.Scene = TransformedObject.ConvertToSparseScene(scene);
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandDebugToolPerformanceTrace, (s, e) => {
                 var window = new Window { Title = "Performance Trace Tool", Content = new PerformanceTrace() };
@@ -111,6 +137,7 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
                 CreatePanelDefault(view, "Direct3D9FF Render");
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowSoftware, (s, e) =>
             {
@@ -122,6 +149,7 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
                 CreatePanelDefault(view, "RenderToy (Software)");
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9, (s, e) =>
             {
@@ -136,6 +164,7 @@ namespace RenderToy.WPF
                 render.SetBinding(ViewD3D9.VertexShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodeVSProperty) });
                 render.SetBinding(ViewD3D9.PixelShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodePSProperty) });
                 CreatePanelNavigation("Direct3D9", render, "Direct3D9 Render", shader, "Direct3D9 Shader");
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D11, (s, e) =>
             {
@@ -148,6 +177,7 @@ namespace RenderToy.WPF
                 render.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 render.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
                 CreatePanelDefault(render, "Direct3D11");
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D12, (s, e) =>
             {
@@ -159,6 +189,7 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 view.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformModelViewProjectionProperty) });
                 CreatePanelDefault(view, "Direct3D12 Render");
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowTextureLab, (s, e) =>
             {
@@ -173,12 +204,14 @@ namespace RenderToy.WPF
                 image.SetBinding(ViewMaterial.MaterialSourceProperty, new Binding { Source = browser, Path = new PropertyPath(ListBox.SelectedItemProperty), Converter = new LoadImageConverter() });
                 imagezoom.Content = image;
                 CreatePanelNavigation("Texture Lab", imagezoom, "Image", browser, "Browser");
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandDocumentOpen, (s, e) =>
             {
                 var window = new Window { Title = "RenderToy - A Bit Of History That's Now A Bit Of Silicon..." };
                 window.Content = new FlowDocumentReader { Document = new RenderToyDocument() };
                 window.Show();
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandDocumentExport, (s, e) =>
             {
@@ -210,6 +243,7 @@ namespace RenderToy.WPF
                         }
                     }
                 }
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandStartOpenVR, (s, e) =>
             {
@@ -220,24 +254,21 @@ namespace RenderToy.WPF
                     OpenVRPump.CreateThread(doc.Scene);
                 }
                 #endif // OPENVR_INSTALLED
+                e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandStartOpenVRRaytraced, (s, e) =>
             {
-#if OPENVR_INSTALLED
+                #if OPENVR_INSTALLED
                 if (DataContext is Document doc)
                 {
                     OpenVRHelper.Initialize();
                     OpenVRPump.CreateThreadRaytraced(doc.Scene);
                 }
-#endif // OPENVR_INSTALLED
+                #endif // OPENVR_INSTALLED
+                e.Handled = true;
             }));
             InputBindings.Add(new KeyBinding(CommandSceneNew, Key.N, ModifierKeys.Control));
             InputBindings.Add(new KeyBinding(CommandSceneOpen, Key.O, ModifierKeys.Control));
-            Task.Run(() =>
-            {
-                var initialscene = Document.Default;
-                Dispatcher.Invoke(() => { DataContext = Document.Default; });
-            }).ConfigureAwait(false);
         }
         void CreatePanelDefault(FrameworkElement control, string title)
         {
@@ -279,7 +310,6 @@ namespace RenderToy.WPF
     {
         public SparseScene Scene { get; private set; }
         public ObservableCollection<IMaterial> Materials { get; private set; }
-        public static Document Default = new Document(TestScenes.DefaultScene);
         public Document(IScene scene)
         {
             Scene = TransformedObject.ConvertToSparseScene(scene);

@@ -72,6 +72,7 @@ namespace RenderToy.DirectX
             {
                 d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, null, ref d3d11VertexShader);
                 d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, null, ref d3d11PixelShader);
+                d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PSEnvironment), (ulong)HLSL.D3D11PSEnvironment.Length, null, ref d3d11PixelShaderReflect);
             });
         }
         /// <summary>
@@ -145,7 +146,8 @@ namespace RenderToy.DirectX
                         CreateShaderResourceViewAsync(objmat == null ? thismaterial : objmat.map_Kd, StockMaterials.PlasticWhite),
                         CreateShaderResourceViewAsync(objmat == null ? null : objmat.map_d, StockMaterials.PlasticWhite),
                         CreateShaderResourceViewAsync(objmat == null ? null : objmat.map_bump, StockMaterials.PlasticLightBlue),
-                        CreateShaderResourceViewAsync(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite)
+                        CreateShaderResourceViewAsync(objmat == null ? null : objmat.displacement, StockMaterials.PlasticWhite),
+                        d3d11TextureEnvironment
                     };
                     {
                         var thistransformindex = scene.IndexToTransform[i];
@@ -196,6 +198,8 @@ namespace RenderToy.DirectX
         static ID3D11SamplerState d3d11SamplerState;
         static ID3D11VertexShader d3d11VertexShader;
         static ID3D11PixelShader d3d11PixelShader;
+        static ID3D11PixelShader d3d11PixelShaderReflect;
+        static ID3D11ShaderResourceView d3d11TextureEnvironment;
         #endregion
         #region - Section : Texture Factory -
         /// <summary>
@@ -212,7 +216,6 @@ namespace RenderToy.DirectX
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
 #if OPENVR_INSTALLED
-            /*
             if (material is MaterialOpenVRCameraDistorted vr)
             {
                 var dev = Marshal.GetComInterfaceForObject(d3d11Device, typeof(ID3D11Device));
@@ -225,7 +228,6 @@ namespace RenderToy.DirectX
                 }
                 return (ID3D11ShaderResourceView)Marshal.GetTypedObjectForIUnknown(srv, typeof(ID3D11Texture2D));
             }
-            */
 #endif // OPENVR_INSTALLED
             ID3D11ShaderResourceView find;
             if (!generatedTextures.TryGetValue(material, out find))
@@ -267,54 +269,104 @@ namespace RenderToy.DirectX
         /// <returns>A shader resource view corresponding to this texture.</returns>
         static ID3D11ShaderResourceView CreateShaderResourceViewSyncUncachedFromTexture(ITexture texture)
         {
-            var retainMips = new List<GCHandle>();
+            var freePin = new List<GCHandle>();
             try
             {
-                var format = texture.GetSurface(0, 0).GetFormat();
-                var pixelsize = Direct3DHelper.GetPixelSize(format);
-                var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
-                for (int miplevel = 0; miplevel < texture.GetTextureLevelCount(); ++miplevel)
+                // TODO: This is a bad way to detect cubemaps.
+                // There needs to be some way to indicate that a texture is
+                // expected to become a cubemap in the engine.
+                if (texture.GetTextureArrayCount() == 6)
                 {
-                    var level = texture.GetSurface(0, miplevel);
-                    if (level == null) return null;
-                    MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
-                    var copy = level.Copy();
-                    var pin = GCHandle.Alloc(copy, GCHandleType.Pinned);
-                    retainMips.Add(pin);
-                    level.ConvertToBgra32(Marshal.UnsafeAddrOfPinnedArrayElement(copy, 0), level.GetImageWidth(), level.GetImageHeight(), pixelsize * level.GetImageWidth());
-                    FillpInitialData.pSysMem = Marshal.UnsafeAddrOfPinnedArrayElement(copy, 0);
-                    FillpInitialData.SysMemPitch = (uint)(pixelsize * level.GetImageWidth());
-                    FillpInitialData.SysMemSlicePitch = (uint)(pixelsize * level.GetImageWidth() * level.GetImageHeight());
-                    pInitialData.Add(FillpInitialData);
+                    var format = texture.GetSurface(0, 0).GetFormat();
+                    var pixelsize = Direct3DHelper.GetPixelSize(format);
+                    var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
+                    for (int face = 0; face < 6; ++face)
+                    {
+                        var level = texture.GetSurface(face, 0);
+                        if (level == null) return null;
+                        MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
+                        var copy = level.Copy();
+                        var pin = GCHandle.Alloc(copy, GCHandleType.Pinned);
+                        freePin.Add(pin);
+                        FillpInitialData.pSysMem = Marshal.UnsafeAddrOfPinnedArrayElement(copy, 0);
+                        FillpInitialData.SysMemPitch = (uint)(pixelsize * level.GetImageWidth());
+                        FillpInitialData.SysMemSlicePitch = (uint)(pixelsize * level.GetImageWidth() * level.GetImageHeight());
+                        pInitialData.Add(FillpInitialData);
+                    }
+                    var level0 = texture.GetSurface(0, 0);
+                    var desc = new D3D11_TEXTURE2D_DESC();
+                    desc.Width = (uint)level0.GetImageWidth();
+                    desc.Height = (uint)level0.GetImageHeight();
+                    desc.MipLevels = 1;
+                    desc.ArraySize = 6;
+                    desc.Format = format;
+                    desc.SampleDesc.Count = 1;
+                    desc.Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE;
+                    desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
+                    desc.MiscFlags = (uint)D3D11_RESOURCE_MISC_FLAG.D3D11_RESOURCE_MISC_TEXTURECUBE;
+                    ID3D11Texture2D d3d11texture = null;
+                    var pInitialDataArray = pInitialData.ToArray();
+                    var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+                    vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+                    vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURECUBE;
+                    vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.TextureCube.MipLevels = 1;
+                    vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.TextureCube.MostDetailedMip = 0;
+                    ID3D11ShaderResourceView srview = null;
+                    Dispatcher.Invoke(() =>
+                    {
+                        D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref d3d11texture);
+                        Direct3D11Helper.d3d11Device.CreateShaderResourceView(d3d11texture, vdesc, ref srview);
+                    });
+                    d3d11TextureEnvironment = srview;
+                    return srview;
                 }
-                var level0 = texture.GetSurface(0, 0);
-                var desc = new D3D11_TEXTURE2D_DESC();
-                desc.Width = (uint)level0.GetImageWidth();
-                desc.Height = (uint)level0.GetImageHeight();
-                desc.MipLevels = (uint)pInitialData.Count;
-                desc.ArraySize = 1;
-                desc.Format = texture.GetSurface(0, 0).GetFormat();
-                desc.SampleDesc.Count = 1;
-                desc.Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE;
-                desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
-                ID3D11Texture2D d3d11texture = null;
-                var pInitialDataArray = pInitialData.ToArray();
-                var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
-                vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
-                vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
-                vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
-                vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
-                ID3D11ShaderResourceView srview = null;
-                Dispatcher.Invoke(() =>
+                else
                 {
-                    D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref d3d11texture);
-                    Direct3D11Helper.d3d11Device.CreateShaderResourceView(d3d11texture, vdesc, ref srview);
-                });
-                return srview;
+                    var format = texture.GetSurface(0, 0).GetFormat();
+                    var pixelsize = Direct3DHelper.GetPixelSize(format);
+                    var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
+                    for (int miplevel = 0; miplevel < texture.GetTextureLevelCount(); ++miplevel)
+                    {
+                        var level = texture.GetSurface(0, miplevel);
+                        if (level == null) return null;
+                        MIDL_D3D11_SUBRESOURCE_DATA FillpInitialData;
+                        var copy = level.Copy();
+                        var pin = GCHandle.Alloc(copy, GCHandleType.Pinned);
+                        freePin.Add(pin);
+                        FillpInitialData.pSysMem = Marshal.UnsafeAddrOfPinnedArrayElement(copy, 0);
+                        FillpInitialData.SysMemPitch = (uint)(pixelsize * level.GetImageWidth());
+                        FillpInitialData.SysMemSlicePitch = (uint)(pixelsize * level.GetImageWidth() * level.GetImageHeight());
+                        pInitialData.Add(FillpInitialData);
+                    }
+                    var level0 = texture.GetSurface(0, 0);
+                    var desc = new D3D11_TEXTURE2D_DESC();
+                    desc.Width = (uint)level0.GetImageWidth();
+                    desc.Height = (uint)level0.GetImageHeight();
+                    desc.MipLevels = (uint)pInitialData.Count;
+                    desc.ArraySize = 1;
+                    desc.Format = texture.GetSurface(0, 0).GetFormat();
+                    desc.SampleDesc.Count = 1;
+                    desc.Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE;
+                    desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
+                    ID3D11Texture2D d3d11texture = null;
+                    var pInitialDataArray = pInitialData.ToArray();
+                    var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+                    vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+                    vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
+                    vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MipLevels = (uint)pInitialData.Count;
+                    vdesc.__MIDL____MIDL_itf_RenderToy_0005_00640002.Texture2D.MostDetailedMip = 0;
+                    ID3D11ShaderResourceView srview = null;
+                    Dispatcher.Invoke(() =>
+                    {
+                        D3D11Shim.Device_CreateTexture2D(d3d11Device, desc, pInitialDataArray, ref d3d11texture);
+                        Direct3D11Helper.d3d11Device.CreateShaderResourceView(d3d11texture, vdesc, ref srview);
+                    });
+                    return srview;
+                }
             }
             finally
             {
-                foreach (var pin in retainMips)
+                foreach (var pin in freePin)
                 {
                     pin.Free();
                 }
@@ -524,6 +576,13 @@ namespace RenderToy.DirectX
             if (material is OBJMaterial)
             {
                 return d3d11PixelShader;
+            }
+            // TODO: This is a bad way to detect cubemaps.
+            // There needs to be some way to indicate that a texture is
+            // expected to become a cubemap in the engine.
+            if (material is ITexture texture && texture.GetTextureArrayCount() == 6)
+            {
+                return d3d11PixelShaderReflect;
             }
             if (material is IMNNode node)
             {

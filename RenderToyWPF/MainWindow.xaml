@@ -11,7 +11,11 @@
     <DockPanel Grid.Row="1">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="File">
-                <MenuItem Header="New" Command="{x:Static rendertoy:MainWindow.CommandSceneNew}"/>
+                <MenuItem Header="New" Command="{x:Static rendertoy:MainWindow.CommandSceneNew}">
+                    <MenuItem Header="Default Scene 1" Command="{x:Static rendertoy:MainWindow.CommandSceneNew1}"/>
+                    <MenuItem Header="Default Scene 2" Command="{x:Static rendertoy:MainWindow.CommandSceneNew2}"/>
+                    <MenuItem Header="Default Scene 3" Command="{x:Static rendertoy:MainWindow.CommandSceneNew3}"/>
+                </MenuItem>
                 <MenuItem Header="Open" Command="{x:Static rendertoy:MainWindow.CommandSceneOpen}"/>
                 <MenuItem Header="Plane" Command="{x:Static rendertoy:MainWindow.CommandScenePlane}"/>
             </MenuItem>

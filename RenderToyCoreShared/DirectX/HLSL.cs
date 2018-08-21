@@ -35,11 +35,11 @@ struct VS_OUTPUT {
 VS_OUTPUT vs(VS_INPUT input) {
     VS_OUTPUT result;
     result.Position = mul(TransformModelViewProjection, float4(input.Position, 1));
-    result.Normal = mul(TransformModel, float4(input.Normal, 0)).xyz;
+    result.Normal = normalize(mul(TransformModel, float4(input.Normal, 0)).xyz);
     result.Color = input.Color;
     result.TexCoord = input.TexCoord;
-    result.Tangent = mul(TransformModel, float4(input.Tangent, 0)).xyz;
-    result.Bitangent = mul(TransformModel, float4(input.Bitangent, 0)).xyz;
+    result.Tangent = normalize(mul(TransformModel, float4(input.Tangent, 0)).xyz);
+    result.Bitangent = normalize(mul(TransformModel, float4(input.Bitangent, 0)).xyz);
     result.EyeVector = float3(TransformCamera[0].w, TransformCamera[1].w, TransformCamera[2].w) - mul(TransformModel, input.Position.xyz);
     return result;
 }
@@ -50,7 +50,7 @@ VS_OUTPUT vs(VS_INPUT input) {
 float4 ps(VS_OUTPUT input) : SV_Target {
     ////////////////////////////////////////////////////////////////////////////////
     // Stencil Mask
-    if (SampleTexture(TextureMask, input.TexCoord).r < 0.5) discard;
+    if (SampleTexture2D(TextureMask, input.TexCoord).r < 0.5) discard;
 
     ////////////////////////////////////////////////////////////////////////////////
     // Reconstruct Tangent Basis
@@ -62,7 +62,7 @@ float4 ps(VS_OUTPUT input) : SV_Target {
     float bumpScale = 0.005;
     float numSteps = 20;
     float2 offsetCoord = input.TexCoord.xy;
-    float sampledHeight = SampleTexture(TextureDisplacement, offsetCoord).r;
+    float sampledHeight = SampleTexture2D(TextureDisplacement, offsetCoord).r;
     float3 tangentSpaceEye = mul(input.EyeVector, transpose(tbn));
     numSteps = lerp(numSteps * 2, numSteps, normalize(tangentSpaceEye).z);
     float step = 1.0 / numSteps;
@@ -72,14 +72,14 @@ float4 ps(VS_OUTPUT input) : SV_Target {
     while (sampledHeight < height && iter < maxiter) {
         height -= step;
         offsetCoord += delta;
-        sampledHeight = SampleTexture(TextureDisplacement, offsetCoord).r;
+        sampledHeight = SampleTexture2D(TextureDisplacement, offsetCoord).r;
         ++iter;
     }
     height = sampledHeight;
 
     ////////////////////////////////////////////////////////////////////////////////
     // Bump Mapping Normal
-    float3 bump = normalize(SampleTexture(TextureBump, offsetCoord).rgb * 2 - 1);
+    float3 bump = normalize(SampleTexture2D(TextureBump, offsetCoord).rgb * 2 - 1);
     float3 normal = mul(bump, tbn);
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -88,7 +88,14 @@ float4 ps(VS_OUTPUT input) : SV_Target {
 
     ////////////////////////////////////////////////////////////////////////////////
     // Final Color
-    return float4(light * SampleTexture(TextureAlbedo, offsetCoord).rgb, 1);
+    return float4(light * SampleTexture2D(TextureAlbedo, offsetCoord).rgb, 1);
+}
+
+";
+        public static readonly string D3DPixelShaderCodeEnvironment =
+@"// Direct3D Simple Pixel Shader
+float4 ps(VS_OUTPUT input) : SV_Target {
+    return float4(SampleTextureCUBE(TextureEnvironment, input.Normal).rgb, 1);
 }
 
 ";
@@ -114,8 +121,10 @@ sampler2D TextureAlbedo : register(s0);
 sampler2D TextureMask : register(s1);
 sampler2D TextureBump : register(s2);
 sampler2D TextureDisplacement : register(s3);
+samplerCUBE TextureEnvironment : register(s4);
 
-float4 SampleTexture(sampler2D s, float2 uv) { return tex2D(s, uv); }
+float4 SampleTexture2D(sampler2D s, float2 uv) { return tex2D(s, uv); }
+float4 SampleTextureCUBE(samplerCUBE s, float3 uvw) { return texCUBE(s, uvw); }
 
 ";
         public static readonly string D3D9Standard =
@@ -138,13 +147,16 @@ cbuffer Constants : register(b0)
 };
 
 SamplerState Sampler : register(s0);
+SamplerState Sampler2 : register(s1);
 
-texture2D TextureAlbedo : register(t0);
-texture2D TextureMask : register(t1);
-texture2D TextureBump : register(t2);
-texture2D TextureDisplacement : register(t3);
+Texture2D TextureAlbedo : register(t0);
+Texture2D TextureMask : register(t1);
+Texture2D TextureBump : register(t2);
+Texture2D TextureDisplacement : register(t3);
+TextureCube TextureEnvironment : register(t4);
 
-float4 SampleTexture(texture2D s, float2 uv) { return s.Sample(Sampler, uv); }
+float4 SampleTexture2D(texture2D s, float2 uv) { return s.Sample(Sampler, uv); }
+float4 SampleTextureCUBE(textureCUBE s, float3 uvw) { return s.Sample(Sampler, uvw); }
 
 ";
         public readonly static string D3D11Standard =
@@ -153,6 +165,12 @@ float4 SampleTexture(texture2D s, float2 uv) { return s.Sample(Sampler, uv); }
             D3DVertexOutputStruct +
             D3DVertexShaderCode +
             D3DPixelShaderCode;
+        public readonly static string D3D11Environment =
+            D3D11Constants +
+            D3DVertexInputStruct +
+            D3DVertexOutputStruct +
+            D3DVertexShaderCode +
+            D3DPixelShaderCodeEnvironment;
         #endregion
         #region - Section : Direct3D12 -
         public readonly static string D3D12Constants =
@@ -184,6 +202,7 @@ cbuffer Constants : register(b0)
         public static readonly byte[] D3D9PS = HLSLExtensions.CompileHLSL(HLSL.D3D9Standard, "ps", "ps_3_0");
         public static readonly byte[] D3D11VS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "vs", "vs_5_0");
         public static readonly byte[] D3D11PS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "ps", "ps_5_0");
+        public static readonly byte[] D3D11PSEnvironment = HLSLExtensions.CompileHLSL(HLSL.D3D11Environment, "ps", "ps_5_0");
         #endregion
     }
 }

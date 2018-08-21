@@ -17,6 +17,7 @@ namespace RenderToy.TextureFormats
     {
         public static Surface LoadFromPath(string path)
         {
+            const int BYTESPERPIXEL = 12;
             if (!File.Exists(path)) return null;
             string imageFormat = null;
             float imageExposure = 1;
@@ -64,7 +65,7 @@ namespace RenderToy.TextureFormats
                     imageWidth = int.Parse(match.Groups["width"].Value);
                     imageHeight = int.Parse(match.Groups["height"].Value);
                 }
-                byte[] imageData = new byte[12 * imageWidth * imageHeight];
+                byte[] imageData = new byte[BYTESPERPIXEL * imageWidth * imageHeight];
                 for (int y = 0; y < imageHeight; ++y)
                 {
                     byte[] rasterBuffer = new byte[4 * imageWidth];
@@ -119,7 +120,7 @@ namespace RenderToy.TextureFormats
                     // Unpack the RGBE encoded pixels into RGBA32 format.
                     unsafe
                     {
-                        fixed (byte* rasterByte = &imageData[12 * imageWidth * y])
+                        fixed (byte* rasterByte = &imageData[BYTESPERPIXEL * imageWidth * y])
                         {
                             float* rasterFloat = (float*)rasterByte;
                             for (int x = 0; x < imageWidth; ++x)
@@ -143,7 +144,6 @@ namespace RenderToy.TextureFormats
             float v = mantissa / 256.0f;
             float d = (float)System.Math.Pow(2, exponent - 128);
             return v * d;
-            //return UInt32ToFloat(((uint)mantissa << 0) | ((uint)exponent << 23));
         }
         static float UInt32ToFloat(uint value)
         {
