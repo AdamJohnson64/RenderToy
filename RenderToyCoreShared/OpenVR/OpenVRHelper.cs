@@ -20,10 +20,13 @@ namespace RenderToy
         public static void Initialize()
         {
             EVRInitError error = EVRInitError.None;
-            System = OpenVR.Init(ref error);
-            Compositor = OpenVR.Compositor;
-            TrackedCamera = OpenVR.TrackedCamera;
-            TrackedCamera.AcquireVideoStreamingService(0, ref TrackedCameraHandle);
+            Direct3D11Helper.Dispatcher.Invoke(() =>
+            {
+                System = OpenVR.Init(ref error);
+                Compositor = OpenVR.Compositor;
+                TrackedCamera = OpenVR.TrackedCamera;
+                TrackedCamera.AcquireVideoStreamingService(0, ref TrackedCameraHandle);
+            });
         }
         #endregion
         #region - Section : Public Interface -
@@ -58,7 +61,10 @@ namespace RenderToy
             if (System == null || Compositor == null) throw new Exception("OpenVR is not initialized.");
             TrackedDevicePose_t[] renderPose = new TrackedDevicePose_t[16];
             TrackedDevicePose_t[] gamePose = new TrackedDevicePose_t[16];
-            Compositor.WaitGetPoses(renderPose, gamePose);
+            Direct3D11Helper.Dispatcher.Invoke(() =>
+            {
+                Compositor.WaitGetPoses(renderPose, gamePose);
+            });
         }
         public static Matrix3D TransformLeftHand
         {
