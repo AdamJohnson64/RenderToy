@@ -39,15 +39,6 @@ namespace RenderToy.WPF
         {
             on.SetValue(TransformProjectionProperty, value);
         }
-        public static DependencyProperty TransformModelViewProjectionProperty = DependencyProperty.RegisterAttached("TransformModelViewProjection", typeof(Matrix3D), typeof(AttachedView), new FrameworkPropertyMetadata(Matrix3D.Identity));
-        public static Matrix3D GetTransformModelViewProjection(DependencyObject from)
-        {
-            return (Matrix3D)from.GetValue(TransformModelViewProjectionProperty);
-        }
-        public static void SetTransformModelViewProjection(DependencyObject on, Matrix3D value)
-        {
-            on.SetValue(TransformModelViewProjectionProperty, value);
-        }
         public static DependencyProperty SceneProperty = DependencyProperty.RegisterAttached("Scene", typeof(SparseScene), typeof(AttachedView));
         public static SparseScene GetScene(DependencyObject from)
         {

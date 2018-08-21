@@ -122,13 +122,23 @@ namespace RenderToy.WPF.Xps
     abstract class Figure3DBase : FrameworkElement
     {
         #region - Section : Construction -
+        static Figure3DBase()
+        {
+            AttachedView.TransformViewProperty.OverrideMetadata(typeof(Figure3DBase), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
+            AttachedView.TransformProjectionProperty.OverrideMetadata(typeof(Figure3DBase), new FrameworkPropertyMetadata(Matrix3D.Identity, FrameworkPropertyMetadataOptions.AffectsRender));
+        }
         public Figure3DBase()
         {
             var scene = new Scene();
             scene.children.Add(new Node("Plane", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), Plane.Default, StockMaterials.Red, StockMaterials.PlasticRed));
             AttachedView.SetScene(this, TransformedObject.ConvertToSparseScene(scene));
-            this.SetBinding(AttachedView.TransformModelViewProjectionProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.Self), Path = new PropertyPath("(0).(1)", AttachedCamera.CameraProperty, Camera.TransformModelViewProjectionProperty) });
+            this.SetBinding(AttachedView.TransformViewProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.Self), Path = new PropertyPath("(0).(1)", AttachedCamera.CameraProperty, Camera.TransformViewProperty) });
+            this.SetBinding(AttachedView.TransformProjectionProperty, new Binding { RelativeSource = new RelativeSource(RelativeSourceMode.Self), Path = new PropertyPath("(0).(1)", AttachedCamera.CameraProperty, Camera.TransformProjectionProperty) });
             ClipToBounds = true;
+        }
+        protected Matrix3D GetModelViewProjection()
+        {
+            return AttachedView.GetTransformView(this) * AttachedView.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
         }
         #endregion
     }
@@ -145,7 +155,7 @@ namespace RenderToy.WPF.Xps
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             var vertexsource3 = PrimitiveAssembly.CreatePoints(AttachedView.GetScene(this));
             var vertexsource4 = Transformation.Vector3ToVector4All(vertexsource3);
-            var vertexclipspace = Transformation.TransformAll(vertexsource4, AttachedView.GetTransformModelViewProjection(this));
+            var vertexclipspace = Transformation.TransformAll(vertexsource4, GetModelViewProjection());
             var vertexclipped = Clipping.ClipPoint(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivideAll(vertexclipped);
             var points = Transformation.TransformToScreenAll(vertexh, ActualWidth, ActualHeight);
@@ -165,7 +175,7 @@ namespace RenderToy.WPF.Xps
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             var vertexsource3 = PrimitiveAssembly.CreatePoints(AttachedView.GetScene(this));
             var vertexsource4 = Transformation.Vector3ToVector4All(vertexsource3);
-            var vertexclipspace = Transformation.TransformAll(vertexsource4, AttachedView.GetTransformModelViewProjection(this));
+            var vertexclipspace = Transformation.TransformAll(vertexsource4, GetModelViewProjection());
             var vertexh = Transformation.HomogeneousDivideAll(vertexclipspace);
             var points = Transformation.TransformToScreenAll(vertexh, ActualWidth, ActualHeight);
             FigureBase.DrawPoints(drawingContext, points);
@@ -184,7 +194,7 @@ namespace RenderToy.WPF.Xps
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             var vertexsource3 = PrimitiveAssembly.CreateLines(AttachedView.GetScene(this));
             var vertexsource4 = Transformation.Vector3ToVector4All(vertexsource3);
-            var vertexclipspace = Transformation.TransformAll(vertexsource4, AttachedView.GetTransformModelViewProjection(this));
+            var vertexclipspace = Transformation.TransformAll(vertexsource4, GetModelViewProjection());
             var vertexclipped = Clipping.ClipLine(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivideAll(vertexclipped);
             var lines = Transformation.TransformToScreenAll(vertexh, ActualWidth, ActualHeight);
@@ -204,7 +214,7 @@ namespace RenderToy.WPF.Xps
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             var vertexsource3 = PrimitiveAssembly.CreateLines(AttachedView.GetScene(this));
             var vertexsource4 = Transformation.Vector3ToVector4All(vertexsource3);
-            var vertexclipspace = Transformation.TransformAll(vertexsource4, AttachedView.GetTransformModelViewProjection(this));
+            var vertexclipspace = Transformation.TransformAll(vertexsource4, GetModelViewProjection());
             var vertexh = Transformation.HomogeneousDivideAll(vertexclipspace);
             var lines = Transformation.TransformToScreenAll(vertexh, ActualWidth, ActualHeight);
             FigureBase.DrawWireframe(drawingContext, lines);
@@ -221,10 +231,9 @@ namespace RenderToy.WPF.Xps
         protected override void OnRender(DrawingContext drawingContext)
         {
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
-            var mvp = AttachedCamera.GetCamera(this).TransformModelViewProjection * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             var vertexsource3 = PrimitiveAssembly.CreateLines(AttachedView.GetScene(this));
             var vertexsource4 = Transformation.Vector3ToVector4All(vertexsource3);
-            var vertexclipspace = Transformation.TransformAll(vertexsource4, mvp);
+            var vertexclipspace = Transformation.TransformAll(vertexsource4, GetModelViewProjection());
             var vertexclipped = Clipping.ClipLine(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivideAll(vertexclipped);
             var lines = Transformation.TransformToScreenAll(vertexh, ActualWidth, ActualHeight);
@@ -244,7 +253,7 @@ namespace RenderToy.WPF.Xps
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             var vertexsource3 = PrimitiveAssembly.CreateTriangles(AttachedView.GetScene(this));
             var vertexsource4 = Transformation.Vector3ToVector4All(vertexsource3);
-            var vertexclipspace = Transformation.TransformAll(vertexsource4, AttachedView.GetTransformModelViewProjection(this));
+            var vertexclipspace = Transformation.TransformAll(vertexsource4, GetModelViewProjection());
             var vertexclipped = Clipping.ClipTriangle(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivideAll(vertexclipped);
             var triangles = Transformation.TransformToScreenAll(vertexh, ActualWidth, ActualHeight);
@@ -264,7 +273,7 @@ namespace RenderToy.WPF.Xps
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             var vertexsource3 = PrimitiveAssembly.CreateTriangles(AttachedView.GetScene(this));
             var vertexsource4 = Transformation.Vector3ToVector4All(vertexsource3);
-            var vertexclipspace = Transformation.TransformAll(vertexsource4, AttachedView.GetTransformModelViewProjection(this));
+            var vertexclipspace = Transformation.TransformAll(vertexsource4, GetModelViewProjection());
             var vertexh = Transformation.HomogeneousDivideAll(vertexclipspace);
             var triangles = Transformation.TransformToScreenAll(vertexh, ActualWidth, ActualHeight);
             FigureBase.DrawTriangles(drawingContext, triangles);
@@ -283,7 +292,7 @@ namespace RenderToy.WPF.Xps
             drawingContext.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, ActualWidth, ActualHeight));
             var vertexsource3 = PrimitiveAssembly.CreateTriangles(AttachedView.GetScene(this));
             var vertexsource4 = Transformation.Vector3ToVector4All(vertexsource3);
-            var vertexclipspace = Transformation.TransformAll(vertexsource4, AttachedView.GetTransformModelViewProjection(this));
+            var vertexclipspace = Transformation.TransformAll(vertexsource4, GetModelViewProjection());
             var vertexclipped = Clipping.ClipTriangle(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivideAll(vertexclipped);
             var triangles = Transformation.TransformToScreenAll(vertexh, ActualWidth, ActualHeight);
@@ -548,7 +557,7 @@ namespace RenderToy.WPF.Xps
             const int pixelHeight = 32;
             var vertexsource3 = PrimitiveAssembly.CreateTriangles(AttachedView.GetScene(this));
             var vertexsource4 = Transformation.Vector3ToVector4All(vertexsource3);
-            var vertexclipspace = Transformation.TransformAll(vertexsource4, AttachedView.GetTransformModelViewProjection(this));
+            var vertexclipspace = Transformation.TransformAll(vertexsource4, GetModelViewProjection());
             var vertexclipped = Clipping.ClipTriangle(vertexclipspace);
             var vertexh = Transformation.HomogeneousDivideAll(vertexclipped);
             FigureBase.DrawGrid(drawingContext, ActualWidth, ActualHeight, pixelWidth, pixelHeight, new Pen(Brushes.LightGray, 1));
@@ -837,14 +846,14 @@ namespace RenderToy.WPF.Xps
             {
                 var A = PrimitiveAssembly.CreateTriangles(AttachedView.GetScene(this));
                 var B = Transformation.Vector3ToVector4All(A);
-                var C = Transformation.TransformAll(B, AttachedView.GetTransformModelViewProjection(this));
+                var C = Transformation.TransformAll(B, GetModelViewProjection());
                 var D = Rasterization.RasterizeHomogeneous(C, pixelWidth, pixelHeight);
                 FigureBase.DrawBitmap(drawingContext, D, ActualWidth, ActualHeight, pixelWidth, pixelHeight);
             }
             {
                 var A = PrimitiveAssembly.CreateLines(AttachedView.GetScene(this));
                 var B = Transformation.Vector3ToVector4All(A);
-                var C = Transformation.TransformAll(B, AttachedView.GetTransformModelViewProjection(this));
+                var C = Transformation.TransformAll(B, GetModelViewProjection());
                 var D = Clipping.ClipLine(C);
                 var E = Transformation.HomogeneousDivideAll(D);
                 var F = Transformation.TransformToScreenAll(E, ActualWidth, ActualHeight);

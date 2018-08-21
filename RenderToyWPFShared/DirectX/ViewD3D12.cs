@@ -26,10 +26,8 @@ namespace RenderToy.WPF
             {
                 ((ViewD3D12)s).RenderDX();
             }));
-            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewD3D12), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>
-            {
-                ((ViewD3D12)s).RenderDX();
-            }));
+            AttachedView.TransformViewProperty.OverrideMetadata(typeof(ViewD3D12), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewD3D12)s).RenderDX() ));
+            AttachedView.TransformProjectionProperty.OverrideMetadata(typeof(ViewD3D12), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewD3D12)s).RenderDX() ));
             Direct3D12.D3D12GetDebugInterface().EnableDebugLayer();
             d3d12Device = Direct3D12.D3D12CreateDevice();
         }
@@ -121,7 +119,7 @@ namespace RenderToy.WPF
             ////////////////////////////////////////////////////////////////////////////////
             // Create a vertex buffer to draw.
             var maintainBuffers = new List<ID3D12Resource>();
-            var transformViewProjection = AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
+            var transformViewProjection = AttachedView.GetTransformView(this) * AttachedView.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             foreach (var transformedobject in AttachedView.GetScene(this))
             {
                 var transformModel = transformedobject.Transform;

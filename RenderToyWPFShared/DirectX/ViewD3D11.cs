@@ -34,11 +34,9 @@ namespace RenderToy.WPF
                 ((ViewD3D11)s).Execute_DrawScene = Direct3D11Helper.CreateSceneDraw((SparseScene)e.NewValue);
                 ((ViewD3D11)s).RenderDX();
             }));
-            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewD3D11), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) =>
-            {
-                ((ViewD3D11)s).RenderDX();
-            }));
-        }
+            AttachedView.TransformViewProperty.OverrideMetadata(typeof(ViewD3D11), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewD3D11)s).RenderDX()));
+            AttachedView.TransformProjectionProperty.OverrideMetadata(typeof(ViewD3D11), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewD3D11)s).RenderDX()));
+ }
         Action<ID3D11DeviceContext4, Dictionary<string, object>> Execute_DrawScene = null;
         void RenderDX()
         {

@@ -30,7 +30,8 @@ namespace RenderToy.WPF
         static ViewSoftwareCustomizable()
         {
             AttachedView.SceneProperty.OverrideMetadata(typeof(ViewSoftwareCustomizable), new FrameworkPropertyMetadata(null, (s, e) => ((ViewSoftwareCustomizable)s).InvalidateVisual()));
-            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewSoftwareCustomizable), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewSoftwareCustomizable)s).InvalidateVisual()));
+            AttachedView.TransformViewProperty.OverrideMetadata(typeof(ViewSoftwareCustomizable), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewSoftwareCustomizable)s).InvalidateVisual()));
+            AttachedView.TransformProjectionProperty.OverrideMetadata(typeof(ViewSoftwareCustomizable), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewSoftwareCustomizable)s).InvalidateVisual()));
         }
         public ViewSoftwareCustomizable()
         {
@@ -130,7 +131,7 @@ namespace RenderToy.WPF
             int RENDER_HEIGHT = (int)System.Math.Ceiling(ActualHeight) / RenderResolution;
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
-            RenderMode.SetCamera(AttachedView.GetTransformModelViewProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
+            RenderMode.SetCamera(AttachedView.GetTransformView(this) * AttachedView.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
             RenderMode.SetTarget(bitmap.PixelWidth, bitmap.PixelHeight);
             bitmap.Lock();
             RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);

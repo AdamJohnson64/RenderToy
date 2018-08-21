@@ -43,7 +43,7 @@
             <TabItem Header="Landing Page"/>
             <!-- ==================== Software Render ==================== -->
             <TabItem Header="Software Render">
-                <rendertoy:ViewSoftwareCustomizable rendertoy:AttachedView.Scene="{Binding Path=Scene}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}" rendertoy:AttachedView.TransformModelViewProjection="{Binding Source={StaticResource Camera}, Path=TransformModelViewProjection}"/>
+                <rendertoy:ViewSoftwareCustomizable rendertoy:AttachedView.Scene="{Binding Path=Scene}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}" rendertoy:AttachedView.TransformView="{Binding Source={StaticResource Camera}, Path=TransformView}" rendertoy:AttachedView.TransformProjection="{Binding Source={StaticResource Camera}, Path=TransformProjection}"/>
             </TabItem>
             <!-- ==================== Texture View ==================== -->
             <TabItem Header="Textures">

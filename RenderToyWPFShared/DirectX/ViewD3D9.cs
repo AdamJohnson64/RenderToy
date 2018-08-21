@@ -29,7 +29,8 @@ namespace RenderToy.WPF
         static ViewD3D9()
         {
             AttachedView.SceneProperty.OverrideMetadata(typeof(ViewD3D9), new FrameworkPropertyMetadata(null, (s, e) => ((ViewD3D9)s).InvalidateVisual()));
-            AttachedView.TransformModelViewProjectionProperty.OverrideMetadata(typeof(ViewD3D9), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewD3D9)s).InvalidateVisual()));
+            AttachedView.TransformViewProperty.OverrideMetadata(typeof(ViewD3D9), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewD3D9)s).InvalidateVisual()));
+            AttachedView.TransformProjectionProperty.OverrideMetadata(typeof(ViewD3D9), new FrameworkPropertyMetadata(Matrix3D.Identity, (s, e) => ((ViewD3D9)s).InvalidateVisual()));
         }
         protected override void RenderD3D()
         {
