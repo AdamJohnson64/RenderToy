@@ -166,10 +166,13 @@ namespace RenderToy
                     {
                         RenderToyEventSource.Default.MarkerBegin("Execute All RTs");
                         ID3D11DeviceContext context_old = null;
-                        Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
-                        var context = (ID3D11DeviceContext4)context_old;
-                        context.ExecuteCommandList(cmd_left, 1);
-                        context.ExecuteCommandList(cmd_right, 1);
+                        Direct3D11Helper.Dispatcher.Invoke(() =>
+                        {
+                            Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
+                            var context = (ID3D11DeviceContext4)context_old;
+                            context.ExecuteCommandList(cmd_left, 1);
+                            context.ExecuteCommandList(cmd_right, 1);
+                        });
                         RenderToyEventSource.Default.MarkerEnd("Execute All RTs");
                     }
                 }
