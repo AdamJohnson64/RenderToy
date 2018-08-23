@@ -3,6 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
+using RenderToy.DirectX;
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Meshes;
@@ -122,6 +123,8 @@ namespace RenderToy.SceneGraph
 #if OPENVR_INSTALLED
             try
             {
+                ////////////////////////////////////////////////////////////////////////////////
+                // Add in components for OpenVR.
                 //var controllerModelLoaded = await LoaderModel.LoadFromPathAsync("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\resources\\rendermodels\\vr_controller_vive_1_5\\body.obj");
                 //var controllerModel = controllerModelLoaded.Children[0];
                 //IPrimitive controllerPrimitive = controllerModel.Primitive;
@@ -131,6 +134,8 @@ namespace RenderToy.SceneGraph
                 scene.children.Add(new Node("OpenVR HMD", new TransformHMD(), controllerPrimitive, StockMaterials.White, controllerMaterial));
                 scene.children.Add(new Node("OpenVR Left Controller", new TransformLeftHand(), controllerPrimitive, StockMaterials.White, controllerMaterial));
                 scene.children.Add(new Node("OpenVR Right Controller", new TransformRightHand(), controllerPrimitive, StockMaterials.White, controllerMaterial));
+                ////////////////////////////////////////////////////////////////////////////////
+                // Add in the HMD camera.
                 {
                     Matrix3D transform = new Matrix3D(
                         1, 0, 0, 0,
@@ -140,7 +145,18 @@ namespace RenderToy.SceneGraph
                     );
                     //scene.children.Add(new Node("Left Eye Preview", new TransformMatrix(transform), Plane.Default, StockMaterials.LightGray, new MaterialOpenVRCameraDistorted()));
                 }
-}
+                ////////////////////////////////////////////////////////////////////////////////
+                // Add in a preview of the desktop on the right.
+                {
+                    var transformRightUI =
+                        MathHelp.CreateMatrixScale(1920.0 / 1080.0, 1, 1) *
+                        MathHelp.CreateMatrixScale(0.1, 0.1, 0.1) *
+                        MathHelp.CreateMatrixRotation(MathHelp.CreateQuaternionRotation(new Vector3D(1, 0, 0), -45)) *
+                        MathHelp.CreateMatrixRotation(MathHelp.CreateQuaternionRotation(new Vector3D(0, 1, 0), 60)) *
+                        MathHelp.CreateMatrixTranslate(0.5, 1.25, 0.5);
+                    scene.children.Add(new Node("Desktop", new TransformMatrix(transformRightUI), Plane.Default, StockMaterials.LightGray, new DXGIDesktopMaterial()));
+                }
+            }
             catch
             {
                 Debug.WriteLine("WARNING: Unable to load controller model.");

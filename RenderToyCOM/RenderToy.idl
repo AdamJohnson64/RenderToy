@@ -28,4 +28,8 @@ library RenderToyCOM
 	enum D3D12_RESOURCE_TRANSITION_BARRIER;
 	struct D3D12_VERTEX_BUFFER_VIEW;
 	struct D3D12_VIEWPORT;
+	// DXGI
+	interface IDXGIAdapter4;
+	interface IDXGIFactory6;
+	interface IDXGIOutput6;
 }

@@ -103,6 +103,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Utility\UnmanagedCopy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\Direct3D11Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\Direct3D9Helper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\DXGIHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\HLSL.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\HLSLGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Expressions\MSILGenerator.cs" />

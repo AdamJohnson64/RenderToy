@@ -33,7 +33,7 @@ namespace RenderToy.Primitives
         }
         public Vector3D GetBitangentUV(double u, double v)
         {
-            return new Vector3D(0, 0, 1);
+            return new Vector3D(0, 0, -1);
         }
     }
 }

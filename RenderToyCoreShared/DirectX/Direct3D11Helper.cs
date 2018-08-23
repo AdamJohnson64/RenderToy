@@ -124,42 +124,45 @@ namespace RenderToy.DirectX
                 RenderToyEventSource.Default.MarkerEnd(constantbufferblock);
                 string commandbufferblock = "Command Buffer (" + profilingName + ")";
                 RenderToyEventSource.Default.MarkerBegin(commandbufferblock);
-                var box = new D3D11_BOX { right = (uint)(SIZEOF_CONSTANTBLOCK * scene.TableTransform.Count), bottom = 1, back = 1};
-                context.UpdateSubresource1(d3d11constantbufferGPU, 0, box, UnmanagedCopy.Create(d3d11constantbufferCPU), 0, 0, (uint)D3D11_COPY_FLAGS.D3D11_COPY_DISCARD);
-                context.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY.D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                context.IASetInputLayout(d3d11InputLayout);
-                context.RSSetState(d3d11RasterizerState);
-                context.PSSetSamplers(0, 1, d3d11SamplerState);
-                for (int i = 0; i < COUNT_OBJECTS; ++i)
+                var box = new D3D11_BOX { right = (uint)(SIZEOF_CONSTANTBLOCK * scene.TableTransform.Count), bottom = 1, back = 1 };
+                Direct3D11Helper.Dispatcher.Invoke(() =>
                 {
-                    var thisprimitive = scene.TableNodePrimitive[scene.IndexToNodePrimitive[i]];
-                    var vertexbuffer = CreateVertexBufferAsync(thisprimitive);
-                    if (vertexbuffer == null) continue;
-                    var thismaterial = scene.TableNodeMaterial[scene.IndexToNodeMaterial[i]];
+                    context.UpdateSubresource1(d3d11constantbufferGPU, 0, box, UnmanagedCopy.Create(d3d11constantbufferCPU), 0, 0, (uint)D3D11_COPY_FLAGS.D3D11_COPY_DISCARD);
+                    context.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY.D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                    context.IASetInputLayout(d3d11InputLayout);
+                    context.RSSetState(d3d11RasterizerState);
+                    context.PSSetSamplers(0, 1, d3d11SamplerState);
+                    for (int i = 0; i < COUNT_OBJECTS; ++i)
                     {
-                        context.VSSetShader(CreateVertexShaderAsync(thismaterial), null, 0);
-                        context.PSSetShader(CreatePixelShaderAsync(thismaterial), null, 0);
+                        var thisprimitive = scene.TableNodePrimitive[scene.IndexToNodePrimitive[i]];
+                        var vertexbuffer = CreateVertexBufferAsync(thisprimitive);
+                        if (vertexbuffer == null) continue;
+                        var thismaterial = scene.TableNodeMaterial[scene.IndexToNodeMaterial[i]];
+                        {
+                            context.VSSetShader(CreateVertexShaderAsync(thismaterial), null, 0);
+                            context.PSSetShader(CreatePixelShaderAsync(thismaterial), null, 0);
+                        }
+                        ID3D11ShaderResourceView[] collecttextures = CreateShaderResourceViews(thismaterial);
+                        if (collecttextures == null) continue;
+                        {
+                            var thistransformindex = scene.IndexToTransform[i];
+                            var strides = (uint)(thistransformindex * SIZEOF_CONSTANTBLOCK / 16U);
+                            var sizes = 5U * SIZEOF_MATRIX;
+                            context.VSSetConstantBuffers1(0, 1, constantbufferlist[0], strides, sizes);
+                        }
+                        {
+                            var strides = (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1));
+                            var sizes = 0U;
+                            context.IASetVertexBuffers(0, 1, vertexbuffer.d3d11Buffer, strides, sizes);
+                        }
+                        for (uint bufferIndex = 0; bufferIndex < collecttextures.Length; ++bufferIndex)
+                        {
+                            context.PSSetShaderResources(bufferIndex, 1, collecttextures[bufferIndex]);
+                        }
+                        context.Draw(vertexbuffer.vertexCount, 0);
                     }
-                    ID3D11ShaderResourceView[] collecttextures = CreateShaderResourceViews(thismaterial);
-                    if (collecttextures == null) continue;
-                    {
-                        var thistransformindex = scene.IndexToTransform[i];
-                        var strides = (uint)(thistransformindex * SIZEOF_CONSTANTBLOCK / 16U);
-                        var sizes = 5U * SIZEOF_MATRIX;
-                        context.VSSetConstantBuffers1(0, 1, constantbufferlist[0], strides, sizes);
-                    }
-                    {
-                        var strides = (uint)Marshal.SizeOf(typeof(XYZNorDiffuseTex1));
-                        var sizes = 0U;
-                        context.IASetVertexBuffers(0, 1, vertexbuffer.d3d11Buffer, strides, sizes);
-                    }
-                    for (uint bufferIndex = 0; bufferIndex < collecttextures.Length; ++bufferIndex)
-                    {
-                        context.PSSetShaderResources(bufferIndex, 1, collecttextures[bufferIndex]);
-                    }
-                    context.Draw(vertexbuffer.vertexCount, 0);
-                }
-                RenderToyEventSource.Default.MarkerEnd(commandbufferblock);
+                    RenderToyEventSource.Default.MarkerEnd(commandbufferblock);
+                });
             };
         }
         /// <summary>
@@ -208,6 +211,10 @@ namespace RenderToy.DirectX
         {
             if (material == null) material = missing;
             if (material == null) material = StockMaterials.Missing;
+            if (material is DXGIDesktopMaterial)
+            {
+                return DXGIHelper.d3d11srv_copieddesktop;
+            }
 #if OPENVR_INSTALLED
             if (material is MaterialOpenVRCameraDistorted vr)
             {
@@ -265,12 +272,14 @@ namespace RenderToy.DirectX
             var freePin = new List<GCHandle>();
             try
             {
+                var level0 = texture.GetSurface(0, 0);
+                if (level0 == null) return null;
                 // TODO: This is a bad way to detect cubemaps.
                 // There needs to be some way to indicate that a texture is
                 // expected to become a cubemap in the engine.
                 if (texture.GetTextureArrayCount() == 6)
                 {
-                    var format = texture.GetSurface(0, 0).GetFormat();
+                    var format = level0.GetFormat();
                     var pixelsize = Direct3DHelper.GetPixelSize(format);
                     var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
                     for (int face = 0; face < 6; ++face)
@@ -286,7 +295,6 @@ namespace RenderToy.DirectX
                         FillpInitialData.SysMemSlicePitch = (uint)(pixelsize * level.GetImageWidth() * level.GetImageHeight());
                         pInitialData.Add(FillpInitialData);
                     }
-                    var level0 = texture.GetSurface(0, 0);
                     var desc = new D3D11_TEXTURE2D_DESC();
                     desc.Width = (uint)level0.GetImageWidth();
                     desc.Height = (uint)level0.GetImageHeight();
@@ -315,7 +323,7 @@ namespace RenderToy.DirectX
                 }
                 else
                 {
-                    var format = texture.GetSurface(0, 0).GetFormat();
+                    var format = level0.GetFormat();
                     var pixelsize = Direct3DHelper.GetPixelSize(format);
                     var pInitialData = new List<MIDL_D3D11_SUBRESOURCE_DATA>();
                     for (int miplevel = 0; miplevel < texture.GetTextureLevelCount(); ++miplevel)
@@ -331,7 +339,6 @@ namespace RenderToy.DirectX
                         FillpInitialData.SysMemSlicePitch = (uint)(pixelsize * level.GetImageWidth() * level.GetImageHeight());
                         pInitialData.Add(FillpInitialData);
                     }
-                    var level0 = texture.GetSurface(0, 0);
                     var desc = new D3D11_TEXTURE2D_DESC();
                     desc.Width = (uint)level0.GetImageWidth();
                     desc.Height = (uint)level0.GetImageHeight();
@@ -372,27 +379,29 @@ namespace RenderToy.DirectX
         /// <returns>A shader resource view for the given image.</returns>
         static ID3D11ShaderResourceView CreateShaderResourceViewSyncUncachedFromSurface(ISurface surface)
         {
-            var format = surface.GetFormat();
-            var pixelsize = Direct3DHelper.GetPixelSize(format);
-            var desc = new D3D11_TEXTURE2D_DESC();
-            desc.Width = (uint)surface.GetImageWidth();
-            desc.Height = (uint)surface.GetImageHeight();
-            desc.MipLevels = 1;
-            desc.ArraySize = 1;
-            desc.Format = format;
-            desc.SampleDesc.Count = 1;
-            desc.Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT;
-            desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
-            var pInitialData = new D3D11_SUBRESOURCE_DATA();
-            var data = surface.Copy();
-            var pin = GCHandle.Alloc(data, GCHandleType.Pinned);
+            GCHandle? pin = null;
             try
             {
+                var format = surface.GetFormat();
+                int width = surface.GetImageWidth();
+                int height = surface.GetImageHeight();
+                var pixelsize = Direct3DHelper.GetPixelSize(format);
+                var desc = new D3D11_TEXTURE2D_DESC();
+                desc.Width = (uint)width;
+                desc.Height = (uint)height;
+                desc.MipLevels = 1;
+                desc.ArraySize = 1;
+                desc.Format = format;
+                desc.SampleDesc.Count = 1;
+                desc.Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT;
+                desc.BindFlags = (uint)D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
+                var pInitialData = new D3D11_SUBRESOURCE_DATA();
+                var data = surface.Copy();
+                pin = GCHandle.Alloc(data, GCHandleType.Pinned);
                 var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
                 pInitialData.pSysMem = ptr;
                 pInitialData.SysMemPitch = (uint)(pixelsize * surface.GetImageWidth());
                 pInitialData.SysMemSlicePitch = (uint)(pixelsize * surface.GetImageWidth() * surface.GetImageHeight());
-                ID3D11Texture2D d3d11texture = null;
                 var vdesc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
                 vdesc.Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
                 vdesc.ViewDimension = D3D_SRV_DIMENSION.D3D10_SRV_DIMENSION_TEXTURE2D;
@@ -401,6 +410,7 @@ namespace RenderToy.DirectX
                 ID3D11ShaderResourceView srview = null;
                 Dispatcher.Invoke(() =>
                 {
+                    ID3D11Texture2D d3d11texture = null;
                     Direct3D11Helper.d3d11Device.CreateTexture2D(desc, pInitialData, ref d3d11texture);
                     Direct3D11Helper.d3d11Device.CreateShaderResourceView(d3d11texture, vdesc, ref srview);
                 });
@@ -408,7 +418,7 @@ namespace RenderToy.DirectX
             }
             finally
             {
-                pin.Free();
+                if (pin.HasValue) pin.Value.Free();
             }
         }
         /// <summary>
@@ -604,7 +614,29 @@ namespace RenderToy.DirectX
         #region - Section : Texture Sets -
         static ID3D11ShaderResourceView[] CreateShaderResourceViews(IMaterial thismaterial)
         {
-            if (thismaterial is SurfaceCrossToCube)
+            if (thismaterial is GenericMaterial)
+            {
+                return new[]
+                {
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticLightBlue),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    d3d11TextureEnvironment,
+                };
+            }
+            else if (thismaterial is OBJMaterial objmat)
+            {
+                return new[]
+                {
+                    CreateShaderResourceViewAsync(objmat.map_Kd, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(objmat.map_d, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(objmat.map_bump, StockMaterials.PlasticLightBlue),
+                    CreateShaderResourceViewAsync(objmat.displacement, StockMaterials.PlasticWhite),
+                    d3d11TextureEnvironment,
+                };
+            }
+            else if (thismaterial is SurfaceCrossToCube)
             {
                 return new[]
                 {
@@ -613,6 +645,17 @@ namespace RenderToy.DirectX
                     CreateShaderResourceViewAsync(null, StockMaterials.PlasticLightBlue),
                     CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
                     CreateShaderResourceViewAsync(thismaterial, null),
+                };
+            }
+            else if (thismaterial is DXGIDesktopMaterial)
+            {
+                return new[]
+                {
+                    CreateShaderResourceViewAsync(thismaterial, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticLightBlue),
+                    CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
+                    d3d11TextureEnvironment,
                 };
             }
             else if (thismaterial is ISurface)
@@ -634,17 +677,6 @@ namespace RenderToy.DirectX
                     CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
                     CreateShaderResourceViewAsync(null, StockMaterials.PlasticLightBlue),
                     CreateShaderResourceViewAsync(null, StockMaterials.PlasticWhite),
-                    d3d11TextureEnvironment,
-                };
-            }
-            else if (thismaterial is OBJMaterial objmat)
-            {
-                return new[]
-                {
-                    CreateShaderResourceViewAsync(objmat.map_Kd, StockMaterials.PlasticWhite),
-                    CreateShaderResourceViewAsync(objmat.map_d, StockMaterials.PlasticWhite),
-                    CreateShaderResourceViewAsync(objmat.map_bump, StockMaterials.PlasticLightBlue),
-                    CreateShaderResourceViewAsync(objmat.displacement, StockMaterials.PlasticWhite),
                     d3d11TextureEnvironment,
                 };
             }

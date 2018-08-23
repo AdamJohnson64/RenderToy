@@ -19,6 +19,8 @@ namespace RenderToy.OpenVR
                 Console.WriteLine("Initializing renderer...");
 #if OPENVR_INSTALLED
                 Direct3D11Helper.Initialize();
+                OpenVRHelper.Initialize();
+                DXGIHelper.Initialize();
                 OpenVRPump.CreateThread(TransformedObject.ConvertToSparseScene(TestScenes.DefaultScene1));
                 Dispatcher.Run();
 #else

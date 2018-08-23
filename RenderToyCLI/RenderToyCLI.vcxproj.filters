@@ -105,6 +105,7 @@
     <ClCompile Include="..\RenderToyCoreCPP\InteropLibPNG.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\AMPArrayViewWrap.cpp" />
     <ClCompile Include="..\RenderToyCoreCPP\AMPArrayView.cpp" />
+    <ClCompile Include="..\RenderToyCoreCPP\InteropDXGI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\RenderToyCoreCPP\InteropCommon.h" />

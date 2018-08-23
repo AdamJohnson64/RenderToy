@@ -48,12 +48,13 @@ namespace RenderToy.WPF
             constants["transformView"] = AttachedView.GetTransformView(this);
             constants["transformProjection"] = AttachedView.GetTransformProjection(this); ;
             var desc = new D3D11_TEXTURE2D_DESC();
+            ID3D11DeviceContext4 context = null;
             Direct3D11Helper.Dispatcher.Invoke(() =>
             {
                 RenderToyEventSource.Default.RenderBegin();
                 ID3D11DeviceContext context_old = null;
                 Direct3D11Helper.d3d11Device.GetImmediateContext(ref context_old);
-                var context = (ID3D11DeviceContext4)context_old;
+                context = (ID3D11DeviceContext4)context_old;
                 d3d11Texture2D_DS.GetDesc(ref desc);
                 // Draw the window view using the current camera.
                 var scissorRect = new tagRECT { left = 0, top = 0, right = (int)desc.Width, bottom = (int)desc.Height };
@@ -63,13 +64,18 @@ namespace RenderToy.WPF
                 context.OMSetRenderTargets(1, d3d11RenderTargetView, d3d11DepthStencilView);
                 context.ClearDepthStencilView(d3d11DepthStencilView, (uint)D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH, 1, 0);
                 context.ClearRenderTargetView(d3d11RenderTargetView, new float[] { 0, 0, 0, 0 });
-                if (Execute_DrawScene != null)
-                {
-                    Execute_DrawScene(context, constants);
-                }
-                context.Flush();
-                RenderToyEventSource.Default.RenderEnd();
             });
+            if (Execute_DrawScene != null)
+            {
+                Execute_DrawScene(context, constants);
+            }
+            /*
+            Direct3D11Helper.Dispatcher.Invoke(() =>
+            {
+                context.Flush();
+            });
+            */
+            RenderToyEventSource.Default.RenderEnd();
             Target.Lock();
             Target.AddDirtyRect(new Int32Rect(0, 0, (int)desc.Width, (int)desc.Height));
             Target.Unlock();
