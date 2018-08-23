@@ -75,6 +75,9 @@ namespace RenderToy.SceneGraph
                 var roothdr = Path.Combine(rootassembly, "..\\..\\ThirdParty\\RenderToyAssets\\Environments\\uffizi_cross.hdr");
                 var hdrimage = LoaderImage.LoadFromPath(roothdr);
                 var hdrcube = new SurfaceCrossToCube(hdrimage);
+                {
+                    scene.children.Add(new Node("Plane Ground", new TransformMatrix(MathHelp.CreateMatrixScale(10, 10, 10)), Plane.Default, StockMaterials.LightGray, StockMaterials.Brick));
+                }
                 var transformControls =
                     MathHelp.CreateMatrixRotation(MathHelp.CreateQuaternionRotation(new Vector3D(1, 0, 0), -45)) *
                     MathHelp.CreateMatrixRotation(MathHelp.CreateQuaternionRotation(new Vector3D(0, 1, 0), -60)) *

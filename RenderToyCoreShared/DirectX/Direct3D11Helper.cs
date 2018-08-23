@@ -72,7 +72,8 @@ namespace RenderToy.DirectX
             {
                 d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, null, ref d3d11VertexShader);
                 d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, null, ref d3d11PixelShader);
-                d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PSEnvironment), (ulong)HLSL.D3D11PSEnvironment.Length, null, ref d3d11PixelShaderReflect);
+                d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PSEnvironment), (ulong)HLSL.D3D11PSEnvironment.Length, null, ref d3d11PixelShaderEnvironment);
+                d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PSUnlit), (ulong)HLSL.D3D11PSUnlit.Length, null, ref d3d11PixelShaderUnlit);
             });
         }
         /// <summary>
@@ -194,7 +195,8 @@ namespace RenderToy.DirectX
         static ID3D11SamplerState d3d11SamplerState;
         static ID3D11VertexShader d3d11VertexShader;
         static ID3D11PixelShader d3d11PixelShader;
-        static ID3D11PixelShader d3d11PixelShaderReflect;
+        static ID3D11PixelShader d3d11PixelShaderEnvironment;
+        static ID3D11PixelShader d3d11PixelShaderUnlit;
         static ID3D11ShaderResourceView d3d11TextureEnvironment;
         #endregion
         #region - Section : Texture Factory -
@@ -580,12 +582,16 @@ namespace RenderToy.DirectX
             {
                 return d3d11PixelShader;
             }
+            if (material is DXGIDesktopMaterial)
+            {
+                return d3d11PixelShaderUnlit;
+            }
             // TODO: This is a bad way to detect cubemaps.
             // There needs to be some way to indicate that a texture is
             // expected to become a cubemap in the engine.
             if (material is ITexture texture && texture.GetTextureArrayCount() == 6)
             {
-                return d3d11PixelShaderReflect;
+                return d3d11PixelShaderEnvironment;
             }
             if (material is IMNNode node)
             {

@@ -106,6 +106,13 @@ float4 ps(VS_OUTPUT input) : SV_Target {
 }
 
 ";
+        public static readonly string D3DPixelShaderCodeUnlit =
+@"// Direct3D Simple Pixel Shader
+float4 ps(VS_OUTPUT input) : SV_Target {
+    return float4(SampleTexture2D(TextureAlbedo, input.TexCoord.xy).rgb, 1);
+}
+
+";
         #endregion
         #region - Section : Direct3D9 -
         public static readonly string D3D9Constants =
@@ -171,6 +178,12 @@ float4 SampleTextureCUBE(textureCUBE s, float3 uvw) { return s.Sample(Sampler, u
             D3DVertexOutputStruct +
             D3DVertexShaderCode +
             D3DPixelShaderCodeEnvironment;
+        public readonly static string D3D11Unlit =
+            D3D11Constants +
+            D3DVertexInputStruct +
+            D3DVertexOutputStruct +
+            D3DVertexShaderCode +
+            D3DPixelShaderCodeUnlit;
         #endregion
         #region - Section : Direct3D12 -
         public readonly static string D3D12Constants =
@@ -203,6 +216,7 @@ cbuffer Constants : register(b0)
         public static readonly byte[] D3D11VS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "vs", "vs_5_0");
         public static readonly byte[] D3D11PS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "ps", "ps_5_0");
         public static readonly byte[] D3D11PSEnvironment = HLSLExtensions.CompileHLSL(HLSL.D3D11Environment, "ps", "ps_5_0");
+        public static readonly byte[] D3D11PSUnlit = HLSLExtensions.CompileHLSL(HLSL.D3D11Unlit, "ps", "ps_5_0");
         #endregion
     }
 }
