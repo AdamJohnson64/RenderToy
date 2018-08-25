@@ -52,6 +52,10 @@ namespace RenderToy.DirectX
                         var dxgiresource = DXGI.IDXGIOutputDuplication_AcquireNextFrame(dxgiduplication, 0, ref dxgiframeinfo);
                         if (dxgiresource != null)
                         {
+                            if (dxgiframeinfo.LastMouseUpdateTime.QuadPart != 0)
+                            {
+                                mouse = dxgiframeinfo.PointerPosition.Position;
+                            }
                             var d3d11texture_currentdesktop = (ID3D11Texture2D)dxgiresource;
                             ID3D11DeviceContext d3d11devicecontext = null;
                             Direct3D11Helper.d3d11Device.GetImmediateContext(ref d3d11devicecontext);
@@ -67,6 +71,7 @@ namespace RenderToy.DirectX
         }
         static ID3D11Texture2D d3d11texture_copieddesktop = null;
         public static ID3D11ShaderResourceView d3d11srv_copieddesktop = null;
+        public static tagPOINT mouse;
     }
     class DXGIDesktopMaterial : IMaterial
     {

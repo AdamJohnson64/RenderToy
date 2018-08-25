@@ -11,6 +11,7 @@ using RenderToy.ModelFormat;
 using RenderToy.Primitives;
 using RenderToy.Textures;
 using RenderToy.Transforms;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -159,6 +160,26 @@ namespace RenderToy.SceneGraph
                         MathHelp.CreateMatrixTranslate(0.5, 1.25, 0.5);
                     scene.children.Add(new Node("Desktop", new TransformMatrix(transformRightUI), Plane.Default, StockMaterials.LightGray, new DXGIDesktopMaterial()));
                 }
+                {
+                    var transformFrontUI =
+                        MathHelp.CreateMatrixScale(1920.0 / 1080.0, 1, 1) *
+                        MathHelp.CreateMatrixRotation(MathHelp.CreateQuaternionRotation(new Vector3D(1, 0, 0), -90)) *
+                        MathHelp.CreateMatrixTranslate(0, 2, 2);
+                    ////////////////////////////////////////////////////////////////////////////////
+                    // Add in a preview of the desktop up front movie style.
+                    scene.children.Add(new Node("Desktop", new TransformMatrix(transformFrontUI), Plane.Default, StockMaterials.LightGray, new DXGIDesktopMaterial()));
+                    ////////////////////////////////////////////////////////////////////////////////
+                    // Add in some form of mouse pointer.
+                    Func<Matrix3D> getmouse = () =>
+                    {
+                        var current = DXGIHelper.mouse;
+                        return
+                            MathHelp.CreateMatrixScale(0.01, 0.01, 0.01) *
+                            MathHelp.CreateMatrixTranslate(-1 + (current.X / 1920.0) * 2, 0, 1 - (current.Y / 1080.0) * 2) *
+                            transformFrontUI;
+                    };
+                    scene.children.Add(new Node("MousePointer", new ComputedMatrix(getmouse), Sphere.Default, StockMaterials.White, StockMaterials.PlasticWhite));
+                }
             }
             catch
             {
@@ -166,5 +187,20 @@ namespace RenderToy.SceneGraph
             }
 #endif
         }
+    }
+    class ComputedMatrix : ITransform
+    {
+        public ComputedMatrix(Func<Matrix3D> position)
+        {
+            Position = position;
+        }
+        public Matrix3D Transform
+        {
+            get
+            {
+                return Position();
+            }
+        }
+        Func<Matrix3D> Position;
     }
 }
