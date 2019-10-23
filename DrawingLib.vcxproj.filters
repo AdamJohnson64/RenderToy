@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Source\DrawingContext.cpp">
+      <Filter>DrawingContext</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IDevice3D_Vulkan.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IIndexBuffer_Vulkan.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ErrorVK.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IVertexBuffer_Vulkan.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IRenderTarget_Vulkan.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IShader_Vulkan.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IDevice3D_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IRenderTarget_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IShader_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IIndexBuffer_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IVertexBuffer_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\D3D12Utility.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IRaytrace_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IDevice3D.cpp">
+      <Filter>Device3D\Abstract</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IBuffer_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IBuffer_Vulkan.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IConstantBuffer_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IConstantBuffer_Vulkan.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IConstantBufferView_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IConstantBufferView_Vulkan.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ErrorD3D.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\DrawingContext.h">
+      <Filter>DrawingContext</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IDrawingContext.h">
+      <Filter>DrawingContext</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IDrawingContextAccess.h">
+      <Filter>DrawingContext</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\AutoRelease.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vector.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IDevice3D_Vulkan.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IIndexBuffer_Vulkan.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ErrorVK.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IVertexBuffer_Vulkan.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IRenderTarget_Vulkan.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IShader_Vulkan.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IDevice3D_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IRenderTarget_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IShader_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IIndexBuffer_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IVertexBuffer_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\D3D12Utility.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IRaytrace_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\dxr.dxil.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IDevice3D.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IIndexBuffer.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IObject.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IRenderTarget.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IShader.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ITexture.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IVertexBuffer.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IBuffer_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IBuffer_Vulkan.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IConstantBuffer.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IConstantBuffer_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IConstantBuffer_Vulkan.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\VulkanInclude.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IConstantBufferView.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IConstantBufferView_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\IConstantBufferView_Vulkan.h">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ErrorD3D.h">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Types3D.h">
+      <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Device3D">
+      <UniqueIdentifier>{c4b16b27-a8c2-407e-85c2-cb0a14897e9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DrawingContext">
+      <UniqueIdentifier>{8964ae05-0b6c-4ec6-b4af-c832debe7cc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{0be764f5-c478-4369-85a0-0b1eb5618b40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device3D\Vulkan">
+      <UniqueIdentifier>{24ee3fb2-cc32-478c-836f-73d05a728545}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device3D\Direct3D12">
+      <UniqueIdentifier>{8d8901ad-fe3a-434e-9f1a-ac4e9055bbcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Device3D\Abstract">
+      <UniqueIdentifier>{8f0afed2-012b-45c8-8848-c4f5739c7f6e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Source\dxr.hlsl">
+      <Filter>Device3D\Direct3D12</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
