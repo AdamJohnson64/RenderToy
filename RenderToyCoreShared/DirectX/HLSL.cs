@@ -109,7 +109,20 @@ float4 ps(VS_OUTPUT input) : SV_Target {
         public static readonly string D3DPixelShaderCodeUnlit =
 @"// Direct3D Simple Pixel Shader
 float4 ps(VS_OUTPUT input) : SV_Target {
-    return float4(SampleTexture2D(TextureAlbedo, input.TexCoord.xy).rgb, 1);
+    // 1 TAP - This is going to look mighty ugly in VR.
+    //return float4(SampleTexture2D(TextureAlbedo, input.TexCoord.xy).rgb, 1);
+    // X*Y TAP - Crank this up as high as you like for in-shader anti-aliasing of a single MIP texture.
+    const int samplesU = 9;
+    const int samplesV = 9;
+    const float2 duvdx = ddx(input.TexCoord.xy); 
+    const float2 duvdy = ddy(input.TexCoord.xy);
+    float4 acc = float4(0, 0, 0, 0);
+    for (int y = 0; y < samplesV; ++y) {
+        for (int x = 0; x < samplesU; ++x) {
+            acc += SampleTexture2D(TextureAlbedo, input.TexCoord.xy + duvdx * lerp(-0.5, 0.5, (x + 0.5) / samplesU) + duvdy * lerp(-0.5, 0.5, (y + 0.5) / samplesV));
+        }
+    }
+    return acc / (samplesU * samplesV);
 }
 
 ";
