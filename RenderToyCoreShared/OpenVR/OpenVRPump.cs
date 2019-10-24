@@ -35,13 +35,6 @@ namespace RenderToy
         {
             uint vrwidth = 0, vrheight = 0;
             OpenVRHelper.System.GetRecommendedRenderTargetSize(ref vrwidth, ref vrheight);
-            ID3D11VertexShader d3d11VertexShader = null;
-            ID3D11PixelShader d3d11PixelShader = null;
-            Direct3D11Helper.Dispatcher.Invoke(() =>
-            {
-                Direct3D11Helper.d3d11Device.CreateVertexShader(UnmanagedCopy.Create(HLSL.D3D11VS), (ulong)HLSL.D3D11VS.Length, null, ref d3d11VertexShader);
-                Direct3D11Helper.d3d11Device.CreatePixelShader(UnmanagedCopy.Create(HLSL.D3D11PS), (ulong)HLSL.D3D11PS.Length, null, ref d3d11PixelShader);
-            });
             ID3D11Texture2D d3d11Texture2D_RT_EyeLeft = null;
             ID3D11RenderTargetView d3d11RenderTargetView_EyeLeft = null;
             ID3D11Texture2D d3d11Texture2D_DS_EyeLeft = null;
@@ -93,8 +86,6 @@ namespace RenderToy
                 ID3D11DeviceContext deferred_left_old = null;
                 Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_left_old);
                 var deferred_left = (ID3D11DeviceContext4)deferred_left_old;
-                deferred_left.VSSetShader(d3d11VertexShader, null, 0);
-                deferred_left.PSSetShader(d3d11PixelShader, null, 0);
                 deferred_left.RSSetScissorRects(1, scissorRect);
                 deferred_left.RSSetViewports(1, viewportRect);
                 deferred_left.OMSetRenderTargets(1, d3d11RenderTargetView_EyeLeft, d3d11DepthStencilView_EyeLeft);
@@ -125,8 +116,6 @@ namespace RenderToy
                 ID3D11DeviceContext deferred_right_old = null;
                 Direct3D11Helper.d3d11Device.CreateDeferredContext(0, ref deferred_right_old);
                 var deferred_right = (ID3D11DeviceContext4)deferred_right_old;
-                deferred_right.VSSetShader(d3d11VertexShader, null, 0);
-                deferred_right.PSSetShader(d3d11PixelShader, null, 0);
                 deferred_right.RSSetScissorRects(1, ref scissorRect);
                 deferred_right.RSSetViewports(1, ref viewportRect);
                 deferred_right.OMSetRenderTargets(1, ref d3d11RenderTargetView_EyeRight, d3d11DepthStencilView_EyeRight);
