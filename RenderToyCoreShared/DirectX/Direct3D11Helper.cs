@@ -37,7 +37,7 @@ namespace RenderToy.DirectX
             Dispatcher = DispatcherHelper.CreateDispatcher("Direct3D11 Synchronized Dispatcher");
             Dispatcher.Invoke(() =>
             {
-                d3d11Device = Direct3D11.D3D11CreateDevice();
+                d3d11Device = (ID3D11Device5)Direct3D11.D3D11CreateDevice();
             });
             var inputelements = new[]
             {
@@ -177,7 +177,7 @@ namespace RenderToy.DirectX
         /// Calls to this object should be marshaled through the D3D11 dispatcher.
         /// (Unless you REALLY know what you're doing).
         /// </summary>
-        public static ID3D11Device d3d11Device;
+        public static ID3D11Device5 d3d11Device;
         #endregion
         #region - Section : Common Resources -
         /// <summary>

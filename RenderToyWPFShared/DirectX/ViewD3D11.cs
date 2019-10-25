@@ -16,6 +16,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Collections.Generic;
 using System.Windows.Threading;
+using System.Threading;
 
 namespace RenderToy.WPF
 {
@@ -69,12 +70,21 @@ namespace RenderToy.WPF
             {
                 Execute_DrawScene(context, constants);
             }
-            /*
             Direct3D11Helper.Dispatcher.Invoke(() =>
             {
-                context.Flush();
+                // Create a fence and wait for frame completion.
+                ID3D11Fence fence;
+                {
+                    IntPtr pFence = IntPtr.Zero;
+                    Direct3D11Helper.d3d11Device.CreateFence(0, D3D11_FENCE_FLAG.D3D11_FENCE_FLAG_NONE, Marshal.GenerateGuidForType(typeof(ID3D11Fence)), ref pFence);
+                    fence = (ID3D11Fence)Marshal.GetObjectForIUnknown(pFence);
+                    Marshal.Release(pFence);
+                }
+                EventWaitHandle waithandle = new EventWaitHandle(false, EventResetMode.ManualReset);
+                fence.SetEventOnCompletion(1, waithandle.SafeWaitHandle.DangerousGetHandle());
+                context.Signal(fence, 1);
+                waithandle.WaitOne();
             });
-            */
             RenderToyEventSource.Default.RenderEnd();
             Target.Lock();
             Target.AddDirtyRect(new Int32Rect(0, 0, (int)desc.Width, (int)desc.Height));
