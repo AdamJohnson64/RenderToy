@@ -136,7 +136,7 @@ namespace RenderToy.WPF
             // Create a command queue, submit the command list, and wait for completion.
             d3d12CommandQueue.ExecuteCommandLists(1, d3d12CommandList);
             d3d12CommandQueue.Signal(d3d12Fence, 1);
-            eventEndFrame.WaitOne(100);
+            eventEndFrame.WaitOne();
             d3d12CommandList.Reset(d3d12CommandAllocator, d3d12GraphicsPipelineState);
             ////////////////////////////////////////////////////////////////////////////////
             // Copy back the contents of the Render Target to WPF.

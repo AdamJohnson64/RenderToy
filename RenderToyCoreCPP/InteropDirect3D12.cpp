@@ -22,8 +22,8 @@ namespace RenderToy
 		static void DescriptorHeap_GetCPUDescriptorHandleForHeapStart(RenderToyCOM::ID3D12DescriptorHeap ^descriptorHeap, RenderToyCOM::D3D12_CPU_DESCRIPTOR_HANDLE %cpudesc)
 		{
 			auto unmanaged = Marshal::GetComInterfaceForObject(descriptorHeap, RenderToyCOM::ID3D12DescriptorHeap::typeid);
-			Marshal::AddRef(unmanaged);
 			auto result = ((ID3D12DescriptorHeap*)unmanaged.ToPointer())->GetCPUDescriptorHandleForHeapStart();
+			Marshal::Release(unmanaged);
 			cpudesc.ptr = result.ptr;
 		}
 	};

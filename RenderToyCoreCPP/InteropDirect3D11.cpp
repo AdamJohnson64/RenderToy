@@ -89,9 +89,11 @@ namespace RenderToy
 			auto dst = std::unique_ptr<D3D11_INPUT_ELEMENT_DESC[]>(new D3D11_INPUT_ELEMENT_DESC[src->Length]);
 			MarshalArray<MIDL_D3D11_INPUT_ELEMENT_DESC>(dst.get(), src, %ctx);
 			ID3D11InputLayout *ppLayout = nullptr;
-			auto unmanagedDevice = Marshal::GetComInterfaceForObject(device, RenderToyCOM::ID3D11Device::typeid);
-			Marshal::AddRef(unmanagedDevice);
-			TRY_D3D(((ID3D11Device*)unmanagedDevice.ToPointer())->CreateInputLayout(dst.get(), src->Length, pShaderBytecodeWithInputSignature.ToPointer(), BytecodeLength, &ppLayout));
+            {
+                auto unmanagedDevice = Marshal::GetComInterfaceForObject(device, RenderToyCOM::ID3D11Device::typeid);
+			    TRY_D3D(((ID3D11Device*)unmanagedDevice.ToPointer())->CreateInputLayout(dst.get(), src->Length, pShaderBytecodeWithInputSignature.ToPointer(), BytecodeLength, &ppLayout));
+			    Marshal::Release(unmanagedDevice);
+            }
 			ppInputLayout = (RenderToyCOM::ID3D11InputLayout^)Marshal::GetTypedObjectForIUnknown(System::IntPtr(ppLayout), RenderToyCOM::ID3D11InputLayout::typeid);
 		}
 		static void Device_CreateTexture2D(RenderToyCOM::ID3D11Device ^device, RenderToyCOM::D3D11_TEXTURE2D_DESC desc, cli::array<MIDL_D3D11_SUBRESOURCE_DATA> ^src, RenderToyCOM::ID3D11Texture2D ^%ppTexture2D)
@@ -106,9 +108,11 @@ namespace RenderToy
 				auto dst = std::unique_ptr<D3D11_SUBRESOURCE_DATA[]>(new D3D11_SUBRESOURCE_DATA[src->Length]);
 				MarshalArray<MIDL_D3D11_SUBRESOURCE_DATA>(dst.get(), src, %ctx);
 				ID3D11Texture2D *ppOutTexture2D = nullptr;
-				auto unmanagedDevice = Marshal::GetComInterfaceForObject(device, RenderToyCOM::ID3D11Device::typeid);
-				Marshal::AddRef(unmanagedDevice);
-				TRY_D3D(((ID3D11Device*)unmanagedDevice.ToPointer())->CreateTexture2D(&descM, dst.get(), &ppOutTexture2D));
+                {
+				    auto unmanagedDevice = Marshal::GetComInterfaceForObject(device, RenderToyCOM::ID3D11Device::typeid);
+				    TRY_D3D(((ID3D11Device*)unmanagedDevice.ToPointer())->CreateTexture2D(&descM, dst.get(), &ppOutTexture2D));
+				    Marshal::Release(unmanagedDevice);
+                }
 				ppTexture2D = (RenderToyCOM::ID3D11Texture2D^)Marshal::GetTypedObjectForIUnknown(System::IntPtr(ppOutTexture2D), RenderToyCOM::ID3D11Texture2D::typeid);
 			}
 			finally

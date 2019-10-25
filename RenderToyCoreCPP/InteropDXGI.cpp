@@ -36,6 +36,7 @@ namespace RenderToy
 			IDXGIOutput1 *pOutput1 = (IDXGIOutput1*)com_output1.ToPointer();
 			IDXGIOutputDuplication *ppOutputDuplication = nullptr;
 			TRY(pOutput1->DuplicateOutput(pDevice, &ppOutputDuplication));
+            Marshal::Release(com_output1);
 			return System::IntPtr(ppOutputDuplication);
 		}
 		static RenderToyCOM::IDXGIResource^ IDXGIOutputDuplication_AcquireNextFrame(System::IntPtr outputduplication, UINT TimeoutInMilliseconds, RenderToyCOM::DXGI_OUTDUPL_FRAME_INFO %ppFrameInfo)
