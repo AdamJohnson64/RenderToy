@@ -193,6 +193,12 @@ namespace RenderToy
 			TRY_D3D(WrappedInterface()->CreateRootSignature(nodeMask, pBlobWithRootSignatureM, pBlobWithRootSignature->Length, __uuidof(ID3D12RootSignature), &ppvRootSignature));
 			return (RenderToyCOM::ID3D12RootSignature^)Marshal::GetTypedObjectForIUnknown(System::IntPtr(ppvRootSignature), RenderToyCOM::ID3D12RootSignature::typeid);
 		}
+        RenderToyCOM::ID3D12Resource^ OpenSharedHandle(System::IntPtr handle)
+        {
+            ID3D12Resource* resource = nullptr;
+            WrappedInterface()->OpenSharedHandle(handle.ToPointer(), __uuidof(ID3D12Resource), (void**)&resource);
+            return (RenderToyCOM::ID3D12Resource^)Marshal::GetTypedObjectForIUnknown(System::IntPtr(resource), RenderToyCOM::ID3D12Resource::typeid);
+        }
 	};
 	#pragma endregion
 	#pragma region - Direct3D12 Global Functions -
