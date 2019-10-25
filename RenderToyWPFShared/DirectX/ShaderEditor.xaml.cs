@@ -44,7 +44,7 @@ namespace RenderToy.WPF
             var adornerlayer = AdornerLayer.GetAdornerLayer(CodeEditor);
             var adornertextboxfloaters = new AdornerTextBoxErrors(CodeEditor);
             adornerlayer.Add(adornertextboxfloaters);
-            CodeEditor.Text = HLSL.D3D9Standard;
+            CodeEditor.Text = HLSL.D3D11Standard;
             Action Compile = async () =>
             {
                 var code = CodeEditor.Text;

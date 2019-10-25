@@ -25,10 +25,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3DImage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3DImageBuffered.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3DImageDirect.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3D9FixedFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3D11.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3D9.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3D12.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\ViewSoftwareCustomizable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\3D\AttachedCamera.cs" />

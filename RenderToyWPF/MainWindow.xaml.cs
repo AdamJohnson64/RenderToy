@@ -66,8 +66,6 @@ namespace RenderToy.WPF
         public static ICommand CommandDocumentOpen = new RoutedUICommand("Open the RenderToy document.", "CommandDocumentOpen", typeof(MainWindow));
         public static ICommand CommandDocumentExport = new RoutedUICommand("Export the RenderToy document to XPS.", "CommandDocumentExport", typeof(MainWindow));
         public static ICommand CommandWindowSoftware = new RoutedUICommand("Open a Software View Window.", "CommandWindowDirectX3DFF", typeof(MainWindow));
-        public static ICommand CommandWindowDirect3D9FF = new RoutedUICommand("Open a DirectX 9 (Fixed Function) View Window.", "CommandWindowDirectX3DFF", typeof(MainWindow));
-        public static ICommand CommandWindowDirect3D9 = new RoutedUICommand("Open a DirectX 9 View Window.", "CommandWindowDirect3D9", typeof(MainWindow));
         public static ICommand CommandWindowDirect3D11 = new RoutedUICommand("Open a DirectX 11 View Window.", "CommandWindowDirect3D11", typeof(MainWindow));
         public static ICommand CommandWindowDirect3D12 = new RoutedUICommand("Open a DirectX 12 View Window.", "CommandWindowDirect3D12", typeof(MainWindow));
         public static ICommand CommandWindowTextureLab = new RoutedUICommand("Open a Texture Lab Window.", "CommandWindowTextureLab", typeof(MainWindow));
@@ -138,17 +136,6 @@ namespace RenderToy.WPF
                 CreatePanelDefault(new PerformanceView(), "Performance View");
                 e.Handled = true;
             }));
-            CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9FF, (s, e) =>
-            {
-                var view = new ViewD3D9FixedFunction();
-                view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
-                view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
-                view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
-                view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
-                view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
-                CreatePanelDefault(view, "Direct3D9FF Render");
-                e.Handled = true;
-            }));
             CommandBindings.Add(new CommandBinding(CommandWindowSoftware, (s, e) =>
             {
                 var view = new ViewSoftwareCustomizable();
@@ -158,20 +145,6 @@ namespace RenderToy.WPF
                 view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
                 view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 CreatePanelDefault(view, "RenderToy (Software)");
-                e.Handled = true;
-            }));
-            CommandBindings.Add(new CommandBinding(CommandWindowDirect3D9, (s, e) =>
-            {
-                var shader = new ShaderEditor { ProfileVS = "vs_3_0", ProfilePS = "ps_3_0", Text = HLSL.D3D9Standard };
-                var render = new ViewD3D9();
-                render.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
-                render.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
-                render.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
-                render.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
-                render.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
-                render.SetBinding(ViewD3D9.VertexShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodeVSProperty) });
-                render.SetBinding(ViewD3D9.PixelShaderProperty, new Binding { Source = shader, Path = new PropertyPath(ShaderEditor.BytecodePSProperty) });
-                CreatePanelNavigation("Direct3D9", render, "Direct3D9 Render", shader, "Direct3D9 Shader");
                 e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowDirect3D11, (s, e) =>

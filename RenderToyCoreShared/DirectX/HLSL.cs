@@ -127,33 +127,6 @@ float4 ps(VS_OUTPUT input) : SV_Target {
 
 ";
         #endregion
-        #region - Section : Direct3D9 -
-        public static readonly string D3D9Constants =
-@"// Direct3D9 Standard Constants
-float4x4 TransformCamera : register(c0);
-float4x4 TransformModel : register(c4);
-float4x4 TransformView : register(c8);
-float4x4 TransformProjection : register(c12);
-float4x4 TransformModelViewProjection : register(c16);
-
-// Direct3D9 Standard Textures
-sampler2D TextureAlbedo : register(s0);
-sampler2D TextureMask : register(s1);
-sampler2D TextureBump : register(s2);
-sampler2D TextureDisplacement : register(s3);
-samplerCUBE TextureEnvironment : register(s4);
-
-float4 SampleTexture2D(sampler2D s, float2 uv) { return tex2D(s, uv); }
-float4 SampleTextureCUBE(samplerCUBE s, float3 uvw) { return texCUBE(s, uvw); }
-
-";
-        public static readonly string D3D9Standard =
-            D3D9Constants +
-            D3DVertexInputStruct +
-            D3DVertexOutputStruct +
-            D3DVertexShaderCode +
-            D3DPixelShaderCode;
-        #endregion
         #region - Section : Direct3D11 -
         public readonly static string D3D11Constants =
 @"// Direct3D11 Standard Constants
@@ -224,8 +197,6 @@ cbuffer Constants : register(b0)
             D3DPixelShaderCodeSimple;
         #endregion
         #region - Section : Compiled Results -
-        public static readonly byte[] D3D9VS = HLSLExtensions.CompileHLSL(HLSL.D3D9Standard, "vs", "vs_3_0");
-        public static readonly byte[] D3D9PS = HLSLExtensions.CompileHLSL(HLSL.D3D9Standard, "ps", "ps_3_0");
         public static readonly byte[] D3D11VS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "vs", "vs_5_0");
         public static readonly byte[] D3D11PS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "ps", "ps_5_0");
         public static readonly byte[] D3D11PSEnvironment = HLSLExtensions.CompileHLSL(HLSL.D3D11Environment, "ps", "ps_5_0");

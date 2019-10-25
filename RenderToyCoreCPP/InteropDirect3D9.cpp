@@ -26,141 +26,14 @@ System::String^ DXErrorString(HRESULT error)
 namespace RenderToy
 {
 	#pragma region - Direct3D9 Enumerations -
-	public enum class D3DClear
-	{
-		Target = D3DCLEAR_TARGET,
-		ZBuffer = D3DCLEAR_ZBUFFER,
-		Stencil = D3DCLEAR_STENCIL,
-	};
-	public enum class D3DCullMode
-	{
-		None = D3DCULL_NONE,
-		CW = D3DCULL_CW,
-		CCW = D3DCULL_CCW,
-	};
-	public enum class D3DDeclMethod : byte {
-		Default = D3DDECLMETHOD_DEFAULT,
-		PartialU = D3DDECLMETHOD_PARTIALU,
-		PartialV = D3DDECLMETHOD_PARTIALV,
-		CrossUV = D3DDECLMETHOD_CROSSUV,
-		UV = D3DDECLMETHOD_UV,
-		Lookup = D3DDECLMETHOD_LOOKUP,
-		LookupPresampled = D3DDECLMETHOD_LOOKUPPRESAMPLED,
-	};
-	public enum class D3DDeclType : byte {
-		Float1 = D3DDECLTYPE_FLOAT1,
-		Float2 = D3DDECLTYPE_FLOAT2,
-		Float3 = D3DDECLTYPE_FLOAT3,
-		Float4 = D3DDECLTYPE_FLOAT4,
-		D3DColor = D3DDECLTYPE_D3DCOLOR,
-		UByte4 = D3DDECLTYPE_UBYTE4,
-		Short2 = D3DDECLTYPE_SHORT2,
-		Short4 = D3DDECLTYPE_SHORT4,
-		UByte4N = D3DDECLTYPE_UBYTE4N,
-		Short2N = D3DDECLTYPE_SHORT2N,
-		Short4N = D3DDECLTYPE_SHORT4N,
-		UShort2N = D3DDECLTYPE_USHORT2N,
-		UShort4N = D3DDECLTYPE_USHORT4N,
-		UDec3 = D3DDECLTYPE_UDEC3,
-		Dec3N = D3DDECLTYPE_DEC3N,
-		Float16_2 = D3DDECLTYPE_FLOAT16_2,
-		Float16_4 = D3DDECLTYPE_FLOAT16_4,
-		Unused = D3DDECLTYPE_UNUSED,
-	};
-	public enum class D3DDeclUsage : byte {
-		Position = D3DDECLUSAGE_POSITION,
-		BlendWeight = D3DDECLUSAGE_BLENDWEIGHT,
-		BlendIndices = D3DDECLUSAGE_BLENDINDICES,
-		Normal = D3DDECLUSAGE_NORMAL,
-		PSize = D3DDECLUSAGE_PSIZE,
-		TexCoord = D3DDECLUSAGE_TEXCOORD,
-		Tangent = D3DDECLUSAGE_TANGENT,
-		Binormal = D3DDECLUSAGE_BINORMAL,
-		TessFactor = D3DDECLUSAGE_TESSFACTOR,
-		PositionT = D3DDECLUSAGE_POSITIONT,
-		Color = D3DDECLUSAGE_COLOR,
-		Fog = D3DDECLUSAGE_FOG,
-		Depth = D3DDECLUSAGE_DEPTH,
-		Sample = D3DDECLUSAGE_SAMPLE,
-	};
 	public enum class D3DFormat
 	{
 		A8R8G8B8 = D3DFMT_A8R8G8B8,
 		D24X8 = D3DFMT_D24X8,
 	};
-	public enum class D3DFvf
-	{
-		XYZ = D3DFVF_XYZ,
-		Normal = D3DFVF_NORMAL,
-		Diffuse = D3DFVF_DIFFUSE,
-		Tex1 = D3DFVF_TEX1,
-		XYZW = D3DFVF_XYZW,
-	};
 	public enum class D3DMultisample
 	{
 		None = D3DMULTISAMPLE_NONE,
-	};
-	public enum class D3DPool
-	{
-		Default = D3DPOOL_DEFAULT,
-		Managed = D3DPOOL_MANAGED,
-		SystemMemory = D3DPOOL_SYSTEMMEM,
-		Scratch = D3DPOOL_SCRATCH,
-	};
-	public enum class D3DPrimitiveType
-	{
-		TriangleList = D3DPT_TRIANGLELIST,
-	};
-	public enum class D3DRenderState
-	{
-		ZEnable = D3DRS_ZENABLE,
-		CullMode = D3DRS_CULLMODE,
-		Lighting = D3DRS_LIGHTING,
-	};
-	public enum class D3DSamplerState
-	{
-		MagFilter = D3DSAMP_MAGFILTER,
-		MinFilter = D3DSAMP_MINFILTER,
-		MipFilter = D3DSAMP_MIPFILTER,
-		MaxAnisotropy = D3DSAMP_MAXANISOTROPY,
-	};
-	public enum class D3DTextureFilter
-	{
-		None = D3DTEXF_NONE,
-		Point = D3DTEXF_POINT,
-		Linear = D3DTEXF_LINEAR,
-		Anisotropic = D3DTEXF_ANISOTROPIC,
-	};
-	public enum class D3DTransformState
-	{
-		View = D3DTS_VIEW,
-		Projection = D3DTS_PROJECTION,
-	};
-	public enum class D3DUsage
-	{
-		RenderTarget = D3DUSAGE_RENDERTARGET,
-		DepthStencil = D3DUSAGE_DEPTHSTENCIL,
-		Dynamic = D3DUSAGE_DYNAMIC,
-		WriteOnly = D3DUSAGE_WRITEONLY,
-		SoftwareProcessing = D3DUSAGE_SOFTWAREPROCESSING,
-		DoNotClip = D3DUSAGE_DONOTCLIP,
-		Points = D3DUSAGE_POINTS,
-		RTPatches = D3DUSAGE_RTPATCHES,
-		NPatches = D3DUSAGE_NPATCHES,
-		AutoGenMipmap = D3DUSAGE_AUTOGENMIPMAP,
-		RestrictedContent = D3DUSAGE_RESTRICTED_CONTENT,
-		SharedResourceDriver = D3DUSAGE_RESTRICT_SHARED_RESOURCE_DRIVER,
-		SharedResource = D3DUSAGE_RESTRICT_SHARED_RESOURCE,
-		DMap = D3DUSAGE_DMAP,
-		LegacyBumpMap = D3DUSAGE_QUERY_LEGACYBUMPMAP,
-		QuerySrgbRead = D3DUSAGE_QUERY_SRGBREAD,
-		QueryFilter = D3DUSAGE_QUERY_FILTER,
-		QuerySrgbWrite = D3DUSAGE_QUERY_SRGBWRITE,
-		QueryPostPixelShaderBlending = D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING,
-		QueryVertexTexture = D3DUSAGE_QUERY_VERTEXTEXTURE,
-		QueryWrapAndMip = D3DUSAGE_QUERY_WRAPANDMIP,
-		NonSecure = D3DUSAGE_NONSECURE,
-		TextApi = D3DUSAGE_TEXTAPI,
 	};
 	#pragma endregion
 	#pragma region - Direct3D9 Structures -
@@ -169,24 +42,6 @@ namespace RenderToy
 	public:
 		INT Pitch;
 		System::IntPtr Bits;
-	};
-	public value struct D3DVertexElement9
-	{
-		WORD			Stream;     // Stream index
-		WORD			Offset;     // Offset in the stream in bytes
-		D3DDeclType		Type;       // Data type
-		D3DDeclMethod	Method;     // Processing method
-		D3DDeclUsage	Usage;      // Semantics
-		BYTE			UsageIndex; // Semantic index
-	};
-	#pragma endregion
-	#pragma region - Direct3DPixelShader9 -
-	public ref class Direct3DPixelShader9 : public COMWrapper<IDirect3DPixelShader9>
-	{
-	public:
-		Direct3DPixelShader9(IDirect3DPixelShader9 *pObject) : COMWrapper(pObject)
-		{
-		}
 	};
 	#pragma endregion
 	#pragma region - Direct3DSurface9 -
@@ -211,66 +66,6 @@ namespace RenderToy
 		}
 	};
 	#pragma endregion
-	#pragma region - Direct3DTexture9 -
-	public ref class Direct3DTexture9 : public COMWrapper<IDirect3DTexture9>
-	{
-	public:
-		Direct3DTexture9(IDirect3DTexture9 *pObject) : COMWrapper(pObject)
-		{
-		}
-		D3DLockedRect^ LockRect(unsigned int Level)
-		{
-			D3DLOCKED_RECT LockedRect = { 0 };
-			TRY_D3D(WrappedInterface()->LockRect(Level, &LockedRect, nullptr, D3DLOCK_DISCARD));
-			auto result = gcnew D3DLockedRect();
-			result->Pitch = LockedRect.Pitch;
-			result->Bits = System::IntPtr(LockedRect.pBits);
-			return result;
-		}
-		void UnlockRect(unsigned int Level)
-		{
-			TRY_D3D(WrappedInterface()->UnlockRect(Level));
-		}
-	};
-	#pragma endregion
-	#pragma region - Direct3DVertexBuffer9 -
-	public ref class Direct3DVertexBuffer9 : public COMWrapper<IDirect3DVertexBuffer9>
-	{
-	public:
-		Direct3DVertexBuffer9(IDirect3DVertexBuffer9 *pObject)
-		{
-			pWrapped = pObject;
-		}
-		System::IntPtr Lock(UINT OffsetToLock, UINT SizeToLock, DWORD Flags)
-		{
-			void* ppbData = nullptr;
-			TRY_D3D(WrappedInterface()->Lock(OffsetToLock, SizeToLock, &ppbData, Flags));
-			return System::IntPtr(ppbData);
-		}
-		void Unlock()
-		{
-			TRY_D3D(WrappedInterface()->Unlock());
-		}
-	};
-	#pragma endregion
-	#pragma region - Direct3DVertexDeclaration9 -
-	public ref class Direct3DVertexDeclaration9 : COMWrapper<IDirect3DVertexDeclaration9>
-	{
-	public:
-		Direct3DVertexDeclaration9(IDirect3DVertexDeclaration9 *pWrapped) : COMWrapper(pWrapped)
-		{
-		}
-	};
-	#pragma endregion
-	#pragma region - Direct3DVertexShader9 -
-	public ref class Direct3DVertexShader9 : COMWrapper<IDirect3DVertexShader9>
-	{
-	public:
-		Direct3DVertexShader9(IDirect3DVertexShader9 *pWrapped) : COMWrapper(pWrapped)
-		{
-		}
-	};
-	#pragma endregion
 	#pragma region - Direct3DDevice9Ex -
 	generic <typename T>
 	public ref class NullablePtr
@@ -289,22 +84,6 @@ namespace RenderToy
 		{
 			pWrapped = pObject;
 		}
-		Direct3DTexture9^ CreateTexture(UINT Width, UINT Height, UINT Levels, D3DUsage Usage, D3DFormat Format, D3DPool Pool, NullablePtr<System::IntPtr> ^ppSharedHandle)
-		{
-			IDirect3DTexture9 *ppTexture = nullptr;
-			HANDLE hSharedHandle = ppSharedHandle == nullptr ? nullptr : ppSharedHandle->Value.ToPointer();
-			TRY_D3D(WrappedInterface()->CreateTexture(Width, Height, Levels, (UINT)Usage, (D3DFORMAT)Format, (D3DPOOL)Pool, &ppTexture, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
-			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
-			return gcnew Direct3DTexture9(ppTexture);
-		}
-		Direct3DVertexBuffer9^ CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPool Pool, NullablePtr<System::IntPtr> ^ppSharedHandle)
-		{
-			IDirect3DVertexBuffer9 *ppVertexBuffer = nullptr;
-			HANDLE hSharedHandle = ppSharedHandle == nullptr ? nullptr : ppSharedHandle->Value.ToPointer();
-			TRY_D3D(WrappedInterface()->CreateVertexBuffer(Length, Usage, FVF, (D3DPOOL)Pool, &ppVertexBuffer, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
-			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
-			return gcnew Direct3DVertexBuffer9(ppVertexBuffer);
-		}
 		Direct3DSurface9^ CreateRenderTarget(UINT Width, UINT Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Lockable, NullablePtr<System::IntPtr> ^ppSharedHandle)
 		{
 			IDirect3DSurface9 *ppSurface = nullptr;
@@ -312,118 +91,6 @@ namespace RenderToy
 			TRY_D3D(WrappedInterface()->CreateRenderTarget(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Lockable, &ppSurface, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
 			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
 			return gcnew Direct3DSurface9(ppSurface);
-		}
-		Direct3DSurface9^ CreateDepthStencilSurface(UINT Width, UINT Height, D3DFormat Format, D3DMultisample MultiSample, DWORD MultisampleQuality, BOOL Discard, NullablePtr<System::IntPtr> ^ppSharedHandle)
-		{
-			IDirect3DSurface9 *ppSurface = nullptr;
-			HANDLE hSharedHandle = ppSharedHandle == nullptr ? nullptr : ppSharedHandle->Value.ToPointer();
-			TRY_D3D(WrappedInterface()->CreateDepthStencilSurface(Width, Height, (D3DFORMAT)Format, (D3DMULTISAMPLE_TYPE)MultiSample, MultisampleQuality, Discard, &ppSurface, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
-			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
-			return gcnew Direct3DSurface9(ppSurface);
-		}
-		void UpdateTexture(Direct3DTexture9 ^pSourceTexture, Direct3DTexture9 ^pDestinationTexture)
-		{
-			TRY_D3D(WrappedInterface()->UpdateTexture(pSourceTexture == nullptr ? nullptr : pSourceTexture->WrappedInterface(), pDestinationTexture == nullptr ? nullptr : pDestinationTexture->WrappedInterface()))
-		}
-		Direct3DSurface9^ CreateOffscreenPlainSurface(UINT Width, UINT Height, D3DFormat Format, D3DPool Pool, NullablePtr<System::IntPtr> ^ppSharedHandle)
-		{
-			IDirect3DSurface9 *ppSurface = nullptr;
-			HANDLE hSharedHandle = ppSharedHandle == nullptr ? nullptr : ppSharedHandle->Value.ToPointer();
-			TRY_D3D(WrappedInterface()->CreateOffscreenPlainSurface(Width, Height, (D3DFORMAT)Format, (D3DPOOL)Pool, &ppSurface, ppSharedHandle == nullptr ? nullptr : &hSharedHandle));
-			if (ppSharedHandle != nullptr) ppSharedHandle->Value = System::IntPtr(hSharedHandle);
-			return gcnew Direct3DSurface9(ppSurface);
-		}
-		void SetRenderTarget(DWORD RenderTargetIndex, Direct3DSurface9^ pRenderTarget)
-		{
-			TRY_D3D(WrappedInterface()->SetRenderTarget(RenderTargetIndex, pRenderTarget->WrappedInterface()));
-		}
-		void SetDepthStencilSurface(Direct3DSurface9^ pNewZStencil)
-		{
-			TRY_D3D(WrappedInterface()->SetDepthStencilSurface(pNewZStencil->WrappedInterface()));
-		}
-		void BeginScene()
-		{
-			TRY_D3D(WrappedInterface()->BeginScene());
-		}
-		void EndScene()
-		{
-			TRY_D3D(WrappedInterface()->EndScene());
-		}
-		void SetTexture(DWORD Stage, Direct3DTexture9 ^pTexture)
-		{
-			TRY_D3D(WrappedInterface()->SetTexture(Stage, pTexture == nullptr ? nullptr : pTexture->WrappedInterface()));
-		}
-		void SetSamplerState(DWORD Sampler, D3DSamplerState Type, DWORD Value)
-		{
-			TRY_D3D(WrappedInterface()->SetSamplerState(Sampler, (D3DSAMPLERSTATETYPE)Type, Value));
-		}
-		void Clear(D3DClear Flags, D3DCOLOR Color, float Z, DWORD Stencil)
-		{
-			TRY_D3D(WrappedInterface()->Clear(0, nullptr, (DWORD)Flags, Color, Z, Stencil));
-		}
-		void SetTransform(D3DTransformState State, System::IntPtr ^pMatrix)
-		{
-			TRY_D3D(WrappedInterface()->SetTransform((D3DTRANSFORMSTATETYPE)State, (const D3DMATRIX*)pMatrix->ToPointer()));
-		}
-		void SetRenderState(D3DRenderState State, DWORD Value)
-		{
-			TRY_D3D(WrappedInterface()->SetRenderState((D3DRENDERSTATETYPE)State, Value));
-		}
-		Direct3DVertexDeclaration9^ CreateVertexDeclaration(array<D3DVertexElement9> ^pVertexElements)
-		{
-			std::unique_ptr<D3DVERTEXELEMENT9[]> declout(new D3DVERTEXELEMENT9[pVertexElements->Length + 1]);
-			pin_ptr<D3DVertexElement9> declin(&pVertexElements[0]);
-			memcpy(&declout[0], declin, sizeof(D3DVERTEXELEMENT9) * pVertexElements->Length);
-			declout[pVertexElements->Length] = D3DDECL_END();
-			IDirect3DVertexDeclaration9 *pTemp = nullptr;
-			TRY_D3D(WrappedInterface()->CreateVertexDeclaration(&declout[0], &pTemp));
-			return gcnew Direct3DVertexDeclaration9(pTemp);
-		}
-		void SetVertexDeclaration(Direct3DVertexDeclaration9 ^pDecl)
-		{
-			TRY_D3D(WrappedInterface()->SetVertexDeclaration(pDecl->WrappedInterface()));
-		}
-		void SetFVF(D3DFvf FVF)
-		{
-			TRY_D3D(WrappedInterface()->SetFVF((DWORD)FVF));
-		}
-		Direct3DVertexShader9^ CreateVertexShader(array<byte> ^pFunction)
-		{
-			pin_ptr<byte> marshal_pFunction(&pFunction[0]);
-			IDirect3DVertexShader9 *pTemp = nullptr;
-			TRY_D3D(WrappedInterface()->CreateVertexShader(reinterpret_cast<const DWORD*>(marshal_pFunction), &pTemp));
-			return gcnew Direct3DVertexShader9(pTemp);
-		}
-		void SetVertexShader(Direct3DVertexShader9 ^pShader)
-		{
-			TRY_D3D(WrappedInterface()->SetVertexShader(pShader == nullptr ? nullptr : pShader->WrappedInterface()));
-		}
-		void SetVertexShaderConstantF(UINT StartRegister, System::IntPtr pConstantData, UINT Vector4fCount)
-		{
-			TRY_D3D(WrappedInterface()->SetVertexShaderConstantF(StartRegister, (const float*)pConstantData.ToPointer(), Vector4fCount));
-		}
-		void SetStreamSource(UINT StreamNumber, Direct3DVertexBuffer9 ^pStreamData, UINT OffsetInBytes, UINT Stride)
-		{
-			TRY_D3D(WrappedInterface()->SetStreamSource(StreamNumber, pStreamData == nullptr ? nullptr : pStreamData->WrappedInterface(), OffsetInBytes, Stride));
-		}
-		Direct3DPixelShader9^ CreatePixelShader(array<byte> ^pFunction)
-		{
-			pin_ptr<byte> marshal_pFunction(&pFunction[0]);
-			IDirect3DPixelShader9 *pTemp = nullptr;
-			TRY_D3D(WrappedInterface()->CreatePixelShader(reinterpret_cast<const DWORD*>(marshal_pFunction), &pTemp));
-			return gcnew Direct3DPixelShader9(pTemp);
-		}
-		void SetPixelShader(Direct3DPixelShader9 ^pShader)
-		{
-			TRY_D3D(WrappedInterface()->SetPixelShader(pShader == nullptr ? nullptr : pShader->WrappedInterface()));
-		}
-		void DrawPrimitive(D3DPrimitiveType PrimitiveType, UINT StartVertex, UINT PrimitiveCount)
-		{
-			TRY_D3D(WrappedInterface()->DrawPrimitive((D3DPRIMITIVETYPE)PrimitiveType, StartVertex, PrimitiveCount));
-		}
-		void DrawPrimitiveUP(D3DPrimitiveType PrimitiveType, UINT PrimitiveCount, System::IntPtr ^pVertexStreamZeroData, UINT VertexStreamZeroStride)
-		{
-			TRY_D3D(WrappedInterface()->DrawPrimitiveUP((D3DPRIMITIVETYPE)PrimitiveType, PrimitiveCount, pVertexStreamZeroData->ToPointer(), VertexStreamZeroStride));
 		}
 	};
 	#pragma endregion
