@@ -2,7 +2,7 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <AssemblyName>$(ProjectName)</AssemblyName>
-    <!-- <IntermediateOutputPath>$(SolutionDir)Output\$(ProjectName)_$(Configuration)\</IntermediateOutputPath> -->
+    <BaseIntermediateOutputPath>$(SolutionDir)Output\$(ProjectName)_$(Configuration)\</BaseIntermediateOutputPath>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <ErrorReport>prompt</ErrorReport>
     <OutputPath>$(SolutionDir)Output\$(Configuration)\</OutputPath>
