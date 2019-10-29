@@ -9,8 +9,6 @@
 
 namespace Arcturus
 {
-    class IConstantBuffer_D3D12;
-
     class IDevice3D_D3D12 : public IDevice3D
     {
     public:
@@ -20,6 +18,7 @@ namespace Arcturus
         IIndexBuffer* CreateIndexBuffer(uint32_t dataSize, const void* data) override;
         IRenderTarget* CreateRenderTarget(const RenderTargetDeclaration& declaration) override;
         IShader* CreateShader() override;
+        ITexture* CreateTexture2D(uint32_t width, uint32_t height, const void* data) override;
         IVertexBuffer* CreateVertexBuffer(uint32_t dataSize, uint32_t strideSize, const void* data) override;
         IRenderTarget* OpenRenderTarget(const RenderTargetDeclaration& declaration, HANDLE handle) override;
         void CopyResource(IRenderTarget* destination, IRenderTarget* source) override;
@@ -29,6 +28,7 @@ namespace Arcturus
         void BeginPass(IRenderTarget* renderTarget, const Color& clearColor) override;
         void EndPass() override;
         void SetShader(IShader* shader) override;
+        void SetTexture(ITexture* texture) override;
         void SetViewport(const Viewport& viewport) override;
         void SetVertexBuffer(IVertexBuffer* vertexBuffer, uint32_t stride) override;
         void SetIndexBuffer(IIndexBuffer* indexBuffer) override;
@@ -37,6 +37,7 @@ namespace Arcturus
         AutoRelease<ID3D12Device6>              m_device;
         AutoRelease<ID3D12RootSignature>        m_rootSignature;
         AutoRelease<ID3D12DescriptorHeap>       m_descriptorHeapGPU;
+        AutoRelease<ID3D12DescriptorHeap>       m_descriptorHeapGPUSampler;
         AutoRelease<ID3D12DescriptorHeap>       m_descriptorHeapCPU;
         AutoRelease<ID3D12CommandQueue>         m_commandQueue;
         AutoRelease<ID3D12CommandAllocator>     m_commandAllocator;

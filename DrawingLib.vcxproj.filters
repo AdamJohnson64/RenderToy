@@ -67,6 +67,9 @@
     <ClCompile Include="Source\ErrorD3D.cpp">
       <Filter>Device3D\Direct3D12</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ITexture_D3D12.cpp">
+      <Filter>Device3D\Direct3D12</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DrawingContext.h">
@@ -179,6 +182,9 @@
     </ClInclude>
     <ClInclude Include="Source\Types3D.h">
       <Filter>Device3D\Abstract</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ITexture_D3D12.h">
+      <Filter>Device3D\Direct3D12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

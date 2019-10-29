@@ -46,6 +46,14 @@ namespace Arcturus
             }
         };
 
+        ref class ITexture_Stub : public CObjectStub<Arcturus::ITexture>, public ITexture
+        {
+        public:
+            ITexture_Stub(Arcturus::ITexture* object) : CObjectStub(object)
+            {
+            }
+        };
+
         ref class IVertexBuffer_Stub : public CObjectStub<Arcturus::IVertexBuffer>, public IVertexBuffer
         {
         public:
@@ -79,6 +87,10 @@ namespace Arcturus
             virtual IShader^ CreateShader()
             {
                 return gcnew IShader_Stub(Typed()->CreateShader());
+            }
+            virtual ITexture^ CreateTexture2D(uint32_t width, uint32_t height, System::IntPtr data)
+            {
+                return gcnew ITexture_Stub(Typed()->CreateTexture2D(width, height, data.ToPointer()));
             }
             virtual IVertexBuffer^ CreateVertexBuffer(uint32_t dataSize, uint32_t strideSize, System::IntPtr data)
             {
@@ -116,6 +128,10 @@ namespace Arcturus
             virtual void SetShader(IShader^ shader)
             {
                 Typed()->SetShader(GetStubTarget<Arcturus::IShader>(shader));
+            }
+            virtual void SetTexture(ITexture^ texture)
+            {
+                Typed()->SetTexture(GetStubTarget<Arcturus::ITexture>(texture));
             }
             virtual void SetViewport(Viewport viewport)
             {

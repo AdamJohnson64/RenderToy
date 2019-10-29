@@ -14,6 +14,9 @@ cbuffer CONSTANTS : register(b0)
     float4x4 vertexTransform;
 };
 
+Texture2D TEXTURE : register(t0);
+SamplerState SAMPLER : register(s0);
+
 struct VS_INPUT
 {
     float4 Position : POSITION;
@@ -36,7 +39,12 @@ PS_INPUT vs(VS_INPUT v)
 
 float4 ps(PS_INPUT p) : SV_Target0
 {
-    return p.Color;
+    float x = p.Position.x / 256.0f;
+    float y = p.Position.y / 256.0f;
+    float4 texel = TEXTURE.Sample(SAMPLER, float2(x, y));
+    float4 pixel = p.Color;
+    pixel.rg = texel.rg;
+    return pixel;
 }
 )TEXT";
 

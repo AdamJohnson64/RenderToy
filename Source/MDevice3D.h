@@ -68,6 +68,7 @@ namespace Arcturus
             virtual IIndexBuffer^ CreateIndexBuffer(uint32_t dataSize, System::IntPtr data) = 0;
             virtual IRenderTarget^ CreateRenderTarget(RenderTargetDeclaration declaration) = 0;
             virtual IShader^ CreateShader() = 0;
+            virtual ITexture^ CreateTexture2D(uint32_t width, uint32_t height, System::IntPtr data) = 0;
             virtual IVertexBuffer^ CreateVertexBuffer(uint32_t dataSize, uint32_t strideSize, System::IntPtr data) = 0;
             virtual IRenderTarget^ OpenRenderTarget(RenderTargetDeclaration declaration, System::IntPtr handle) = 0;
             virtual void CopyResource(IRenderTarget^ destination, IRenderTarget^ source) = 0;
@@ -76,6 +77,7 @@ namespace Arcturus
             virtual void BeginPass(IRenderTarget^ renderTarget, Color clearColor) = 0;
             virtual void EndPass() = 0;
             virtual void SetShader(IShader^ shader) = 0;
+            virtual void SetTexture(ITexture^ texture) = 0;
             virtual void SetViewport(Viewport viewport) = 0;
             virtual void SetVertexBuffer(IVertexBuffer^ vertexBuffer, uint32_t stride) = 0;
             virtual void SetIndexBuffer(IIndexBuffer^ indexBuffer) = 0;

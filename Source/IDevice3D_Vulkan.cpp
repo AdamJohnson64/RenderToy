@@ -328,6 +328,11 @@ namespace Arcturus
         return new IShader_Vulkan(this);
     }
 
+    ITexture* IDevice3D_Vulkan::CreateTexture2D(uint32_t width, uint32_t height, const void* data)
+    {
+        throw std::exception("Not Implemented.");
+    }
+
     IVertexBuffer* IDevice3D_Vulkan::CreateVertexBuffer(uint32_t dataSize, uint32_t strideSize, const void* data)
     {
         return new IVertexBuffer_Vulkan(this, dataSize, data);
@@ -409,6 +414,11 @@ namespace Arcturus
     {
         vkCmdBindDescriptorSets(m_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkPipelineLayoutEmpty, 0, 1, &m_vkDescriptorSet, 0, nullptr);
         vkCmdBindPipeline(m_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, dynamic_cast<IShader_Vulkan*>(shader)->m_vkPipeline);
+    }
+
+    void IDevice3D_Vulkan::SetTexture(ITexture* texture)
+    {
+        throw std::exception("Not Implemented.");
     }
 
     void IDevice3D_Vulkan::SetViewport(const Viewport& viewport)

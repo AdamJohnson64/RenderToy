@@ -5,9 +5,16 @@
 #include "IIndexBuffer_D3D12.h"
 #include "IRenderTarget_D3D12.h"
 #include "IShader_D3D12.h"
+#include "ITexture_D3D12.h"
 #include "IVertexBuffer_D3D12.h"
 
-#include <exception>
+#include <array>
+
+constexpr int GPU_DESCRIPTOR_COUNT = 65536;
+constexpr int GPU_DESCRIPTOR_SAMPLER_COUNT = 64;
+constexpr int GPU_DESCRIPTOR_CBV_COMMON = 0;
+constexpr int GPU_DESCRIPTOR_SRV_COMMON = 1;
+constexpr int GPU_DESCRIPTOR_SMP_COMMON = 2;
 
 namespace Arcturus
 {
@@ -25,28 +32,44 @@ namespace Arcturus
         m_debug->EnableDebugLayer();
         TRYD3D(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, __uuidof(ID3D12Device6), (void**)&m_device));
         {
-            uint32_t setupRange = 0;
-            uint32_t setupOffset = 0;
+            std::array<D3D12_DESCRIPTOR_RANGE, 3> descDescriptorRange = {};
+            descDescriptorRange[GPU_DESCRIPTOR_CBV_COMMON].BaseShaderRegister = 0;
+	        descDescriptorRange[GPU_DESCRIPTOR_CBV_COMMON].NumDescriptors = 1;
+	        descDescriptorRange[GPU_DESCRIPTOR_CBV_COMMON].RegisterSpace = 0;
+	        descDescriptorRange[GPU_DESCRIPTOR_CBV_COMMON].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+	        descDescriptorRange[GPU_DESCRIPTOR_CBV_COMMON].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	        D3D12_DESCRIPTOR_RANGE descDescriptorRange[32];
-            
-            descDescriptorRange[setupRange].BaseShaderRegister = 0;
-	        descDescriptorRange[setupRange].NumDescriptors = 1;
-	        descDescriptorRange[setupRange].RegisterSpace = 0;
-	        descDescriptorRange[setupRange].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-	        descDescriptorRange[setupRange].OffsetInDescriptorsFromTableStart = setupOffset;
-            setupOffset += descDescriptorRange[setupRange].NumDescriptors;
-            ++setupRange;
+            descDescriptorRange[GPU_DESCRIPTOR_SRV_COMMON].BaseShaderRegister = 0;
+	        descDescriptorRange[GPU_DESCRIPTOR_SRV_COMMON].NumDescriptors = 1;
+	        descDescriptorRange[GPU_DESCRIPTOR_SRV_COMMON].RegisterSpace = 0;
+	        descDescriptorRange[GPU_DESCRIPTOR_SRV_COMMON].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	        descDescriptorRange[GPU_DESCRIPTOR_SRV_COMMON].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-            D3D12_ROOT_PARAMETER descRootParameter = {};
-	        descRootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	        descRootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	        descRootParameter.DescriptorTable.NumDescriptorRanges = setupRange;
-	        descRootParameter.DescriptorTable.pDescriptorRanges = descDescriptorRange;
+            descDescriptorRange[GPU_DESCRIPTOR_SMP_COMMON].BaseShaderRegister = 0;
+            descDescriptorRange[GPU_DESCRIPTOR_SMP_COMMON].NumDescriptors = 1;
+            descDescriptorRange[GPU_DESCRIPTOR_SMP_COMMON].RegisterSpace = 0;
+            descDescriptorRange[GPU_DESCRIPTOR_SMP_COMMON].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+            descDescriptorRange[GPU_DESCRIPTOR_SMP_COMMON].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+            std::array<D3D12_ROOT_PARAMETER, 3> descRootParameter = {};
+	        descRootParameter[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	        descRootParameter[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	        descRootParameter[0].DescriptorTable.NumDescriptorRanges = 1;
+	        descRootParameter[0].DescriptorTable.pDescriptorRanges = &descDescriptorRange[0];
+
+	        descRootParameter[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	        descRootParameter[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	        descRootParameter[1].DescriptorTable.NumDescriptorRanges = 1;
+	        descRootParameter[1].DescriptorTable.pDescriptorRanges = &descDescriptorRange[1];
+
+	        descRootParameter[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	        descRootParameter[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	        descRootParameter[2].DescriptorTable.NumDescriptorRanges = 1;
+	        descRootParameter[2].DescriptorTable.pDescriptorRanges = &descDescriptorRange[2];
 
             D3D12_ROOT_SIGNATURE_DESC descSignature = {};
-	        descSignature.NumParameters = 1;
-	        descSignature.pParameters = &descRootParameter;
+	        descSignature.NumParameters = descRootParameter.size();
+	        descSignature.pParameters = descRootParameter.data();
 	        descSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
             AutoRelease<ID3DBlob> m_blob;
@@ -57,9 +80,16 @@ namespace Arcturus
         {
             D3D12_DESCRIPTOR_HEAP_DESC descDescriptorHeap = {};
             descDescriptorHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-            descDescriptorHeap.NumDescriptors = 1;
+            descDescriptorHeap.NumDescriptors = GPU_DESCRIPTOR_COUNT;
             descDescriptorHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             TRYD3D(m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&m_descriptorHeapGPU));
+        }
+        {
+            D3D12_DESCRIPTOR_HEAP_DESC descDescriptorHeap = {};
+            descDescriptorHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+            descDescriptorHeap.NumDescriptors = GPU_DESCRIPTOR_SAMPLER_COUNT;
+            descDescriptorHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            TRYD3D(m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&m_descriptorHeapGPUSampler));
         }
         {
             D3D12_DESCRIPTOR_HEAP_DESC descDescriptorHeap = {};
@@ -72,6 +102,19 @@ namespace Arcturus
             TRYD3D(m_device->CreateCommandQueue(&descCommandQueue, __uuidof(ID3D12CommandQueue), (void**)&m_commandQueue));
         }
         TRYD3D(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), (void**)&m_commandAllocator));
+        // Create a sampler that everything can use (for now).
+        {
+	        UINT descriptorElementSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+            D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = m_descriptorHeapGPUSampler->GetCPUDescriptorHandleForHeapStart();
+            handleCPU.ptr = handleCPU.ptr + descriptorElementSize * GPU_DESCRIPTOR_SMP_COMMON;
+            D3D12_SAMPLER_DESC descSampler = {};
+            descSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+            descSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+            descSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+            descSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+            descSampler.MaxLOD = 1;
+            m_device->CreateSampler(&descSampler, handleCPU);
+        }
     }
 
     IConstantBuffer* IDevice3D_D3D12::CreateConstantBuffer(uint32_t dataSize, const void* data)
@@ -97,6 +140,11 @@ namespace Arcturus
     IShader* IDevice3D_D3D12::CreateShader()
     {
         return new IShader_D3D12(this);
+    }
+
+    ITexture* IDevice3D_D3D12::CreateTexture2D(uint32_t width, uint32_t height, const void* data)
+    {
+        return new ITexture_D3D12(this, width, height, data);
     }
 
     IVertexBuffer* IDevice3D_D3D12::CreateVertexBuffer(uint32_t dataSize, uint32_t strideSize, const void* data)
@@ -126,6 +174,24 @@ namespace Arcturus
     {
         assert(m_frameCommandList.p == nullptr);
         TRYD3D(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&m_frameCommandList));
+        m_frameCommandList->SetGraphicsRootSignature(m_rootSignature);
+        {
+            ID3D12DescriptorHeap* descHeaps[2] = { m_descriptorHeapGPU, m_descriptorHeapGPUSampler };
+            m_frameCommandList->SetDescriptorHeaps(_countof(descHeaps), descHeaps);
+        }
+        m_frameCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        {
+	        UINT descriptorElementSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+            D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = m_descriptorHeapGPU->GetGPUDescriptorHandleForHeapStart();
+            handleGPU.ptr = handleGPU.ptr + descriptorElementSize * GPU_DESCRIPTOR_CBV_COMMON;
+            m_frameCommandList->SetGraphicsRootDescriptorTable(GPU_DESCRIPTOR_CBV_COMMON, handleGPU);
+        }
+        {
+	        UINT descriptorElementSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+            D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = m_descriptorHeapGPUSampler->GetGPUDescriptorHandleForHeapStart();
+            handleGPU.ptr = handleGPU.ptr + descriptorElementSize * GPU_DESCRIPTOR_SMP_COMMON;
+            m_frameCommandList->SetGraphicsRootDescriptorTable(GPU_DESCRIPTOR_SMP_COMMON, handleGPU);
+        }
     }
 
     void IDevice3D_D3D12::EndRender()
@@ -165,11 +231,19 @@ namespace Arcturus
     void IDevice3D_D3D12::SetShader(IShader* shader)
     {
         IShader_D3D12* shader12 = dynamic_cast<IShader_D3D12*>(shader);
-        m_frameCommandList->SetGraphicsRootSignature(m_rootSignature);
-        m_frameCommandList->SetDescriptorHeaps(1, &m_descriptorHeapGPU);
-        m_frameCommandList->SetGraphicsRootDescriptorTable(0, m_descriptorHeapGPU->GetGPUDescriptorHandleForHeapStart());
         m_frameCommandList->SetPipelineState(shader12->m_pipelineState);
-        m_frameCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    }
+
+    void IDevice3D_D3D12::SetTexture(ITexture* texture)
+    {
+        ITexture_D3D12* texture12 = dynamic_cast<ITexture_D3D12*>(texture);
+	    UINT descriptorElementSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = m_descriptorHeapGPU->GetCPUDescriptorHandleForHeapStart();
+        handleCPU.ptr = handleCPU.ptr + descriptorElementSize * GPU_DESCRIPTOR_SRV_COMMON;
+        m_device->CreateShaderResourceView(texture12->m_resource, &texture12->m_view, handleCPU);
+        D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = m_descriptorHeapGPU->GetGPUDescriptorHandleForHeapStart();
+        handleGPU.ptr = handleGPU.ptr + descriptorElementSize * GPU_DESCRIPTOR_SRV_COMMON;
+        m_frameCommandList->SetGraphicsRootDescriptorTable(1, handleGPU);
     }
 
     void IDevice3D_D3D12::SetViewport(const Viewport& viewport)

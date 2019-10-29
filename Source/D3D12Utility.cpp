@@ -2,18 +2,6 @@
 #include "D3D12Utility.h"
 #include "ErrorD3D.h"
 
-/*
-0 -> 0
-1 -> 8
-2 -> 8
-3 -> 8
-4 -> 8
-...
-7 -> 8
-8 -> 8
-9 -> 16
-*/
-
 namespace Arcturus
 {
     uint32_t D3D12Align(uint32_t size, uint32_t alignSize)
@@ -74,14 +62,7 @@ namespace Arcturus
         }
         uploadCommandList->Close();
         commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&uploadCommandList);
-        AutoRelease<ID3D12Fence1> fence;
-        TRYD3D(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence1), (void**)&fence));
-        TRYD3D(commandQueue->Signal(fence, 1));
-        HANDLE wait = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-        assert(wait != nullptr);
-        fence->SetEventOnCompletion(1, wait);
-        WaitForSingleObject(wait, INFINITE);
-        DeleteObject(wait);
+        D3D12WaitForGPUIdle(device, commandQueue);
         return result;
     }
 

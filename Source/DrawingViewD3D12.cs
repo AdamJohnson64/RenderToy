@@ -13,6 +13,21 @@ namespace Arcturus.Managed
         {
             m_shader12 = Direct3D12.Device.CreateShader();
             m_renderTarget12 = Direct3D12.Device.OpenRenderTarget(m_renderTargetDeclaration, m_renderTarget9.GetIDirect3DSurface9Handle());
+            UInt32[] pixels = new UInt32[256 * 256];
+            for (uint y = 0; y < 256; ++y)
+            {
+                for (uint x = 0; x < 256; ++x)
+                {
+                    pixels[x + y * 256] = (x << 16) | (y << 8) | 0xFF000000U;
+                }
+            }
+            unsafe
+            {
+                fixed (UInt32* pPixels = pixels)
+                {
+                    m_texture12 = Direct3D12.Device.CreateTexture2D(256, 256, new IntPtr(pPixels));
+                }
+            }
         }
         protected override void Update(FakeDocument document)
         {
@@ -35,6 +50,7 @@ namespace Arcturus.Managed
             Direct3D12.Device.BeginPass(m_renderTarget12, new Color());
             Direct3D12.Device.SetViewport(new Viewport { width = 256, height = 256, maxDepth = 1 });
             Direct3D12.Device.SetShader(m_shader12);
+            Direct3D12.Device.SetTexture(m_texture12);
             Direct3D12.Device.SetVertexBuffer(vertexbuffer, (uint)Marshal.SizeOf(typeof(Vertex)));
             Direct3D12.Device.SetIndexBuffer(indexbuffer);
             Direct3D12.Device.DrawIndexedPrimitives(document.context.vertexCount(), document.context.indexCount());
@@ -43,5 +59,6 @@ namespace Arcturus.Managed
         }
         IShader m_shader12;
         IRenderTarget m_renderTarget12;
+        ITexture m_texture12;
     }
 }

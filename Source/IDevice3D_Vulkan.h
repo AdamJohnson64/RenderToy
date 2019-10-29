@@ -20,6 +20,7 @@ namespace Arcturus
         IIndexBuffer* CreateIndexBuffer(uint32_t dataSize, const void* data) override;
         IRenderTarget* CreateRenderTarget(const RenderTargetDeclaration& declaration) override;
         IShader* CreateShader() override;
+        ITexture* CreateTexture2D(uint32_t width, uint32_t height, const void* data) override;
         IVertexBuffer* CreateVertexBuffer(uint32_t dataSize, uint32_t strideSize, const void* data) override;
         IRenderTarget* OpenRenderTarget(const RenderTargetDeclaration& declaration, HANDLE handle) override;
         void CopyResource(IRenderTarget* destination, IRenderTarget* source) override;
@@ -29,6 +30,7 @@ namespace Arcturus
         void BeginPass(IRenderTarget* renderTarget, const Color& clearColor) override;
         void EndPass() override;
         void SetShader(IShader* shader) override;
+        void SetTexture(ITexture* texture) override;
         void SetViewport(const Viewport& viewport) override;
         void SetVertexBuffer(IVertexBuffer* vertexBuffer, uint32_t stride) override;
         void SetIndexBuffer(IIndexBuffer* indexBuffer) override;
