@@ -46,11 +46,16 @@ namespace Arcturus
         uint32_t                                m_queueGraphics;
         VkCommandPool                           m_vkCommandPoolGraphics;
         VkDescriptorPool                        m_vkDescriptorPool;
-        VkDescriptorSetLayout                   m_vkDescriptorSetLayout;
-        VkDescriptorSet                         m_vkDescriptorSet;
+        VkDescriptorSetLayout                   m_vkDescriptorSetLayoutUAV;
+        VkDescriptorSet                         m_vkDescriptorSetUAV;
+        VkDescriptorSetLayout                   m_vkDescriptorSetLayoutSRV;
+        VkDescriptorSet                         m_vkDescriptorSetSRV;
+        VkDescriptorSetLayout                   m_vkDescriptorSetLayoutSMP;
+        VkDescriptorSet                         m_vkDescriptorSetSMP;
         VkPipelineCache                         m_vkPipelineCache;
         VkPipelineLayout                        m_vkPipelineLayoutEmpty;
         VkRenderPass                            m_vkRenderPass;
+        VkSampler                               m_vkSampler;
         VkCommandBuffer                         m_vkCommandBuffer;
     };
 }

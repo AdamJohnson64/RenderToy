@@ -70,6 +70,9 @@
     <ClCompile Include="Source\ITexture_D3D12.cpp">
       <Filter>Device3D\Direct3D12</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ITexture_Vulkan.cpp">
+      <Filter>Device3D\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\DrawingContext.h">
@@ -185,6 +188,9 @@
     </ClInclude>
     <ClInclude Include="Source\ITexture_D3D12.h">
       <Filter>Device3D\Direct3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ITexture_Vulkan.h">
+      <Filter>Device3D\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -43,6 +43,7 @@
     <ClInclude Include="Source\IShader_Vulkan.h" />
     <ClInclude Include="Source\ITexture.h" />
     <ClInclude Include="Source\ITexture_D3D12.h" />
+    <ClInclude Include="Source\ITexture_Vulkan.h" />
     <ClInclude Include="Source\IVertexBuffer.h" />
     <ClInclude Include="Source\IVertexBuffer_D3D12.h" />
     <ClInclude Include="Source\IVertexBuffer_Vulkan.h" />
@@ -72,6 +73,7 @@
     <ClCompile Include="Source\IShader_D3D12.cpp" />
     <ClCompile Include="Source\IShader_Vulkan.cpp" />
     <ClCompile Include="Source\ITexture_D3D12.cpp" />
+    <ClCompile Include="Source\ITexture_Vulkan.cpp" />
     <ClCompile Include="Source\IVertexBuffer_D3D12.cpp" />
     <ClCompile Include="Source\IVertexBuffer_Vulkan.cpp" />
   </ItemGroup>

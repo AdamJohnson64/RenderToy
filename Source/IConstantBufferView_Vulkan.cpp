@@ -12,7 +12,7 @@ namespace Arcturus
         descDescriptorBufferInfo.range = VK_WHOLE_SIZE;
         VkWriteDescriptorSet descWriteDescriptorSet = {};
         descWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descWriteDescriptorSet.dstSet = m_owner->m_vkDescriptorSet;
+        descWriteDescriptorSet.dstSet = m_owner->m_vkDescriptorSetUAV;
         descWriteDescriptorSet.dstBinding = 0;
         descWriteDescriptorSet.descriptorCount = 1;
         descWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

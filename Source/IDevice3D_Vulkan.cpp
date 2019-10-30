@@ -5,6 +5,7 @@
 #include "IIndexBuffer_Vulkan.h"
 #include "IRenderTarget_Vulkan.h"
 #include "IShader_Vulkan.h"
+#include "ITexture_Vulkan.h"
 #include "IVertexBuffer_Vulkan.h"
 
 namespace Arcturus
@@ -166,14 +167,18 @@ namespace Arcturus
             TRYVK(vkCreateCommandPool(m_vkDevice, &descCommandPool, nullptr, &m_vkCommandPoolGraphics));
         }
         ////////////////////////////////////////////////////////////////////////////////
-        // Create the descriptor pool and heap.
+        // Create the descriptor pool and layouts(s).
         {
-            VkDescriptorPoolSize descDescriptorPoolSize[1];
-            descDescriptorPoolSize[0].descriptorCount = 1;
+            VkDescriptorPoolSize descDescriptorPoolSize[3];
+            descDescriptorPoolSize[0].descriptorCount = 64;
             descDescriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descDescriptorPoolSize[1].descriptorCount = 64;
+            descDescriptorPoolSize[1].type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            descDescriptorPoolSize[2].descriptorCount = 64;
+            descDescriptorPoolSize[2].type = VK_DESCRIPTOR_TYPE_SAMPLER;
             VkDescriptorPoolCreateInfo descDescriptorPoolCreateInfo = {};
             descDescriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-            descDescriptorPoolCreateInfo.maxSets = 1;
+            descDescriptorPoolCreateInfo.maxSets = 64;
             descDescriptorPoolCreateInfo.poolSizeCount = _countof(descDescriptorPoolSize);
             descDescriptorPoolCreateInfo.pPoolSizes = descDescriptorPoolSize;
             TRYVK(vkCreateDescriptorPool(m_vkDevice, &descDescriptorPoolCreateInfo, nullptr, &m_vkDescriptorPool));
@@ -188,15 +193,55 @@ namespace Arcturus
             descDescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             descDescriptorSetLayoutCreateInfo.bindingCount = 1;
             descDescriptorSetLayoutCreateInfo.pBindings = &descDescriptorSetLayoutBinding;
-            TRYVK(vkCreateDescriptorSetLayout(m_vkDevice, &descDescriptorSetLayoutCreateInfo, nullptr, &m_vkDescriptorSetLayout));
+            TRYVK(vkCreateDescriptorSetLayout(m_vkDevice, &descDescriptorSetLayoutCreateInfo, nullptr, &m_vkDescriptorSetLayoutUAV));
         }
         {
             VkDescriptorSetAllocateInfo descDescriptorSetAllocateInfo = {};
             descDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             descDescriptorSetAllocateInfo.descriptorPool = m_vkDescriptorPool;
             descDescriptorSetAllocateInfo.descriptorSetCount = 1;
-            descDescriptorSetAllocateInfo.pSetLayouts = &m_vkDescriptorSetLayout;
-            TRYVK(vkAllocateDescriptorSets(m_vkDevice, &descDescriptorSetAllocateInfo, &m_vkDescriptorSet));
+            descDescriptorSetAllocateInfo.pSetLayouts = &m_vkDescriptorSetLayoutUAV;
+            TRYVK(vkAllocateDescriptorSets(m_vkDevice, &descDescriptorSetAllocateInfo, &m_vkDescriptorSetUAV));
+        }
+        {
+            VkDescriptorSetLayoutBinding descDescriptorSetLayoutBinding = {};
+            descDescriptorSetLayoutBinding.binding = 0;
+            descDescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            descDescriptorSetLayoutBinding.descriptorCount = 1;
+            descDescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            VkDescriptorSetLayoutCreateInfo descDescriptorSetLayoutCreateInfo = {};
+            descDescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            descDescriptorSetLayoutCreateInfo.bindingCount = 1;
+            descDescriptorSetLayoutCreateInfo.pBindings = &descDescriptorSetLayoutBinding;
+            TRYVK(vkCreateDescriptorSetLayout(m_vkDevice, &descDescriptorSetLayoutCreateInfo, nullptr, &m_vkDescriptorSetLayoutSRV));
+        }
+        {
+            VkDescriptorSetAllocateInfo descDescriptorSetAllocateInfo = {};
+            descDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            descDescriptorSetAllocateInfo.descriptorPool = m_vkDescriptorPool;
+            descDescriptorSetAllocateInfo.descriptorSetCount = 1;
+            descDescriptorSetAllocateInfo.pSetLayouts = &m_vkDescriptorSetLayoutSRV;
+            TRYVK(vkAllocateDescriptorSets(m_vkDevice, &descDescriptorSetAllocateInfo, &m_vkDescriptorSetSRV));
+        }
+        {
+            VkDescriptorSetLayoutBinding descDescriptorSetLayoutBinding = {};
+            descDescriptorSetLayoutBinding.binding = 0;
+            descDescriptorSetLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+            descDescriptorSetLayoutBinding.descriptorCount = 1;
+            descDescriptorSetLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            VkDescriptorSetLayoutCreateInfo descDescriptorSetLayoutCreateInfo = {};
+            descDescriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            descDescriptorSetLayoutCreateInfo.bindingCount = 1;
+            descDescriptorSetLayoutCreateInfo.pBindings = &descDescriptorSetLayoutBinding;
+            TRYVK(vkCreateDescriptorSetLayout(m_vkDevice, &descDescriptorSetLayoutCreateInfo, nullptr, &m_vkDescriptorSetLayoutSMP));
+        }
+        {
+            VkDescriptorSetAllocateInfo descDescriptorSetAllocateInfo = {};
+            descDescriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            descDescriptorSetAllocateInfo.descriptorPool = m_vkDescriptorPool;
+            descDescriptorSetAllocateInfo.descriptorSetCount = 1;
+            descDescriptorSetAllocateInfo.pSetLayouts = &m_vkDescriptorSetLayoutSMP;
+            TRYVK(vkAllocateDescriptorSets(m_vkDevice, &descDescriptorSetAllocateInfo, &m_vkDescriptorSetSMP));
         }
         ////////////////////////////////////////////////////////////////////////////////
         // Create a pipeline cache.
@@ -208,10 +253,11 @@ namespace Arcturus
         ////////////////////////////////////////////////////////////////////////////////
         // Create a pipeline layout.
         {
+            VkDescriptorSetLayout allLayouts[3] = { m_vkDescriptorSetLayoutUAV, m_vkDescriptorSetLayoutSRV, m_vkDescriptorSetLayoutSMP };
             VkPipelineLayoutCreateInfo descPipelineLayout = {};
             descPipelineLayout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            descPipelineLayout.setLayoutCount = 1;
-            descPipelineLayout.pSetLayouts = &m_vkDescriptorSetLayout;
+            descPipelineLayout.setLayoutCount = 3;
+            descPipelineLayout.pSetLayouts = allLayouts;
             TRYVK(vkCreatePipelineLayout(m_vkDevice, &descPipelineLayout, nullptr, &m_vkPipelineLayoutEmpty));
         }
         ////////////////////////////////////////////////////////////////////////////////
@@ -240,6 +286,19 @@ namespace Arcturus
             descRenderPassCreateInfo.subpassCount = 1;
             descRenderPassCreateInfo.pSubpasses = &descSubpassDescription;
             TRYVK(vkCreateRenderPass(m_vkDevice, &descRenderPassCreateInfo, nullptr, &m_vkRenderPass));
+        }
+        ////////////////////////////////////////////////////////////////////////////////
+        // Create a sampler.
+        {
+            VkSamplerCreateInfo descSamplerCreateInfo = {};
+            descSamplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+            descSamplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+            descSamplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+            descSamplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            descSamplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            descSamplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            descSamplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            TRYVK(vkCreateSampler(m_vkDevice, &descSamplerCreateInfo, nullptr, &m_vkSampler));
         }
         ////////////////////////////////////////////////////////////////////////////////
         // Try some raytracing.
@@ -275,6 +334,9 @@ namespace Arcturus
 
     IDevice3D_Vulkan::~IDevice3D_Vulkan()
     {
+        // Destroy the sampler.
+        vkDestroySampler(m_vkDevice, m_vkSampler, nullptr);
+        m_vkSampler = VK_NULL_HANDLE;
         // Destroy the render pass.
         vkDestroyRenderPass(m_vkDevice, m_vkRenderPass, nullptr);
         m_vkRenderPass = VK_NULL_HANDLE;
@@ -284,9 +346,13 @@ namespace Arcturus
         // Destroy the pipeline cache.
         vkDestroyPipelineCache(m_vkDevice, m_vkPipelineCache, nullptr);
         m_vkPipelineCache = VK_NULL_HANDLE;
-        // Destroy the descriptor set layout.
-        vkDestroyDescriptorSetLayout(m_vkDevice, m_vkDescriptorSetLayout, nullptr);
-        m_vkDescriptorSetLayout = VK_NULL_HANDLE;
+        // Destroy the descriptor layout(s).
+        vkDestroyDescriptorSetLayout(m_vkDevice, m_vkDescriptorSetLayoutSMP, nullptr);
+        m_vkDescriptorSetLayoutSMP = VK_NULL_HANDLE;
+        vkDestroyDescriptorSetLayout(m_vkDevice, m_vkDescriptorSetLayoutSRV, nullptr);
+        m_vkDescriptorSetLayoutSRV = VK_NULL_HANDLE;
+        vkDestroyDescriptorSetLayout(m_vkDevice, m_vkDescriptorSetLayoutUAV, nullptr);
+        m_vkDescriptorSetLayoutUAV = VK_NULL_HANDLE;
         // Destroy the descriptor pool.
         vkDestroyDescriptorPool(m_vkDevice, m_vkDescriptorPool, nullptr);
         m_vkDescriptorPool = VK_NULL_HANDLE;
@@ -330,7 +396,7 @@ namespace Arcturus
 
     ITexture* IDevice3D_Vulkan::CreateTexture2D(uint32_t width, uint32_t height, const void* data)
     {
-        throw std::exception("Not Implemented.");
+        return new ITexture_Vulkan(this, width, height, data);
     }
 
     IVertexBuffer* IDevice3D_Vulkan::CreateVertexBuffer(uint32_t dataSize, uint32_t strideSize, const void* data)
@@ -412,13 +478,42 @@ namespace Arcturus
 
     void IDevice3D_Vulkan::SetShader(IShader* shader)
     {
-        vkCmdBindDescriptorSets(m_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkPipelineLayoutEmpty, 0, 1, &m_vkDescriptorSet, 0, nullptr);
         vkCmdBindPipeline(m_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, dynamic_cast<IShader_Vulkan*>(shader)->m_vkPipeline);
     }
 
     void IDevice3D_Vulkan::SetTexture(ITexture* texture)
     {
-        throw std::exception("Not Implemented.");
+        ITexture_Vulkan* textureVK = dynamic_cast<ITexture_Vulkan*>(texture);
+        {
+            VkDescriptorImageInfo descDescriptorImageInfo = {};
+            descDescriptorImageInfo.sampler = m_vkSampler;
+            descDescriptorImageInfo.imageView = textureVK->m_vkImageView;
+            descDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            VkWriteDescriptorSet descWriteDescriptorSet = {};
+            descWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descWriteDescriptorSet.dstSet = m_vkDescriptorSetSRV;
+            descWriteDescriptorSet.dstBinding = 0;
+            descWriteDescriptorSet.descriptorCount = 1;
+            descWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            descWriteDescriptorSet.pImageInfo = &descDescriptorImageInfo;
+            vkUpdateDescriptorSets(m_vkDevice, 1, &descWriteDescriptorSet, 0, nullptr);
+        }
+        {
+            VkDescriptorImageInfo descDescriptorImageInfo = {};
+            descDescriptorImageInfo.sampler = m_vkSampler;
+            descDescriptorImageInfo.imageView = textureVK->m_vkImageView;
+            descDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            VkWriteDescriptorSet descWriteDescriptorSet = {};
+            descWriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descWriteDescriptorSet.dstSet = m_vkDescriptorSetSMP;
+            descWriteDescriptorSet.dstBinding = 0;
+            descWriteDescriptorSet.descriptorCount = 1;
+            descWriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+            descWriteDescriptorSet.pImageInfo = &descDescriptorImageInfo;
+            vkUpdateDescriptorSets(m_vkDevice, 1, &descWriteDescriptorSet, 0, nullptr);
+        }
+        vkCmdBindDescriptorSets(m_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkPipelineLayoutEmpty, 1, 1, &m_vkDescriptorSetSRV, 0, nullptr);
+        vkCmdBindDescriptorSets(m_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkPipelineLayoutEmpty, 2, 1, &m_vkDescriptorSetSMP, 0, nullptr);
     }
 
     void IDevice3D_Vulkan::SetViewport(const Viewport& viewport)
@@ -454,6 +549,7 @@ namespace Arcturus
 
     void IDevice3D_Vulkan::DrawIndexedPrimitives(uint32_t vertexCount, uint32_t indexCount)
     {
+        vkCmdBindDescriptorSets(m_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkPipelineLayoutEmpty, 0, 1, &m_vkDescriptorSetUAV, 0, nullptr);
         vkCmdDrawIndexed(m_vkCommandBuffer, indexCount, 1, 0, 0, 0);
     }
 }

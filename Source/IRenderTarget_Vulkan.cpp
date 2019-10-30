@@ -10,7 +10,7 @@ namespace Arcturus
             VkImageCreateInfo descImageCreateInfo = {};
             descImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             descImageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-            descImageCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+            descImageCreateInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
             descImageCreateInfo.extent.width = declaration.width;
             descImageCreateInfo.extent.height = declaration.height;
             descImageCreateInfo.extent.depth = 1;
@@ -46,7 +46,7 @@ namespace Arcturus
             descImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             descImageViewCreateInfo.image = m_vkImage;
             descImageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            descImageViewCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+            descImageViewCreateInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
             descImageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_R;
             descImageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_G;
             descImageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_B;
