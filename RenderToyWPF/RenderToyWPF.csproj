@@ -39,6 +39,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="RenderToyDocument.xaml.cs">
+      <DependentUpon>RenderToyDocument.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Common\Utility\PerformanceTrace.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="DirectX\ShaderEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -47,10 +58,50 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Common\3D\AttachedCamera.cs" />
+    <Compile Include="Common\3D\AttachedView.cs" />
+    <Compile Include="Common\3D\ViewSoftwareCustomizable.cs" />
+    <Compile Include="Common\Diagnostics\PerformanceView.cs" />
+    <Compile Include="Common\Material\MaterialBitmapConverter.cs" />
+    <Compile Include="Common\Material\MaterialToHLSLConverter.cs" />
+    <Compile Include="Common\Material\MaterialToMSILConverter.cs" />
+    <Compile Include="Common\Material\RenderTargetBitmapMaterial.cs" />
+    <Compile Include="Common\Material\ViewMaterial.cs" />
+    <Compile Include="Common\Material\ViewMaterialGraph.cs" />
+    <Compile Include="Common\Material\ViewMaterialNode.cs" />
+    <Compile Include="Common\Utility\AdornerTextBoxErrors.cs" />
+    <Compile Include="Common\Utility\Camera.cs" />
+    <Compile Include="Common\Utility\Docking.cs" />
+    <Compile Include="Common\Utility\DragDock.cs" />
+    <Compile Include="Common\Utility\NamedConverter.cs" />
+    <Compile Include="Common\Utility\PerformanceTrace.xaml.cs">
+      <DependentUpon>PerformanceTrace.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Utility\ViewMath.cs" />
+    <Compile Include="Common\Utility\ViewZoom.cs" />
+    <Compile Include="Common\Xps\DocumentPaginator.cs" />
+    <Compile Include="Common\Xps\Figures.cs" />
+    <Compile Include="Common\Xps\RenderToyReference.cs" />
+    <Compile Include="DirectX\ShaderEditor.xaml.cs">
+      <DependentUpon>ShaderEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DirectX\ViewArcturus.cs" />
+    <Compile Include="DirectX\ViewD3D11.cs" />
+    <Compile Include="DirectX\ViewD3D12.cs" />
+    <Compile Include="DirectX\ViewD3DImage.cs" />
+    <Compile Include="DirectX\ViewD3DImageBuffered.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="RenderToyDocument.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RenderToyResources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -102,7 +153,6 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\RenderToyCoreShared\RenderToyCoreShared.projitems" Label="Shared" />
-  <Import Project="..\RenderToyWPFShared\RenderToyWPFShared.projitems" Label="Shared" />
   <Import Project="..\RenderToyMathShared\RenderToyMathShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\Configuration\Common.csharp.targets" />
