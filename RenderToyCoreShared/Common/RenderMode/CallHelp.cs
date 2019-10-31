@@ -192,7 +192,7 @@ namespace RenderToy.RenderMode
         #region - Section : Call Naming -
         public static string GetDisplayNameBare(string methodname)
         {
-            var chop_mode = new[] { "AMP", "CPU", "CUDA", "D3D9" }
+            var chop_mode = new[] { "CPU", "CUDA", "D3D9" }
                 .Select(x => new { Chop = methodname.IndexOf(x), Name = x })
                 .Where(x => x.Chop != -1).OrderBy(x => x.Chop);
             var chop_prec = new[] { "F32", "F64" }
@@ -204,7 +204,7 @@ namespace RenderToy.RenderMode
         }
         public static string GetDisplayNameFull(string methodname)
         {
-            var chop_mode = new[] { "AMP", "CPU", "CUDA", "D3D9" }
+            var chop_mode = new[] { "CPU", "CUDA", "D3D9" }
                 .Select(x => new { Chop = methodname.IndexOf(x), Name = x })
                 .Where(x => x.Chop != -1).OrderBy(x => x.Chop);
             var chop_prec = new[] { "F32", "F64" }

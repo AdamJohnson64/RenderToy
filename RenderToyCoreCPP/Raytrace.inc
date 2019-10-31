@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-// This file contains the common parts of the raytracer shared by CPU, AMP and
-// CUDA implementations.
+// This file contains the common parts of the raytracer shared by CPU, and CUDA
+// implementations.
 //
 // All parts of this module are templated over their floating point type to
 // support both IEEE 754 32-bit float and 64-bit double implementation.
@@ -333,9 +333,6 @@ template <typename FLOAT, typename RAYQUERY>
 DEVICE_PREFIX bool IntersectMeshBVH(RAYQUERY& result, const Vector3<FLOAT>& origin, const Vector3<FLOAT>& direction, const Scene<FLOAT>& pScene, const MeshBVH<FLOAT>& node) DEVICE_SUFFIX {
 	// Keep tally of any hits.
 	bool foundhit = false;
-	// TODO: C++AMP doesn't like this code at all and CUDA has a hard time compiling it.
-	//       We're only going to build this for CPU and CUDA.
-	#ifndef _WINRT_DLL
 	// Make sure we're hitting this node first.
 	const MeshBVH<FLOAT> *walk = &node;
 	while (walk != nullptr)
@@ -377,7 +374,6 @@ DEVICE_PREFIX bool IntersectMeshBVH(RAYQUERY& result, const Vector3<FLOAT>& orig
 			walk = nullptr;
 		}
 	}
-	#endif  //_WINRT_DLL
 	return foundhit;
 }
 

@@ -147,10 +147,7 @@ namespace RenderToy.RenderControl
             GCHandle handle_accumulator = GCHandle.Alloc(Current.Buffer, GCHandleType.Pinned);
             try
             {
-                #if !WINDOWS_UWP
-                // TODO(fixme): AMP doesn't have a tonemapper yet.
                 RenderToyCLI.ToneMap(handle_accumulator.AddrOfPinnedObject(), sizeof(float) * 4 * Current.Width, bitmap_ptr, Current.Width, Current.Height, bitmap_stride, 1.0f / (Current.Pass * SAMPLES_PER_PASS));
-                #endif
             }
             finally
             {

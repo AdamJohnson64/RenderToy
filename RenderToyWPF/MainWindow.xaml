@@ -25,7 +25,6 @@
                 -->
                 <MenuItem Header="Performance View" Command="{x:Static rendertoy:MainWindow.CommandDebugPerformanceView}"/>
                 <MenuItem Header="Start OpenVR" Command="{x:Static rendertoy:MainWindow.CommandStartOpenVR}"/>
-                <MenuItem Header="Start OpenVR (Raytracing)" Command="{x:Static rendertoy:MainWindow.CommandStartOpenVRRaytraced}"/>
             </MenuItem>
             <MenuItem Header="Window">
                 <MenuItem Header="New Software View" Command="{x:Static rendertoy:MainWindow.CommandWindowSoftware}"/>

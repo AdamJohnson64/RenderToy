@@ -71,7 +71,6 @@ namespace RenderToy.WPF
         public static ICommand CommandWindowDirect3D12 = new RoutedUICommand("Open a DirectX 12 View Window.", "CommandWindowDirect3D12", typeof(MainWindow));
         public static ICommand CommandWindowTextureLab = new RoutedUICommand("Open a Texture Lab Window.", "CommandWindowTextureLab", typeof(MainWindow));
         public static ICommand CommandStartOpenVR = new RoutedUICommand("Start OpenVR.", "CommandStartOpenVR", typeof(MainWindow));
-        public static ICommand CommandStartOpenVRRaytraced = new RoutedUICommand("Start OpenVR (Raytracing).", "CommandStartOpenVRRaytraced", typeof(MainWindow));
         void CommandNew()
         {
             var scene = new Scene();
@@ -243,17 +242,6 @@ namespace RenderToy.WPF
                 {
                     OpenVRHelper.Initialize();
                     OpenVRPump.CreateThread(doc.Scene);
-                }
-                #endif // OPENVR_INSTALLED
-                e.Handled = true;
-            }));
-            CommandBindings.Add(new CommandBinding(CommandStartOpenVRRaytraced, (s, e) =>
-            {
-                #if OPENVR_INSTALLED
-                if (DataContext is Document doc)
-                {
-                    OpenVRHelper.Initialize();
-                    OpenVRPump.CreateThreadRaytraced(doc.Scene);
                 }
                 #endif // OPENVR_INSTALLED
                 e.Handled = true;

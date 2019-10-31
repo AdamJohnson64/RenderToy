@@ -9,8 +9,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <memory>
-#include "AMPArrayView.h"
-#include "RaytraceExportAMP.h"
 #include "RaytraceExportCPU.h"
 #include "RaytraceExportCUDA.h"
 
@@ -34,14 +32,6 @@ namespace RenderToy
 		EXPORTGENERATOR(RaycastBitangentsCPUF32)
 		EXPORTGENERATOR(RaycastTangentsCPUF32)
 		EXPORTGENERATOR(RaytraceCPUF32)
-#ifndef RENDERTOY_NO_AMP
-		EXPORTGENERATOR(RaycastAMPF32)
-		EXPORTGENERATOR(RaycastNormalsAMPF32)
-		EXPORTGENERATOR(RaycastTangentsAMPF32)
-		EXPORTGENERATOR(RaycastBitangentsAMPF32)
-		EXPORTGENERATOR(RaytraceAMPF32)
-		EXPORTGENERATOR(DebugMeshAMPF32)
-#endif
 		EXPORTGENERATOR(RaycastCUDAF32)
 		EXPORTGENERATOR(RaycastCUDAF64)
 		EXPORTGENERATOR(RaycastNormalsCUDAF32)
@@ -100,10 +90,5 @@ namespace RenderToy
 			::AmbientOcclusionCUDAF64(pin_scene, pin_inverse_mvp, (void*)bitmap_ptr, render_width, render_height, bitmap_stride, sample_offset, sample_count);
 		}
 		*/
-		static void TEST_RaycastNormalsAMPF32D3D(AMPArrayView^ scene, array<unsigned char>^ inverse_mvp, System::IntPtr d3d11device, System::IntPtr d3d11texture)
-		{
-			pin_ptr<unsigned char> pin_inverse_mvp = &inverse_mvp[0];
-			::TEST_RaycastNormalsAMPF32D3D(scene->GetView(), pin_inverse_mvp, d3d11device.ToPointer(), d3d11texture.ToPointer());
-		}
 	};
 }
