@@ -49,6 +49,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\OBJMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\Perlin2D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Materials\Spike.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Math\MatrixExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Meshes\MeshBVHChain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Meshes\VertexFormat.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ModelFormats\LoaderBPT.cs" />
@@ -127,7 +128,6 @@
     <Compile Include="$(SolutionDir)ThirdParty\OpenVR\headers\openvr_api.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Common\Math\" />
     <Folder Include="$(MSBuildThisFileDirectory)Common\RenderMode\" />
   </ItemGroup>
 </Project>
