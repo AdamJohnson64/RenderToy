@@ -4,7 +4,7 @@
     {
         public static IDevice3D Device = IDevice3D.CreateDevice3D_Vulkan();
     }
-    class DrawingViewVulkan : DrawingViewD3DImage
+    public class DrawingViewVulkan : DrawingViewD3DImage
     {
         public DrawingViewVulkan() : base(Vulkan.Device, true)
         {

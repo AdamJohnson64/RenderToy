@@ -2,8 +2,9 @@
 
 namespace Arcturus.Managed
 {
-    class FakeDocument : INotifyPropertyChanged
+    public class FakeDocument : INotifyPropertyChanged
     {
+        public static FakeDocument Global = new FakeDocument();
         public FakeDocument()
         {
             Signal();

@@ -39,6 +39,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Drawing\DrawingController.cs" />
+    <Compile Include="Drawing\DrawingViewD3D12.cs" />
+    <Compile Include="Drawing\DrawingViewD3DImage.cs" />
+    <Compile Include="Drawing\DrawingViewDXR12.cs" />
+    <Compile Include="Drawing\DrawingViewVulkan.cs" />
+    <Compile Include="Drawing\DrawingViewWPF.cs" />
+    <Compile Include="Drawing\FakeDocument.cs" />
     <Compile Include="RenderToyDocument.xaml.cs">
       <DependentUpon>RenderToyDocument.xaml</DependentUpon>
     </Compile>

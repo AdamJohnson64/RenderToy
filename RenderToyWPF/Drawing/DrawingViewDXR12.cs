@@ -2,7 +2,7 @@
 
 namespace Arcturus.Managed
 {
-    class DrawingViewDXR12 : DrawingViewD3DImage
+    public class DrawingViewDXR12 : DrawingViewD3DImage
     {
         public DrawingViewDXR12() : base(Direct3D12.Device, false)
         {

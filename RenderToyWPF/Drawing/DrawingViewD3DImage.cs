@@ -12,7 +12,7 @@ namespace Arcturus.Managed
     {
         public static IDevice3D_D3D9 Device = new IDevice3D_D3D9();
     }
-    abstract class DrawingViewD3DImage : ContentControl
+    public abstract class DrawingViewD3DImage : ContentControl
     {
         static DrawingViewD3DImage()
         {
@@ -57,6 +57,7 @@ namespace Arcturus.Managed
             grid.Children.Add(image);
             grid.Children.Add(new DrawingController());
             Content = grid;
+            DataContext = FakeDocument.Global;
         }
         protected abstract IRenderTarget GetRenderTarget();
         protected virtual void Update(FakeDocument document)

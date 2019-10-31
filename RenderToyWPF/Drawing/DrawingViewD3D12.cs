@@ -4,7 +4,7 @@
     {
         public static IDevice3D Device = IDevice3D.CreateDevice3D_Direct3D12();
     }
-    class DrawingViewD3D12 : DrawingViewD3DImage
+    public class DrawingViewD3D12 : DrawingViewD3DImage
     {
         public DrawingViewD3D12() : base(Direct3D12.Device, false)
         {

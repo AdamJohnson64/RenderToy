@@ -37,8 +37,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DrawingLib", "DrawingLib.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DrawingNet", "DrawingNet.vcxproj", "{AB0D56F1-39B5-4771-BF68-69ECEB51BBC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrawingWPF", "DrawingWPF.csproj", "{9296A9D2-5488-4ED9-BA99-BCBC8415A441}"
-EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{44234705-fbd6-4d0e-885f-d01b4e2d23ce}*SharedItemsImports = 4
@@ -74,10 +72,6 @@ Global
 		{AB0D56F1-39B5-4771-BF68-69ECEB51BBC2}.Debug|x64.Build.0 = Debug|x64
 		{AB0D56F1-39B5-4771-BF68-69ECEB51BBC2}.Release|x64.ActiveCfg = Release|x64
 		{AB0D56F1-39B5-4771-BF68-69ECEB51BBC2}.Release|x64.Build.0 = Release|x64
-		{9296A9D2-5488-4ED9-BA99-BCBC8415A441}.Debug|x64.ActiveCfg = Debug|x64
-		{9296A9D2-5488-4ED9-BA99-BCBC8415A441}.Debug|x64.Build.0 = Debug|x64
-		{9296A9D2-5488-4ED9-BA99-BCBC8415A441}.Release|x64.ActiveCfg = Release|x64
-		{9296A9D2-5488-4ED9-BA99-BCBC8415A441}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,7 +84,6 @@ Global
 		{F0F75962-767A-4906-A338-F5E1BD6FB606} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 		{46274FCE-D2FB-4544-83C2-45AEDB26BA4A} = {69732B31-ADA3-46D2-9619-DD0DA823062E}
 		{AB0D56F1-39B5-4771-BF68-69ECEB51BBC2} = {69732B31-ADA3-46D2-9619-DD0DA823062E}
-		{9296A9D2-5488-4ED9-BA99-BCBC8415A441} = {69732B31-ADA3-46D2-9619-DD0DA823062E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B8307FCD-BF35-462A-A7E7-62A533E764D5}
