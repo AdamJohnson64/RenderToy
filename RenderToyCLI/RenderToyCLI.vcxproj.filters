@@ -1,13 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D11.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D12.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D9.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3DCompiler.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCPU.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCUDA.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\RenderToyCLI.cpp" />
     <ClCompile Include="..\ThirdParty\zlib\adler32.c">
       <Filter>zlib</Filter>
     </ClCompile>
@@ -101,14 +94,17 @@
     <ClCompile Include="..\ThirdParty\zlib\zutil.c">
       <Filter>zlib</Filter>
     </ClCompile>
-    <ClCompile Include="..\RenderToyCoreCPP\InteropLibPNG.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDXGI.cpp" />
+    <ClCompile Include="InteropDirect3D9.cpp" />
+    <ClCompile Include="InteropDirect3D11.cpp" />
+    <ClCompile Include="InteropDirect3D12.cpp" />
+    <ClCompile Include="InteropDirect3DCompiler.cpp" />
+    <ClCompile Include="InteropDXGI.cpp" />
+    <ClCompile Include="InteropLibPNG.cpp" />
+    <ClCompile Include="RaytraceExportCPU.cpp" />
+    <ClCompile Include="RaytraceExportCUDA.cpp" />
+    <ClCompile Include="RenderToyCLI.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\RenderToyCoreCPP\InteropCommon.h" />
-    <ClInclude Include="..\RenderToyCoreCPP\Raytrace.h" />
-    <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportCPU.h" />
-    <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportCUDA.h" />
     <ClInclude Include="..\ThirdParty\zlib\crc32.h">
       <Filter>zlib</Filter>
     </ClInclude>
@@ -163,9 +159,10 @@
     <ClInclude Include="..\ThirdParty\zlib\zutil.h">
       <Filter>zlib</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\RenderToyCoreCPP\Raytrace.inc" />
+    <ClInclude Include="InteropCommon.h" />
+    <ClInclude Include="Raytrace.h" />
+    <ClInclude Include="RaytraceExportCPU.h" />
+    <ClInclude Include="RaytraceExportCUDA.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt" />
@@ -177,5 +174,9 @@
     <Filter Include="libpng">
       <UniqueIdentifier>{9157a144-ec92-43f6-9cd3-8346b931f10a}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Raytrace.cu" />
+    <None Include="Raytrace.inc" />
   </ItemGroup>
 </Project>

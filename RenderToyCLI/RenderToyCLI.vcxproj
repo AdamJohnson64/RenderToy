@@ -49,15 +49,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D11.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D12.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3D9.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDirect3DCompiler.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropDXGI.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\InteropLibPNG.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCPU.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\RaytraceExportCUDA.cpp" />
-    <ClCompile Include="..\RenderToyCoreCPP\RenderToyCLI.cpp" />
     <ClCompile Include="..\ThirdParty\libpng\png.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
@@ -182,15 +173,20 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
+    <ClCompile Include="InteropDirect3D11.cpp" />
+    <ClCompile Include="InteropDirect3D12.cpp" />
+    <ClCompile Include="InteropDirect3D9.cpp" />
+    <ClCompile Include="InteropDirect3DCompiler.cpp" />
+    <ClCompile Include="InteropDXGI.cpp" />
+    <ClCompile Include="InteropLibPNG.cpp" />
+    <ClCompile Include="RaytraceExportCPU.cpp" />
+    <ClCompile Include="RaytraceExportCUDA.cpp" />
+    <ClCompile Include="RenderToyCLI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\RenderToyCoreCPP\Raytrace.cu" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\RenderToyCoreCPP\InteropCommon.h" />
-    <ClInclude Include="..\RenderToyCoreCPP\Raytrace.h" />
-    <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportCPU.h" />
-    <ClInclude Include="..\RenderToyCoreCPP\RaytraceExportCUDA.h" />
     <ClInclude Include="..\ThirdParty\libpng\png.h" />
     <ClInclude Include="..\ThirdParty\libpng\pngconf.h" />
     <ClInclude Include="..\ThirdParty\libpng\pngdebug.h" />
@@ -209,9 +205,10 @@
     <ClInclude Include="..\ThirdParty\zlib\zconf.h" />
     <ClInclude Include="..\ThirdParty\zlib\zlib.h" />
     <ClInclude Include="..\ThirdParty\zlib\zutil.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\RenderToyCoreCPP\Raytrace.inc" />
+    <ClInclude Include="InteropCommon.h" />
+    <ClInclude Include="Raytrace.h" />
+    <ClInclude Include="RaytraceExportCPU.h" />
+    <ClInclude Include="RaytraceExportCUDA.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt" />
@@ -220,6 +217,10 @@
     <COMFileReference Include="$(OutDir)RenderToyCOM.tlb">
       <WrapperTool>tlbimp</WrapperTool>
     </COMFileReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Raytrace.cu" />
+    <None Include="Raytrace.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
