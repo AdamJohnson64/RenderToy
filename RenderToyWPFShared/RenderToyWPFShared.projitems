@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ShaderEditor.xaml.cs">
       <DependentUpon>ShaderEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewArcturus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3DImage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3DImageBuffered.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectX\ViewD3D11.cs" />

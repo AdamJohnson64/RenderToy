@@ -29,6 +29,7 @@
             </MenuItem>
             <MenuItem Header="Window">
                 <MenuItem Header="New Software View" Command="{x:Static rendertoy:MainWindow.CommandWindowSoftware}"/>
+                <MenuItem Header="New Arcturus View" Command="{x:Static rendertoy:MainWindow.CommandWindowArcturus}"/>
                 <MenuItem Header="New Direct3D11 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D11}"/>
                 <MenuItem Header="New Direct3D12 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D12}"/>
                 <MenuItem Header="Texture Lab" Command="{x:Static rendertoy:MainWindow.CommandWindowTextureLab}"/>
