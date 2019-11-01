@@ -20,9 +20,11 @@
   <Import Project="$(SolutionDir)\Configuration\Common.cplusplus.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="Shared" />
@@ -38,15 +40,19 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PreprocessorDefinitions>RENDERTOY_NO_AMP;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.0\Include;$(SolutionDir)\ThirdParty\openvr\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;C:\VulkanSDK\1.1.121.0\Lib\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;C:\VulkanSDK\1.1.121.0\Lib\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.0\Include;$(SolutionDir)\ThirdParty\openvr\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ThirdParty\libpng\png.c">
@@ -173,6 +179,34 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
+    <ClCompile Include="Arcturus\D3D12Utility.cpp" />
+    <ClCompile Include="Arcturus\DrawingContext.cpp" />
+    <ClCompile Include="Arcturus\ErrorD3D.cpp" />
+    <ClCompile Include="Arcturus\ErrorVK.cpp" />
+    <ClCompile Include="Arcturus\IBuffer_D3D12.cpp" />
+    <ClCompile Include="Arcturus\IBuffer_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IConstantBufferView_D3D12.cpp" />
+    <ClCompile Include="Arcturus\IConstantBufferView_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IConstantBuffer_D3D12.cpp" />
+    <ClCompile Include="Arcturus\IConstantBuffer_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IDevice3D.cpp" />
+    <ClCompile Include="Arcturus\IDevice3D_D3D12.cpp" />
+    <ClCompile Include="Arcturus\IDevice3D_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IIndexBuffer_D3D12.cpp" />
+    <ClCompile Include="Arcturus\IIndexBuffer_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IRaytrace_D3D12.cpp" />
+    <ClCompile Include="Arcturus\IRenderTarget_D3D12.cpp" />
+    <ClCompile Include="Arcturus\IRenderTarget_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IShader_D3D12.cpp" />
+    <ClCompile Include="Arcturus\IShader_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\ITexture_D3D12.cpp" />
+    <ClCompile Include="Arcturus\ITexture_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IVertexBuffer_D3D12.cpp" />
+    <ClCompile Include="Arcturus\IVertexBuffer_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\MDevice3D.cpp" />
+    <ClCompile Include="Arcturus\MDevice3D_D3D9.cpp" />
+    <ClCompile Include="Arcturus\MDrawingContext.cpp" />
+    <ClCompile Include="Arcturus\MStub.cpp" />
     <ClCompile Include="InteropDirect3D11.cpp" />
     <ClCompile Include="InteropDirect3D12.cpp" />
     <ClCompile Include="InteropDirect3D9.cpp" />
@@ -205,6 +239,51 @@
     <ClInclude Include="..\ThirdParty\zlib\zconf.h" />
     <ClInclude Include="..\ThirdParty\zlib\zlib.h" />
     <ClInclude Include="..\ThirdParty\zlib\zutil.h" />
+    <ClInclude Include="Arcturus\AutoRelease.h" />
+    <ClInclude Include="Arcturus\D3D12Utility.h" />
+    <ClInclude Include="Arcturus\DrawingContext.h" />
+    <ClInclude Include="Arcturus\dxr.dxil.h" />
+    <ClInclude Include="Arcturus\ErrorD3D.h" />
+    <ClInclude Include="Arcturus\ErrorVK.h" />
+    <ClInclude Include="Arcturus\IBuffer_D3D12.h" />
+    <ClInclude Include="Arcturus\IBuffer_Vulkan.h" />
+    <ClInclude Include="Arcturus\IConstantBuffer.h" />
+    <ClInclude Include="Arcturus\IConstantBufferView.h" />
+    <ClInclude Include="Arcturus\IConstantBufferView_D3D12.h" />
+    <ClInclude Include="Arcturus\IConstantBufferView_Vulkan.h" />
+    <ClInclude Include="Arcturus\IConstantBuffer_D3D12.h" />
+    <ClInclude Include="Arcturus\IConstantBuffer_Vulkan.h" />
+    <ClInclude Include="Arcturus\IDevice3D.h" />
+    <ClInclude Include="Arcturus\IDevice3D_D3D12.h" />
+    <ClInclude Include="Arcturus\IDevice3D_Vulkan.h" />
+    <ClInclude Include="Arcturus\IDrawingContext.h" />
+    <ClInclude Include="Arcturus\IDrawingContextAccess.h" />
+    <ClInclude Include="Arcturus\IIndexBuffer.h" />
+    <ClInclude Include="Arcturus\IIndexBuffer_D3D12.h" />
+    <ClInclude Include="Arcturus\IIndexBuffer_Vulkan.h" />
+    <ClInclude Include="Arcturus\IObject.h" />
+    <ClInclude Include="Arcturus\IRaytrace_D3D12.h" />
+    <ClInclude Include="Arcturus\IRenderTarget.h" />
+    <ClInclude Include="Arcturus\IRenderTarget_D3D12.h" />
+    <ClInclude Include="Arcturus\IRenderTarget_Vulkan.h" />
+    <ClInclude Include="Arcturus\IShader.h" />
+    <ClInclude Include="Arcturus\IShader_D3D12.h" />
+    <ClInclude Include="Arcturus\IShader_Vulkan.h" />
+    <ClInclude Include="Arcturus\ITexture.h" />
+    <ClInclude Include="Arcturus\ITexture_D3D12.h" />
+    <ClInclude Include="Arcturus\ITexture_Vulkan.h" />
+    <ClInclude Include="Arcturus\IVertexBuffer.h" />
+    <ClInclude Include="Arcturus\IVertexBuffer_D3D12.h" />
+    <ClInclude Include="Arcturus\IVertexBuffer_Vulkan.h" />
+    <ClInclude Include="Arcturus\MDevice3D.h" />
+    <ClInclude Include="Arcturus\MIDrawingContext.h" />
+    <ClInclude Include="Arcturus\MIDrawingContextAccess.h" />
+    <ClInclude Include="Arcturus\MStub.h" />
+    <ClInclude Include="Arcturus\MTypes3D.h" />
+    <ClInclude Include="Arcturus\MVector.h" />
+    <ClInclude Include="Arcturus\Types3D.h" />
+    <ClInclude Include="Arcturus\Vector.h" />
+    <ClInclude Include="Arcturus\VulkanInclude.h" />
     <ClInclude Include="InteropCommon.h" />
     <ClInclude Include="Raytrace.h" />
     <ClInclude Include="RaytraceExportCPU.h" />
@@ -221,6 +300,22 @@
   <ItemGroup>
     <None Include="Raytrace.cu" />
     <None Include="Raytrace.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Arcturus\dxr.hlsl">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.3</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.3</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Library</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Library</ShaderType>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_dxr_shader</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\RenderToyCLI\Arcturus\dxr.dxil.h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_dxr_shader</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\RenderToyCLI\Arcturus\dxr.dxil.h</HeaderFileOutput>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

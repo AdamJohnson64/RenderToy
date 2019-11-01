@@ -150,10 +150,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DrawingNet.vcxproj">
-      <Project>{ab0d56f1-39b5-4771-bf68-69eceb51bbc2}</Project>
-      <Name>DrawingNet</Name>
-    </ProjectReference>
     <ProjectReference Include="..\RenderToyCLI\RenderToyCLI.vcxproj">
       <Project>{e68e5ecf-2731-45dc-a334-4fc4651ee0af}</Project>
       <Name>RenderToyCLI</Name>
