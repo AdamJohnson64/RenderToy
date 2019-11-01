@@ -25,15 +25,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderToy Core", "RenderToy
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderToy UI WPF", "RenderToy UI WPF", "{4245020D-436B-458F-85C8-AFC3491A89F0}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderToyCoreShared", "RenderToyCoreShared\RenderToyCoreShared.shproj", "{496D4D78-F405-4D98-90D4-DA9B9FFA7E34}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCOM", "RenderToyCOM\RenderToyCOM.vcxproj", "{F0F75962-767A-4906-A338-F5E1BD6FB606}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		RenderToyCoreShared\RenderToyCoreShared.projitems*{496d4d78-f405-4d98-90d4-da9b9ffa7e34}*SharedItemsImports = 13
-		RenderToyCoreShared\RenderToyCoreShared.projitems*{d98db157-6492-4fdf-926c-684ef1afe84a}*SharedItemsImports = 4
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Release|x64 = Release|x64
@@ -58,7 +52,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{D98DB157-6492-4FDF-926C-684EF1AFE84A} = {4245020D-436B-458F-85C8-AFC3491A89F0}
 		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
-		{496D4D78-F405-4D98-90D4-DA9B9FFA7E34} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 		{F0F75962-767A-4906-A338-F5E1BD6FB606} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
