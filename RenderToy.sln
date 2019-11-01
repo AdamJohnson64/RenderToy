@@ -27,13 +27,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RenderToy UI WPF", "RenderT
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderToyCoreShared", "RenderToyCoreShared\RenderToyCoreShared.shproj", "{496D4D78-F405-4D98-90D4-DA9B9FFA7E34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderToyCoreLibrary", "RenderToyCoreLibrary\RenderToyCoreLibrary.csproj", "{44234705-FBD6-4D0E-885F-D01B4E2D23CE}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCOM", "RenderToyCOM\RenderToyCOM.vcxproj", "{F0F75962-767A-4906-A338-F5E1BD6FB606}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		RenderToyCoreShared\RenderToyCoreShared.projitems*{44234705-fbd6-4d0e-885f-d01b4e2d23ce}*SharedItemsImports = 4
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{496d4d78-f405-4d98-90d4-da9b9ffa7e34}*SharedItemsImports = 13
 		RenderToyCoreShared\RenderToyCoreShared.projitems*{d98db157-6492-4fdf-926c-684ef1afe84a}*SharedItemsImports = 4
 	EndGlobalSection
@@ -50,10 +47,6 @@ Global
 		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}.Debug|x64.Build.0 = Debug|x64
 		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}.Release|x64.ActiveCfg = Release|x64
 		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}.Release|x64.Build.0 = Release|x64
-		{44234705-FBD6-4D0E-885F-D01B4E2D23CE}.Debug|x64.ActiveCfg = Debug|x64
-		{44234705-FBD6-4D0E-885F-D01B4E2D23CE}.Debug|x64.Build.0 = Debug|x64
-		{44234705-FBD6-4D0E-885F-D01B4E2D23CE}.Release|x64.ActiveCfg = Release|x64
-		{44234705-FBD6-4D0E-885F-D01B4E2D23CE}.Release|x64.Build.0 = Release|x64
 		{F0F75962-767A-4906-A338-F5E1BD6FB606}.Debug|x64.ActiveCfg = Debug|x64
 		{F0F75962-767A-4906-A338-F5E1BD6FB606}.Debug|x64.Build.0 = Debug|x64
 		{F0F75962-767A-4906-A338-F5E1BD6FB606}.Release|x64.ActiveCfg = Release|x64
@@ -66,7 +59,6 @@ Global
 		{D98DB157-6492-4FDF-926C-684EF1AFE84A} = {4245020D-436B-458F-85C8-AFC3491A89F0}
 		{E68E5ECF-2731-45DC-A334-4FC4651EE0AF} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 		{496D4D78-F405-4D98-90D4-DA9B9FFA7E34} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
-		{44234705-FBD6-4D0E-885F-D01B4E2D23CE} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 		{F0F75962-767A-4906-A338-F5E1BD6FB606} = {538E759D-CC5D-4EBB-90BC-8938046A925B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
