@@ -40,8 +40,6 @@
             </MenuItem>
         </Menu>
         <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
-            <!-- ==================== Landing Page ==================== -->
-            <TabItem Header="Landing Page"/>
             <!-- ==================== Software Render ==================== -->
             <TabItem Header="Software Render">
                 <rendertoy:ViewSoftwareCustomizable rendertoy:AttachedView.Scene="{Binding Path=Scene}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}" rendertoy:AttachedView.TransformView="{Binding Source={StaticResource Camera}, Path=TransformView}" rendertoy:AttachedView.TransformProjection="{Binding Source={StaticResource Camera}, Path=TransformProjection}"/>
@@ -80,10 +78,10 @@
                             </rendertoy:ViewZoom>
                         </TabItem>
                         <TabItem Header="MSIL">
-                            <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem,Converter={StaticResource MaterialToMSILConverter}}"/>
+                            <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem, Converter={StaticResource MaterialToMSILConverter}, Mode=OneWay}"/>
                         </TabItem>
                         <TabItem Header="HLSL">
-                            <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem,Converter={StaticResource MaterialToHLSLConverter}}"/>
+                            <TextBox Text="{Binding ElementName=MaterialList, Path=SelectedItem, Converter={StaticResource MaterialToHLSLConverter}, Mode=OneWay}"/>
                         </TabItem>
                     </TabControl>
                 </Grid>

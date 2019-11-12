@@ -73,8 +73,9 @@ namespace RenderToy.WPF
         public static ICommand CommandStartOpenVR = new RoutedUICommand("Start OpenVR.", "CommandStartOpenVR", typeof(MainWindow));
         void CommandNew()
         {
-            var scene = new Scene();
+            var scene = TestScenes.DefaultScene2;
             DataContext = new Document(scene);
+            OpenVRPump.Scene = TransformedObject.ConvertToSparseScene(scene);
         }
         public MainWindow()
         {
