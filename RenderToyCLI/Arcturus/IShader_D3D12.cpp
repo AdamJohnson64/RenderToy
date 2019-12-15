@@ -39,11 +39,12 @@ PS_INPUT vs(VS_INPUT v)
 
 float4 ps(PS_INPUT p) : SV_Target0
 {
-    float x = p.Position.x / 256.0f;
-    float y = p.Position.y / 256.0f;
-    float4 texel = TEXTURE.Sample(SAMPLER, float2(x, y));
+    //float x = p.Position.x / 256.0f;
+    //float y = p.Position.y / 256.0f;
+    //float4 texel = TEXTURE.Sample(SAMPLER, float2(x, y));
+    //float4 pixel = p.Color;
+    //pixel.rg = texel.rg;
     float4 pixel = p.Color;
-    pixel.rg = texel.rg;
     return pixel;
 }
 )TEXT";
