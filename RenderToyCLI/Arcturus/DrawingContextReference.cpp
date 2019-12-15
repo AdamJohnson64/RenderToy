@@ -11,21 +11,40 @@ namespace Arcturus
     {
         UNKNOWN = 0,
         DRAW_CIRCLE = 1,
-        FILL_CIRCLE = 2,
-        END = 3,
+        DRAW_RECTANGLE = 2,
+        FILL_CIRCLE = 3,
+        FILL_RECTANGLE = 4,
+        END = 5,
     };
 
     struct DrawCircle
     {
+        Vec4 _color;
         Vec2 _center;
         float _radius;
         float _width;
     };
 
+    struct DrawRectangle
+    {
+        Vec4 _color;
+        Vec2 _topLeft;
+        Vec2 _bottomRight;
+        float _width;
+    };
+
     struct FillCircle
     {
+        Vec4 _color;
         Vec2 _center;
         float _radius;
+    };
+
+    struct FillRectangle
+    {
+        Vec4 _color;
+        Vec2 _topLeft;
+        Vec2 _bottomRight;
     };
 
     static float Max(float a, float b)
@@ -88,6 +107,7 @@ namespace Arcturus
                 // 16 sample uniform grid sampling.
                 int samples = 0;
                 const int SAMPLESIZE = 8;
+                Vec4 colorTotal = {};
                 for (int sy = 0; sy < SAMPLESIZE; ++sy)
                 {
                     for (int sx = 0; sx < SAMPLESIZE; ++sx)
@@ -95,6 +115,7 @@ namespace Arcturus
                         Vec2 sp = { x + sx / (SAMPLESIZE + 1.0f), y + sy / (SAMPLESIZE + 1.0f) };
                         // Handle all primitive types.
                         uint8_t* pWalk = &_data[0];
+                        Vec4 colorPixel = {};
                         while (true)
                         {
                             switch (*(PrimitiveType*)pWalk)
@@ -104,8 +125,27 @@ namespace Arcturus
                                     DrawCircle* pPrimitive = (DrawCircle*)(pWalk + sizeof(uint32_t));
                                     Vec2 c = { pPrimitive->_center.X - sp.X, pPrimitive->_center.Y - sp.Y };
                                     float l = sqrtf(c.X * c.X + c.Y * c.Y) - pPrimitive->_radius;
-                                    if (fabs(l) <= pPrimitive->_width / 2) ++samples;
+                                    if (fabs(l) <= pPrimitive->_width / 2) colorPixel = pPrimitive->_color;
                                     pWalk += sizeof(uint32_t) + sizeof(DrawCircle);
+                                }
+                                break;
+                            case PrimitiveType::DRAW_RECTANGLE:
+                                {
+                                    DrawRectangle* pPrimitive = (DrawRectangle*)(pWalk + sizeof(uint32_t));
+                                    // Define two nested triangles; outer and inner, adjusted by half the stroke width.
+                                    // Points inside the outer and not inside the inner are inside the rectangle.
+                                    bool inside1 = true;
+                                    if (sp.X <= pPrimitive->_topLeft.X - pPrimitive->_width / 2) inside1 = false;
+                                    if (sp.X >= pPrimitive->_bottomRight.X + pPrimitive->_width / 2) inside1 = false;
+                                    if (sp.Y <= pPrimitive->_topLeft.Y - pPrimitive->_width / 2) inside1 = false;
+                                    if (sp.Y >= pPrimitive->_bottomRight.Y + pPrimitive->_width / 2) inside1 = false;
+                                    bool inside2 = false;
+                                    if (sp.X <= pPrimitive->_topLeft.X + pPrimitive->_width / 2) inside2 = true;
+                                    if (sp.X >= pPrimitive->_bottomRight.X - pPrimitive->_width / 2) inside2 = true;
+                                    if (sp.Y <= pPrimitive->_topLeft.Y + pPrimitive->_width / 2) inside2 = true;
+                                    if (sp.Y >= pPrimitive->_bottomRight.Y - pPrimitive->_width / 2) inside2 = true;
+                                    if (inside1 && inside2) colorPixel = pPrimitive->_color;
+                                    pWalk += sizeof(uint32_t) + sizeof(DrawRectangle);
                                 }
                                 break;
                             case PrimitiveType::FILL_CIRCLE:
@@ -113,23 +153,48 @@ namespace Arcturus
                                     FillCircle* pPrimitive = (FillCircle*)(pWalk + sizeof(uint32_t));
                                     Vec2 c = { pPrimitive->_center.X - sp.X, pPrimitive->_center.Y - sp.Y };
                                     float l = sqrtf(c.X * c.X + c.Y * c.Y);
-                                    if (l <= pPrimitive->_radius) ++samples;
+                                    if (l <= pPrimitive->_radius) colorPixel = pPrimitive->_color;
                                     pWalk += sizeof(uint32_t) + sizeof(FillCircle);
+                                }
+                                break;
+                            case PrimitiveType::FILL_RECTANGLE:
+                                {
+                                    FillRectangle* pPrimitive = (FillRectangle*)(pWalk + sizeof(uint32_t));
+                                    bool inside = true;
+                                    if (sp.X <= pPrimitive->_topLeft.X) inside = false;
+                                    if (sp.X >= pPrimitive->_bottomRight.X) inside = false;
+                                    if (sp.Y <= pPrimitive->_topLeft.Y) inside = false;
+                                    if (sp.Y >= pPrimitive->_bottomRight.Y) inside = false;
+                                    if (inside) colorPixel = pPrimitive->_color;
+                                    pWalk += sizeof(uint32_t) + sizeof(FillRectangle);
                                 }
                                 break;
                             case PrimitiveType::END:
                                 goto DONE;
+                            default:
+                                goto DONE;
                             }
                         }
                     DONE:
-                        int test = 0;
+                        // Add in this sample contribution.
+                        colorTotal.X += colorPixel.X;
+                        colorTotal.Y += colorPixel.Y;
+                        colorTotal.Z += colorPixel.Z;
+                        colorTotal.W += colorPixel.W;
                     }
                 }
-                uint32_t value = samples * 255 / (SAMPLESIZE * SAMPLESIZE);
+                // Compute the average contribution;
+                colorTotal.X /= SAMPLESIZE * SAMPLESIZE;
+                colorTotal.Y /= SAMPLESIZE * SAMPLESIZE;
+                colorTotal.Z /= SAMPLESIZE * SAMPLESIZE;
+                colorTotal.W /= SAMPLESIZE * SAMPLESIZE;
                 // Set the final contribution for this pixel.
                 void *pPixel = (char*)pRaster + sizeof(uint32_t) * x;
-                uint32_t *tPixel = (uint32_t*)pPixel;
-                *tPixel = (value << 24) | (value << 16) | (value << 8) | (value << 0);
+                uint8_t *tPixel = (uint8_t*)pPixel;
+                tPixel[0] = (uint8_t)(colorTotal.Z * 255);
+                tPixel[1] = (uint8_t)(colorTotal.Y * 255);
+                tPixel[2] = (uint8_t)(colorTotal.X * 255);
+                tPixel[3] = (uint8_t)(colorTotal.W * 255);
             }
         }
     }
@@ -162,6 +227,7 @@ namespace Arcturus
         *(PrimitiveType*)p = PrimitiveType::DRAW_CIRCLE;
         p += sizeof(PrimitiveType);
         DrawCircle* primitive = (DrawCircle*)p;
+        primitive->_color = _color;
         primitive->_center = point;
         primitive->_radius = radius;
         primitive->_width = _width;
@@ -169,6 +235,17 @@ namespace Arcturus
 
     void DrawingContextReference::drawRectangle(const Vec2& topLeft, const Vec2& bottomRight)
     {
+        uint32_t sizeCurrent = _data.size();
+        uint32_t sizeRequired = sizeof(uint32_t) + sizeof(DrawRectangle);
+        _data.resize(sizeCurrent + sizeRequired);
+        uint8_t* p = &_data[sizeCurrent];
+        *(PrimitiveType*)p = PrimitiveType::DRAW_RECTANGLE;
+        p += sizeof(PrimitiveType);
+        DrawRectangle* primitive = (DrawRectangle*)p;
+        primitive->_color = _color;
+        primitive->_topLeft = topLeft;
+        primitive->_bottomRight = bottomRight;
+        primitive->_width = _width;
     }
 
     void DrawingContextReference::fillCircle(const Vec2& point, float radius)
@@ -180,12 +257,23 @@ namespace Arcturus
         *(PrimitiveType*)p = PrimitiveType::FILL_CIRCLE;
         p += sizeof(PrimitiveType);
         FillCircle* primitive = (FillCircle*)p;
+        primitive->_color = _color;
         primitive->_center = point;
         primitive->_radius = radius;
     }
 
     void DrawingContextReference::fillRectangle(const Vec2& topLeft, const Vec2& bottomRight)
     {
+        uint32_t sizeCurrent = _data.size();
+        uint32_t sizeRequired = sizeof(uint32_t) + sizeof(FillRectangle);
+        _data.resize(sizeCurrent + sizeRequired);
+        uint8_t* p = &_data[sizeCurrent];
+        *(PrimitiveType*)p = PrimitiveType::FILL_RECTANGLE;
+        p += sizeof(PrimitiveType);
+        FillRectangle* primitive = (FillRectangle*)p;
+        primitive->_color = _color;
+        primitive->_topLeft = topLeft;
+        primitive->_bottomRight = bottomRight;
     }
 
 }

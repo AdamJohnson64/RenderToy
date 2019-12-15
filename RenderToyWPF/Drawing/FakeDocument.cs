@@ -39,6 +39,7 @@ namespace Arcturus.Managed
             }
             context.lineTo(points[1]);
             // Draw a bullseye.
+            context.setColor(new Vec4 { X = 0.8f, Y = 0.8f, Z = 1, W = 1 });
             context.drawCircle(points[0], 40);
             context.fillCircle(points[0], 10);
             // Draw handles.
