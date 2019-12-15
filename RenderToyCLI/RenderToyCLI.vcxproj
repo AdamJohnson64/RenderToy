@@ -180,7 +180,8 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="Arcturus\D3D12Utility.cpp" />
-    <ClCompile Include="Arcturus\DrawingContext.cpp" />
+    <ClCompile Include="Arcturus\DrawingContextMesh.cpp" />
+    <ClCompile Include="Arcturus\DrawingContextReference.cpp" />
     <ClCompile Include="Arcturus\ErrorD3D.cpp" />
     <ClCompile Include="Arcturus\ErrorVK.cpp" />
     <ClCompile Include="Arcturus\IBuffer_D3D12.cpp" />
@@ -206,6 +207,7 @@
     <ClCompile Include="Arcturus\MDevice3D.cpp" />
     <ClCompile Include="Arcturus\MDevice3D_D3D9.cpp" />
     <ClCompile Include="Arcturus\MDrawingContext.cpp" />
+    <ClCompile Include="Arcturus\MDrawingContextReference.cpp" />
     <ClCompile Include="Arcturus\MStub.cpp" />
     <ClCompile Include="InteropDirect3D11.cpp" />
     <ClCompile Include="InteropDirect3D12.cpp" />
@@ -241,7 +243,8 @@
     <ClInclude Include="..\ThirdParty\zlib\zutil.h" />
     <ClInclude Include="Arcturus\AutoRelease.h" />
     <ClInclude Include="Arcturus\D3D12Utility.h" />
-    <ClInclude Include="Arcturus\DrawingContext.h" />
+    <ClInclude Include="Arcturus\DrawingContextMesh.h" />
+    <ClInclude Include="Arcturus\DrawingContextReference.h" />
     <ClInclude Include="Arcturus\dxr.dxil.h" />
     <ClInclude Include="Arcturus\ErrorD3D.h" />
     <ClInclude Include="Arcturus\ErrorVK.h" />

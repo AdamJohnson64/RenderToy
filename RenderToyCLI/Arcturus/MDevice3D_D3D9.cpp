@@ -1,6 +1,7 @@
 #include "AutoRelease.h"
 #include "ErrorD3D.h"
 #include "MTypes3D.h"
+#include "Vector.h"
 
 #include <stdint.h>
 
@@ -45,6 +46,7 @@ namespace Arcturus
             IRenderTarget_D3D9(IDevice3D_D3D9^ owner, RenderTargetDeclaration declaration);
             ~IRenderTarget_D3D9();
             !IRenderTarget_D3D9();
+            void Fill(System::IntPtr data);
             System::IntPtr GetIDirect3DSurface9Handle();
             System::IntPtr GetIDirect3DSurface9Pointer();
             IDirect3DSurface9* m_surface;
@@ -58,7 +60,7 @@ namespace Arcturus
         {
             IDirect3DSurface9* surface = nullptr;
             HANDLE handle = nullptr;
-            TRYD3D(m_owner->m_device->CreateRenderTarget(declaration.width, declaration.height, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_NONE, 0, FALSE, &surface, &handle));
+            TRYD3D(m_owner->m_device->CreateRenderTarget(declaration.width, declaration.height, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_NONE, 0, TRUE, &surface, &handle));
             m_surface = surface;
             m_handle = handle;
         }
@@ -71,6 +73,19 @@ namespace Arcturus
         IRenderTarget_D3D9::!IRenderTarget_D3D9()
         {
             Destroy();
+        }
+
+        void IRenderTarget_D3D9::Fill(System::IntPtr data)
+        {
+            D3DLOCKED_RECT rect = {};
+            TRYD3D(m_surface->LockRect(&rect, nullptr, 0));
+            for (int y = 0; y < 256; ++y)
+            {
+                const void* pRasterIn = (char*)data.ToPointer() + sizeof(uint32_t) * 256 * y;
+                void* pRasterOut = (char*)rect.pBits + rect.Pitch * y;
+                memcpy(pRasterOut, pRasterIn, sizeof(uint32_t) * 256);
+            }
+            TRYD3D(m_surface->UnlockRect());
         }
 
         System::IntPtr IRenderTarget_D3D9::GetIDirect3DSurface9Handle()

@@ -20,6 +20,15 @@ namespace Arcturus.Managed
         public void Signal()
         {
             context.reset();
+            Execute(context);
+            // Notify all listeners of update.
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, null);
+            }
+        }
+        public void Execute(IDrawingContext context)
+        {
             context.setColor(new Vec4 { X = 0, Y = 0, Z = 0, W = 1 });
             context.setWidth(1);
             // Draw a quad.
@@ -41,13 +50,8 @@ namespace Arcturus.Managed
                 context.setColor(new Vec4 { X = 0, Y = 0, Z = 0, W = 1 });
                 context.drawRectangle(new Vec2 { X = p.X - 4, Y = p.Y - 4 }, new Vec2 { X = p.X + 4, Y = p.Y + 4 });
             }
-            // Notify all listeners of update.
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, null);
-            }
         }
-        public DrawingContext context = new DrawingContext();
+        public DrawingContextMesh context = new DrawingContextMesh();
         public event PropertyChangedEventHandler PropertyChanged;
     };
 }

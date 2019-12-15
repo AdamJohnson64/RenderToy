@@ -40,6 +40,14 @@
             </MenuItem>
         </Menu>
         <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
+            <TabItem Header="Drawing">
+                <WrapPanel Orientation="Horizontal">
+                    <arcturus:DrawingViewReference Width="256" Height="256"/>
+                    <arcturus:DrawingViewD3D12 Width="256" Height="256"/>
+                    <arcturus:DrawingViewVulkan Width="256" Height="256"/>
+                    <arcturus:DrawingViewDXR12 Width="256" Height="256"/>
+                </WrapPanel>
+            </TabItem>
             <!-- ==================== Software Render ==================== -->
             <TabItem Header="Software Render">
                 <rendertoy:ViewSoftwareCustomizable rendertoy:AttachedView.Scene="{Binding Path=Scene}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}" rendertoy:AttachedView.TransformView="{Binding Source={StaticResource Camera}, Path=TransformView}" rendertoy:AttachedView.TransformProjection="{Binding Source={StaticResource Camera}, Path=TransformProjection}"/>
@@ -85,13 +93,6 @@
                         </TabItem>
                     </TabControl>
                 </Grid>
-            </TabItem>
-            <TabItem Header="Drawing">
-                <WrapPanel Orientation="Horizontal">
-                    <arcturus:DrawingViewD3D12 Width="256" Height="256"/>
-                    <arcturus:DrawingViewVulkan Width="256" Height="256"/>
-                    <arcturus:DrawingViewDXR12 Width="256" Height="256"/>
-                </WrapPanel>
             </TabItem>
         </TabControl>
     </DockPanel>

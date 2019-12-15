@@ -1,7 +1,5 @@
-#include "DrawingContextMesh.h"
-#include "MDevice3D.h"
+#include "DrawingContextReference.h"
 #include "MIDrawingContext.h"
-#include "MIDrawingContextAccess.h"
 #include "MStub.h"
 #include "Vector.h"
 
@@ -11,14 +9,14 @@ namespace Arcturus
 {
     namespace Managed
     {
-        public ref class DrawingContextMesh : public IDrawingContext, public IDrawingContextAccess
+        public ref class DrawingContextReference : public IDrawingContext
         {
         public:
-            DrawingContextMesh()
+            DrawingContextReference()
             {
-                thunk = new Arcturus::DrawingContextMesh();
+                thunk = new Arcturus::DrawingContextReference();
             }
-            ~DrawingContextMesh()
+            ~DrawingContextReference()
             {
                 if (thunk != nullptr)
                 {
@@ -26,7 +24,7 @@ namespace Arcturus
                     thunk = nullptr;
                 }
             }
-            !DrawingContextMesh()
+            !DrawingContextReference()
             {
                 if (thunk != nullptr)
                 {
@@ -37,6 +35,10 @@ namespace Arcturus
             void reset()
             {
                 thunk->reset();
+            }
+            void renderTo(System::IntPtr pixels, uint32_t width, uint32_t height, uint32_t stride)
+            {
+                thunk->renderTo(pixels.ToPointer(), width, height, stride);
             }
             virtual void setColor(Vec4 color)
             {
@@ -76,24 +78,8 @@ namespace Arcturus
                     Arcturus::Vec2{ static_cast<float>(bottomRight.X), static_cast<float>(bottomRight.Y) }
                 );
             }
-            virtual uint32_t vertexCount()
-            {
-                return thunk->vertexCount();
-            }
-            virtual System::IntPtr vertexPointer()
-            {
-                return System::IntPtr(const_cast<void*>(thunk->vertexPointer()));
-            }
-            virtual uint32_t indexCount()
-            {
-                return thunk->indexCount();
-            }
-            virtual System::IntPtr indexPointer()
-            {
-                return System::IntPtr(const_cast<uint32_t*>(thunk->indexPointer()));
-            }
         private:
-            Arcturus::DrawingContextMesh* thunk;
+            Arcturus::DrawingContextReference* thunk;
         };
     }
 }

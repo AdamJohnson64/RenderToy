@@ -1,6 +1,6 @@
 #define _USE_MATH_DEFINES
 
-#include "DrawingContext.h"
+#include "DrawingContextMesh.h"
 #include "Vector.h"
 
 #include <array>
@@ -42,12 +42,12 @@ namespace Arcturus
         return (a << 24) | (b << 16) | (g << 8) | (r << 0);
     }
 
-    DrawingContext::DrawingContext()
+    DrawingContextMesh::DrawingContextMesh()
     {
         reset();
     }
 
-    void DrawingContext::reset()
+    void DrawingContextMesh::reset()
     {
         vertices.clear();
         indices.clear();
@@ -56,22 +56,22 @@ namespace Arcturus
         _width = 1;
     }
 
-    void DrawingContext::setColor(const Vec4& color)
+    void DrawingContextMesh::setColor(const Vec4& color)
     {
         _color = color;
     }
 
-    void DrawingContext::setWidth(float width)
+    void DrawingContextMesh::setWidth(float width)
     {
         _width = width;
     }
 
-    void DrawingContext::moveTo(const Vec2& point)
+    void DrawingContextMesh::moveTo(const Vec2& point)
     {
         _cursor = point;
     }
 
-    void DrawingContext::lineTo(const Vec2& point)
+    void DrawingContextMesh::lineTo(const Vec2& point)
     {
         const float halfWidth = _width / 2;
         const Vec4 color2{ _color.X, _color.Y, _color.Z, 0 };
@@ -113,7 +113,7 @@ namespace Arcturus
         }
     }
 
-    void DrawingContext::drawCircle(const Vec2& point, float radius)
+    void DrawingContextMesh::drawCircle(const Vec2& point, float radius)
     {
         const uint32_t circumference = static_cast<uint32_t>(2 * M_PI * radius);
         const uint32_t spineCount = Max(4, Min(circumference / 4, 1000));
@@ -152,7 +152,7 @@ namespace Arcturus
         }
     }
 
-    void DrawingContext::drawRectangle(const Vec2& topLeft, const Vec2& bottomRight)
+    void DrawingContextMesh::drawRectangle(const Vec2& topLeft, const Vec2& bottomRight)
     {
         moveTo(topLeft);
         lineTo({ bottomRight.X, topLeft.Y });
@@ -161,7 +161,7 @@ namespace Arcturus
         lineTo(topLeft);
     }
 
-    void DrawingContext::fillCircle(const Vec2& point, float radius)
+    void DrawingContextMesh::fillCircle(const Vec2& point, float radius)
     {
         const uint32_t circumference = static_cast<uint32_t>(2 * M_PI * radius);
         const uint32_t spineCount = Max(4, Min(circumference / 4, 1000));
@@ -209,7 +209,7 @@ namespace Arcturus
         }
     }
 
-    void DrawingContext::fillRectangle(const Vec2& topLeft, const Vec2& bottomRight)
+    void DrawingContextMesh::fillRectangle(const Vec2& topLeft, const Vec2& bottomRight)
     {
         const uint32_t indexBase = vertices.size();
         const uint32_t color = ToColorUint32(_color);
@@ -225,22 +225,22 @@ namespace Arcturus
         indices.push_back(indexBase + 0);
     }
 
-    uint32_t DrawingContext::vertexCount() const
+    uint32_t DrawingContextMesh::vertexCount() const
     {
         return vertices.size();
     }
 
-    const void* DrawingContext::vertexPointer() const
+    const void* DrawingContextMesh::vertexPointer() const
     {
         return vertices.data();
     }
 
-    uint32_t DrawingContext::indexCount() const
+    uint32_t DrawingContextMesh::indexCount() const
     {
         return indices.size();
     }
 
-    const uint32_t* DrawingContext::indexPointer() const
+    const uint32_t* DrawingContextMesh::indexPointer() const
     {
         return indices.data();
     }

@@ -106,9 +106,6 @@
     <ClCompile Include="Arcturus\D3D12Utility.cpp">
       <Filter>Arcturus</Filter>
     </ClCompile>
-    <ClCompile Include="Arcturus\DrawingContext.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
     <ClCompile Include="Arcturus\ErrorD3D.cpp">
       <Filter>Arcturus</Filter>
     </ClCompile>
@@ -187,6 +184,15 @@
     <ClCompile Include="Arcturus\MStub.cpp">
       <Filter>Arcturus</Filter>
     </ClCompile>
+    <ClCompile Include="Arcturus\DrawingContextReference.cpp">
+      <Filter>Arcturus</Filter>
+    </ClCompile>
+    <ClCompile Include="Arcturus\MDrawingContextReference.cpp">
+      <Filter>Arcturus</Filter>
+    </ClCompile>
+    <ClCompile Include="Arcturus\DrawingContextMesh.cpp">
+      <Filter>Arcturus</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ThirdParty\zlib\crc32.h">
@@ -251,9 +257,6 @@
       <Filter>Arcturus</Filter>
     </ClInclude>
     <ClInclude Include="Arcturus\D3D12Utility.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\DrawingContext.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
     <ClInclude Include="Arcturus\ErrorD3D.h">
@@ -380,6 +383,12 @@
       <Filter>Arcturus</Filter>
     </ClInclude>
     <ClInclude Include="Arcturus\MVector.h">
+      <Filter>Arcturus</Filter>
+    </ClInclude>
+    <ClInclude Include="Arcturus\DrawingContextReference.h">
+      <Filter>Arcturus</Filter>
+    </ClInclude>
+    <ClInclude Include="Arcturus\DrawingContextMesh.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
   </ItemGroup>
