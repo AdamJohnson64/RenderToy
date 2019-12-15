@@ -11,10 +11,11 @@ namespace Arcturus
     {
         UNKNOWN = 0,
         DRAW_CIRCLE = 1,
-        DRAW_RECTANGLE = 2,
-        FILL_CIRCLE = 3,
-        FILL_RECTANGLE = 4,
-        END = 5,
+        DRAW_LINE = 2,
+        DRAW_RECTANGLE = 3,
+        FILL_CIRCLE = 4,
+        FILL_RECTANGLE = 5,
+        END = 6,
     };
 
     struct DrawCircle
@@ -22,6 +23,14 @@ namespace Arcturus
         Vec4 _color;
         Vec2 _center;
         float _radius;
+        float _width;
+    };
+
+    struct DrawLine
+    {
+        Vec4 _color;
+        Vec2 _p1;
+        Vec2 _p2;
         float _width;
     };
 
@@ -93,11 +102,6 @@ namespace Arcturus
             uint8_t* p = &_data[sizeCurrent];
             *(PrimitiveType*)p = PrimitiveType::END;
         }
-        // Lines next.
-        //Vec2 p1 = { 10, 10 };
-        //Vec2 p2 = { 99, 99 };
-        //Vec2 d = { p2.X - p1.X, p2.Y - p1.Y };
-        //Vec2 n = { d.Y, -d.X };
         // Walk every pixel in the image.
         for (uint32_t y = 0; y < height; ++y)
         {
@@ -127,6 +131,54 @@ namespace Arcturus
                                     float l = sqrtf(c.X * c.X + c.Y * c.Y) - pPrimitive->_radius;
                                     if (fabs(l) <= pPrimitive->_width / 2) colorPixel = pPrimitive->_color;
                                     pWalk += sizeof(uint32_t) + sizeof(DrawCircle);
+                                }
+                                break;
+                            case PrimitiveType::DRAW_LINE:
+                                {
+                                    DrawLine* pPrimitive = (DrawLine*)(pWalk + sizeof(uint32_t));
+                                    Vec2 d = { pPrimitive->_p2.X - pPrimitive->_p1.X, pPrimitive->_p2.Y - pPrimitive->_p1.Y };
+                                    float l = sqrtf(d.X * d.X + d.Y * d.Y);
+                                    d.X /= l;
+                                    d.Y /= l;
+                                    Vec2 n = { -d.Y, d.X };
+                                    bool inside = true;
+                                    {
+                                        float p1x = -d.X;
+                                        float p1y = -d.Y;
+                                        float p1d = -(p1x * pPrimitive->_p1.X + p1y * pPrimitive->_p1.Y + pPrimitive->_width / 2);
+                                        float dp = p1x * sp.X + p1y * sp.Y + p1d;
+                                        if (dp > 0) inside = false;
+                                    }
+                                    {
+                                        float p1x = d.X;
+                                        float p1y = d.Y;
+                                        float p1d = -(p1x * pPrimitive->_p2.X + p1y * pPrimitive->_p2.Y + pPrimitive->_width / 2);
+                                        float dp = p1x * sp.X + p1y * sp.Y + p1d;
+                                        if (dp > 0) inside = false;
+                                    }
+                                    {
+                                        float p1x = -n.X;
+                                        float p1y = -n.Y;
+                                        float p1d = -(p1x * pPrimitive->_p1.X + p1y * pPrimitive->_p1.Y + pPrimitive->_width / 2);
+                                        float dp = p1x * sp.X + p1y * sp.Y + p1d;
+                                        if (dp > 0) inside = false;
+                                    }
+                                    {
+                                        float p1x = n.X;
+                                        float p1y = n.Y;
+                                        float p1d = -(p1x * pPrimitive->_p1.X + p1y * pPrimitive->_p1.Y + pPrimitive->_width / 2);
+                                        float dp = p1x * sp.X + p1y * sp.Y + p1d;
+                                        if (dp > 0) inside = false;
+                                    }
+                                    if (inside)
+                                    {
+                                        colorPixel = pPrimitive->_color;
+                                    }
+                                    else
+                                    {
+                                        int test = 0;
+                                    }
+                                    pWalk += sizeof(uint32_t) + sizeof(DrawLine);
                                 }
                                 break;
                             case PrimitiveType::DRAW_RECTANGLE:
@@ -216,6 +268,18 @@ namespace Arcturus
 
     void DrawingContextReference::lineTo(const Vec2& point)
     {
+        uint32_t sizeCurrent = _data.size();
+        uint32_t sizeRequired = sizeof(uint32_t) + sizeof(DrawLine);
+        _data.resize(sizeCurrent + sizeRequired);
+        uint8_t* p = &_data[sizeCurrent];
+        *(PrimitiveType*)p = PrimitiveType::DRAW_LINE;
+        p += sizeof(PrimitiveType);
+        DrawLine* primitive = (DrawLine*)p;
+        primitive->_color = _color;
+        primitive->_p1 = _cursor;
+        primitive->_p2 = point;
+        primitive->_width = _width;
+        _cursor = point;
     }
 
     void DrawingContextReference::drawCircle(const Vec2& point, float radius)
