@@ -42,10 +42,18 @@
         <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
             <TabItem Header="Drawing">
                 <WrapPanel Orientation="Horizontal">
-                    <arcturus:DrawingViewReference Width="256" Height="256"/>
-                    <arcturus:DrawingViewD3D12 Width="256" Height="256"/>
-                    <arcturus:DrawingViewVulkan Width="256" Height="256"/>
-                    <arcturus:DrawingViewDXR12 Width="256" Height="256"/>
+                    <GroupBox Header="Reference">
+                        <arcturus:DrawingViewReference Width="256" Height="256"/>
+                    </GroupBox>
+                    <GroupBox Header="D3D12">
+                        <arcturus:DrawingViewD3D12 Width="256" Height="256"/>
+                    </GroupBox>
+                    <GroupBox Header="Vulkan">
+                        <arcturus:DrawingViewVulkan Width="256" Height="256"/>
+                    </GroupBox>
+                    <GroupBox Header="DXR12">
+                        <arcturus:DrawingViewDXR12 Width="256" Height="256"/>
+                    </GroupBox>
                 </WrapPanel>
             </TabItem>
             <!-- ==================== Software Render ==================== -->
