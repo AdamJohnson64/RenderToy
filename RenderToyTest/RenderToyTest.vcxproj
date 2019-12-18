@@ -20,12 +20,12 @@
   <Import Project="$(SolutionDir)\Configuration\Common.cplusplus.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -63,11 +63,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RenderToyCLI\RenderToyCLI.vcxproj">
-      <Project>{e68e5ecf-2731-45dc-a334-4fc4651ee0af}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="..\RenderToyCLI\Arcturus\DrawingContextReference.cpp" />
     <ClCompile Include="..\ThirdParty\googletest\googletest\src\gtest-all.cc" />
     <ClCompile Include="..\ThirdParty\googletest\googletest\src\gtest_main.cc" />
     <ClCompile Include="DrawingContextTest.cpp" />
