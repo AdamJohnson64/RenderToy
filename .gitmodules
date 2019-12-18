@@ -10,3 +10,6 @@
 [submodule "ThirdParty/RenderToyAssets"]
 	path = ThirdParty/RenderToyAssets
 	url = https://github.com/AdamJohnson64/RenderToyAssets.git
+[submodule "ThirdParty/googletest"]
+	path = ThirdParty/googletest
+	url = https://github.com/google/googletest.git
