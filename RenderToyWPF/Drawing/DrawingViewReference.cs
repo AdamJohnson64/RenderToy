@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace Arcturus.Managed
@@ -17,6 +18,7 @@ namespace Arcturus.Managed
         {
             var grid = new Grid();
             var image = new Image { Source = m_d3dImage, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Width = 256, Height = 256 };
+            RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
             grid.Children.Add(image);
             grid.Children.Add(new DrawingController());
             Content = grid;

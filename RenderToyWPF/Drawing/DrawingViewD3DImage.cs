@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace Arcturus.Managed
@@ -51,6 +52,7 @@ namespace Arcturus.Managed
             m_constantBufferView = m_device.CreateConstantBufferView(m_constantBuffer);
             var grid = new Grid();
             var image = new Image { Source = m_d3dImage, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Width = 256, Height = 256 };
+            RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
             m_timer.Interval = TimeSpan.FromSeconds(1);
             m_timer.Tick += (s, e) => Update();
             m_timer.Start();
