@@ -108,7 +108,7 @@ namespace Arcturus
             void *pRaster = (char*)pixels + stride * y;
             for (uint32_t x = 0; x < width; ++x)
             {
-                // 16 sample uniform grid sampling.
+                // 16 sample uniform grid sampling, centered around the mid-pixel.
                 int samples = 0;
                 const int SAMPLESIZE = 8;
                 Vec4 colorTotal = {};
@@ -116,7 +116,7 @@ namespace Arcturus
                 {
                     for (int sx = 0; sx < SAMPLESIZE; ++sx)
                     {
-                        Vec2 sp = { x + sx / (SAMPLESIZE + 1.0f), y + sy / (SAMPLESIZE + 1.0f) };
+                        Vec2 sp = { x + (sx + 0.5f) / SAMPLESIZE, y + (sy + 0.5f) / SAMPLESIZE };
                         // Handle all primitive types.
                         uint8_t* pWalk = &_data[0];
                         Vec4 colorPixel = {};
@@ -170,14 +170,7 @@ namespace Arcturus
                                         float dp = p1x * sp.X + p1y * sp.Y + p1d;
                                         if (dp > 0) inside = false;
                                     }
-                                    if (inside)
-                                    {
-                                        colorPixel = pPrimitive->_color;
-                                    }
-                                    else
-                                    {
-                                        int test = 0;
-                                    }
+                                    if (inside) colorPixel = pPrimitive->_color;
                                     pWalk += sizeof(uint32_t) + sizeof(DrawLine);
                                 }
                                 break;
