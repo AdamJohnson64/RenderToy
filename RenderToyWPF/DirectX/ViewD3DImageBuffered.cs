@@ -3,7 +3,7 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToy.DirectX;
+using Arcturus.Managed;
 using System;
 using System.Windows;
 using System.Windows.Interop;
@@ -19,16 +19,15 @@ namespace RenderToy.WPF
     {
         protected override Size MeasureOverride(Size availableSize)
         {
-            NullablePtr<IntPtr> handle = new NullablePtr<IntPtr>(IntPtr.Zero);
-            d3d9backbuffer = Direct3D9Helper.device.CreateRenderTarget((uint)availableSize.Width, (uint)availableSize.Height, D3DFormat.A8R8G8B8, D3DMultisample.None, 1, 0, handle);
-            d3d9backbufferhandle = handle.Value;
+            d3d9backbuffer = Direct3D9.Device.CreateRenderTarget(new RenderTargetDeclaration { width = (uint)availableSize.Width, height = (uint)availableSize.Height });
+            d3d9backbufferhandle = d3d9backbuffer.GetIDirect3DSurface9Handle();
             Target.Lock();
-            Target.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3d9backbuffer.ManagedPtr);
+            Target.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3d9backbuffer.GetIDirect3DSurface9Pointer());
             Target.Unlock();
             return base.MeasureOverride(availableSize);
         }
         // Direct3D9 Handling for D3DImage
-        protected Direct3DSurface9 d3d9backbuffer;
+        protected Arcturus.Managed.IRenderTarget_D3D9 d3d9backbuffer;
         protected IntPtr d3d9backbufferhandle;
     }
 }

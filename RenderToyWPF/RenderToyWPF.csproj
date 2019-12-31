@@ -148,7 +148,6 @@
     <Compile Include="Common\Utility\UnmanagedCopy.cs" />
     <Compile Include="Common\Utility\WorkQueue.cs" />
     <Compile Include="DirectX\Direct3D11Helper.cs" />
-    <Compile Include="DirectX\Direct3D9Helper.cs" />
     <Compile Include="DirectX\Direct3DHelper.cs" />
     <Compile Include="DirectX\DXGIHelper.cs" />
     <Compile Include="DirectX\HLSL.cs" />
