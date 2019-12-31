@@ -1,9 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////////
-// RenderToy - A bit of history that's now a bit of silicon...
-// Copyright (C) Adam Johnson 2018
-////////////////////////////////////////////////////////////////////////////////
-
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using RenderToy.DirectX;
 using RenderToy.DocumentModel;
 using RenderToy.Materials;

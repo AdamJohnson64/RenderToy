@@ -1,9 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////////
-// RenderToy - A bit of history that's now a bit of silicon...
-// Copyright (C) Adam Johnson 2018
-////////////////////////////////////////////////////////////////////////////////
-
-// Render calls have many constructions in CLI/CX code and many parameter types vary depending on the environment.
+﻿// Render calls have many constructions in CLI/CX code and many parameter types vary depending on the environment.
 //
 // e.g.
 //   In CLI the byte[] is usually locked and marshaled as System::IntPtr.

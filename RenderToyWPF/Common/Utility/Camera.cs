@@ -1,9 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////////
-// RenderToy - A bit of history that's now a bit of silicon...
-// Copyright (C) Adam Johnson 2018
-////////////////////////////////////////////////////////////////////////////////
-
-using RenderToy.Cameras;
+﻿using RenderToy.Cameras;
 using RenderToy.Math;
 using RenderToy.Transforms;
 using System.Windows;

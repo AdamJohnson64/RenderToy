@@ -1,9 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////////
-// RenderToy - A bit of history that's now a bit of silicon...
-// Copyright (C) Adam Johnson 2018
-////////////////////////////////////////////////////////////////////////////////
-
-// The WorkQueue is a helper object which permits the execution of mini tasks (delegate Action).
+﻿// The WorkQueue is a helper object which permits the execution of mini tasks (delegate Action).
 // Tasks may spawn other tasks as they progress and the worker will terminate when all work is complete.
 //
 // We use this design as a means for investigating large-scale threading models in RenderToy.
