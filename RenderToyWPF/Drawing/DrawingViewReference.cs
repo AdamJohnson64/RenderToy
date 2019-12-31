@@ -24,7 +24,7 @@ namespace Arcturus.Managed
             Content = grid;
             DataContext = FakeDocument.Global;
             m_timer.Interval = TimeSpan.FromSeconds(5);
-            m_timer.Tick += (s, e) => Update();
+            m_timer.Tick += (s, e) => UpdateThread();
             m_timer.Start();
         }
         void Update(FakeDocument document)
@@ -40,6 +40,27 @@ namespace Arcturus.Managed
                     m_renderTarget9.Fill(new IntPtr(p));
                 }
             }
+            m_d3dImage.Lock();
+            m_d3dImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, m_renderTarget9.GetIDirect3DSurface9Pointer());
+            m_d3dImage.AddDirtyRect(new Int32Rect(0, 0, m_d3dImage.PixelWidth, m_d3dImage.PixelHeight));
+            m_d3dImage.Unlock();
+        }
+        void UpdateThread()
+        {
+            if (!IsVisible)
+            {
+                return;
+            }
+            var document = DataContext as FakeDocument;
+            if (document == null)
+            {
+                return;
+            }
+            Update(document);
+        }
+        void UpdateThread(object s, PropertyChangedEventArgs e)
+        {
+            UpdateThread();
         }
         static void DocumentChanged(object s, DependencyPropertyChangedEventArgs e)
         {
@@ -49,29 +70,12 @@ namespace Arcturus.Managed
             }
             if (e.OldValue is FakeDocument old)
             {
-                old.PropertyChanged -= view.Update;
+                old.PropertyChanged -= view.UpdateThread;
             }
             if (e.NewValue is FakeDocument newdoc)
             {
-                newdoc.PropertyChanged += view.Update;
+                newdoc.PropertyChanged += view.UpdateThread;
             }
-        }
-        void Update()
-        {
-            var document = DataContext as FakeDocument;
-            if (document == null)
-            {
-                return;
-            }
-            Update(document);
-            m_d3dImage.Lock();
-            m_d3dImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, m_renderTarget9.GetIDirect3DSurface9Pointer());
-            m_d3dImage.AddDirtyRect(new Int32Rect(0, 0, m_d3dImage.PixelWidth, m_d3dImage.PixelHeight));
-            m_d3dImage.Unlock();
-        }
-        void Update(object s, PropertyChangedEventArgs e)
-        {
-            Update();
         }
         static RenderTargetDeclaration m_renderTargetDeclaration = new RenderTargetDeclaration { width = 256, height = 256 };
         IRenderTarget_D3D9 m_renderTarget9 = Direct3D9.Device.CreateRenderTarget(m_renderTargetDeclaration);
