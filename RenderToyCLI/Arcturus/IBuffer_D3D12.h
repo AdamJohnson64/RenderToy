@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AutoRelease.h"
-#include "IIndexBuffer.h"
 
 #include <stdint.h>
 
