@@ -3,20 +3,19 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using RenderToyCOM;
+using Arcturus.Managed;
 using RenderToy.Cameras;
 using RenderToy.Diagnostics;
 using RenderToy.DirectX;
 using RenderToy.DocumentModel;
 using RenderToy.Math;
-using RenderToy.Shaders;
-using RenderToy.Utility;
+using RenderToyCOM;
 using System;
-using System.Runtime.InteropServices;
-using System.Windows;
 using System.Collections.Generic;
-using System.Windows.Threading;
+using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace RenderToy.WPF
 {

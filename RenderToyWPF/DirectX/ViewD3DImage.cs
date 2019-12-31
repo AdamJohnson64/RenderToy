@@ -3,13 +3,12 @@
 // Copyright (C) Adam Johnson 2018
 ////////////////////////////////////////////////////////////////////////////////
 
-using Arcturus.Managed;
 using System;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 
-namespace RenderToy.WPF
+namespace Arcturus.Managed
 {
     /// <summary>
     /// Render the contents of a D3DImage into a control.
@@ -22,6 +21,7 @@ namespace RenderToy.WPF
         {
             d3d9backbuffer = Direct3D9.Device.CreateRenderTarget(new RenderTargetDeclaration { width = (uint)availableSize.Width, height = (uint)availableSize.Height });
             d3d9backbufferhandle = d3d9backbuffer.GetIDirect3DSurface9Handle();
+            RenderOptions.SetBitmapScalingMode(Target, BitmapScalingMode.NearestNeighbor);
             Target.Lock();
             Target.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3d9backbuffer.GetIDirect3DSurface9Pointer());
             Target.Unlock();
@@ -32,7 +32,7 @@ namespace RenderToy.WPF
             drawingContext.DrawImage(Target, new Rect(0, 0, ActualWidth, ActualHeight));
         }
         protected D3DImage Target = new D3DImage();
-        protected Arcturus.Managed.IRenderTarget_D3D9 d3d9backbuffer;
+        protected IRenderTarget_D3D9 d3d9backbuffer;
         protected IntPtr d3d9backbufferhandle;
     }
 }

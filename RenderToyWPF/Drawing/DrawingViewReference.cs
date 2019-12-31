@@ -1,14 +1,13 @@
-﻿using System;
+﻿using RenderToy.WPF;
+using System;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace Arcturus.Managed
 {
-    public class DrawingViewReference : ContentControl
+    public class DrawingViewReference : ViewD3DImage
     {
         static DrawingViewReference()
         {
@@ -16,12 +15,6 @@ namespace Arcturus.Managed
         }
         public DrawingViewReference()
         {
-            var grid = new Grid();
-            var image = new Image { Source = m_d3dImage, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Width = 256, Height = 256 };
-            RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
-            grid.Children.Add(image);
-            grid.Children.Add(new DrawingController());
-            Content = grid;
             DataContext = FakeDocument.Global;
             m_timer.Interval = TimeSpan.FromSeconds(5);
             m_timer.Tick += (s, e) => UpdateThread();
@@ -29,21 +22,23 @@ namespace Arcturus.Managed
         }
         void Update(FakeDocument document)
         {
+            int width = Target.PixelWidth;
+            int height = Target.PixelHeight;
             DrawingContextReference dc = new DrawingContextReference();
             document.Execute(dc);
-            uint[] pixels = new uint[256 * 256];
+            uint[] pixels = new uint[width * height];
             unsafe
             {
                 fixed (uint* p = &pixels[0])
                 {
-                    dc.renderTo(new IntPtr(p), 256, 256, 4 * 256);
-                    m_renderTarget9.Fill(new IntPtr(p));
+                    dc.renderTo(new IntPtr(p), (uint)width, (uint)height, 4 * (uint)width);
+                    d3d9backbuffer.Fill(new IntPtr(p));
                 }
             }
-            m_d3dImage.Lock();
-            m_d3dImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, m_renderTarget9.GetIDirect3DSurface9Pointer());
-            m_d3dImage.AddDirtyRect(new Int32Rect(0, 0, m_d3dImage.PixelWidth, m_d3dImage.PixelHeight));
-            m_d3dImage.Unlock();
+            Target.Lock();
+            Target.SetBackBuffer(D3DResourceType.IDirect3DSurface9, d3d9backbuffer.GetIDirect3DSurface9Pointer());
+            Target.AddDirtyRect(new Int32Rect(0, 0, width, height));
+            Target.Unlock();
         }
         void UpdateThread()
         {
@@ -77,9 +72,6 @@ namespace Arcturus.Managed
                 newdoc.PropertyChanged += view.UpdateThread;
             }
         }
-        static RenderTargetDeclaration m_renderTargetDeclaration = new RenderTargetDeclaration { width = 256, height = 256 };
-        IRenderTarget_D3D9 m_renderTarget9 = Direct3D9.Device.CreateRenderTarget(m_renderTargetDeclaration);
-        D3DImage m_d3dImage = new D3DImage();
         DispatcherTimer m_timer = new DispatcherTimer();
     }
 }

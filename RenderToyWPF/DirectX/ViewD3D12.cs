@@ -1,4 +1,4 @@
-﻿using RenderToyCOM;
+﻿using Arcturus.Managed;
 using RenderToy.Cameras;
 using RenderToy.DirectX;
 using RenderToy.Expressions;
@@ -7,6 +7,7 @@ using RenderToy.Meshes;
 using RenderToy.Primitives;
 using RenderToy.Shaders;
 using RenderToy.Utility;
+using RenderToyCOM;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
