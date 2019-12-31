@@ -10,7 +10,7 @@ using System.Windows.Threading;
 
 namespace RenderToy.WPF
 {
-    class ViewArcturus : ViewD3DImageBuffered
+    class ViewArcturus : ViewD3DImage
     {
         public ViewArcturus()
         {

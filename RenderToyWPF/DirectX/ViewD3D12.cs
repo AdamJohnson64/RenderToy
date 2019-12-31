@@ -15,7 +15,7 @@ using System.Windows;
 
 namespace RenderToy.WPF
 {
-    class ViewD3D12 : ViewD3DImageBuffered
+    class ViewD3D12 : ViewD3DImage
     {
         public static D3D12Device d3d12Device;
         static ViewD3D12()

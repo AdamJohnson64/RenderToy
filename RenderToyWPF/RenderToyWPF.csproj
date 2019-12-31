@@ -213,7 +213,6 @@
     <Compile Include="DirectX\ViewD3D11.cs" />
     <Compile Include="DirectX\ViewD3D12.cs" />
     <Compile Include="DirectX\ViewD3DImage.cs" />
-    <Compile Include="DirectX\ViewD3DImageBuffered.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

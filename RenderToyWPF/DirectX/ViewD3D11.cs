@@ -20,7 +20,7 @@ using System.Threading;
 
 namespace RenderToy.WPF
 {
-    class ViewD3D11 : ViewD3DImageBuffered
+    class ViewD3D11 : ViewD3DImage
     {
         DispatcherTimer timer = null;
         public ViewD3D11()
