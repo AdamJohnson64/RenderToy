@@ -122,7 +122,6 @@
     <Compile Include="Common\RenderControl\AccumulateBuffer.cs" />
     <Compile Include="Common\RenderControl\BitmapBuffer.cs" />
     <Compile Include="Common\RenderControl\IMultiPass.cs" />
-    <Compile Include="Common\RenderControl\MultiPassAsync.cs" />
     <Compile Include="Common\RenderControl\SinglePassAsync.cs" />
     <Compile Include="Common\RenderControl\SinglePassSync.cs" />
     <Compile Include="Common\RenderMode\CallHelp.cs" />

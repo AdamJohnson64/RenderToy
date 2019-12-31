@@ -215,11 +215,7 @@
     <ClCompile Include="InteropDXGI.cpp" />
     <ClCompile Include="InteropLibPNG.cpp" />
     <ClCompile Include="RaytraceExportCPU.cpp" />
-    <ClCompile Include="RaytraceExportCUDA.cpp" />
     <ClCompile Include="RenderToyCLI.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="..\RenderToyCoreCPP\Raytrace.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ThirdParty\libpng\png.h" />
@@ -289,7 +285,6 @@
     <ClInclude Include="InteropCommon.h" />
     <ClInclude Include="Raytrace.h" />
     <ClInclude Include="RaytraceExportCPU.h" />
-    <ClInclude Include="RaytraceExportCUDA.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt" />
@@ -300,7 +295,6 @@
     </COMFileReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Raytrace.cu" />
     <None Include="Raytrace.inc" />
   </ItemGroup>
   <ItemGroup>

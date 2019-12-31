@@ -25,7 +25,6 @@
   </PropertyGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="LibPNG.cplusplus.props" />
-    <Import Project="Cuda.cplusplus.props" />
     <Import Project="OpenVR.cplusplus.props" />
   </ImportGroup>
 </Project>

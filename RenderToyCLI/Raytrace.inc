@@ -1,6 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// This file contains the common parts of the raytracer shared by CPU, and CUDA
-// implementations.
+// This the core code of the CPU raytracer.
 //
 // All parts of this module are templated over their floating point type to
 // support both IEEE 754 32-bit float and 64-bit double implementation.

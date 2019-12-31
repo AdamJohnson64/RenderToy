@@ -100,7 +100,6 @@
     <ClCompile Include="InteropDXGI.cpp" />
     <ClCompile Include="InteropLibPNG.cpp" />
     <ClCompile Include="RaytraceExportCPU.cpp" />
-    <ClCompile Include="RaytraceExportCUDA.cpp" />
     <ClCompile Include="RenderToyCLI.cpp" />
     <ClCompile Include="Arcturus\D3D12Utility.cpp">
       <Filter>Arcturus</Filter>
@@ -251,7 +250,6 @@
     <ClInclude Include="InteropCommon.h" />
     <ClInclude Include="Raytrace.h" />
     <ClInclude Include="RaytraceExportCPU.h" />
-    <ClInclude Include="RaytraceExportCUDA.h" />
     <ClInclude Include="Arcturus\AutoRelease.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
@@ -406,7 +404,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Raytrace.cu" />
     <None Include="Raytrace.inc" />
   </ItemGroup>
   <ItemGroup>

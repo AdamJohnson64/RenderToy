@@ -79,14 +79,7 @@ namespace RenderToy.WPF
             set
             {
                 renderCall = value;
-                if (!renderCall.IsMultipass)
-                {
-                    renderMode = new SinglePassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
-                }
-                else
-                {
-                    renderMode = new MultiPassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
-                }
+                renderMode = new SinglePassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
                 renderMode.SetScene(AttachedView.GetScene(this));
                 InvalidateVisual();
             }

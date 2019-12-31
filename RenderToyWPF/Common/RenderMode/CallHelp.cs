@@ -41,8 +41,6 @@ namespace RenderToy.RenderMode
             {
                 return null;
             }
-            bool knowMultipass = false;
-            bool isMultipass = false;
             bool isF32 = method.Name.Contains("F32");
             bool isF64 = method.Name.Contains("F64");
             var generateargs = new List<Func<Dictionary<string, object>, Argument>>();
@@ -75,39 +73,12 @@ namespace RenderToy.RenderMode
                     if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF32(MathHelp.Invert((Matrix3D)args[MVP]))));
                     if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF64(MathHelp.Invert((Matrix3D)args[MVP]))));
                 }
-                else if (param.ParameterType == typeof(byte[]) && param.Name == ACCUMULATOR_PTR)
-                {
-                    if (knowMultipass) throw new Exception("Multipass type is already determined.");
-                    knowMultipass = true;
-                    isMultipass = true;
-                    generateargs.Add((args) => new ArgumentFixed(args[BUFFER_PTR]));
-                }
-                else if (param.ParameterType == typeof(IntPtr) && param.Name == ACCUMULATOR_PTR)
-                {
-                    if (knowMultipass) throw new Exception("Multipass type is already determined.");
-                    knowMultipass = true;
-                    isMultipass = true;
-                    generateargs.Add(
-                        (args) => {
-                            var arg = args[BUFFER_PTR];
-                            if (arg is IntPtr) return new ArgumentFixed(arg);
-                            else if (arg is byte[]) return new ArgumentGCHandlePinnedIntPtr(arg);
-                            else throw new Exception("Unable to convert type '" + arg + "'.");
-                        }
-                    );
-                }
                 else if (param.ParameterType == typeof(byte[]) && param.Name == BITMAP_PTR)
                 {
-                    if (knowMultipass) throw new Exception("Multipass type is already determined.");
-                    knowMultipass = true;
-                    isMultipass = false;
                     generateargs.Add((args) => new ArgumentFixed(args[BUFFER_PTR]));
                 }
                 else if (param.ParameterType == typeof(IntPtr) && param.Name == BITMAP_PTR)
                 {
-                    if (knowMultipass) throw new Exception("Multipass type is already determined.");
-                    knowMultipass = true;
-                    isMultipass = false;
                     generateargs.Add(
                         (args) => {
                             var arg = args[BUFFER_PTR];
@@ -137,14 +108,6 @@ namespace RenderToy.RenderMode
                 {
                     generateargs.Add((args) => new ArgumentFixed(args.ContainsKey(SAMPLE_COUNT) ? args[SAMPLE_COUNT] : 64));
                 }
-                else if (param.ParameterType == typeof(int) && param.Name == SUPERX)
-                {
-                    generateargs.Add((args) => new ArgumentFixed(1));
-                }
-                else if (param.ParameterType == typeof(int) && param.Name == SUPERY)
-                {
-                    generateargs.Add((args) => new ArgumentFixed(1));
-                }
                 else
                 {
                     return null;
@@ -153,11 +116,6 @@ namespace RenderToy.RenderMode
             }
             // If we didn't find any arguments then ignore this method.
             if (generateargs.Count == 0)
-            {
-                return null;
-            }
-            // If we couldn't determine the buffer type (multipass) then ignore this method.
-            if (!knowMultipass)
             {
                 return null;
             }
@@ -181,13 +139,13 @@ namespace RenderToy.RenderMode
                 var parameters = converters.Select(x => x.Value).ToArray();
                 method.Invoke(null, parameters);
             };
-            return new RenderCall(method, action, isMultipass);
+            return new RenderCall(method, action);
         }
         #endregion
         #region - Section : Call Naming -
         public static string GetDisplayNameBare(string methodname)
         {
-            var chop_mode = new[] { "CPU", "CUDA", "D3D9" }
+            var chop_mode = new[] { "CPU", "D3D9" }
                 .Select(x => new { Chop = methodname.IndexOf(x), Name = x })
                 .Where(x => x.Chop != -1).OrderBy(x => x.Chop);
             var chop_prec = new[] { "F32", "F64" }
@@ -199,7 +157,7 @@ namespace RenderToy.RenderMode
         }
         public static string GetDisplayNameFull(string methodname)
         {
-            var chop_mode = new[] { "CPU", "CUDA", "D3D9" }
+            var chop_mode = new[] { "CPU", "D3D9" }
                 .Select(x => new { Chop = methodname.IndexOf(x), Name = x })
                 .Where(x => x.Chop != -1).OrderBy(x => x.Chop);
             var chop_prec = new[] { "F32", "F64" }
@@ -270,20 +228,16 @@ namespace RenderToy.RenderMode
         public static readonly string BUFFER_STRIDE = "buffer_stride";
         public static readonly string SAMPLE_OFFSET = "sample_offset";
         public static readonly string SAMPLE_COUNT = "sample_count";
-        public static readonly string SUPERX = "superx";
-        public static readonly string SUPERY = "supery";
         #endregion
         #region - Section : Private Construction & Data -
-        RenderCall(MethodInfo methodinfo, FillFunction action, bool ismultipass)
+        RenderCall(MethodInfo methodinfo, FillFunction action)
         {
             MethodInfo = methodinfo;
             Action = action;
-            IsMultipass = ismultipass;
         }
         public delegate void FillFunction(IEnumerable<TransformedObject> scene, Matrix3D mvp, object buffer_ptr, int render_width, int render_height, int buffer_stride, Dictionary<string, object> overrides);
         public readonly MethodInfo MethodInfo;
         public readonly FillFunction Action;
-        public readonly bool IsMultipass;
         #endregion
     }
 }

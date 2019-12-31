@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
-// These are the shared structures and types consumed by both CPU and CUDA
-// raytracers. This code is device-invariant.
+// These are the shared structures and types consumed by the CPU raytracer.
+// This code is device-invariant.
 ////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
