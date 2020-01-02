@@ -241,7 +241,7 @@
     <ClInclude Include="Arcturus\D3D12Utility.h" />
     <ClInclude Include="Arcturus\DrawingContextMesh.h" />
     <ClInclude Include="Arcturus\DrawingContextReference.h" />
-    <ClInclude Include="Arcturus\dxr.dxil.h" />
+    <ClInclude Include="Arcturus\generated.dxr.h" />
     <ClInclude Include="Arcturus\ErrorD3D.h" />
     <ClInclude Include="Arcturus\ErrorVK.h" />
     <ClInclude Include="Arcturus\IBuffer_D3D12.h" />
@@ -309,9 +309,9 @@
       </EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Library</ShaderType>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">g_dxr_shader</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\RenderToyCLI\Arcturus\dxr.dxil.h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\RenderToyCLI\Arcturus\generated.dxr.h</HeaderFileOutput>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">g_dxr_shader</VariableName>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\RenderToyCLI\Arcturus\dxr.dxil.h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\RenderToyCLI\Arcturus\generated.dxr.h</HeaderFileOutput>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

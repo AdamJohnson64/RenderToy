@@ -7,3 +7,14 @@
 */project.lock.json
 .vs/*
 Output/*
+generated.*
+
+# CMake files
+/CMake*
+!/CMakeLists.txt
+/*.dir
+/*.vcxproj*
+/*.sln
+!/RenderToy.sln
+/Debug
+/x64/*

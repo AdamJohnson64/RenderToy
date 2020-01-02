@@ -143,15 +143,15 @@ namespace Arcturus
         // Define two nested triangles; outer and inner, adjusted by half the stroke width.
         // Points inside the outer and not inside the inner are inside the rectangle.
         // Check that we're inside the outer rectangle.
-        if (sp.X <= rectangle._topLeft.X - rectangle._width / 2) return false;
-        if (sp.X >= rectangle._bottomRight.X + rectangle._width / 2) return false;
-        if (sp.Y <= rectangle._topLeft.Y - rectangle._width / 2) return false;
-        if (sp.Y >= rectangle._bottomRight.Y + rectangle._width / 2) return false;
+        if (sp.X <= rectangle._topLeft.X - rectangle._width / 2 ||
+            sp.X >= rectangle._bottomRight.X + rectangle._width / 2 ||
+            sp.Y <= rectangle._topLeft.Y - rectangle._width / 2 ||
+            sp.Y >= rectangle._bottomRight.Y + rectangle._width / 2) return false;
         // Check that we're NOT inside the inner rectangle.
-        if (!(sp.X <= rectangle._topLeft.X + rectangle._width / 2)) return false;
-        if (!(sp.X >= rectangle._bottomRight.X - rectangle._width / 2)) return false;
-        if (!(sp.Y <= rectangle._topLeft.Y + rectangle._width / 2)) return false;
-        if (!(sp.Y >= rectangle._bottomRight.Y - rectangle._width / 2)) return false;
+        if (!(sp.X <= rectangle._topLeft.X + rectangle._width / 2 ||
+            sp.X >= rectangle._bottomRight.X - rectangle._width / 2 ||
+            sp.Y <= rectangle._topLeft.Y + rectangle._width / 2 ||
+            sp.Y >= rectangle._bottomRight.Y - rectangle._width / 2)) return false;
         return true;
     }
 

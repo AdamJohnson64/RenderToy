@@ -289,7 +289,7 @@
     <ClInclude Include="Arcturus\IConstantBufferView_Vulkan.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
-    <ClInclude Include="Arcturus\dxr.dxil.h">
+    <ClInclude Include="Arcturus\generated.dxr.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
     <ClInclude Include="Arcturus\IDevice3D.h">

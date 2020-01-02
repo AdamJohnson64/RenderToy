@@ -2,7 +2,7 @@
 #include "ErrorD3D.h"
 #include "IRaytrace_D3D12.h"
 #include "Vector.h"
-#include "dxr.dxil.h"
+#include "generated.dxr.h"
 
 #include <memory>
 
