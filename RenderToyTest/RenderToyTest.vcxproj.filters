@@ -5,5 +5,7 @@
     <ClCompile Include="..\ThirdParty\googletest\googletest\src\gtest-all.cc" />
     <ClCompile Include="DrawingContextTest.cpp" />
     <ClCompile Include="..\RenderToyCLI\Arcturus\DrawingContextReference.cpp" />
+    <ClCompile Include="SpaceFillTest.cpp" />
+    <ClCompile Include="..\RenderToyCLI\Arcturus\Vector.cpp" />
   </ItemGroup>
 </Project>
