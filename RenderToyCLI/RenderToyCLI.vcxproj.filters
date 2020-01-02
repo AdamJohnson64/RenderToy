@@ -191,6 +191,9 @@
     <ClCompile Include="Arcturus\DrawingContextMesh.cpp">
       <Filter>Arcturus</Filter>
     </ClCompile>
+    <ClCompile Include="Arcturus\Vector.cpp">
+      <Filter>Arcturus</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ThirdParty\zlib\crc32.h">

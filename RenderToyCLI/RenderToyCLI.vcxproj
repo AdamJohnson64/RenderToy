@@ -209,6 +209,7 @@
     <ClCompile Include="Arcturus\MDrawingContext.cpp" />
     <ClCompile Include="Arcturus\MDrawingContextReference.cpp" />
     <ClCompile Include="Arcturus\MStub.cpp" />
+    <ClCompile Include="Arcturus\Vector.cpp" />
     <ClCompile Include="InteropDirect3D11.cpp" />
     <ClCompile Include="InteropDirect3D12.cpp" />
     <ClCompile Include="InteropDirect3DCompiler.cpp" />

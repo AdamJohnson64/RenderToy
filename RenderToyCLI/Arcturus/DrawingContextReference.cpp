@@ -93,6 +93,84 @@ namespace Arcturus
         _data.clear();
     }
 
+    static bool Contains(const DrawCircle& circle, const Vec2& point)
+    {
+        Vec2 c = { circle._center.X - point.X, circle._center.Y - point.Y };
+        float l = sqrtf(c.X * c.X + c.Y * c.Y) - circle._radius;
+        return fabs(l) <= circle._width / 2;
+    }
+
+    static bool Contains(const DrawLine& line, const Vec2& sp)
+    {
+        Vec2 d = { line._p2.X - line._p1.X, line._p2.Y - line._p1.Y };
+        float l = sqrtf(d.X * d.X + d.Y * d.Y);
+        d.X /= l;
+        d.Y /= l;
+        Vec2 n = { -d.Y, d.X };
+        {
+            float p1x = -d.X;
+            float p1y = -d.Y;
+            float p1d = -(p1x * line._p1.X + p1y * line._p1.Y + line._width / 2);
+            float dp = p1x * sp.X + p1y * sp.Y + p1d;
+            if (dp > 0) return false;
+        }
+        {
+            float p1x = d.X;
+            float p1y = d.Y;
+            float p1d = -(p1x * line._p2.X + p1y * line._p2.Y + line._width / 2);
+            float dp = p1x * sp.X + p1y * sp.Y + p1d;
+            if (dp > 0) return false;
+        }
+        {
+            float p1x = -n.X;
+            float p1y = -n.Y;
+            float p1d = -(p1x * line._p1.X + p1y * line._p1.Y + line._width / 2);
+            float dp = p1x * sp.X + p1y * sp.Y + p1d;
+            if (dp > 0) return false;
+        }
+        {
+            float p1x = n.X;
+            float p1y = n.Y;
+            float p1d = -(p1x * line._p1.X + p1y * line._p1.Y + line._width / 2);
+            float dp = p1x * sp.X + p1y * sp.Y + p1d;
+            if (dp > 0) return false;
+        }
+        return true;
+    }
+
+    static bool Contains(const DrawRectangle& rectangle, const Vec2& sp)
+    {
+        // Define two nested triangles; outer and inner, adjusted by half the stroke width.
+        // Points inside the outer and not inside the inner are inside the rectangle.
+        // Check that we're inside the outer rectangle.
+        if (sp.X <= rectangle._topLeft.X - rectangle._width / 2) return false;
+        if (sp.X >= rectangle._bottomRight.X + rectangle._width / 2) return false;
+        if (sp.Y <= rectangle._topLeft.Y - rectangle._width / 2) return false;
+        if (sp.Y >= rectangle._bottomRight.Y + rectangle._width / 2) return false;
+        // Check that we're NOT inside the inner rectangle.
+        if (!(sp.X <= rectangle._topLeft.X + rectangle._width / 2)) return false;
+        if (!(sp.X >= rectangle._bottomRight.X - rectangle._width / 2)) return false;
+        if (!(sp.Y <= rectangle._topLeft.Y + rectangle._width / 2)) return false;
+        if (!(sp.Y >= rectangle._bottomRight.Y - rectangle._width / 2)) return false;
+        return true;
+    }
+
+    static bool Contains(const FillCircle& circle, const Vec2& sp)
+    {
+        Vec2 c = { circle._center.X - sp.X, circle._center.Y - sp.Y };
+        float l = sqrtf(c.X * c.X + c.Y * c.Y);
+        return l <= circle._radius;
+    }
+
+    static bool Contains(const FillRectangle& rectangle, const Vec2& sp)
+    {
+        if (sp.X <= rectangle._topLeft.X) return false;
+        if (sp.X >= rectangle._bottomRight.X) return false;
+        if (sp.Y <= rectangle._topLeft.Y) return false;
+        if (sp.Y >= rectangle._bottomRight.Y) return false;
+        return true;
+    }
+
     void DrawingContextReference::renderTo(void* pixels, uint32_t width, uint32_t height, uint32_t stride)
     {
         {
@@ -127,90 +205,35 @@ namespace Arcturus
                             case PrimitiveType::DRAW_CIRCLE:
                                 {
                                     DrawCircle* pPrimitive = (DrawCircle*)(pWalk + sizeof(uint32_t));
-                                    Vec2 c = { pPrimitive->_center.X - sp.X, pPrimitive->_center.Y - sp.Y };
-                                    float l = sqrtf(c.X * c.X + c.Y * c.Y) - pPrimitive->_radius;
-                                    if (fabs(l) <= pPrimitive->_width / 2) colorPixel = pPrimitive->_color;
+                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
                                     pWalk += sizeof(uint32_t) + sizeof(DrawCircle);
                                 }
                                 break;
                             case PrimitiveType::DRAW_LINE:
                                 {
                                     DrawLine* pPrimitive = (DrawLine*)(pWalk + sizeof(uint32_t));
-                                    Vec2 d = { pPrimitive->_p2.X - pPrimitive->_p1.X, pPrimitive->_p2.Y - pPrimitive->_p1.Y };
-                                    float l = sqrtf(d.X * d.X + d.Y * d.Y);
-                                    d.X /= l;
-                                    d.Y /= l;
-                                    Vec2 n = { -d.Y, d.X };
-                                    bool inside = true;
-                                    {
-                                        float p1x = -d.X;
-                                        float p1y = -d.Y;
-                                        float p1d = -(p1x * pPrimitive->_p1.X + p1y * pPrimitive->_p1.Y + pPrimitive->_width / 2);
-                                        float dp = p1x * sp.X + p1y * sp.Y + p1d;
-                                        if (dp > 0) inside = false;
-                                    }
-                                    {
-                                        float p1x = d.X;
-                                        float p1y = d.Y;
-                                        float p1d = -(p1x * pPrimitive->_p2.X + p1y * pPrimitive->_p2.Y + pPrimitive->_width / 2);
-                                        float dp = p1x * sp.X + p1y * sp.Y + p1d;
-                                        if (dp > 0) inside = false;
-                                    }
-                                    {
-                                        float p1x = -n.X;
-                                        float p1y = -n.Y;
-                                        float p1d = -(p1x * pPrimitive->_p1.X + p1y * pPrimitive->_p1.Y + pPrimitive->_width / 2);
-                                        float dp = p1x * sp.X + p1y * sp.Y + p1d;
-                                        if (dp > 0) inside = false;
-                                    }
-                                    {
-                                        float p1x = n.X;
-                                        float p1y = n.Y;
-                                        float p1d = -(p1x * pPrimitive->_p1.X + p1y * pPrimitive->_p1.Y + pPrimitive->_width / 2);
-                                        float dp = p1x * sp.X + p1y * sp.Y + p1d;
-                                        if (dp > 0) inside = false;
-                                    }
-                                    if (inside) colorPixel = pPrimitive->_color;
+                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
                                     pWalk += sizeof(uint32_t) + sizeof(DrawLine);
                                 }
                                 break;
                             case PrimitiveType::DRAW_RECTANGLE:
                                 {
                                     DrawRectangle* pPrimitive = (DrawRectangle*)(pWalk + sizeof(uint32_t));
-                                    // Define two nested triangles; outer and inner, adjusted by half the stroke width.
-                                    // Points inside the outer and not inside the inner are inside the rectangle.
-                                    bool inside1 = true;
-                                    if (sp.X <= pPrimitive->_topLeft.X - pPrimitive->_width / 2) inside1 = false;
-                                    if (sp.X >= pPrimitive->_bottomRight.X + pPrimitive->_width / 2) inside1 = false;
-                                    if (sp.Y <= pPrimitive->_topLeft.Y - pPrimitive->_width / 2) inside1 = false;
-                                    if (sp.Y >= pPrimitive->_bottomRight.Y + pPrimitive->_width / 2) inside1 = false;
-                                    bool inside2 = false;
-                                    if (sp.X <= pPrimitive->_topLeft.X + pPrimitive->_width / 2) inside2 = true;
-                                    if (sp.X >= pPrimitive->_bottomRight.X - pPrimitive->_width / 2) inside2 = true;
-                                    if (sp.Y <= pPrimitive->_topLeft.Y + pPrimitive->_width / 2) inside2 = true;
-                                    if (sp.Y >= pPrimitive->_bottomRight.Y - pPrimitive->_width / 2) inside2 = true;
-                                    if (inside1 && inside2) colorPixel = pPrimitive->_color;
+                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
                                     pWalk += sizeof(uint32_t) + sizeof(DrawRectangle);
                                 }
                                 break;
                             case PrimitiveType::FILL_CIRCLE:
                                 {
                                     FillCircle* pPrimitive = (FillCircle*)(pWalk + sizeof(uint32_t));
-                                    Vec2 c = { pPrimitive->_center.X - sp.X, pPrimitive->_center.Y - sp.Y };
-                                    float l = sqrtf(c.X * c.X + c.Y * c.Y);
-                                    if (l <= pPrimitive->_radius) colorPixel = pPrimitive->_color;
+                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
                                     pWalk += sizeof(uint32_t) + sizeof(FillCircle);
                                 }
                                 break;
                             case PrimitiveType::FILL_RECTANGLE:
                                 {
                                     FillRectangle* pPrimitive = (FillRectangle*)(pWalk + sizeof(uint32_t));
-                                    bool inside = true;
-                                    if (sp.X <= pPrimitive->_topLeft.X) inside = false;
-                                    if (sp.X >= pPrimitive->_bottomRight.X) inside = false;
-                                    if (sp.Y <= pPrimitive->_topLeft.Y) inside = false;
-                                    if (sp.Y >= pPrimitive->_bottomRight.Y) inside = false;
-                                    if (inside) colorPixel = pPrimitive->_color;
+                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
                                     pWalk += sizeof(uint32_t) + sizeof(FillRectangle);
                                 }
                                 break;
@@ -222,17 +245,11 @@ namespace Arcturus
                         }
                     DONE:
                         // Add in this sample contribution.
-                        colorTotal.X += colorPixel.X;
-                        colorTotal.Y += colorPixel.Y;
-                        colorTotal.Z += colorPixel.Z;
-                        colorTotal.W += colorPixel.W;
+                        colorTotal = Add(colorTotal, colorPixel);
                     }
                 }
-                // Compute the average contribution;
-                colorTotal.X /= SAMPLESIZE * SAMPLESIZE;
-                colorTotal.Y /= SAMPLESIZE * SAMPLESIZE;
-                colorTotal.Z /= SAMPLESIZE * SAMPLESIZE;
-                colorTotal.W /= SAMPLESIZE * SAMPLESIZE;
+                // Compute the average contribution.
+                colorTotal = Divide(colorTotal, SAMPLESIZE * SAMPLESIZE);
                 // Set the final contribution for this pixel.
                 void *pPixel = (char*)pRaster + sizeof(uint32_t) * x;
                 uint8_t *tPixel = (uint8_t*)pPixel;
