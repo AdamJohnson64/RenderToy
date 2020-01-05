@@ -13,6 +13,8 @@ namespace Arcturus
         DrawingContextReference();
         void reset();
         void renderTo(void* pixels, uint32_t width, uint32_t height, uint32_t stride);
+        void renderTo_Baseline(void* pixels, uint32_t width, uint32_t height, uint32_t stride);
+        void renderTo_Fast(void* pixels, uint32_t width, uint32_t height, uint32_t stride);
         // IDrawingContext Implementation.
         void setColor(const Vec4& color) override;
         void setWidth(float width) override;

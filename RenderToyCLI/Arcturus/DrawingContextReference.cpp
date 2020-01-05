@@ -56,6 +56,19 @@ namespace Arcturus
         Vec2 _bottomRight;
     };
 
+    struct DrawPrimitive
+    {
+        PrimitiveType primitive;
+        union
+        {
+            DrawCircle drawCircle;
+            DrawLine drawLine;
+            DrawRectangle drawRectangle;
+            FillCircle fillCircle;
+            FillRectangle fillRectangle;
+        };
+    };
+
     static float Max(float a, float b)
     {
         return a > b ? a : b;
@@ -173,13 +186,63 @@ namespace Arcturus
 
     void DrawingContextReference::renderTo(void* pixels, uint32_t width, uint32_t height, uint32_t stride)
     {
+        renderTo_Baseline(pixels, width, height, stride);
+    }
+
+    // Take a stream of tagged primitives and extract their head pointers as DrawPrimitives.
+    static std::vector<const DrawPrimitive*> RenderTo_Deserialize(const void* stream)
+    {
+        std::vector<const DrawPrimitive*> primitives;
+        // Handle all primitive types.
+        const uint8_t* pWalk = reinterpret_cast<const uint8_t*>(stream);
+        Vec4 colorPixel = {};
+        while (true)
         {
-            uint32_t sizeCurrent = _data.size();
-            uint32_t sizeRequired = sizeof(uint32_t);
-            _data.resize(sizeCurrent + sizeRequired);
-            uint8_t* p = &_data[sizeCurrent];
-            *(PrimitiveType*)p = PrimitiveType::END;
+            // Extract the leading tag from the primitive.
+            switch (*reinterpret_cast<const PrimitiveType*>(pWalk))
+            {
+            case PrimitiveType::DRAW_CIRCLE:
+                {
+                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                    pWalk += sizeof(uint32_t) + sizeof(DrawCircle);
+                }
+                break;
+            case PrimitiveType::DRAW_LINE:
+                {
+                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                    pWalk += sizeof(uint32_t) + sizeof(DrawLine);
+                }
+                break;
+            case PrimitiveType::DRAW_RECTANGLE:
+                {
+                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                    pWalk += sizeof(uint32_t) + sizeof(DrawRectangle);
+                }
+                break;
+            case PrimitiveType::FILL_CIRCLE:
+                {
+                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                    pWalk += sizeof(uint32_t) + sizeof(FillCircle);
+                }
+                break;
+            case PrimitiveType::FILL_RECTANGLE:
+                {
+                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                    pWalk += sizeof(uint32_t) + sizeof(FillRectangle);
+                }
+                break;
+            case PrimitiveType::END:
+                goto DONEEXTRACT;
+            default:
+                throw std::exception("Bad primitive in stream.");
+            }
         }
+    DONEEXTRACT:
+        return primitives;
+    }
+
+    static void RenderTo_Baseline(void* pixels, uint32_t width, uint32_t height, uint32_t stride, const std::vector<const DrawPrimitive*>& primitives)
+    {
         // Walk every pixel in the image.
         for (uint32_t y = 0; y < height; ++y)
         {
@@ -196,51 +259,26 @@ namespace Arcturus
                     {
                         Vec2 sp = { x + (sx + 0.5f) / SAMPLESIZE, y + (sy + 0.5f) / SAMPLESIZE };
                         // Handle all primitive types.
-                        uint8_t* pWalk = &_data[0];
                         Vec4 colorPixel = {};
-                        while (true)
+                        for (const DrawPrimitive* primitive : primitives)
                         {
-                            switch (*(PrimitiveType*)pWalk)
+                            switch (primitive->primitive)
                             {
                             case PrimitiveType::DRAW_CIRCLE:
-                                {
-                                    DrawCircle* pPrimitive = (DrawCircle*)(pWalk + sizeof(uint32_t));
-                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
-                                    pWalk += sizeof(uint32_t) + sizeof(DrawCircle);
-                                }
+                                if (Contains(primitive->drawCircle, sp)) colorPixel = primitive->drawCircle._color;
                                 break;
                             case PrimitiveType::DRAW_LINE:
-                                {
-                                    DrawLine* pPrimitive = (DrawLine*)(pWalk + sizeof(uint32_t));
-                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
-                                    pWalk += sizeof(uint32_t) + sizeof(DrawLine);
-                                }
+                                if (Contains(primitive->drawLine, sp)) colorPixel = primitive->drawLine._color;
                                 break;
                             case PrimitiveType::DRAW_RECTANGLE:
-                                {
-                                    DrawRectangle* pPrimitive = (DrawRectangle*)(pWalk + sizeof(uint32_t));
-                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
-                                    pWalk += sizeof(uint32_t) + sizeof(DrawRectangle);
-                                }
+                                if (Contains(primitive->drawRectangle, sp)) colorPixel = primitive->drawRectangle._color;
                                 break;
                             case PrimitiveType::FILL_CIRCLE:
-                                {
-                                    FillCircle* pPrimitive = (FillCircle*)(pWalk + sizeof(uint32_t));
-                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
-                                    pWalk += sizeof(uint32_t) + sizeof(FillCircle);
-                                }
+                                if (Contains(primitive->fillCircle, sp)) colorPixel = primitive->fillCircle._color;
                                 break;
                             case PrimitiveType::FILL_RECTANGLE:
-                                {
-                                    FillRectangle* pPrimitive = (FillRectangle*)(pWalk + sizeof(uint32_t));
-                                    if (Contains(*pPrimitive, sp)) colorPixel = pPrimitive->_color;
-                                    pWalk += sizeof(uint32_t) + sizeof(FillRectangle);
-                                }
+                                if (Contains(primitive->fillRectangle, sp)) colorPixel = primitive->fillRectangle._color;
                                 break;
-                            case PrimitiveType::END:
-                                goto DONE;
-                            default:
-                                goto DONE;
                             }
                         }
                     DONE:
@@ -259,6 +297,26 @@ namespace Arcturus
                 tPixel[3] = (uint8_t)(colorTotal.W * 255);
             }
         }
+    }
+
+    void DrawingContextReference::renderTo_Baseline(void* pixels, uint32_t width, uint32_t height, uint32_t stride)
+    {
+        // Close the stream with an END tag.
+        {
+            uint32_t sizeCurrent = _data.size();
+            uint32_t sizeRequired = sizeof(uint32_t);
+            _data.resize(sizeCurrent + sizeRequired);
+            uint8_t* p = &_data[sizeCurrent];
+            *(PrimitiveType*)p = PrimitiveType::END;
+        }
+        // Extract the list of primitives so we don't have to keep reparsing the input.
+        std::vector<const DrawPrimitive*> primitives = RenderTo_Deserialize(&_data[0]);
+        RenderTo_Baseline(pixels, width, height, stride, primitives);
+    }
+
+    void DrawingContextReference::renderTo_Fast(void* pixels, uint32_t width, uint32_t height, uint32_t stride)
+    {
+        renderTo_Baseline(pixels, width, height, stride);
     }
 
     void DrawingContextReference::setColor(const Vec4& color)
