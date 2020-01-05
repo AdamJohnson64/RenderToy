@@ -184,12 +184,8 @@ namespace Arcturus
         return true;
     }
 
-    void DrawingContextReference::renderTo(void* pixels, uint32_t width, uint32_t height, uint32_t stride)
-    {
-        renderTo_Baseline(pixels, width, height, stride);
-    }
-
     // Take a stream of tagged primitives and extract their head pointers as DrawPrimitives.
+    // IMPORTANT: The pointers in this vector are derived from the stream - do NOT free the stream data!
     static std::vector<const DrawPrimitive*> RenderTo_Deserialize(const void* stream)
     {
         std::vector<const DrawPrimitive*> primitives;
@@ -299,7 +295,7 @@ namespace Arcturus
         }
     }
 
-    void DrawingContextReference::renderTo_Baseline(void* pixels, uint32_t width, uint32_t height, uint32_t stride)
+    void DrawingContextReference::renderTo(void* pixels, uint32_t width, uint32_t height, uint32_t stride)
     {
         // Close the stream with an END tag.
         {
@@ -310,13 +306,7 @@ namespace Arcturus
             *(PrimitiveType*)p = PrimitiveType::END;
         }
         // Extract the list of primitives so we don't have to keep reparsing the input.
-        std::vector<const DrawPrimitive*> primitives = RenderTo_Deserialize(&_data[0]);
-        RenderTo_Baseline(pixels, width, height, stride, primitives);
-    }
-
-    void DrawingContextReference::renderTo_Fast(void* pixels, uint32_t width, uint32_t height, uint32_t stride)
-    {
-        renderTo_Baseline(pixels, width, height, stride);
+        RenderTo_Baseline(pixels, width, height, stride, RenderTo_Deserialize(&_data[0]));
     }
 
     void DrawingContextReference::setColor(const Vec4& color)
