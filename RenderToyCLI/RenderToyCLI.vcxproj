@@ -180,6 +180,7 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="Arcturus\D3D12Utility.cpp" />
+    <ClCompile Include="Arcturus\DrawingContextCPU.cpp" />
     <ClCompile Include="Arcturus\DrawingContextMesh.cpp" />
     <ClCompile Include="Arcturus\DrawingContextReference.cpp" />
     <ClCompile Include="Arcturus\ErrorD3D.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="..\ThirdParty\zlib\zutil.h" />
     <ClInclude Include="Arcturus\AutoRelease.h" />
     <ClInclude Include="Arcturus\D3D12Utility.h" />
+    <ClInclude Include="Arcturus\DrawingContextCPU.h" />
     <ClInclude Include="Arcturus\DrawingContextMesh.h" />
     <ClInclude Include="Arcturus\DrawingContextReference.h" />
     <ClInclude Include="Arcturus\generated.dxr.h" />

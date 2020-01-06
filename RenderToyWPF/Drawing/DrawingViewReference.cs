@@ -16,7 +16,7 @@ namespace Arcturus.Managed
         public DrawingViewReference()
         {
             DataContext = FakeDocument.Global;
-            m_timer.Interval = TimeSpan.FromSeconds(5);
+            m_timer.Interval = TimeSpan.FromSeconds(1.0);
             m_timer.Tick += (s, e) => UpdateThread();
             m_timer.Start();
         }
