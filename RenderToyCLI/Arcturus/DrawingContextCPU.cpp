@@ -192,7 +192,7 @@ namespace Arcturus
         uint8_t b, g, r, a;
     };
 
-    void RenderTo_Baseline(const Bitmap& bitmap, const Rectangle& region, const std::vector<const DrawPrimitive*>& primitives)
+    static void RenderTo_Baseline(const Bitmap& bitmap, const Rectangle& region, const std::vector<const DrawPrimitive*>& primitives)
     {
         // Walk every pixel in the image.
         for (uint32_t filly = 0; filly < region.h; ++filly)
@@ -260,7 +260,7 @@ namespace Arcturus
     // Fast Rendering (KD/Culled)
     ////////////////////////////////////////////////////////////////////////////////
 
-    Quad ConservativeBound(const DrawCircle& circle)
+    static Quad ConservativeBound(const DrawCircle& circle)
     {
         return {
             floorf(circle._center.X - circle._radius - circle._width / 2),
@@ -270,7 +270,7 @@ namespace Arcturus
         };
     }
 
-    Quad ConservativeBound(const DrawLine& line)
+    static Quad ConservativeBound(const DrawLine& line)
     {
         return {
             floorf(Min(line._p1.X, line._p2.X) - line._width / 2),
@@ -280,7 +280,7 @@ namespace Arcturus
         };
     }
 
-    Quad ConservativeBound(const DrawRectangle& rectangle)
+    static Quad ConservativeBound(const DrawRectangle& rectangle)
     {
         return {
             floorf(rectangle._topLeft.X - rectangle._width / 2),
@@ -290,7 +290,7 @@ namespace Arcturus
         };
     }
 
-    Quad ConservativeBound(const FillCircle& circle)
+    static Quad ConservativeBound(const FillCircle& circle)
     {
         return {
             floorf(circle._center.X - circle._radius),
@@ -300,7 +300,7 @@ namespace Arcturus
         };
     }
 
-    Quad ConservativeBound(const FillRectangle& rectangle)
+    static Quad ConservativeBound(const FillRectangle& rectangle)
     {
         return {
             floorf(rectangle._topLeft.X),
@@ -310,7 +310,7 @@ namespace Arcturus
         };
     }
 
-    bool Intersects(const Quad& q1, const Quad& q2)
+    static bool Intersects(const Quad& q1, const Quad& q2)
     {
         return
             q1.topLeft.X <= q2.bottomRight.X &&
