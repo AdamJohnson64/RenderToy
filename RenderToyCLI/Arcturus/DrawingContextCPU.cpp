@@ -38,6 +38,12 @@ namespace Arcturus
         uint32_t x, y, w, h;
     };
 
+    struct Quad
+    {
+        Vec2 topLeft;
+        Vec2 bottomRight;
+    };
+
     ////////////////////////////////////////////////////////////////////////////////
     // Primitive Sampling Functions
     ////////////////////////////////////////////////////////////////////////////////
@@ -254,6 +260,65 @@ namespace Arcturus
     // Fast Rendering (KD/Culled)
     ////////////////////////////////////////////////////////////////////////////////
 
+    Quad ConservativeBound(const DrawCircle& circle)
+    {
+        return {
+            floorf(circle._center.X - circle._radius - circle._width / 2),
+            floorf(circle._center.Y - circle._radius - circle._width / 2),
+            ceilf(circle._center.X + circle._radius + circle._width / 2),
+            ceilf(circle._center.Y + circle._radius + circle._width / 2)
+        };
+    }
+
+    Quad ConservativeBound(const DrawLine& line)
+    {
+        return {
+            floorf(Min(line._p1.X, line._p2.X) - line._width / 2),
+            floorf(Min(line._p1.Y, line._p2.Y) - line._width / 2),
+            ceilf(Max(line._p1.X, line._p2.X) + line._width / 2),
+            ceilf(Max(line._p1.Y, line._p2.Y) + line._width / 2)
+        };
+    }
+
+    Quad ConservativeBound(const DrawRectangle& rectangle)
+    {
+        return {
+            floorf(rectangle._topLeft.X - rectangle._width / 2),
+            floorf(rectangle._topLeft.Y - rectangle._width / 2),
+            ceilf(rectangle._bottomRight.X + rectangle._width / 2),
+            ceilf(rectangle._bottomRight.Y + rectangle._width / 2)
+        };
+    }
+
+    Quad ConservativeBound(const FillCircle& circle)
+    {
+        return {
+            floorf(circle._center.X - circle._radius),
+            floorf(circle._center.Y - circle._radius),
+            ceilf(circle._center.X + circle._radius),
+            ceilf(circle._center.Y + circle._radius)
+        };
+    }
+
+    Quad ConservativeBound(const FillRectangle& rectangle)
+    {
+        return {
+            floorf(rectangle._topLeft.X),
+            floorf(rectangle._topLeft.Y),
+            ceilf(rectangle._bottomRight.X),
+            ceilf(rectangle._bottomRight.Y)
+        };
+    }
+
+    bool Intersects(const Quad& q1, const Quad& q2)
+    {
+        return
+            q1.topLeft.X <= q2.bottomRight.X &&
+            q1.topLeft.Y <= q2.bottomRight.Y &&
+            q1.bottomRight.X >= q2.topLeft.X &&
+            q1.bottomRight.Y >= q2.topLeft.Y;
+    }
+
     struct Slicer
     {
         void Slice()
@@ -303,74 +368,26 @@ namespace Arcturus
         }
         Slicer BuildSubcontext(const Rectangle& subregion)
         {
-            float tx1 = subregion.x;
-            float ty1 = subregion.y;
-            float tx2 = tx1 + subregion.w;
-            float ty2 = ty1 + subregion.h;
+            Quad subregionQ = { subregion.x, subregion.y, subregion.x + subregion.w, subregion.y + subregion.h };
             std::vector<const DrawPrimitive*> newthings;
             for (const DrawPrimitive* check : contents)
             {
                 switch (check->primitive)
                 {
                 case PrimitiveType::DRAW_CIRCLE:
-                    {
-                        float cx1 = floorf(check->drawCircle._center.X - check->drawCircle._radius - check->drawRectangle._width / 2);
-                        float cy1 = floorf(check->drawCircle._center.Y - check->drawCircle._radius - check->drawRectangle._width / 2);
-                        float cx2 = ceilf(check->drawCircle._center.X + check->drawCircle._radius + check->drawRectangle._width / 2);
-                        float cy2 = ceilf(check->drawCircle._center.Y + check->drawCircle._radius + check->drawRectangle._width / 2);
-                        if (cx1 > tx2) continue;
-                        if (cy1 > ty2) continue;
-                        if (cx2 < tx1) continue;
-                        if (cy2 < ty1) continue;
-                    }
+                    if (!Intersects(subregionQ, ConservativeBound(check->drawCircle))) continue;
                     break;
                 case PrimitiveType::DRAW_LINE:
-                    {
-                        float cx1 = floorf(Min(check->drawLine._p1.X, check->drawLine._p2.X) - check->drawRectangle._width / 2);
-                        float cy1 = floorf(Min(check->drawLine._p1.Y, check->drawLine._p2.Y) - check->drawRectangle._width / 2);
-                        float cx2 = ceilf(Max(check->drawLine._p1.X, check->drawLine._p2.X) + check->drawRectangle._width / 2);
-                        float cy2 = ceilf(Max(check->drawLine._p1.Y, check->drawLine._p2.Y) + check->drawRectangle._width / 2);
-                        if (cx1 > tx2) continue;
-                        if (cy1 > ty2) continue;
-                        if (cx2 < tx1) continue;
-                        if (cy2 < ty1) continue;
-                    }
+                    if (!Intersects(subregionQ, ConservativeBound(check->drawLine))) continue;
                     break;
                 case PrimitiveType::DRAW_RECTANGLE:
-                    {
-                        float cx1 = floorf(check->drawRectangle._topLeft.X - check->drawRectangle._width / 2);
-                        float cy1 = floorf(check->drawRectangle._topLeft.Y - check->drawRectangle._width / 2);
-                        float cx2 = ceilf(check->drawRectangle._bottomRight.X + check->drawRectangle._width / 2);
-                        float cy2 = ceilf(check->drawRectangle._bottomRight.Y + check->drawRectangle._width / 2);
-                        if (cx1 > tx2) continue;
-                        if (cy1 > ty2) continue;
-                        if (cx2 < tx1) continue;
-                        if (cy2 < ty1) continue;
-                    }
+                    if (!Intersects(subregionQ, ConservativeBound(check->drawRectangle))) continue;
                     break;
                 case PrimitiveType::FILL_CIRCLE:
-                    {
-                        float cx1 = floorf(check->drawCircle._center.X - check->drawCircle._radius);
-                        float cy1 = floorf(check->drawCircle._center.Y - check->drawCircle._radius);
-                        float cx2 = ceilf(check->drawCircle._center.X + check->drawCircle._radius);
-                        float cy2 = ceilf(check->drawCircle._center.Y + check->drawCircle._radius);
-                        if (cx1 > tx2) continue;
-                        if (cy1 > ty2) continue;
-                        if (cx2 < tx1) continue;
-                        if (cy2 < ty1) continue;
-                    }
+                    if (!Intersects(subregionQ, ConservativeBound(check->fillCircle))) continue;
                     break;
                 case PrimitiveType::FILL_RECTANGLE:
-                    {
-                        float cx1 = floorf(check->fillRectangle._topLeft.X);
-                        float cy1 = floorf(check->fillRectangle._topLeft.Y);
-                        float cx2 = ceilf(check->fillRectangle._bottomRight.X);
-                        float cy2 = ceilf(check->fillRectangle._bottomRight.Y);
-                        if (cx1 > tx2) continue;
-                        if (cy1 > ty2) continue;
-                        if (cx2 < tx1) continue;
-                        if (cy2 < ty1) continue;
-                    }
+                    if (!Intersects(subregionQ, ConservativeBound(check->fillRectangle))) continue;
                     break;
                 default:
                     continue;
