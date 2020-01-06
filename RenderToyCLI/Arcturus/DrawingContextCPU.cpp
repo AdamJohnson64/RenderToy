@@ -144,34 +144,24 @@ namespace Arcturus
             switch (*reinterpret_cast<const PrimitiveType*>(pWalk))
             {
             case PrimitiveType::DRAW_CIRCLE:
-                {
-                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
-                    pWalk += sizeof(uint32_t) + sizeof(DrawCircle);
-                }
+                primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                pWalk += sizeof(PrimitiveType) + sizeof(DrawCircle);
                 break;
             case PrimitiveType::DRAW_LINE:
-                {
-                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
-                    pWalk += sizeof(uint32_t) + sizeof(DrawLine);
-                }
+                primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                pWalk += sizeof(PrimitiveType) + sizeof(DrawLine);
                 break;
             case PrimitiveType::DRAW_RECTANGLE:
-                {
-                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
-                    pWalk += sizeof(uint32_t) + sizeof(DrawRectangle);
-                }
+                primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                pWalk += sizeof(PrimitiveType) + sizeof(DrawRectangle);
                 break;
             case PrimitiveType::FILL_CIRCLE:
-                {
-                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
-                    pWalk += sizeof(uint32_t) + sizeof(FillCircle);
-                }
+                primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                pWalk += sizeof(PrimitiveType) + sizeof(FillCircle);
                 break;
             case PrimitiveType::FILL_RECTANGLE:
-                {
-                    primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
-                    pWalk += sizeof(uint32_t) + sizeof(FillRectangle);
-                }
+                primitives.push_back(reinterpret_cast<const DrawPrimitive*>(pWalk));
+                pWalk += sizeof(PrimitiveType) + sizeof(FillRectangle);
                 break;
             case PrimitiveType::END:
                 goto DONEEXTRACT;
@@ -205,9 +195,9 @@ namespace Arcturus
                 // 16 sample uniform grid sampling, centered around the mid-pixel.
                 const int SAMPLESIZE = 8;
                 Vec4 colorTotal = {};
-                for (int sy = 0; sy < SAMPLESIZE; ++sy)
+                for (uint32_t sy = 0; sy < SAMPLESIZE; ++sy)
                 {
-                    for (int sx = 0; sx < SAMPLESIZE; ++sx)
+                    for (uint32_t sx = 0; sx < SAMPLESIZE; ++sx)
                     {
                         Vec2 sp = { x + (sx + 0.5f) / SAMPLESIZE, y + (sy + 0.5f) / SAMPLESIZE };
                         // Handle all primitive types.
@@ -332,10 +322,10 @@ namespace Arcturus
             if (contents.size() <= 0)
             {
                 // NOTE: We're currently filling with purple to show the culling efficiency.
-                for (int y = 0; y < region.h; ++y)
+                for (uint32_t y = 0; y < region.h; ++y)
                 {
                     void* pRaster = reinterpret_cast<uint8_t*>(bitmap.pixels) + sizeof(uint32_t) * region.x + bitmap.stride * (region.y + y);
-                    for (int x = 0; x < region.w; ++x)
+                    for (uint32_t x = 0; x < region.w; ++x)
                     {
                         void *pPixel = (uint8_t*)pRaster + sizeof(PixelBGRA32) * x;
                         PixelBGRA32 *tPixel = reinterpret_cast<PixelBGRA32*>(pPixel);
