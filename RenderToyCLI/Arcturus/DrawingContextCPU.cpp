@@ -1,5 +1,6 @@
 #include "DrawingContextCPU.h"
 
+#include <limits.h>
 #include <math.h>
 
 namespace Arcturus
@@ -300,6 +301,63 @@ namespace Arcturus
         };
     }
 
+    static bool Intersects(const Quad& quad, const DrawLine& line)
+    {
+        // Define the shape of the quad as 4 points.
+        Vec2 shape1[4] =
+        {
+            quad.topLeft,
+            { quad.bottomRight.X, quad.topLeft.Y },
+            { quad.topLeft.X, quad.bottomRight.Y },
+            quad.bottomRight,
+        };
+        // Compute line axis.
+        Vec2 lineDir = { line._p2.X - line._p1.X, line._p2.Y - line._p1.Y };
+        float length = sqrtf(lineDir.X * lineDir.X + lineDir.Y * lineDir.Y);
+        Vec2 lineDirN = { lineDir.X / length, lineDir.Y / length };
+        Vec2 lineNorN = { -lineDirN.Y, lineDirN.X };
+        // Define a shape surrounding the line.
+        Vec2 shape2[4] =
+        {
+            { line._p1.X + line._width * (-lineDirN.X - lineNorN.X), line._p1.Y + line._width * (-lineDirN.Y - lineNorN.Y) },
+            { line._p1.X + line._width * (-lineDirN.X + lineNorN.X), line._p1.Y + line._width * (-lineDirN.Y + lineNorN.Y) },
+            { line._p2.X + line._width * (lineDirN.X - lineNorN.X), line._p2.Y + line._width * (lineDirN.Y - lineNorN.Y) },
+            { line._p2.X + line._width * (lineDirN.X + lineNorN.X), line._p2.Y + line._width * (lineDirN.Y + lineNorN.Y) },
+        };
+        // Separating axis theorem.
+        Vec2 allAxis[4] =
+        {
+            { 1, 0 },
+            { 0, 1 },
+            lineDirN,
+            lineNorN
+        };
+        for (const Vec2& axis : allAxis)
+        {
+            float min1 = std::numeric_limits<float>::infinity();
+            float max1 = -std::numeric_limits<float>::infinity();
+            for (const Vec2& p : shape1)
+            {
+                float projected = p.X * axis.X + p.Y * axis.Y;
+                min1 = Min(min1, projected);
+                max1 = Max(max1, projected);
+            }
+            float min2 = std::numeric_limits<float>::infinity();
+            float max2 = -std::numeric_limits<float>::infinity();
+            for (const Vec2& p : shape2)
+            {
+                float projected = p.X * axis.X + p.Y * axis.Y;
+                min2 = Min(min2, projected);
+                max2 = Max(max2, projected);
+            }
+            if (min1 > max2 || max1 < min2)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     static bool Intersects(const Quad& q1, const Quad& q2)
     {
         return
@@ -368,7 +426,9 @@ namespace Arcturus
                     if (!Intersects(subregionQ, ConservativeBound(check->drawCircle))) continue;
                     break;
                 case PrimitiveType::DRAW_LINE:
-                    if (!Intersects(subregionQ, ConservativeBound(check->drawLine))) continue;
+                    // We're trying out the SAT version of the bounds check here.
+                    //if (!Intersects(subregionQ, ConservativeBound(check->drawLine))) continue;
+                    if (!Intersects(subregionQ, check->drawLine)) continue;
                     break;
                 case PrimitiveType::DRAW_RECTANGLE:
                     if (!Intersects(subregionQ, ConservativeBound(check->drawRectangle))) continue;
