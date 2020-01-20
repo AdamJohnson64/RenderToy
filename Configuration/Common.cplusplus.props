@@ -26,5 +26,6 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="LibPNG.cplusplus.props" />
     <Import Project="OpenVR.cplusplus.props" />
+    <Import Project="Vulkan.cplusplus.props" />
   </ImportGroup>
 </Project>

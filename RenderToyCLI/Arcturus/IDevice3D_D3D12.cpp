@@ -271,4 +271,9 @@ namespace Arcturus
     {
         m_frameCommandList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
     }
+
+    IDevice3D* CreateDevice3D_Direct3D12()
+    {
+        return new IDevice3D_D3D12();
+    }
 }

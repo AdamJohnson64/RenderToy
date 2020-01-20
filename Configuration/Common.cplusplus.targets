@@ -2,4 +2,5 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="LibPNG.cplusplus.targets" />
   <Import Project="OpenVR.cplusplus.targets" />
+  <Import Project="Vulkan.cplusplus.targets" />
 </Project>

@@ -8,6 +8,11 @@
     {
         public DrawingViewVulkan() : base(Vulkan.Device, true)
         {
+            if (m_device == null)
+            {
+                // Vulkan is probably not installed.
+                return;
+            }
             m_backBuffer12 = Direct3D12.Device.OpenRenderTarget(m_renderTargetDeclaration, m_renderTarget9.GetIDirect3DSurface9Handle());
             m_renderTarget12 = Direct3D12.Device.CreateRenderTarget(new RenderTargetDeclaration { width = 256, height = 256 });
             m_renderTargetVK = m_device.OpenRenderTarget(m_renderTargetDeclaration, IDevice3D.GetID3D12Texture2DHandleNT(m_renderTarget12));

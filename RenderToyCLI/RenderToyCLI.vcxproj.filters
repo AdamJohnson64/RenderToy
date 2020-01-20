@@ -128,9 +128,6 @@
     <ClCompile Include="Arcturus\IConstantBufferView_Vulkan.cpp">
       <Filter>Arcturus</Filter>
     </ClCompile>
-    <ClCompile Include="Arcturus\IDevice3D.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
     <ClCompile Include="Arcturus\IDevice3D_D3D12.cpp">
       <Filter>Arcturus</Filter>
     </ClCompile>

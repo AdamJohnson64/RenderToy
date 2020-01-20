@@ -552,4 +552,9 @@ namespace Arcturus
         vkCmdBindDescriptorSets(m_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_vkPipelineLayoutEmpty, 0, 1, &m_vkDescriptorSetUAV, 0, nullptr);
         vkCmdDrawIndexed(m_vkCommandBuffer, indexCount, 1, 0, 0, 0);
     }
+
+    IDevice3D* CreateDevice3D_Vulkan()
+    {
+        return new IDevice3D_Vulkan();
+    }
 }

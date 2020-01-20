@@ -39,20 +39,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>RENDERTOY_NO_AMP;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.0\Include;$(SolutionDir)\ThirdParty\openvr\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;C:\VulkanSDK\1.1.121.0\Lib\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;C:\VulkanSDK\1.1.121.0\Lib\vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <ClCompile>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.121.0\Include;$(SolutionDir)\ThirdParty\openvr\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ThirdParty\libpng\png.c">
@@ -184,27 +180,46 @@
     <ClCompile Include="Arcturus\DrawingContextMesh.cpp" />
     <ClCompile Include="Arcturus\DrawingContextReference.cpp" />
     <ClCompile Include="Arcturus\ErrorD3D.cpp" />
-    <ClCompile Include="Arcturus\ErrorVK.cpp" />
+    <ClCompile Include="Arcturus\ErrorVK.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\IBuffer_D3D12.cpp" />
-    <ClCompile Include="Arcturus\IBuffer_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IBuffer_Vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\IConstantBufferView_D3D12.cpp" />
-    <ClCompile Include="Arcturus\IConstantBufferView_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IConstantBufferView_Vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\IConstantBuffer_D3D12.cpp" />
-    <ClCompile Include="Arcturus\IConstantBuffer_Vulkan.cpp" />
-    <ClCompile Include="Arcturus\IDevice3D.cpp" />
+    <ClCompile Include="Arcturus\IConstantBuffer_Vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\IDevice3D_D3D12.cpp" />
-    <ClCompile Include="Arcturus\IDevice3D_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IDevice3D_Vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\IIndexBuffer_D3D12.cpp" />
-    <ClCompile Include="Arcturus\IIndexBuffer_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IIndexBuffer_Vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\IRaytrace_D3D12.cpp" />
     <ClCompile Include="Arcturus\IRenderTarget_D3D12.cpp" />
-    <ClCompile Include="Arcturus\IRenderTarget_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IRenderTarget_Vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\IShader_D3D12.cpp" />
-    <ClCompile Include="Arcturus\IShader_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IShader_Vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\ITexture_D3D12.cpp" />
-    <ClCompile Include="Arcturus\ITexture_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\ITexture_Vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\IVertexBuffer_D3D12.cpp" />
-    <ClCompile Include="Arcturus\IVertexBuffer_Vulkan.cpp" />
+    <ClCompile Include="Arcturus\IVertexBuffer_Vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Arcturus\MDevice3D.cpp" />
     <ClCompile Include="Arcturus\MDevice3D_D3D9.cpp" />
     <ClCompile Include="Arcturus\MDrawingContext.cpp" />
@@ -245,15 +260,23 @@
     <ClInclude Include="Arcturus\DrawingContextReference.h" />
     <ClInclude Include="Arcturus\generated.dxr.h" />
     <ClInclude Include="Arcturus\ErrorD3D.h" />
-    <ClInclude Include="Arcturus\ErrorVK.h" />
+    <ClInclude Include="Arcturus\ErrorVK.h">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Arcturus\IBuffer_D3D12.h" />
-    <ClInclude Include="Arcturus\IBuffer_Vulkan.h" />
+    <ClInclude Include="Arcturus\IBuffer_Vulkan.h">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Arcturus\IConstantBuffer.h" />
     <ClInclude Include="Arcturus\IConstantBufferView.h" />
     <ClInclude Include="Arcturus\IConstantBufferView_D3D12.h" />
-    <ClInclude Include="Arcturus\IConstantBufferView_Vulkan.h" />
+    <ClInclude Include="Arcturus\IConstantBufferView_Vulkan.h">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Arcturus\IConstantBuffer_D3D12.h" />
-    <ClInclude Include="Arcturus\IConstantBuffer_Vulkan.h" />
+    <ClInclude Include="Arcturus\IConstantBuffer_Vulkan.h">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Arcturus\IDevice3D.h" />
     <ClInclude Include="Arcturus\IDevice3D_D3D12.h" />
     <ClInclude Include="Arcturus\IDevice3D_Vulkan.h" />
@@ -261,21 +284,31 @@
     <ClInclude Include="Arcturus\IDrawingContextAccess.h" />
     <ClInclude Include="Arcturus\IIndexBuffer.h" />
     <ClInclude Include="Arcturus\IIndexBuffer_D3D12.h" />
-    <ClInclude Include="Arcturus\IIndexBuffer_Vulkan.h" />
+    <ClInclude Include="Arcturus\IIndexBuffer_Vulkan.h">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Arcturus\IObject.h" />
     <ClInclude Include="Arcturus\IRaytrace_D3D12.h" />
     <ClInclude Include="Arcturus\IRenderTarget.h" />
     <ClInclude Include="Arcturus\IRenderTarget_D3D12.h" />
-    <ClInclude Include="Arcturus\IRenderTarget_Vulkan.h" />
+    <ClInclude Include="Arcturus\IRenderTarget_Vulkan.h">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Arcturus\IShader.h" />
     <ClInclude Include="Arcturus\IShader_D3D12.h" />
-    <ClInclude Include="Arcturus\IShader_Vulkan.h" />
+    <ClInclude Include="Arcturus\IShader_Vulkan.h">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Arcturus\ITexture.h" />
     <ClInclude Include="Arcturus\ITexture_D3D12.h" />
-    <ClInclude Include="Arcturus\ITexture_Vulkan.h" />
+    <ClInclude Include="Arcturus\ITexture_Vulkan.h">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Arcturus\IVertexBuffer.h" />
     <ClInclude Include="Arcturus\IVertexBuffer_D3D12.h" />
-    <ClInclude Include="Arcturus\IVertexBuffer_Vulkan.h" />
+    <ClInclude Include="Arcturus\IVertexBuffer_Vulkan.h">
+      <ExcludedFromBuild Condition="'$(VulkanInstalled)'!='True'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Arcturus\MDevice3D.h" />
     <ClInclude Include="Arcturus\MIDrawingContext.h" />
     <ClInclude Include="Arcturus\MIDrawingContextAccess.h" />

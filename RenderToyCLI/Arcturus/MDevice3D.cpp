@@ -165,7 +165,11 @@ namespace Arcturus
 
         IDevice3D^ IDevice3D::CreateDevice3D_Vulkan()
         {
+#ifdef VULKAN_INSTALLED
             return gcnew IDevice3D_Stub(Arcturus::CreateDevice3D_Vulkan());
+#else
+            return nullptr;
+#endif // VULKAN_INSTALLED
         }
 
         System::IntPtr IDevice3D::GetID3D12Texture2DHandleNT(System::Object^ object)

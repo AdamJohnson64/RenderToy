@@ -21,6 +21,11 @@ namespace Arcturus.Managed
         }
         protected DrawingViewD3DImage(IDevice3D device, bool flip)
         {
+            if (device == null)
+            {
+                // Vulkan is probably not installed.
+                return;
+            }
             m_device = device;
             m_shader = m_device.CreateShader();
             UInt32[] pixels = new UInt32[256 * 256];

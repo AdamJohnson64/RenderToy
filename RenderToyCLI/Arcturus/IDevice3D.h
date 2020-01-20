@@ -57,5 +57,7 @@ namespace Arcturus
         virtual void DrawIndexedPrimitives(uint32_t vertexCount, uint32_t indexCount) = 0;
     };
     IDevice3D* CreateDevice3D_Direct3D12();
+#ifdef VULKAN_INSTALLED
     IDevice3D* CreateDevice3D_Vulkan();
+#endif // VULKAN_INSTALLED
 }
