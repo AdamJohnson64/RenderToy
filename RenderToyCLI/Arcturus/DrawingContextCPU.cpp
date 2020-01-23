@@ -96,7 +96,7 @@ namespace Arcturus
 
     static bool Contains(const DrawRectangle& rectangle, const Vec2& sp)
     {
-        // Define two nested triangles; outer and inner, adjusted by half the stroke width.
+        // Define two nested rectangles; outer and inner, adjusted by half the stroke width.
         // Points inside the outer and not inside the inner are inside the rectangle.
         // Check that we're inside the outer rectangle.
         if (sp.X <= rectangle._topLeft.X - rectangle._width / 2 ||
