@@ -1,14 +1,13 @@
 #pragma once
 
 #include "IDrawingContext.h"
-#include "IDrawingContextAccess.h"
 #include "Vector.h"
 
 #include <vector>
 
 namespace Arcturus
 {
-    class DrawingContextMesh : public IDrawingContext, public IDrawingContextAccess
+    class DrawingContextMesh : public IDrawingContext
     {
     public:
         DrawingContextMesh();
@@ -22,11 +21,11 @@ namespace Arcturus
         void drawRectangle(const Vec2& topLeft, const Vec2& bottomRight) override;
         void fillCircle(const Vec2& point, float radius) override;
         void fillRectangle(const Vec2& topLeft, const Vec2& bottomRight) override;
-        // IDrawingContextAccess Implementation.
-        uint32_t vertexCount() const override;
-        const void* vertexPointer() const override;
-        uint32_t indexCount() const override;
-        const uint32_t* indexPointer() const override;
+        // Access for mesh/triangle based renderering (e.g. DXR).
+        uint32_t vertexCount() const;
+        const void* vertexPointer() const;
+        uint32_t indexCount() const;
+        const uint32_t* indexPointer() const;
     private:
         Vec4 _color;
         Vec2 _cursor;

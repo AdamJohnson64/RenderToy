@@ -304,9 +304,6 @@
     <ClInclude Include="Arcturus\IDrawingContext.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
-    <ClInclude Include="Arcturus\IDrawingContextAccess.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
     <ClInclude Include="Arcturus\IIndexBuffer.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
@@ -371,9 +368,6 @@
       <Filter>Arcturus</Filter>
     </ClInclude>
     <ClInclude Include="Arcturus\MIDrawingContext.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\MIDrawingContextAccess.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
     <ClInclude Include="Arcturus\MStub.h">

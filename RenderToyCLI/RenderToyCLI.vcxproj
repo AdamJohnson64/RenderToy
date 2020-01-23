@@ -281,7 +281,6 @@
     <ClInclude Include="Arcturus\IDevice3D_D3D12.h" />
     <ClInclude Include="Arcturus\IDevice3D_Vulkan.h" />
     <ClInclude Include="Arcturus\IDrawingContext.h" />
-    <ClInclude Include="Arcturus\IDrawingContextAccess.h" />
     <ClInclude Include="Arcturus\IIndexBuffer.h" />
     <ClInclude Include="Arcturus\IIndexBuffer_D3D12.h" />
     <ClInclude Include="Arcturus\IIndexBuffer_Vulkan.h">
@@ -311,7 +310,6 @@
     </ClInclude>
     <ClInclude Include="Arcturus\MDevice3D.h" />
     <ClInclude Include="Arcturus\MIDrawingContext.h" />
-    <ClInclude Include="Arcturus\MIDrawingContextAccess.h" />
     <ClInclude Include="Arcturus\MStub.h" />
     <ClInclude Include="Arcturus\MTypes3D.h" />
     <ClInclude Include="Arcturus\MVector.h" />

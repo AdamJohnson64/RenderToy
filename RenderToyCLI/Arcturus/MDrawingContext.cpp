@@ -1,7 +1,6 @@
 #include "DrawingContextMesh.h"
 #include "MDevice3D.h"
 #include "MIDrawingContext.h"
-#include "MIDrawingContextAccess.h"
 #include "MStub.h"
 #include "Vector.h"
 
@@ -11,7 +10,7 @@ namespace Arcturus
 {
     namespace Managed
     {
-        public ref class DrawingContextMesh : public IDrawingContext, public IDrawingContextAccess
+        public ref class DrawingContextMesh : public IDrawingContext
         {
         public:
             DrawingContextMesh()
@@ -76,19 +75,19 @@ namespace Arcturus
                     Arcturus::Vec2{ static_cast<float>(bottomRight.X), static_cast<float>(bottomRight.Y) }
                 );
             }
-            virtual uint32_t vertexCount()
+            uint32_t vertexCount()
             {
                 return thunk->vertexCount();
             }
-            virtual System::IntPtr vertexPointer()
+            System::IntPtr vertexPointer()
             {
                 return System::IntPtr(const_cast<void*>(thunk->vertexPointer()));
             }
-            virtual uint32_t indexCount()
+            uint32_t indexCount()
             {
                 return thunk->indexCount();
             }
-            virtual System::IntPtr indexPointer()
+            System::IntPtr indexPointer()
             {
                 return System::IntPtr(const_cast<uint32_t*>(thunk->indexPointer()));
             }
