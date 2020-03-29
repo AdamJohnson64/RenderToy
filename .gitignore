@@ -5,9 +5,10 @@
 *.VC.opendb
 *.vspx
 */project.lock.json
+generated.*
 .vs/*
 Output/*
-generated.*
+*/x64/*
 
 # CMake files
 /CMake*
