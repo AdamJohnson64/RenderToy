@@ -48,9 +48,11 @@
                     <GroupBox Header="D3D12">
                         <arcturus:DrawingViewD3D12 Width="256" Height="256"/>
                     </GroupBox>
+<!--
                     <GroupBox Header="Vulkan">
                         <arcturus:DrawingViewVulkan Width="256" Height="256"/>
                     </GroupBox>
+-->
                     <GroupBox Header="DXR12">
                         <arcturus:DrawingViewDXR12 Width="256" Height="256"/>
                     </GroupBox>
