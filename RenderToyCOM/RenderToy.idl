@@ -1,8 +1,6 @@
 import "D3DCommon.idl";
 import "d3d11_4.idl";
 import "d3d11sdklayers.idl";
-import "d3d12.idl";
-import "d3d12sdklayers.idl";
 import "dxgi1_6.idl";
 
 [uuid(12345678-1234-1234-1234-123456789ABC)]
@@ -18,16 +16,6 @@ library RenderToyCOM
 	enum D3D11_CPU_ACCESS_FLAG;
 	enum D3D11_MAP_FLAG;
 	enum D3D11_RESOURCE_MISC_FLAG;
-	// Direct3D 12
-	interface ID3D12CommandQueue;
-	interface ID3D12Debug;
-	interface ID3D12Device3;
-	interface ID3D12GraphicsCommandList1;
-	enum D3D12_RESOURCE_BARRIER_FLAGS;
-	enum D3D12_RESOURCE_BARRIER_TYPE;
-	enum D3D12_RESOURCE_TRANSITION_BARRIER;
-	struct D3D12_VERTEX_BUFFER_VIEW;
-	struct D3D12_VIEWPORT;
 	// DXGI
 	interface IDXGIAdapter4;
 	interface IDXGIFactory6;

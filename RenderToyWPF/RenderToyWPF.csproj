@@ -201,7 +201,6 @@
       <DependentUpon>ShaderEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="DirectX\ViewD3D11.cs" />
-    <Compile Include="DirectX\ViewD3D12.cs" />
     <Compile Include="DirectX\ViewD3DImage.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

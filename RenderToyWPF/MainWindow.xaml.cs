@@ -62,7 +62,6 @@ namespace RenderToy.WPF
         public static ICommand CommandDocumentExport = new RoutedUICommand("Export the RenderToy document to XPS.", "CommandDocumentExport", typeof(MainWindow));
         public static ICommand CommandWindowSoftware = new RoutedUICommand("Open a Software View Window.", "CommandWindowDirectX3DFF", typeof(MainWindow));
         public static ICommand CommandWindowDirect3D11 = new RoutedUICommand("Open a DirectX 11 View Window.", "CommandWindowDirect3D11", typeof(MainWindow));
-        public static ICommand CommandWindowDirect3D12 = new RoutedUICommand("Open a DirectX 12 View Window.", "CommandWindowDirect3D12", typeof(MainWindow));
         public static ICommand CommandWindowTextureLab = new RoutedUICommand("Open a Texture Lab Window.", "CommandWindowTextureLab", typeof(MainWindow));
         public static ICommand CommandStartOpenVR = new RoutedUICommand("Start OpenVR.", "CommandStartOpenVR", typeof(MainWindow));
         void CommandNew()
@@ -152,17 +151,6 @@ namespace RenderToy.WPF
                 render.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
                 render.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
                 CreatePanelDefault(render, "Direct3D11");
-                e.Handled = true;
-            }));
-            CommandBindings.Add(new CommandBinding(CommandWindowDirect3D12, (s, e) =>
-            {
-                var view = new ViewD3D12();
-                view.SetBinding(AttachedCamera.CameraProperty, new Binding { Source = FindResource("Camera") });
-                view.SetBinding(AttachedView.SceneProperty, new Binding { Path = new PropertyPath("Scene") });
-                view.SetBinding(AttachedView.TransformCameraProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformCameraProperty) });
-                view.SetBinding(AttachedView.TransformViewProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformViewProperty) });
-                view.SetBinding(AttachedView.TransformProjectionProperty, new Binding { Source = FindResource("Camera"), Path = new PropertyPath(Camera.TransformProjectionProperty) });
-                CreatePanelDefault(view, "Direct3D12 Render");
                 e.Handled = true;
             }));
             CommandBindings.Add(new CommandBinding(CommandWindowTextureLab, (s, e) =>

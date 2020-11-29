@@ -171,31 +171,6 @@ float4 SampleTextureCUBE(textureCUBE s, float3 uvw) { return s.Sample(Sampler, u
             D3DVertexShaderCode +
             D3DPixelShaderCodeUnlit;
         #endregion
-        #region - Section : Direct3D12 -
-        public readonly static string D3D12Constants =
-@"#define CommonRoot \
-""RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT),"" \
-""RootConstants(num32BitConstants=16, b0, space=0, visibility=SHADER_VISIBILITY_ALL)""
-
-cbuffer Constants : register(b0)
-{
-    float4x4 TransformModelViewProjection;
-    float4x4 TransformCamera;
-    float4x4 TransformModel;
-    float4x4 TransformView;
-    float4x4 TransformProjection;
-};
-
-";
-        public readonly static string D3D12Simple =
-            D3D12Constants +
-            D3DVertexInputStruct +
-            D3DVertexOutputStruct +
-@"[RootSignature(CommonRoot)]
-" +
-            D3DVertexShaderCode +
-            D3DPixelShaderCodeSimple;
-        #endregion
         #region - Section : Compiled Results -
         public static readonly byte[] D3D11VS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "vs", "vs_5_0");
         public static readonly byte[] D3D11PS = HLSLExtensions.CompileHLSL(HLSL.D3D11Standard, "ps", "ps_5_0");

@@ -182,7 +182,6 @@
     <ClCompile Include="Arcturus\MDevice3D_D3D9.cpp" />
     <ClCompile Include="Arcturus\Vector.cpp" />
     <ClCompile Include="InteropDirect3D11.cpp" />
-    <ClCompile Include="InteropDirect3D12.cpp" />
     <ClCompile Include="InteropDirect3DCompiler.cpp" />
     <ClCompile Include="InteropDXGI.cpp" />
     <ClCompile Include="InteropLibPNG.cpp" />

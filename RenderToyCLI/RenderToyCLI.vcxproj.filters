@@ -95,7 +95,6 @@
       <Filter>zlib</Filter>
     </ClCompile>
     <ClCompile Include="InteropDirect3D11.cpp" />
-    <ClCompile Include="InteropDirect3D12.cpp" />
     <ClCompile Include="InteropDirect3DCompiler.cpp" />
     <ClCompile Include="InteropDXGI.cpp" />
     <ClCompile Include="InteropLibPNG.cpp" />
