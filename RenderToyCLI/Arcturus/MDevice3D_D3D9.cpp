@@ -1,11 +1,9 @@
-#include "AutoRelease.h"
 #include "ErrorD3D.h"
 #include "MTypes3D.h"
 #include "Vector.h"
-
-#include <stdint.h>
-
+#include <atlbase.h>
 #include <d3d9.h>
+#include <stdint.h>
 
 namespace Arcturus
 {
@@ -18,10 +16,10 @@ namespace Arcturus
             m_Window = CreateWindow(L"BUTTON", L"BUTTON", WS_OVERLAPPEDWINDOW, 0, 0, 1, 1, nullptr, nullptr, nullptr, nullptr);
             if (m_Window == nullptr) throw std::exception("Failed to create window.");
             // Create the Direct3D interface.
-            TRYD3D(Direct3DCreate9Ex(DIRECT3D_VERSION, &m_Direct3D));
+            TRYD3D(Direct3DCreate9Ex(DIRECT3D_VERSION, &m_Direct3D.p));
         }
         HWND m_Window;
-        AutoRelease<IDirect3D9Ex> m_Direct3D;
+        CComPtr<IDirect3D9Ex> m_Direct3D;
     } g_Direct3D9Globals;
 
     namespace Managed

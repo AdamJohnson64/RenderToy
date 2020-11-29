@@ -1,10 +1,8 @@
 #pragma once
 
-#include "AutoRelease.h"
-
-#include <stdint.h>
-
+#include <atlbase.h>
 #include <d3d12.h>
+#include <stdint.h>
 
 namespace Arcturus
 {
@@ -16,6 +14,6 @@ namespace Arcturus
         IBuffer_D3D12(IDevice3D_D3D12* owner, uint32_t bufferSize, uint32_t dataSize, const void* data);
         IDevice3D_D3D12* m_owner;
         uint32_t m_size;
-        AutoRelease<ID3D12Resource1> m_resource;
+        CComPtr<ID3D12Resource1> m_resource;
     };
 }

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "AutoRelease.h"
 #include "IRenderTarget.h"
-
+#include <atlbase.h>
 #include <Windows.h>
 
 namespace Arcturus

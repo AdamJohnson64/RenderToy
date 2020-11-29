@@ -11,7 +11,7 @@ namespace Arcturus
         IRenderTarget_D3D12(IDevice3D_D3D12* owner, const RenderTargetDeclaration& declaration);
         IRenderTarget_D3D12(IDevice3D_D3D12* owner, const RenderTargetDeclaration& declaration, HANDLE handle);
         IDevice3D_D3D12* m_owner;
-        AutoRelease<ID3D12Resource1> m_resource;
+        CComPtr<ID3D12Resource1> m_resource;
         HANDLE m_handleNT;
     };
 }

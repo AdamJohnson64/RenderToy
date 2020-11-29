@@ -13,7 +13,7 @@ namespace Arcturus
         ////////////////////////////////////////////////////////////////////////////////
         // PIPELINE - Build the pipeline with all ray shaders.
         ////////////////////////////////////////////////////////////////////////////////
-        AutoRelease<ID3D12RootSignature> RootSignature;
+        CComPtr<ID3D12RootSignature> RootSignature;
         {
             uint32_t setupRange = 0;
             uint32_t setupOffset = 0;
@@ -58,16 +58,15 @@ namespace Arcturus
 	        descSignature.pParameters = &descRootParameter;
 	        descSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE;
 
-            AutoRelease<ID3DBlob> m_blob;
-            AutoRelease<ID3DBlob> m_blobError;
-            TRYD3D(D3D12SerializeRootSignature(&descSignature, D3D_ROOT_SIGNATURE_VERSION_1_0, &m_blob, &m_blobError));
-            TRYD3D(m_owner->m_device->CreateRootSignature(0, m_blob->GetBufferPointer(), m_blob->GetBufferSize(), __uuidof(ID3D12RootSignature), (void**)&RootSignature));
+            CComPtr<ID3DBlob> m_blob, m_blobError;
+            TRYD3D(D3D12SerializeRootSignature(&descSignature, D3D_ROOT_SIGNATURE_VERSION_1_0, &m_blob.p, &m_blobError.p));
+            TRYD3D(m_owner->m_device->CreateRootSignature(0, m_blob->GetBufferPointer(), m_blob->GetBufferSize(), __uuidof(ID3D12RootSignature), (void**)&RootSignature.p));
             RootSignature->SetName(L"DXR Root Signature");
         }
         ////////////////////////////////////////////////////////////////////////////////
         // PIPELINE - Build the pipeline with all ray shaders.
         ////////////////////////////////////////////////////////////////////////////////
-        AutoRelease<ID3D12StateObject> PipelineStateObject;
+        CComPtr<ID3D12StateObject> PipelineStateObject;
         {
             uint32_t setupSubobject = 0;
 
@@ -98,7 +97,7 @@ namespace Arcturus
 
 	        D3D12_STATE_SUBOBJECT descRootSignature = {};
 	        descSubobject[setupSubobject].Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
-	        descSubobject[setupSubobject].pDesc = &RootSignature;
+	        descSubobject[setupSubobject].pDesc = &RootSignature.p;
             ++setupSubobject;
 
 	        D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION descShaderRootSignature = {};
@@ -128,14 +127,14 @@ namespace Arcturus
             descStateObject.Type = D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE;
             descStateObject.NumSubobjects = setupSubobject;
             descStateObject.pSubobjects = descSubobject;
-            TRYD3D(m_owner->m_device->CreateStateObject(&descStateObject, __uuidof(ID3D12StateObject), (void**)&PipelineStateObject));
+            TRYD3D(m_owner->m_device->CreateStateObject(&descStateObject, __uuidof(ID3D12StateObject), (void**)&PipelineStateObject.p));
             PipelineStateObject->SetName(L"DXR Pipeline State");
         }
         ////////////////////////////////////////////////////////////////////////////////
         // BLAS - Build the bottom level acceleration structure.
         ////////////////////////////////////////////////////////////////////////////////
         // Create and initialize the BLAS.
-        AutoRelease<ID3D12Resource1> ResourceBLAS;
+        CComPtr<ID3D12Resource1> ResourceBLAS;
         {
             D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO descRaytracingPrebuild = {};
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS descRaytracingInputs = {};
@@ -156,11 +155,11 @@ namespace Arcturus
             m_owner->m_device->GetRaytracingAccelerationStructurePrebuildInfo(&descRaytracingInputs, &descRaytracingPrebuild);
             // Create the output and scratch buffers.
             ResourceBLAS.p = D3D12CreateBuffer(m_owner->m_device, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, descRaytracingPrebuild.ResultDataMaxSizeInBytes);
-            AutoRelease<ID3D12Resource1> ResourceASScratch;
+            CComPtr<ID3D12Resource1> ResourceASScratch;
             ResourceASScratch.p = D3D12CreateBuffer(m_owner->m_device, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, descRaytracingPrebuild.ResultDataMaxSizeInBytes);
             // Build the acceleration structure.
-            AutoRelease<ID3D12GraphicsCommandList5> UploadBLASCommandList;
-            TRYD3D(m_owner->m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_owner->m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&UploadBLASCommandList));
+            CComPtr<ID3D12GraphicsCommandList5> UploadBLASCommandList;
+            TRYD3D(m_owner->m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_owner->m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&UploadBLASCommandList.p));
             UploadBLASCommandList->SetName(L"BLAS Upload Command List");
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC descBuild = {};
             descBuild.DestAccelerationStructureData = ResourceBLAS->GetGPUVirtualAddress();
@@ -168,13 +167,13 @@ namespace Arcturus
             descBuild.ScratchAccelerationStructureData = ResourceASScratch->GetGPUVirtualAddress();
             UploadBLASCommandList->BuildRaytracingAccelerationStructure(&descBuild, 0, nullptr);
             TRYD3D(UploadBLASCommandList->Close());
-            m_owner->m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&UploadBLASCommandList);
+            m_owner->m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&UploadBLASCommandList.p);
             D3D12WaitForGPUIdle(m_owner->m_device, m_owner->m_commandQueue);
         }
         ////////////////////////////////////////////////////////////////////////////////
         // INSTANCE - Create the instancing table.
         ////////////////////////////////////////////////////////////////////////////////
-        AutoRelease<ID3D12Resource1> ResourceInstance;
+        CComPtr<ID3D12Resource1> ResourceInstance;
         {
             D3D12_RAYTRACING_INSTANCE_DESC DxrInstance = {};
             DxrInstance.Transform[0][0] = 1;
@@ -187,7 +186,7 @@ namespace Arcturus
         ////////////////////////////////////////////////////////////////////////////////
         // TLAS - Build the top level acceleration structure.
         ////////////////////////////////////////////////////////////////////////////////
-        AutoRelease<ID3D12Resource1> ResourceTLAS;
+        CComPtr<ID3D12Resource1> ResourceTLAS;
         {
             D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO descRaytracingPrebuild = {};
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS descRaytracingInputs = {};
@@ -198,11 +197,11 @@ namespace Arcturus
             m_owner->m_device->GetRaytracingAccelerationStructurePrebuildInfo(&descRaytracingInputs, &descRaytracingPrebuild);
             // Create the output and scratch buffers.
             ResourceTLAS.p = D3D12CreateBuffer(m_owner->m_device, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, descRaytracingPrebuild.ResultDataMaxSizeInBytes);
-            AutoRelease<ID3D12Resource1> ResourceASScratch;
+            CComPtr<ID3D12Resource1> ResourceASScratch;
             ResourceASScratch.p = D3D12CreateBuffer(m_owner->m_device, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, descRaytracingPrebuild.ResultDataMaxSizeInBytes);
             // Build the acceleration structure.
-            AutoRelease<ID3D12GraphicsCommandList5> UploadTLASCommandList;
-            TRYD3D(m_owner->m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_owner->m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&UploadTLASCommandList));
+            CComPtr<ID3D12GraphicsCommandList5> UploadTLASCommandList;
+            TRYD3D(m_owner->m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_owner->m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&UploadTLASCommandList.p));
             UploadTLASCommandList->SetName(L"TLAS Upload Command List");
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC descBuild = {};
             descBuild.DestAccelerationStructureData = ResourceTLAS->GetGPUVirtualAddress();
@@ -210,24 +209,24 @@ namespace Arcturus
             descBuild.ScratchAccelerationStructureData = ResourceASScratch->GetGPUVirtualAddress();
             UploadTLASCommandList->BuildRaytracingAccelerationStructure(&descBuild, 0, nullptr);
             TRYD3D(UploadTLASCommandList->Close());
-            m_owner->m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&UploadTLASCommandList);
+            m_owner->m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&UploadTLASCommandList.p);
             D3D12WaitForGPUIdle(m_owner->m_device, m_owner->m_commandQueue);
         }
         ////////////////////////////////////////////////////////////////////////////////
         // DESCRIPTOR HEAP - Shader resources (SRVs, UAVs, etc).
         ////////////////////////////////////////////////////////////////////////////////
         // Create descriptor heap with all SRVs and UAVs bound for render.
-        AutoRelease<ID3D12DescriptorHeap> DescriptorHeap;
+        CComPtr<ID3D12DescriptorHeap> DescriptorHeap;
         {
             D3D12_DESCRIPTOR_HEAP_DESC descDescriptorHeap = {};
             descDescriptorHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
             descDescriptorHeap.NumDescriptors = 2;
             descDescriptorHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-            TRYD3D(m_owner->m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&DescriptorHeap));
+            TRYD3D(m_owner->m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&DescriptorHeap.p));
             DescriptorHeap->SetName(L"DXR Descriptor Heap");
         }
         // Create the unordered access buffer for raytracing output.
-        AutoRelease<ID3D12Resource1> ResourceUAV;
+        CComPtr<ID3D12Resource1> ResourceUAV;
         {
             D3D12_HEAP_PROPERTIES descHeapProperties = {};
             descHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
@@ -240,7 +239,7 @@ namespace Arcturus
             descResource.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
             descResource.SampleDesc.Count = 1;
             descResource.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-            TRYD3D(m_owner->m_device->CreateCommittedResource1(&descHeapProperties, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &descResource, D3D12_RESOURCE_STATE_COMMON, nullptr, nullptr, __uuidof(ID3D12Resource1), (void**)&ResourceUAV));
+            TRYD3D(m_owner->m_device->CreateCommittedResource1(&descHeapProperties, D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES, &descResource, D3D12_RESOURCE_STATE_COMMON, nullptr, nullptr, __uuidof(ID3D12Resource1), (void**)&ResourceUAV.p));
             ResourceUAV->SetName(L"DXR Output Texture2D UAV");
         }
         {
@@ -267,10 +266,10 @@ namespace Arcturus
         ////////////////////////////////////////////////////////////////////////////////
         // SHADER TABLE - Create a table of all shaders for the raytracer.
         ////////////////////////////////////////////////////////////////////////////////
-        AutoRelease<ID3D12Resource1> ResourceShaderTable;
+        CComPtr<ID3D12Resource1> ResourceShaderTable;
         {
-            AutoRelease<ID3D12StateObjectProperties> stateObjectProperties;
-            TRYD3D(PipelineStateObject->QueryInterface<ID3D12StateObjectProperties>(&stateObjectProperties));
+            CComPtr<ID3D12StateObjectProperties> stateObjectProperties;
+            TRYD3D(PipelineStateObject->QueryInterface<ID3D12StateObjectProperties>(&stateObjectProperties.p));
             uint32_t shaderEntrySize = 64;
             uint32_t shaderTableSize = shaderEntrySize * 3;
             std::unique_ptr<uint8_t[]> shaderTableCPU(new uint8_t[shaderTableSize]);
@@ -291,10 +290,10 @@ namespace Arcturus
         // RAYTRACE - Finally call the raytracer and generate the frame.
         ////////////////////////////////////////////////////////////////////////////////
         {
-            AutoRelease<ID3D12GraphicsCommandList5> RaytraceCommandList;
-            TRYD3D(m_owner->m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_owner->m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&RaytraceCommandList));
+            CComPtr<ID3D12GraphicsCommandList5> RaytraceCommandList;
+            TRYD3D(m_owner->m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_owner->m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&RaytraceCommandList.p));
             RaytraceCommandList->SetName(L"DXR Raytrace Command List");
-            RaytraceCommandList->SetDescriptorHeaps(1, &DescriptorHeap);
+            RaytraceCommandList->SetDescriptorHeaps(1, &DescriptorHeap.p);
             RaytraceCommandList->SetPipelineState1(PipelineStateObject);
             {
                 D3D12_DISPATCH_RAYS_DESC descDispatchRays = {};
@@ -349,7 +348,7 @@ namespace Arcturus
                 RaytraceCommandList->ResourceBarrier(1, &descResourceBarrier);
             }
             TRYD3D(RaytraceCommandList->Close());
-            m_owner->m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&RaytraceCommandList);
+            m_owner->m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&RaytraceCommandList.p);
             D3D12WaitForGPUIdle(m_owner->m_device, m_owner->m_commandQueue);
         }
     }

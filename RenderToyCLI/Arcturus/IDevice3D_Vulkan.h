@@ -1,9 +1,8 @@
 #pragma once
 
-#include "AutoRelease.h"
 #include "IDevice3D.h"
 #include "VulkanInclude.h"
-
+#include <atlbase.h>
 #include <memory>
 
 namespace Arcturus

@@ -57,8 +57,8 @@ namespace Arcturus
     {
         // Compile the vertex shader.
         {
-            AutoRelease<ID3DBlob> blobCode, blobError;
-            if (FAILED(D3DCompile(SHADER_CODE, sizeof(SHADER_CODE), nullptr, nullptr, nullptr, "vs", "vs_5_0", 0, 0, &blobCode, &blobError)))
+            CComPtr<ID3DBlob> blobCode, blobError;
+            if (FAILED(D3DCompile(SHADER_CODE, sizeof(SHADER_CODE), nullptr, nullptr, nullptr, "vs", "vs_5_0", 0, 0, &blobCode.p, &blobError.p)))
             {
                 const char* errorString = static_cast<const char*>(blobError->GetBufferPointer());
                 throw std::exception("Failed to compile vertex shader.");
@@ -68,8 +68,8 @@ namespace Arcturus
         }
         // Compile the pixel shader.
         {
-            AutoRelease<ID3DBlob> blobCode, blobError;
-            if (FAILED(D3DCompile(SHADER_CODE, sizeof(SHADER_CODE), nullptr, nullptr, nullptr, "ps", "ps_5_0", 0, 0, &blobCode, &blobError)))
+            CComPtr<ID3DBlob> blobCode, blobError;
+            if (FAILED(D3DCompile(SHADER_CODE, sizeof(SHADER_CODE), nullptr, nullptr, nullptr, "ps", "ps_5_0", 0, 0, &blobCode.p, &blobError.p)))
             {
                 const char* errorString = static_cast<const char*>(blobError->GetBufferPointer());
                 throw std::exception("Failed to compile pixel shader.");
@@ -109,7 +109,7 @@ namespace Arcturus
             descPipeline.NumRenderTargets = 1;
             descPipeline.RTVFormats[0] = DXGI_FORMAT_B8G8R8A8_UNORM;
             descPipeline.SampleDesc.Count = 1;
-            TRYD3D(m_owner->m_device->CreateGraphicsPipelineState(&descPipeline, __uuidof(ID3D12PipelineState), (void**)&m_pipelineState));
+            TRYD3D(m_owner->m_device->CreateGraphicsPipelineState(&descPipeline, __uuidof(ID3D12PipelineState), (void**)&m_pipelineState.p));
         }
     }
 }

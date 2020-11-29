@@ -7,8 +7,8 @@
 #include "IShader_D3D12.h"
 #include "ITexture_D3D12.h"
 #include "IVertexBuffer_D3D12.h"
-
 #include <array>
+#include <assert.h>
 
 constexpr int GPU_DESCRIPTOR_COUNT = 65536;
 constexpr int GPU_DESCRIPTOR_SAMPLER_COUNT = 64;
@@ -28,9 +28,9 @@ namespace Arcturus
             D3D12EnableExperimentalFeatures(1, Features, nullptr, nullptr);
         }
         // Create the D3D12 device.
-        TRYD3D(D3D12GetDebugInterface(__uuidof(ID3D12Debug3), (void**)&m_debug));
+        TRYD3D(D3D12GetDebugInterface(__uuidof(ID3D12Debug3), (void**)&m_debug.p));
         m_debug->EnableDebugLayer();
-        TRYD3D(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, __uuidof(ID3D12Device6), (void**)&m_device));
+        TRYD3D(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, __uuidof(ID3D12Device6), (void**)&m_device.p));
         {
             std::array<D3D12_DESCRIPTOR_RANGE, 3> descDescriptorRange = {};
             descDescriptorRange[GPU_DESCRIPTOR_CBV_COMMON].BaseShaderRegister = 0;
@@ -72,36 +72,35 @@ namespace Arcturus
 	        descSignature.pParameters = descRootParameter.data();
 	        descSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-            AutoRelease<ID3DBlob> m_blob;
-            AutoRelease<ID3DBlob> m_blobError;
-            TRYD3D(D3D12SerializeRootSignature(&descSignature, D3D_ROOT_SIGNATURE_VERSION_1_0, &m_blob, &m_blobError));
-            TRYD3D(m_device->CreateRootSignature(0, m_blob->GetBufferPointer(), m_blob->GetBufferSize(), __uuidof(ID3D12RootSignature), (void**)&m_rootSignature));
+            CComPtr<ID3DBlob> m_blob, m_blobError;
+            TRYD3D(D3D12SerializeRootSignature(&descSignature, D3D_ROOT_SIGNATURE_VERSION_1_0, &m_blob.p, &m_blobError.p));
+            TRYD3D(m_device->CreateRootSignature(0, m_blob->GetBufferPointer(), m_blob->GetBufferSize(), __uuidof(ID3D12RootSignature), (void**)&m_rootSignature.p));
         }
         {
             D3D12_DESCRIPTOR_HEAP_DESC descDescriptorHeap = {};
             descDescriptorHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
             descDescriptorHeap.NumDescriptors = GPU_DESCRIPTOR_COUNT;
             descDescriptorHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-            TRYD3D(m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&m_descriptorHeapGPU));
+            TRYD3D(m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&m_descriptorHeapGPU.p));
         }
         {
             D3D12_DESCRIPTOR_HEAP_DESC descDescriptorHeap = {};
             descDescriptorHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
             descDescriptorHeap.NumDescriptors = GPU_DESCRIPTOR_SAMPLER_COUNT;
             descDescriptorHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-            TRYD3D(m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&m_descriptorHeapGPUSampler));
+            TRYD3D(m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&m_descriptorHeapGPUSampler.p));
         }
         {
             D3D12_DESCRIPTOR_HEAP_DESC descDescriptorHeap = {};
             descDescriptorHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
             descDescriptorHeap.NumDescriptors = 64;
-            TRYD3D(m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&m_descriptorHeapCPU));
+            TRYD3D(m_device->CreateDescriptorHeap(&descDescriptorHeap, __uuidof(ID3D12DescriptorHeap), (void**)&m_descriptorHeapCPU.p));
         }
         {
             D3D12_COMMAND_QUEUE_DESC descCommandQueue = {};
-            TRYD3D(m_device->CreateCommandQueue(&descCommandQueue, __uuidof(ID3D12CommandQueue), (void**)&m_commandQueue));
+            TRYD3D(m_device->CreateCommandQueue(&descCommandQueue, __uuidof(ID3D12CommandQueue), (void**)&m_commandQueue.p));
         }
-        TRYD3D(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), (void**)&m_commandAllocator));
+        TRYD3D(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), (void**)&m_commandAllocator.p));
         // Create a sampler that everything can use (for now).
         {
 	        UINT descriptorElementSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -161,11 +160,11 @@ namespace Arcturus
     {
         IRenderTarget_D3D12* destination12 = dynamic_cast<IRenderTarget_D3D12*>(destination);
         IRenderTarget_D3D12* source12 = dynamic_cast<IRenderTarget_D3D12*>(source);
-        AutoRelease<ID3D12GraphicsCommandList> commandList;
-        TRYD3D(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&commandList));
+        CComPtr<ID3D12GraphicsCommandList> commandList;
+        TRYD3D(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&commandList.p));
         commandList->CopyResource(destination12->m_resource, source12->m_resource);
         TRYD3D(commandList->Close());
-        m_commandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList**>(&commandList));
+        m_commandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList**>(&commandList.p));
         D3D12WaitForGPUIdle(m_device, m_commandQueue);
     }
 
@@ -173,7 +172,7 @@ namespace Arcturus
     void IDevice3D_D3D12::BeginRender()
     {
         assert(m_frameCommandList.p == nullptr);
-        TRYD3D(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&m_frameCommandList));
+        TRYD3D(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&m_frameCommandList.p));
         m_frameCommandList->SetGraphicsRootSignature(m_rootSignature);
         {
             ID3D12DescriptorHeap* descHeaps[2] = { m_descriptorHeapGPU, m_descriptorHeapGPUSampler };
@@ -198,10 +197,10 @@ namespace Arcturus
     {
         assert(m_frameCommandList != nullptr);
         m_frameCommandList->Close();
-        m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&m_frameCommandList);
+        m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&m_frameCommandList.p);
         D3D12WaitForGPUIdle(m_device, m_commandQueue);
         m_commandAllocator->Reset();
-        m_frameCommandList.Destroy();
+        m_frameCommandList.Release();
     }
 
     void IDevice3D_D3D12::BeginPass(IRenderTarget* renderTarget, const Color& clearColor)

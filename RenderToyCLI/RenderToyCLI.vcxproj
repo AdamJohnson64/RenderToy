@@ -253,7 +253,6 @@
     <ClInclude Include="..\ThirdParty\zlib\zconf.h" />
     <ClInclude Include="..\ThirdParty\zlib\zlib.h" />
     <ClInclude Include="..\ThirdParty\zlib\zutil.h" />
-    <ClInclude Include="Arcturus\AutoRelease.h" />
     <ClInclude Include="Arcturus\D3D12Utility.h" />
     <ClInclude Include="Arcturus\DrawingContextCPU.h" />
     <ClInclude Include="Arcturus\DrawingContextMesh.h" />

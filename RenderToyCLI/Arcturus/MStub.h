@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IObject.h"
+#include <assert.h>
 
 namespace Arcturus
 {

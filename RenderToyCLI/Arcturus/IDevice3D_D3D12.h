@@ -1,11 +1,9 @@
 #pragma once
 
-#include "AutoRelease.h"
 #include "IDevice3D.h"
-
-#include <memory>
-
+#include <atlbase.h>
 #include <d3d12.h>
+#include <memory>
 
 namespace Arcturus
 {
@@ -33,14 +31,14 @@ namespace Arcturus
         void SetVertexBuffer(IVertexBuffer* vertexBuffer, uint32_t stride) override;
         void SetIndexBuffer(IIndexBuffer* indexBuffer) override;
         void DrawIndexedPrimitives(uint32_t vertexCount, uint32_t indexCount) override;
-        AutoRelease<ID3D12Debug3>               m_debug;
-        AutoRelease<ID3D12Device6>              m_device;
-        AutoRelease<ID3D12RootSignature>        m_rootSignature;
-        AutoRelease<ID3D12DescriptorHeap>       m_descriptorHeapGPU;
-        AutoRelease<ID3D12DescriptorHeap>       m_descriptorHeapGPUSampler;
-        AutoRelease<ID3D12DescriptorHeap>       m_descriptorHeapCPU;
-        AutoRelease<ID3D12CommandQueue>         m_commandQueue;
-        AutoRelease<ID3D12CommandAllocator>     m_commandAllocator;
-        AutoRelease<ID3D12GraphicsCommandList5> m_frameCommandList;
+        CComPtr<ID3D12Debug3>               m_debug;
+        CComPtr<ID3D12Device6>              m_device;
+        CComPtr<ID3D12RootSignature>        m_rootSignature;
+        CComPtr<ID3D12DescriptorHeap>       m_descriptorHeapGPU;
+        CComPtr<ID3D12DescriptorHeap>       m_descriptorHeapGPUSampler;
+        CComPtr<ID3D12DescriptorHeap>       m_descriptorHeapCPU;
+        CComPtr<ID3D12CommandQueue>         m_commandQueue;
+        CComPtr<ID3D12CommandAllocator>     m_commandAllocator;
+        CComPtr<ID3D12GraphicsCommandList5> m_frameCommandList;
     };
 }

@@ -1,9 +1,8 @@
 #pragma once
 
-#include "AutoRelease.h"
 #include "IDevice3D.h"
 #include "MTypes3D.h"
-
+#include <atlbase.h>
 #include <stdint.h>
 
 namespace Arcturus

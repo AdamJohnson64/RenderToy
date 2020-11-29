@@ -22,7 +22,7 @@ namespace Arcturus
             descResource.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
             descResource.SampleDesc.Count = 1;
             descResource.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-            TRYD3D(owner->m_device->CreateCommittedResource1(&descHeap, D3D12_HEAP_FLAG_NONE, &descResource, D3D12_RESOURCE_STATE_COMMON, nullptr, nullptr, _uuidof(ID3D12Resource1), (void**)&m_resource));
+            TRYD3D(owner->m_device->CreateCommittedResource1(&descHeap, D3D12_HEAP_FLAG_NONE, &descResource, D3D12_RESOURCE_STATE_COMMON, nullptr, nullptr, _uuidof(ID3D12Resource1), (void**)&m_resource.p));
             m_view = D3D12_SHADER_RESOURCE_VIEW_DESC {};
             m_view.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
             m_view.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -32,7 +32,7 @@ namespace Arcturus
         // Create an upload buffer and blit the image data over to the GPU resource.
         {
             // Create a buffer in CPU visible memory.
-            AutoRelease<ID3D12Resource1> resourceUpload;
+            CComPtr<ID3D12Resource1> resourceUpload;
             {
                 D3D12_HEAP_PROPERTIES descHeap = {};
                 descHeap.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -45,7 +45,7 @@ namespace Arcturus
                 descResource.Format = DXGI_FORMAT_UNKNOWN;
                 descResource.SampleDesc.Count = 1;
                 descResource.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-                TRYD3D(owner->m_device->CreateCommittedResource1(&descHeap, D3D12_HEAP_FLAG_NONE, &descResource, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, nullptr, _uuidof(ID3D12Resource1), (void**)&resourceUpload));
+                TRYD3D(owner->m_device->CreateCommittedResource1(&descHeap, D3D12_HEAP_FLAG_NONE, &descResource, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, nullptr, _uuidof(ID3D12Resource1), (void**)&resourceUpload.p));
             }
             // Map and copy up the data to the CPU buffer.
             {
@@ -55,8 +55,8 @@ namespace Arcturus
                 resourceUpload->Unmap(0, nullptr);
             }
             // Copy this staging buffer to the GPU-only buffer.
-            AutoRelease<ID3D12GraphicsCommandList5> uploadCommandList;
-            TRYD3D(m_owner->m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_owner->m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&uploadCommandList));
+            CComPtr<ID3D12GraphicsCommandList5> uploadCommandList;
+            TRYD3D(m_owner->m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_owner->m_commandAllocator, nullptr, __uuidof(ID3D12GraphicsCommandList5), (void**)&uploadCommandList.p));
             {
                 D3D12_TEXTURE_COPY_LOCATION descDst = {};
                 descDst.pResource = m_resource;
@@ -72,7 +72,7 @@ namespace Arcturus
                 uploadCommandList->CopyTextureRegion(&descDst, 0, 0, 0, &descSrc, nullptr);
             }
             uploadCommandList->Close();
-            m_owner->m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&uploadCommandList);
+            m_owner->m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&uploadCommandList.p);
             D3D12WaitForGPUIdle(m_owner->m_device, m_owner->m_commandQueue);
         }
     }

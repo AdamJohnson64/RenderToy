@@ -253,9 +253,6 @@
     <ClInclude Include="InteropCommon.h" />
     <ClInclude Include="Raytrace.h" />
     <ClInclude Include="RaytraceExportCPU.h" />
-    <ClInclude Include="Arcturus\AutoRelease.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
     <ClInclude Include="Arcturus\D3D12Utility.h">
       <Filter>Arcturus</Filter>
     </ClInclude>

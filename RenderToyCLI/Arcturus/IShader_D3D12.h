@@ -1,12 +1,10 @@
 #pragma once
 
-#include "AutoRelease.h"
 #include "IDevice3D_D3D12.h"
 #include "IVertexBuffer.h"
-
-#include <vector>
-
+#include <atlbase.h>
 #include <d3d12.h>
+#include <vector>
 
 namespace Arcturus
 {
@@ -17,6 +15,6 @@ namespace Arcturus
         IDevice3D_D3D12* m_owner;
         std::vector<uint8_t> m_vertexShader;
         std::vector<uint8_t> m_pixelShader;
-        AutoRelease<ID3D12PipelineState> m_pipelineState;
+        CComPtr<ID3D12PipelineState> m_pipelineState;
     };
 }
