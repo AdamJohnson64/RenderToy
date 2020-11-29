@@ -101,88 +101,7 @@
     <ClCompile Include="InteropLibPNG.cpp" />
     <ClCompile Include="RaytraceExportCPU.cpp" />
     <ClCompile Include="RenderToyCLI.cpp" />
-    <ClCompile Include="Arcturus\D3D12Utility.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\ErrorD3D.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\ErrorVK.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IBuffer_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IBuffer_Vulkan.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IConstantBuffer_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IConstantBuffer_Vulkan.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IConstantBufferView_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IConstantBufferView_Vulkan.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IDevice3D_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IDevice3D_Vulkan.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IIndexBuffer_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IIndexBuffer_Vulkan.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IRaytrace_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IRenderTarget_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IRenderTarget_Vulkan.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IShader_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IShader_Vulkan.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\ITexture_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\ITexture_Vulkan.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IVertexBuffer_D3D12.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\IVertexBuffer_Vulkan.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\MDevice3D.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\MDevice3D_D3D9.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\MDrawingContext.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\MStub.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
     <ClCompile Include="Arcturus\DrawingContextReference.cpp">
-      <Filter>Arcturus</Filter>
-    </ClCompile>
-    <ClCompile Include="Arcturus\MDrawingContextReference.cpp">
       <Filter>Arcturus</Filter>
     </ClCompile>
     <ClCompile Include="Arcturus\DrawingContextMesh.cpp">
@@ -192,6 +111,12 @@
       <Filter>Arcturus</Filter>
     </ClCompile>
     <ClCompile Include="Arcturus\DrawingContextCPU.cpp">
+      <Filter>Arcturus</Filter>
+    </ClCompile>
+    <ClCompile Include="Arcturus\MDevice3D_D3D9.cpp">
+      <Filter>Arcturus</Filter>
+    </ClCompile>
+    <ClCompile Include="Arcturus\ErrorD3D.cpp">
       <Filter>Arcturus</Filter>
     </ClCompile>
   </ItemGroup>
@@ -253,127 +178,7 @@
     <ClInclude Include="InteropCommon.h" />
     <ClInclude Include="Raytrace.h" />
     <ClInclude Include="RaytraceExportCPU.h" />
-    <ClInclude Include="Arcturus\D3D12Utility.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\ErrorD3D.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\ErrorVK.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IBuffer_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IBuffer_Vulkan.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IConstantBuffer.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IConstantBuffer_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IConstantBuffer_Vulkan.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IConstantBufferView.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IConstantBufferView_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IConstantBufferView_Vulkan.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\generated.dxr.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IDevice3D.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IDevice3D_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IDevice3D_Vulkan.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IDrawingContext.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IIndexBuffer.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IIndexBuffer_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IIndexBuffer_Vulkan.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IObject.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IRaytrace_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IRenderTarget.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IRenderTarget_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IRenderTarget_Vulkan.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IShader.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IShader_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IShader_Vulkan.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\ITexture.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\ITexture_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\ITexture_Vulkan.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IVertexBuffer.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IVertexBuffer_D3D12.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\IVertexBuffer_Vulkan.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\Types3D.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
     <ClInclude Include="Arcturus\Vector.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\VulkanInclude.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\MDevice3D.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\MIDrawingContext.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\MStub.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\MTypes3D.h">
-      <Filter>Arcturus</Filter>
-    </ClInclude>
-    <ClInclude Include="Arcturus\MVector.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
     <ClInclude Include="Arcturus\DrawingContextReference.h">
@@ -383,6 +188,15 @@
       <Filter>Arcturus</Filter>
     </ClInclude>
     <ClInclude Include="Arcturus\DrawingContextCPU.h">
+      <Filter>Arcturus</Filter>
+    </ClInclude>
+    <ClInclude Include="Arcturus\IDrawingContext.h">
+      <Filter>Arcturus</Filter>
+    </ClInclude>
+    <ClInclude Include="Arcturus\ErrorD3D.h">
+      <Filter>Arcturus</Filter>
+    </ClInclude>
+    <ClInclude Include="Arcturus\MTypes3D.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
   </ItemGroup>
@@ -402,10 +216,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Raytrace.inc" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Arcturus\dxr.hlsl">
-      <Filter>Arcturus</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

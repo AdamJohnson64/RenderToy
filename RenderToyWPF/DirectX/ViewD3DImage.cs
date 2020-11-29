@@ -5,6 +5,10 @@ using System.Windows.Media;
 
 namespace Arcturus.Managed
 {
+    static class Direct3D9
+    {
+        public static IDevice3D_D3D9 Device = new IDevice3D_D3D9();
+    }
     /// <summary>
     /// Render the contents of a D3DImage into a control.
     /// This class should be used if you are rendering to a non-D3D9 surface and need a D3D9 backbuffer.

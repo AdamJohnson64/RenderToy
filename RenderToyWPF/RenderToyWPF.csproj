@@ -151,14 +151,6 @@
     <Compile Include="DirectX\DXGIHelper.cs" />
     <Compile Include="DirectX\HLSL.cs" />
     <Compile Include="DirectX\HLSLGenerator.cs" />
-    <Compile Include="Drawing\DrawingController.cs" />
-    <Compile Include="Drawing\DrawingViewD3D12.cs" />
-    <Compile Include="Drawing\DrawingViewD3DImage.cs" />
-    <Compile Include="Drawing\DrawingViewDXR12.cs" />
-    <Compile Include="Drawing\DrawingViewReference.cs" />
-    <Compile Include="Drawing\DrawingViewVulkan.cs" />
-    <Compile Include="Drawing\DrawingViewWPF.cs" />
-    <Compile Include="Drawing\FakeDocument.cs" />
     <Compile Include="OpenVR\OpenVRHelper.cs" />
     <Compile Include="OpenVR\OpenVRPump.cs" />
     <Compile Include="$(SolutionDir)ThirdParty\OpenVR\headers\openvr_api.cs" />
@@ -208,7 +200,6 @@
     <Compile Include="DirectX\ShaderEditor.xaml.cs">
       <DependentUpon>ShaderEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DirectX\ViewArcturus.cs" />
     <Compile Include="DirectX\ViewD3D11.cs" />
     <Compile Include="DirectX\ViewD3D12.cs" />
     <Compile Include="DirectX\ViewD3DImage.cs" />

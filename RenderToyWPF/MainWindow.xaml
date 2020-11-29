@@ -29,7 +29,6 @@
             </MenuItem>
             <MenuItem Header="Window">
                 <MenuItem Header="New Software View" Command="{x:Static rendertoy:MainWindow.CommandWindowSoftware}"/>
-                <MenuItem Header="New Arcturus View" Command="{x:Static rendertoy:MainWindow.CommandWindowArcturus}"/>
                 <MenuItem Header="New Direct3D11 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D11}"/>
                 <MenuItem Header="New Direct3D12 View" Command="{x:Static rendertoy:MainWindow.CommandWindowDirect3D12}"/>
                 <MenuItem Header="Texture Lab" Command="{x:Static rendertoy:MainWindow.CommandWindowTextureLab}"/>
@@ -40,24 +39,6 @@
             </MenuItem>
         </Menu>
         <TabControl x:Name="TabControlMain" Grid.Column="2" rendertoy:DockTarget.DockTarget="True">
-            <TabItem Header="Drawing">
-                <WrapPanel Orientation="Horizontal">
-                    <GroupBox Header="Reference">
-                        <arcturus:DrawingViewReference Width="256" Height="256"/>
-                    </GroupBox>
-                    <GroupBox Header="D3D12">
-                        <arcturus:DrawingViewD3D12 Width="256" Height="256"/>
-                    </GroupBox>
-<!--
-                    <GroupBox Header="Vulkan">
-                        <arcturus:DrawingViewVulkan Width="256" Height="256"/>
-                    </GroupBox>
--->
-                    <GroupBox Header="DXR12">
-                        <arcturus:DrawingViewDXR12 Width="256" Height="256"/>
-                    </GroupBox>
-                </WrapPanel>
-            </TabItem>
             <!-- ==================== Software Render ==================== -->
             <TabItem Header="Software Render">
                 <rendertoy:ViewSoftwareCustomizable rendertoy:AttachedView.Scene="{Binding Path=Scene}" rendertoy:AttachedCamera.Camera="{StaticResource Camera}" rendertoy:AttachedView.TransformView="{Binding Source={StaticResource Camera}, Path=TransformView}" rendertoy:AttachedView.TransformProjection="{Binding Source={StaticResource Camera}, Path=TransformProjection}"/>
