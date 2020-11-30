@@ -39,10 +39,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Common\BoundingVolumeHierarchy\CommonBVH.cs" />
-    <Compile Include="Common\BoundingVolumeHierarchy\KDTree.cs" />
-    <Compile Include="Common\BoundingVolumeHierarchy\Octree.cs" />
-    <Compile Include="Common\BoundingVolumeHierarchy\OctreeREF.cs" />
     <Compile Include="Common\Cameras\IProjection.cs" />
     <Compile Include="Common\Cameras\Perspective.cs" />
     <Compile Include="Common\Diagnostics\EventListener.cs" />
@@ -92,8 +88,6 @@
     <Compile Include="Common\Math\MathHelp.cs" />
     <Compile Include="Common\Math\MatrixExpression.cs" />
     <Compile Include="Common\Meshes\Mesh.cs" />
-    <Compile Include="Common\Meshes\MeshBVH.cs" />
-    <Compile Include="Common\Meshes\MeshBVHChain.cs" />
     <Compile Include="Common\Meshes\VertexFormat.cs" />
     <Compile Include="Common\ModelFormats\LoaderBPT.cs" />
     <Compile Include="Common\ModelFormats\LoaderModel.cs" />

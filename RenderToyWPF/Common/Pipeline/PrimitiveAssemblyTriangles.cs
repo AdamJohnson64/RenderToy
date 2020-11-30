@@ -42,11 +42,6 @@ namespace RenderToy.PipelineModel
             {
                 return CreateTriangles(mesh);
             }
-            MeshBVH meshbvh = prim as MeshBVH;
-            if (meshbvh != null)
-            {
-                return CreateTriangles(meshbvh);
-            }
             return new Vector3D[] { };
         }
         /// <summary>
@@ -98,25 +93,6 @@ namespace RenderToy.PipelineModel
             foreach (var t in mesh.Vertices.GetIndices())
             {
                 yield return v[t];
-            }
-        }
-        /// <summary>
-        /// Create triangles representing a BVH split mesh.
-        /// </summary>
-        /// <param name="meshbvh">The mesh.</param>
-        /// <returns>A stream of triangles describing the surface of this primitive.</returns>
-        public static IEnumerable<Vector3D> CreateTriangles(MeshBVH meshbvh)
-        {
-            var nodes_with_triangles = MeshBVH.EnumerateNodes(meshbvh)
-                .Where(x => x.Triangles != null);
-            foreach (var node in nodes_with_triangles)
-            {
-                foreach (var t in node.Triangles)
-                {
-                    yield return t.P0;
-                    yield return t.P1;
-                    yield return t.P2;
-                }
             }
         }
     }

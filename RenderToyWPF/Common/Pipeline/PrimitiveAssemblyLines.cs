@@ -49,11 +49,6 @@ namespace RenderToy.PipelineModel
             {
                 return CreateLines(mesh);
             }
-            MeshBVH meshbvh = prim as MeshBVH;
-            if (meshbvh != null)
-            {
-                return CreateLines(meshbvh);
-            }
             return new Vector3D[] { };
         }
         /// <summary>
@@ -122,49 +117,6 @@ namespace RenderToy.PipelineModel
                 yield return v[t.Item1]; yield return v[t.Item2];
                 yield return v[t.Item2]; yield return v[t.Item3];
                 yield return v[t.Item3]; yield return v[t.Item1];
-            }
-        }
-        /// <summary>
-        /// Create line segments for a BVH split mesh.
-        /// </summary>
-        /// <param name="meshbvh">The mesh primitive.</param>
-        /// <returns>A stream of line segments describing the surface of this primitive.</returns>
-        public static IEnumerable<Vector3D> CreateLines(MeshBVH meshbvh)
-        {
-            var nodes_with_triangles = MeshBVH.EnumerateNodes(meshbvh)
-                .Where(x => x.Triangles != null);
-            foreach (var node in nodes_with_triangles)
-            {
-                var lines = new[]
-                {
-                            new[] {0,0,0}, new[] {1,0,0},
-                            new[] {0,0,0}, new[] {0,1,0},
-                            new[] {0,0,0}, new[] {0,0,1},
-                            new[] {1,0,0}, new[] {1,1,0},
-                            new[] {1,0,0}, new[] {1,0,1},
-                            new[] {0,1,0}, new[] {1,1,0},
-                            new[] {0,1,0}, new[] {0,1,1},
-                            new[] {1,1,0}, new[] {1,1,1},
-                            new[] {0,0,1}, new[] {1,0,1},
-                            new[] {0,0,1}, new[] {0,1,1},
-                            new[] {1,0,1}, new[] {1,1,1},
-                            new[] {0,1,1}, new[] {1,1,1},
-                        };
-                for (int line = 0; line < lines.Length; line += 2)
-                {
-                    var i0 = lines[line + 0];
-                    var i1 = lines[line + 1];
-                    var p0 = new Vector3D(i0[0] == 0 ? node.Bound.Min.X : node.Bound.Max.X, i0[1] == 0 ? node.Bound.Min.Y : node.Bound.Max.Y, i0[2] == 0 ? node.Bound.Min.Z : node.Bound.Max.Z);
-                    var p1 = new Vector3D(i1[0] == 0 ? node.Bound.Min.X : node.Bound.Max.X, i1[1] == 0 ? node.Bound.Min.Y : node.Bound.Max.Y, i1[2] == 0 ? node.Bound.Min.Z : node.Bound.Max.Z);
-                    yield return p0;
-                    yield return p1;
-                }
-                foreach (var t in node.Triangles)
-                {
-                    yield return t.P0; yield return t.P1;
-                    yield return t.P1; yield return t.P2;
-                    yield return t.P2; yield return t.P0;
-                }
             }
         }
     }

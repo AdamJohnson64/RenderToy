@@ -29,11 +29,6 @@ namespace RenderToy.PipelineModel
             {
                 return CreateTrianglesDX(mesh);
             }
-            MeshBVH meshbvh = prim as MeshBVH;
-            if (meshbvh != null)
-            {
-                return CreateTrianglesDX(meshbvh);
-            }
             return new VertexDX[] { };
         }
         public static IEnumerable<VertexDX> CreateTrianglesDX(IParametricUV uv)
@@ -112,25 +107,6 @@ namespace RenderToy.PipelineModel
                 if (vtan != null && itan != null) v.Tangent = vtan[itan[i]];
                 if (vbit != null && ibit != null) v.Bitangent = vbit[ibit[i]];
                 yield return v;
-            }
-        }
-        /// <summary>
-        /// Create triangles representing a BVH split mesh.
-        /// </summary>
-        /// <param name="meshbvh">The mesh.</param>
-        /// <returns>A stream of triangles describing the surface of this primitive.</returns>
-        public static IEnumerable<VertexDX> CreateTrianglesDX(MeshBVH meshbvh)
-        {
-            var nodes_with_triangles = MeshBVH.EnumerateNodes(meshbvh)
-                .Where(x => x.Triangles != null);
-            foreach (var node in nodes_with_triangles)
-            {
-                foreach (var t in node.Triangles)
-                {
-                    yield return new VertexDX { Position = t.P0 };
-                    yield return new VertexDX { Position = t.P1 };
-                    yield return new VertexDX { Position = t.P2 };
-                }
             }
         }
     }
