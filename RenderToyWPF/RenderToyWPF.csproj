@@ -119,14 +119,12 @@
     <Compile Include="Common\Query\Query.cs" />
     <Compile Include="Common\Query\QueryDeferred.cs" />
     <Compile Include="Common\Query\QueryImmediate.cs" />
-    <Compile Include="Common\RenderControl\AccumulateBuffer.cs" />
     <Compile Include="Common\RenderControl\BitmapBuffer.cs" />
     <Compile Include="Common\RenderControl\IMultiPass.cs" />
     <Compile Include="Common\RenderControl\SinglePassAsync.cs" />
     <Compile Include="Common\RenderControl\SinglePassSync.cs" />
     <Compile Include="Common\RenderMode\CallHelp.cs" />
     <Compile Include="Common\RenderMode\RenderModeCS.cs" />
-    <Compile Include="Common\RenderMode\SceneSerializer.cs" />
     <Compile Include="Common\SceneGraph\Node.cs" />
     <Compile Include="Common\SceneGraph\Scene.cs" />
     <Compile Include="Common\SceneGraph\TransformedObject.cs" />

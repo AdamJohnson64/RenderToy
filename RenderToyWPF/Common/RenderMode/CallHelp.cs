@@ -58,25 +58,6 @@ namespace RenderToy.RenderMode
                 {
                     generateargs.Add((args) => new ArgumentFixed(MathHelp.Invert((Matrix3D)args[MVP])));
                 }
-                else if (param.ParameterType == typeof(byte[]) && param.Name == SCENE)
-                {
-                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF32((IEnumerable<TransformedObject>)args[SCENE])));
-                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF64((IEnumerable<TransformedObject>)args[SCENE])));
-                }
-                else if (param.ParameterType == typeof(byte[]) && param.Name == MVP)
-                {
-                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF32((Matrix3D)args[MVP])));
-                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF64((Matrix3D)args[MVP])));
-                }
-                else if (param.ParameterType == typeof(byte[]) && param.Name == INVERSE_MVP)
-                {
-                    if (isF32) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF32(MathHelp.Invert((Matrix3D)args[MVP]))));
-                    if (isF64) generateargs.Add((args) => new ArgumentFixed(SceneSerializer.CreateFlatMemoryF64(MathHelp.Invert((Matrix3D)args[MVP]))));
-                }
-                else if (param.ParameterType == typeof(byte[]) && param.Name == BITMAP_PTR)
-                {
-                    generateargs.Add((args) => new ArgumentFixed(args[BUFFER_PTR]));
-                }
                 else if (param.ParameterType == typeof(IntPtr) && param.Name == BITMAP_PTR)
                 {
                     generateargs.Add(
