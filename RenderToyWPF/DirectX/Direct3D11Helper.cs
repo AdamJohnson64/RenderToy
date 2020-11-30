@@ -100,6 +100,7 @@ namespace RenderToy.DirectX
             });
             return async (context, constants) =>
             {
+                if (scene == null) return;
                 var profilingName = (string)constants["profilingName"];
                 var transformAspect = (Matrix3D)constants["transformAspect"];
                 var transformCamera = (Matrix3D)constants["transformCamera"];
