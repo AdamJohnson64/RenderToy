@@ -98,8 +98,6 @@
     <ClCompile Include="InteropDirect3DCompiler.cpp" />
     <ClCompile Include="InteropDXGI.cpp" />
     <ClCompile Include="InteropLibPNG.cpp" />
-    <ClCompile Include="RaytraceExportCPU.cpp" />
-    <ClCompile Include="RenderToyCLI.cpp" />
     <ClCompile Include="Arcturus\DrawingContextReference.cpp">
       <Filter>Arcturus</Filter>
     </ClCompile>
@@ -175,8 +173,6 @@
       <Filter>zlib</Filter>
     </ClInclude>
     <ClInclude Include="InteropCommon.h" />
-    <ClInclude Include="Raytrace.h" />
-    <ClInclude Include="RaytraceExportCPU.h" />
     <ClInclude Include="Arcturus\Vector.h">
       <Filter>Arcturus</Filter>
     </ClInclude>
@@ -212,8 +208,5 @@
     <Filter Include="Arcturus">
       <UniqueIdentifier>{3cfb094f-04ba-437d-917a-a7e0370d6050}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Raytrace.inc" />
   </ItemGroup>
 </Project>

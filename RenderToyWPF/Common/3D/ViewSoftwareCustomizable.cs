@@ -140,7 +140,7 @@ namespace RenderToy.WPF
     {
         static RenderCallCommands()
         {
-            Calls = RenderCall.Generate(new[] { typeof(RenderModeCS), typeof(RenderToyCLI) }).ToArray();
+            Calls = RenderCall.Generate(new[] { typeof(RenderModeCS) }).ToArray();
             Commands = Calls.ToDictionary(x => x, y => new RoutedUICommand(RenderCall.GetDisplayNameFull(y.MethodInfo.Name), y.MethodInfo.Name, typeof(RenderCallCommands)));
         }
         public static readonly RenderCall[] Calls;
