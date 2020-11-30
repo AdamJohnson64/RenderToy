@@ -2,7 +2,6 @@
 using RenderToy.Materials;
 using RenderToy.Math;
 using RenderToy.Primitives;
-using RenderToy.RenderControl;
 using RenderToy.RenderMode;
 using RenderToy.SceneGraph;
 using RenderToy.Transforms;
@@ -79,20 +78,10 @@ namespace RenderToy.WPF
             set
             {
                 renderCall = value;
-                renderMode = new SinglePassAsyncAdaptor(renderCall, () => Dispatcher.Invoke(InvalidateVisual));
-                renderMode.SetScene(AttachedView.GetScene(this));
                 InvalidateVisual();
             }
         }
         RenderCall renderCall;
-        IMultiPass RenderMode
-        {
-            get
-            {
-                return renderMode;
-            }
-        }
-        IMultiPass renderMode;
         #endregion
         #region - Section : RenderResolution Option -
         int RenderResolution
@@ -103,26 +92,17 @@ namespace RenderToy.WPF
         int renderResolution = 2;
         #endregion
         #region - Overrides : RenderViewportBase -
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
-        {
-            base.OnPropertyChanged(e);
-            if (e.Property == AttachedView.SceneProperty)
-            {
-                if (RenderMode == null) return;
-                RenderMode.SetScene((IEnumerable<TransformedObject>)e.NewValue);
-            }
-        }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if (RenderMode == null) return;
+            var scene = AttachedView.GetScene(this);
+            if (scene == null) return;
+            var mvp = AttachedView.GetTransformView(this) * AttachedView.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight);
             int RENDER_WIDTH = (int)System.Math.Ceiling(ActualWidth) / RenderResolution;
             int RENDER_HEIGHT = (int)System.Math.Ceiling(ActualHeight) / RenderResolution;
             if (RENDER_WIDTH == 0 || RENDER_HEIGHT == 0) return;
             WriteableBitmap bitmap = new WriteableBitmap(RENDER_WIDTH, RENDER_HEIGHT, 0, 0, PixelFormats.Bgra32, null);
-            RenderMode.SetCamera(AttachedView.GetTransformView(this) * AttachedView.GetTransformProjection(this) * Perspective.AspectCorrectFit(ActualWidth, ActualHeight));
-            RenderMode.SetTarget(bitmap.PixelWidth, bitmap.PixelHeight);
             bitmap.Lock();
-            RenderMode.CopyTo(bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride);
+            renderCall.Action(scene, mvp, bitmap.BackBuffer, bitmap.PixelWidth, bitmap.PixelHeight, bitmap.BackBufferStride, null);
             bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
             bitmap.Unlock();
             drawingContext.DrawImage(bitmap, new Rect(0, 0, ActualWidth, ActualHeight));

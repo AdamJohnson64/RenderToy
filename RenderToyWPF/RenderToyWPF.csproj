@@ -119,10 +119,6 @@
     <Compile Include="Common\Query\Query.cs" />
     <Compile Include="Common\Query\QueryDeferred.cs" />
     <Compile Include="Common\Query\QueryImmediate.cs" />
-    <Compile Include="Common\RenderControl\BitmapBuffer.cs" />
-    <Compile Include="Common\RenderControl\IMultiPass.cs" />
-    <Compile Include="Common\RenderControl\SinglePassAsync.cs" />
-    <Compile Include="Common\RenderControl\SinglePassSync.cs" />
     <Compile Include="Common\RenderMode\CallHelp.cs" />
     <Compile Include="Common\RenderMode\RenderModeCS.cs" />
     <Compile Include="Common\SceneGraph\Node.cs" />
