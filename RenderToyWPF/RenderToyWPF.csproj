@@ -110,9 +110,6 @@
     <Compile Include="Common\Primitives\IPrimitive.cs" />
     <Compile Include="Common\Primitives\Plane.cs" />
     <Compile Include="Common\Primitives\Sphere.cs" />
-    <Compile Include="Common\Query\Query.cs" />
-    <Compile Include="Common\Query\QueryDeferred.cs" />
-    <Compile Include="Common\Query\QueryImmediate.cs" />
     <Compile Include="Common\RenderMode\CallHelp.cs" />
     <Compile Include="Common\RenderMode\RenderModeCS.cs" />
     <Compile Include="Common\SceneGraph\Node.cs" />
