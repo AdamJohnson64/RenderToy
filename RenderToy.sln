@@ -10,10 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
-		Data\VulkanFragment.spv = Data\VulkanFragment.spv
-		Data\VulkanShader.frag = Data\VulkanShader.frag
-		Data\VulkanShader.vert = Data\VulkanShader.vert
-		Data\VulkanVertex.spv = Data\VulkanVertex.spv
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderToyCLI", "RenderToyCLI\RenderToyCLI.vcxproj", "{E68E5ECF-2731-45DC-A334-4FC4651EE0AF}"
